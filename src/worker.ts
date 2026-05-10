@@ -1,19 +1,20 @@
-// Cloudflare Pages Function: /api/subscribe
-// Captures emails from the resource lead-gate. Forwards to Substack via the
-// public newsletter signup endpoint, then optionally mirrors to a webhook
-// (Slack/Make/Zapier/etc) for offline routing.
-//
-// Required env vars (set in Cloudflare Pages → Settings → Environment variables):
-//   SUBSTACK_PUBLICATION  — e.g. "theairuntime" (defaults to that if unset)
-// Optional:
-//   LEAD_WEBHOOK_URL      — POST a copy of every lead here (Slack/Make/Zapier)
+/**
+ * Cloudflare Worker entry for events.theairuntime.com
+ *
+ * Static site (built by Astro into dist/) is served via the ASSETS binding.
+ * Dynamic routes are handled here:
+ *
+ *   POST /api/subscribe — capture lead emails from the resource lead-gate.
+ *                         Forwards to Substack and optionally mirrors to a webhook.
+ */
 
 interface Env {
+  ASSETS: Fetcher;
   SUBSTACK_PUBLICATION?: string;
   LEAD_WEBHOOK_URL?: string;
 }
 
-interface Body {
+interface SubscribeBody {
   email: string;
   source?: string;
   resourceSlug?: string;
@@ -26,16 +27,20 @@ const json = (data: unknown, init: ResponseInit = {}) =>
     headers: {
       'content-type': 'application/json',
       'cache-control': 'no-store',
-      ...(init.headers ?? {}),
+      ...((init.headers as Record<string, string>) ?? {}),
     },
   });
 
 const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  let body: Body;
+async function handleSubscribe(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, { status: 405 });
+  }
+
+  let body: SubscribeBody;
   try {
-    body = (await request.json()) as Body;
+    body = (await request.json()) as SubscribeBody;
   } catch {
     return json({ error: 'Invalid JSON' }, { status: 400 });
   }
@@ -48,11 +53,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const publication = env.SUBSTACK_PUBLICATION ?? 'theairuntime';
   const substackUrl = `https://${publication}.substack.com/api/v1/free?nojs=true`;
 
-  // Substack expects form-encoded POST.
   const form = new URLSearchParams();
   form.set('email', email);
-  form.set('first_url', `https://theairuntime.com/resources/${body.resourceSlug ?? ''}`);
-  form.set('first_referrer', 'theairuntime.com');
+  form.set('first_url', `https://events.theairuntime.com/resources/${body.resourceSlug ?? ''}`);
+  form.set('first_referrer', 'events.theairuntime.com');
   form.set('source', body.source ?? 'theairuntime-site');
 
   let substackOk = false;
@@ -67,10 +71,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     });
     substackOk = res.ok;
   } catch {
-    // Soft-fail; the lead is still captured via webhook below.
+    // Soft-fail; the lead is still captured via webhook below if configured.
   }
 
-  // Mirror to optional webhook (Slack incoming webhook, Make, Zapier, etc).
   if (env.LEAD_WEBHOOK_URL) {
     try {
       await fetch(env.LEAD_WEBHOOK_URL, {
@@ -98,12 +101,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   return json({ ok: true });
-};
+}
 
-// Reject other methods.
-export const onRequest: PagesFunction<Env> = async ({ request }) => {
-  if (request.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, { status: 405 });
-  }
-  return json({ error: 'Not found' }, { status: 404 });
-};
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+
+    if (url.pathname === '/api/subscribe') {
+      return handleSubscribe(request, env);
+    }
+
+    return env.ASSETS.fetch(request);
+  },
+} satisfies ExportedHandler<Env>;
