@@ -1,14 +1,4 @@
-# Path-preserve all Substack-native URLs so links from past newsletters,
-# RSS subscribers, and bookmarks keep working after we take over the
-# domain at theairuntime.com.
-
-/p/*           https://theairuntime.substack.com/p/:splat            301
-/feed          https://theairuntime.substack.com/feed                301
-/archive       https://theairuntime.substack.com/archive             301
-/subscribe     https://theairuntime.substack.com/subscribe           301
-/podcast       https://theairuntime.substack.com/podcast             301
-/comments/*    https://theairuntime.substack.com/comments/:splat     301
-/api/v1/*      https://theairuntime.substack.com/api/v1/:splat       301
-
-# Bare root → publication. 302 (not 301) so we can change our minds later.
-/              https://theairuntime.substack.com/                    302
+# events.theairuntime.com — Cloudflare Pages site for the meetup hub,
+# speaker archive, and resources library. The publication itself lives
+# at theairuntime.com (Substack Custom Domain) and serves /p/*, /feed,
+# /archive natively — no redirects needed here.

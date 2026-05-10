@@ -6,7 +6,7 @@ A reference for anyone (human or AI) working on The AI Runtime. Covers palette, 
 
 - **Brand:** The AI Runtime — publication and community for engineers shipping AI to production
 - **Tagline:** LEARN. SHIP. RUN.
-- **Domain:** theairuntime.com
+- **Domain:** theairuntime.com (Substack publication) · events.theairuntime.com (this site)
 - **Mascot:** Blink (running cursor character — orange rectangle, two eyes, smile, running legs)
 - **Founder:** Kranthi Manchikanti (AI Architect at Microsoft, Boston)
 - **Newsletter:** Substack at theairuntime.substack.com (root `/` redirects there)
@@ -57,9 +57,14 @@ A reference for anyone (human or AI) working on The AI Runtime. Covers palette, 
 
 ## Architecture
 
-This is an Astro + Cloudflare Pages site. Content lives in `src/content/` as typed markdown (Zod schemas in `src/content/config.ts`). Routes are file-based in `src/pages/`.
+The brand uses a **domain split**:
 
-- Root `/` → 302 redirect to Substack via `public/_redirects` and `astro.config.mjs` redirects
+- `theairuntime.com` → **Substack Custom Domain.** The publication: `/`, `/p/*`, `/feed`, `/archive`, `/subscribe`. Substack serves all of this natively. SEO authority compounds on the publication.
+- `events.theairuntime.com` → **Cloudflare Pages site (this repo).** The platform layer: meetups, speaker archive, resources library.
+
+The Pages site is Astro + Cloudflare Pages. Content lives in `src/content/` as typed markdown (Zod schemas in `src/content/config.ts`). Routes are file-based in `src/pages/`:
+
+- `/` → 302 to `/boston` (until the city list grows)
 - `/boston`, `/<city>` → meetup hubs (one per city, easy to add)
 - `/speakers`, `/speakers/<slug>` → cross-city speaker directory
 - `/resources`, `/resources/<slug>` → ebooks/checklists/playbooks with lead-gate or paid CTAs

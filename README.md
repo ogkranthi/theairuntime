@@ -1,11 +1,16 @@
-# theairuntime.com
+# events.theairuntime.com
 
 Web platform for [The AI Runtime](https://theairuntime.com) — the publication and community for engineers shipping AI to production.
 
-- **Newsletter:** Substack (theairuntime.substack.com), reached at root `/`
-- **Boston meetup:** `/boston`
-- **Speaker archive:** `/speakers`
-- **Resources:** `/resources`
+**Domain split:**
+- `theairuntime.com` → Substack (Custom Domain). The publication itself: `/`, `/p/*`, `/feed`, `/archive`.
+- `events.theairuntime.com` → **this repo**. Meetups, speakers, and resources library.
+
+**Routes here:**
+- `/boston` → Boston meetup hub (current/upcoming event, agenda, speakers, RSVP)
+- `/speakers`, `/speakers/<slug>` → cross-city speaker directory
+- `/resources`, `/resources/<slug>` → ebooks, checklists, playbooks (lead-gated / paid)
+- `/about`, `/speak`, `/404`
 
 Built with Astro + content collections, deployed to Cloudflare Pages.
 
@@ -63,7 +68,7 @@ Drop `src/content/resources/<slug>.md`. Set `status` to `coming-soon`, `lead-gat
 
 ## Deploy
 
-Connected to Cloudflare Pages. Build command `npm run build`, output `dist/`. Custom domain `theairuntime.com` bound to the Pages project. Root redirect to Substack handled by `public/_redirects`.
+Connected to Cloudflare Pages. Build command `npm run build`, output `dist/`. Custom domain `events.theairuntime.com` bound to the Pages project. Root domain `theairuntime.com` is owned by Substack Custom Domain — do not bind the apex to Pages.
 
 ### Required env vars (Cloudflare Pages dashboard)
 
