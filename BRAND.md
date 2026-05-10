@@ -1,6 +1,6 @@
-# The AI Runtime — Project Context for Claude
+# The AI Runtime — Brand Reference
 
-This file primes future Claude sessions with brand context. Inlined from the canonical brand doc.
+A reference for anyone (human or AI) working on The AI Runtime. Covers palette, voice, mascot, architecture, and the multi-city expansion playbook. Inlined from the canonical brand doc.
 
 ## Quick facts
 

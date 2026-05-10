@@ -72,4 +72,4 @@ Connected to Cloudflare Pages. Build command `npm run build`, output `dist/`. Cu
 
 ## Brand
 
-See `CLAUDE.md` for the full brand context (palette, typography, voice, Blink mascot spec).
+See [`BRAND.md`](./BRAND.md) for the full brand reference — palette, typography, voice, Blink mascot spec, multi-city expansion playbook.
