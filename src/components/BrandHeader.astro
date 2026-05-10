@@ -1,0 +1,52 @@
+---
+import BlinkLogo from './BlinkLogo.astro';
+---
+<header class="hdr">
+  <div class="container row">
+    <BlinkLogo size="sm" withTagline={false} />
+    <nav>
+      <a href="/boston">Boston</a>
+      <a href="/speakers">Speakers</a>
+      <a href="/resources">Resources</a>
+      <a href="/about">About</a>
+      <a href="https://theairuntime.substack.com" class="cta">Subscribe</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .hdr {
+    border-bottom: 1px solid var(--border);
+    background: rgba(10, 10, 11, 0.85);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+  nav {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+  }
+  nav a { color: var(--text-2); text-decoration: none; }
+  nav a:hover { color: var(--text); }
+  nav .cta {
+    color: var(--bg);
+    background: var(--accent);
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    font-weight: 700;
+  }
+  nav .cta:hover { color: var(--bg); filter: brightness(1.08); }
+  @media (max-width: 640px) {
+    nav a:not(.cta) { display: none; }
+  }
+</style>

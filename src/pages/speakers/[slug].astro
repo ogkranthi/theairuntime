@@ -1,0 +1,97 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+
+export async function getStaticPaths() {
+  const speakers = await getCollection('speakers');
+  return speakers.map((speaker) => ({
+    params: { slug: speaker.slug },
+    props: { speaker },
+  }));
+}
+
+const { speaker } = Astro.props;
+const { Content } = await speaker.render();
+const data = speaker.data;
+const initials = data.name.split(' ').map((p) => p[0]).slice(0, 2).join('');
+---
+<BaseLayout
+  title={`${data.name} · The AI Runtime`}
+  description={`${data.name} — ${data.title} at ${data.company}. ${data.talks[0]?.title ?? ''}`}
+>
+  <Section eyebrow="Speaker">
+    <div class="head">
+      <div class="avatar">
+        {data.photo ? <img src={data.photo} alt={data.name} /> : <span>{initials}</span>}
+      </div>
+      <div>
+        <h1>{data.name}</h1>
+        <p class="role">{data.title} · {data.company}</p>
+        <div class="links">
+          {data.social.linkedin && <a href={data.social.linkedin}>LinkedIn</a>}
+          {data.social.twitter && <a href={data.social.twitter}>Twitter</a>}
+          {data.social.github && <a href={data.social.github}>GitHub</a>}
+          {data.social.website && <a href={data.social.website}>Website</a>}
+        </div>
+      </div>
+    </div>
+
+    <div class="bio dim"><Content /></div>
+
+    {data.talks.length > 0 && (
+      <div class="talks">
+        <h2>Talks</h2>
+        <ul>
+          {data.talks.map((t) => (
+            <li>
+              <h3>{t.title}</h3>
+              <p class="dim">{t.abstract}</p>
+              <div class="talk-links">
+                {t.slidesUrl && <a href={t.slidesUrl}>Slides →</a>}
+                {t.recordingUrl && <a href={t.recordingUrl}>Recording →</a>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </Section>
+</BaseLayout>
+
+<style>
+  .head {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  .avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 2rem;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .role { color: var(--text-2); font-size: 1rem; margin-bottom: 0.5rem; }
+  .links { display: flex; gap: 1rem; font-family: var(--font-mono); font-size: 0.9rem; }
+  .bio { max-width: 38rem; margin-bottom: 2.5rem; }
+  .talks ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1.5rem; }
+  .talks li {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+  .talks h2 { margin-bottom: 1rem; }
+  .talks h3 { margin-bottom: 0.5rem; }
+  .talk-links { display: flex; gap: 1rem; margin-top: 0.5rem; }
+</style>

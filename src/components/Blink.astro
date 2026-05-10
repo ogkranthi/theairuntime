@@ -1,0 +1,68 @@
+---
+interface Props {
+  size?: number;
+  showLegs?: boolean;
+  showSmile?: boolean;
+  showCheeks?: boolean;
+  showMotion?: boolean;
+  ariaLabel?: string;
+}
+
+const {
+  size = 80,
+  showLegs = true,
+  showSmile = true,
+  showCheeks = false,
+  showMotion = false,
+  ariaLabel = 'Blink, the AI Runtime mascot',
+} = Astro.props;
+
+const w = size;
+const h = size * 1.35;
+---
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 100 135"
+  width={w}
+  height={h}
+  role="img"
+  aria-label={ariaLabel}
+>
+  {showMotion && (
+    <g stroke="#FB923C" stroke-linecap="round" stroke-width="3">
+      <line x1="2"  y1="40" x2="14" y2="40" opacity="0.4"/>
+      <line x1="0"  y1="55" x2="14" y2="55" opacity="0.55"/>
+      <line x1="2"  y1="70" x2="14" y2="70" opacity="0.7"/>
+    </g>
+  )}
+
+  <!-- body -->
+  <rect x="22" y="15" width="56" height="80" rx="14" fill="#FB923C"/>
+
+  <!-- cheeks -->
+  {showCheeks && (
+    <>
+      <circle cx="33" cy="60" r="4" fill="#FBA860" opacity="0.65"/>
+      <circle cx="67" cy="60" r="4" fill="#FBA860" opacity="0.65"/>
+    </>
+  )}
+
+  <!-- eyes with shine -->
+  <circle cx="38" cy="40" r="5.5" fill="#0A0A0B"/>
+  <circle cx="62" cy="40" r="5.5" fill="#0A0A0B"/>
+  <circle cx="40" cy="38" r="1.6" fill="#FAFAFA"/>
+  <circle cx="64" cy="38" r="1.6" fill="#FAFAFA"/>
+
+  <!-- smile -->
+  {showSmile && (
+    <path d="M 38 65 Q 50 75 62 65" stroke="#0A0A0B" stroke-width="3" stroke-linecap="round" fill="none"/>
+  )}
+
+  <!-- legs (running) -->
+  {showLegs && (
+    <g stroke="#FB923C" stroke-width="6" stroke-linecap="round" fill="none">
+      <line x1="38" y1="98" x2="30" y2="120"/>
+      <line x1="62" y1="98" x2="72" y2="115"/>
+    </g>
+  )}
+</svg>

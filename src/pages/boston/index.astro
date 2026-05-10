@@ -1,0 +1,121 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventHero from '../../components/EventHero.astro';
+import AgendaList from '../../components/AgendaList.astro';
+import SpeakerCard from '../../components/SpeakerCard.astro';
+import PartnerStrip from '../../components/PartnerStrip.astro';
+import SubstackEmbed from '../../components/SubstackEmbed.astro';
+import ContactCTA from '../../components/ContactCTA.astro';
+import Section from '../../components/Section.astro';
+
+const allEvents = await getCollection('events', (e) => e.slug.startsWith('boston/'));
+allEvents.sort((a, b) => +b.data.date - +a.data.date);
+
+const upcoming = allEvents.find((e) => e.data.status === 'upcoming') ?? allEvents[0];
+if (!upcoming) {
+  throw new Error('No Boston events found in src/content/events/boston/');
+}
+const past = allEvents.filter((e) => e.id !== upcoming.id);
+
+const speakers = await Promise.all(
+  upcoming.data.speakers.map((ref) => getEntry('speakers', (ref as any).slug ?? (ref as any).id)),
+);
+
+const city = await getEntry('cities', 'boston');
+---
+<BaseLayout
+  title="Boston · The AI Runtime"
+  description={`${upcoming.data.title} — ${upcoming.data.speakers.length} talks on the production engineering of AI agents. ${city?.data.venueName ?? ''}`}
+>
+  <EventHero event={upcoming} />
+
+  <Section id="speakers" eyebrow="Tonight's lineup" title="Two practitioners. Two production stories.">
+    <div class="speakers-grid">
+      {speakers.map((s) => s && <SpeakerCard speaker={s} eventSlug={upcoming.slug} />)}
+    </div>
+  </Section>
+
+  <Section id="agenda" eyebrow="Agenda" title="How the night runs">
+    <AgendaList agenda={upcoming.data.agenda} />
+    <div class="partner-wrap">
+      <PartnerStrip partners={upcoming.data.partners} />
+    </div>
+  </Section>
+
+  <Section eyebrow="Subscribe" title="Get the recap — and the next event before it sells out">
+    <p class="dim wide">
+      Slides and links from tonight's talks land here Thursday. Subscribers get the recap first — and an
+      invite to next month's Boston meetup before the public Luma drop.
+    </p>
+    <SubstackEmbed
+      headline="The AI Runtime newsletter"
+      subhead="1–2 production-grade pieces a week. No vendor pitches, no idea-stage tourists."
+    />
+    <p class="muted small luma">
+      Prefer just the calendar? <a href="https://luma.com/tair">Subscribe to the Boston meetup on Luma →</a>
+    </p>
+  </Section>
+
+  <Section eyebrow="Resources · coming soon" title="The Agentic Architectures Checklist">
+    <p class="dim wide">
+      A practitioner-grade checklist for shipping AI agents — identity, trust, tool access, eval coverage,
+      observability, the failure modes that take down production agents. Subscribers get it first.
+    </p>
+    <p><a class="btn btn-ghost" href="/resources/agentic-architecture-checklist">Get notified →</a></p>
+  </Section>
+
+  {past.length > 0 && (
+    <Section eyebrow="Archive" title="Past Boston events">
+      <ul class="past">
+        {past.map((e) => (
+          <li>
+            <a href={`/boston/${e.slug}`}>
+              <span class="date">{new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(e.data.date)}</span>
+              <span class="title">{e.data.title}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )}
+
+  <Section>
+    <ContactCTA />
+  </Section>
+</BaseLayout>
+
+<style>
+  .speakers-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  @media (max-width: 720px) {
+    .speakers-grid { grid-template-columns: 1fr; }
+  }
+  .partner-wrap { margin-top: 1.5rem; }
+  .wide { max-width: 42rem; }
+  .luma { margin-top: 1rem; }
+  .small { font-size: 0.9rem; }
+  .past {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .past a {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .past a:hover { border-color: var(--accent); }
+  .past .date { font-family: var(--font-mono); color: var(--text-3); font-size: 0.85rem; }
+</style>

@@ -1,0 +1,24 @@
+---
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+}
+const { id, eyebrow, title, lead } = Astro.props;
+---
+<section id={id} class="section">
+  <div class="container">
+    {eyebrow && <span class="tag">{eyebrow}</span>}
+    {title && <h2>{title}</h2>}
+    {lead && <p class="lead dim">{lead}</p>}
+    <div class="body"><slot /></div>
+  </div>
+</section>
+
+<style>
+  .section { padding: 3.5rem 0; }
+  .section .body { margin-top: 1.5rem; }
+  .lead { max-width: 42rem; }
+  h2 { margin-top: 0.6rem; }
+</style>

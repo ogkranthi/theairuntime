@@ -1,0 +1,47 @@
+---
+import Blink from './Blink.astro';
+
+interface Props {
+  size?: 'sm' | 'md' | 'lg';
+  withTagline?: boolean;
+  href?: string;
+}
+
+const { size = 'md', withTagline = true, href = '/' } = Astro.props;
+
+const blinkSize = size === 'sm' ? 28 : size === 'lg' ? 64 : 40;
+const wordmarkSize = size === 'sm' ? '1rem' : size === 'lg' ? '1.6rem' : '1.2rem';
+---
+<a href={href} class="logo" aria-label="The AI Runtime — home">
+  <Blink size={blinkSize} showLegs={size !== 'sm'} showMotion={size === 'lg'} ariaLabel="Blink mascot" />
+  <span class="lockup">
+    <span class="wordmark" style={`font-size: ${wordmarkSize}`}>
+      <span class="lower">the</span>&nbsp;<span class="up">AI</span>&nbsp;<span class="lower">runtime</span>
+    </span>
+    {withTagline && <span class="tagline">LEARN. SHIP. RUN.</span>}
+  </span>
+</a>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .logo:hover { text-decoration: none; }
+  .lockup { display: inline-flex; flex-direction: column; gap: 2px; }
+  .wordmark {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .tagline {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    color: var(--text-3);
+  }
+</style>

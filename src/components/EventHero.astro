@@ -1,0 +1,69 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Blink from './Blink.astro';
+
+interface Props {
+  event: CollectionEntry<'events'>;
+}
+
+const { event } = Astro.props;
+const data = event.data;
+
+const dateFmt = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+}).format(data.date);
+---
+<section class="hero">
+  <div class="container">
+    <div class="grid">
+      <div class="copy">
+        <span class="tag">{data.status === 'upcoming' ? 'Tonight in Boston' : 'Past event'}</span>
+        <h1>{data.title}</h1>
+        <p class="when">
+          <strong>{dateFmt}</strong>
+          {data.doorsAt && <span> · doors {data.doorsAt}</span>}
+          {data.endsAt && <span> · close {data.endsAt}</span>}
+        </p>
+        {data.venue?.name && <p class="muted">📍 {data.venue.name}</p>}
+        {data.description && <p class="lede dim">{data.description}</p>}
+        <div class="ctas">
+          {data.lumaUrl && (
+            <a class="btn" href={data.lumaUrl} target="_blank" rel="noopener">RSVP on Luma</a>
+          )}
+          <a class="btn btn-ghost" href="#agenda">See agenda</a>
+        </div>
+      </div>
+      <div class="art">
+        <Blink size={140} showMotion={true} showCheeks={true} />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding: 4rem 0 3rem;
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(ellipse at top right, rgba(251, 146, 60, 0.10), transparent 55%),
+      var(--bg);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 2rem;
+    align-items: center;
+  }
+  @media (max-width: 720px) {
+    .grid { grid-template-columns: 1fr; }
+    .art { order: -1; }
+  }
+  h1 { margin-top: 0.6rem; }
+  .when { font-size: 1.1rem; color: var(--text); margin-bottom: 0.25rem; }
+  .lede { margin-top: 1rem; font-size: 1.05rem; max-width: 36rem; }
+  .ctas { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+  .art { display: flex; justify-content: center; }
+</style>

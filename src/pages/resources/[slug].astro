@@ -1,0 +1,58 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import ResourceLeadGate from '../../components/ResourceLeadGate.tsx';
+
+export async function getStaticPaths() {
+  const resources = await getCollection('resources');
+  return resources.map((resource) => ({
+    params: { slug: resource.slug },
+    props: { resource },
+  }));
+}
+
+const { resource } = Astro.props;
+const { Content } = await resource.render();
+const data = resource.data;
+
+const statusLabel: Record<string, string> = {
+  'coming-soon': 'Coming soon',
+  free: 'Free',
+  'lead-gated': 'Free · email required',
+  paid: 'Paid',
+};
+---
+<BaseLayout
+  title={`${data.title} · The AI Runtime`}
+  description={data.description}
+>
+  <Section eyebrow={data.type} title={data.title} lead={data.description}>
+    <div class="meta">
+      <span class="tag">{statusLabel[data.status]}</span>
+      <span class="muted">{data.pillar}</span>
+      {data.length && <span class="muted">{data.length}</span>}
+      <span class="muted">{data.version}</span>
+    </div>
+
+    <article class="body dim"><Content /></article>
+
+    <div class="gate-wrap">
+      <ResourceLeadGate
+        client:load
+        resourceSlug={resource.slug}
+        resourceTitle={data.title}
+        status={data.status}
+        pdfUrl={data.pdfUrl}
+        paymentLinkUrl={data.paymentLinkUrl}
+        priceUsd={data.priceUsd}
+      />
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .meta { display: flex; gap: 0.75rem; align-items: center; font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .body { max-width: 38rem; margin-bottom: 2rem; }
+  .gate-wrap { padding-top: 1rem; border-top: 1px solid var(--border); }
+</style>

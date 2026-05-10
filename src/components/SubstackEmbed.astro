@@ -1,0 +1,51 @@
+---
+interface Props {
+  publication?: string;
+  variant?: 'card' | 'inline';
+  headline?: string;
+  subhead?: string;
+}
+
+const {
+  publication = 'theairuntime',
+  variant = 'card',
+  headline = 'Get The AI Runtime in your inbox',
+  subhead = 'Production lessons from engineers shipping AI. 1–2 pieces a week, no fluff.',
+} = Astro.props;
+
+const src = `https://${publication}.substack.com/embed`;
+---
+<div class={`substack ${variant}`}>
+  {variant === 'card' && (
+    <div class="copy">
+      <h3>{headline}</h3>
+      <p class="dim">{subhead}</p>
+    </div>
+  )}
+  <iframe
+    src={src}
+    width="100%"
+    height={variant === 'card' ? 220 : 180}
+    style="border:1px solid var(--border); background:var(--bg-2); border-radius:8px;"
+    frameborder="0"
+    scrolling="no"
+    title="Subscribe to The AI Runtime"
+  ></iframe>
+</div>
+
+<style>
+  .substack.card {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 1.5rem;
+    align-items: center;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+  @media (max-width: 720px) {
+    .substack.card { grid-template-columns: 1fr; }
+  }
+  .substack.inline iframe { max-width: 480px; }
+</style>

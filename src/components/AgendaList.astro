@@ -1,0 +1,42 @@
+---
+interface Props {
+  agenda: { time: string; item: string }[];
+}
+
+const { agenda } = Astro.props;
+---
+<ol class="agenda">
+  {agenda.map(({ time, item }) => (
+    <li>
+      <span class="time">{time}</span>
+      <span class="item">{item}</span>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .agenda {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .agenda li {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .time {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .item { color: var(--text-2); }
+</style>

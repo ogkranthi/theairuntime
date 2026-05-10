@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Blink from '../components/Blink.astro';
+---
+<BaseLayout title="404 · The AI Runtime" description="Page not found." noindex>
+  <section class="wrap">
+    <div class="container">
+      <Blink size={140} showMotion={true} ariaLabel="Blink running off the page" />
+      <h1>404 — that route doesn't exist (yet)</h1>
+      <p class="dim">Try the <a href="/boston">Boston meetup</a>, the <a href="/resources">resources</a>, or
+      <a href="https://theairuntime.substack.com">subscribe</a>.</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .wrap { padding: 6rem 0; text-align: center; }
+  h1 { margin-top: 1.5rem; }
+</style>

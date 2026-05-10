@@ -1,0 +1,38 @@
+---
+interface Props {
+  headline?: string;
+  body?: string;
+}
+const {
+  headline = 'Sponsor, collaborate, or speak',
+  body = 'We work with partners who add real signal — platform partners, venue hosts, and practitioners with production stories worth telling.',
+} = Astro.props;
+---
+<aside class="contact">
+  <div>
+    <h3>{headline}</h3>
+    <p class="dim">{body}</p>
+  </div>
+  <div class="actions">
+    <a class="btn" href="mailto:info@theairuntime.com">info@theairuntime.com</a>
+    <a class="btn btn-ghost" href="/speak">Speak at an event →</a>
+  </div>
+</aside>
+
+<style>
+  .contact {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  @media (max-width: 720px) {
+    .contact { grid-template-columns: 1fr; }
+  }
+  .actions { display: flex; flex-direction: column; gap: 0.6rem; }
+  .actions .btn { text-align: center; }
+</style>

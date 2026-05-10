@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+
+const speakers = await getCollection('speakers');
+speakers.sort((a, b) => a.data.name.localeCompare(b.data.name));
+---
+<BaseLayout
+  title="Speakers · The AI Runtime"
+  description="Practitioners who have shared production AI engineering lessons at The AI Runtime."
+>
+  <Section
+    eyebrow="Speakers"
+    title="The people who've taught us something"
+    lead="Engineers and builders who walked us through one specific thing they learned shipping AI to production."
+  >
+    <ul class="grid">
+      {speakers.map((s) => {
+        const initials = s.data.name.split(' ').map((p) => p[0]).slice(0, 2).join('');
+        return (
+          <li>
+            <a href={`/speakers/${s.slug}`}>
+              <div class="avatar">
+                {s.data.photo ? <img src={s.data.photo} alt={s.data.name} /> : <span>{initials}</span>}
+              </div>
+              <div>
+                <div class="name">{s.data.name}</div>
+                <div class="role muted">{s.data.title} · {s.data.company}</div>
+                {s.data.talks[0] && <div class="talk dim">{s.data.talks[0].title}</div>}
+              </div>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </Section>
+</BaseLayout>
+
+<style>
+  .grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .grid a {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+    align-items: center;
+  }
+  .grid a:hover { border-color: var(--accent); }
+  .avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .name { font-family: var(--font-mono); font-weight: 700; }
+  .role { font-size: 0.85rem; }
+  .talk { font-size: 0.85rem; margin-top: 0.4rem; }
+</style>

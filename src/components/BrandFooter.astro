@@ -1,0 +1,74 @@
+---
+import Blink from './Blink.astro';
+---
+<footer class="ftr">
+  <div class="container">
+    <div class="grid">
+      <div class="brand">
+        <Blink size={36} showMotion={false} />
+        <p class="dim">The publication where AI engineers learn the production craft.</p>
+        <p class="muted small">LEARN. SHIP. RUN.</p>
+      </div>
+
+      <div>
+        <h4>Publication</h4>
+        <ul>
+          <li><a href="https://theairuntime.substack.com">Newsletter</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/resources">Resources</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Community</h4>
+        <ul>
+          <li><a href="/boston">Boston meetup</a></li>
+          <li><a href="https://luma.com/tair">Luma calendar</a></li>
+          <li><a href="/speak">Speak at an event</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Get in touch</h4>
+        <ul>
+          <li><a href="mailto:info@theairuntime.com">info@theairuntime.com</a></li>
+          <li><a href="https://www.linkedin.com/in/kranthimanchikanti/">Founder on LinkedIn</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <hr />
+
+    <p class="small muted">© {new Date().getFullYear()} The AI Runtime · Built in Boston</p>
+  </div>
+</footer>
+
+<style>
+  .ftr {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0 2rem;
+    margin-top: 4rem;
+    background: var(--bg-2);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 2rem;
+  }
+  @media (max-width: 720px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+  }
+  h4 {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 0.75rem;
+  }
+  ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  ul a { color: var(--text-2); }
+  ul a:hover { color: var(--text); text-decoration: none; }
+  .small { font-size: 0.85rem; }
+  .brand p { margin-top: 0.6rem; max-width: 22rem; }
+</style>

@@ -1,0 +1,54 @@
+---
+interface Partner {
+  name: string;
+  url?: string;
+  logo?: string;
+  role?: string;
+}
+
+interface Props {
+  partners: Partner[];
+}
+
+const { partners } = Astro.props;
+if (!partners.length) return null;
+---
+<section class="strip">
+  <div class="label">Platform partner</div>
+  <div class="row">
+    {partners.map((p) => (
+      <a href={p.url ?? '#'} class="partner" target={p.url ? '_blank' : undefined} rel="noopener">
+        {p.logo ? <img src={p.logo} alt={p.name} /> : <span class="name">{p.name}</span>}
+        <span class="role muted">{p.role ?? 'Partner'}</span>
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .strip {
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .partner {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .partner img { height: 28px; width: auto; }
+  .name { font-family: var(--font-mono); font-weight: 700; }
+  .role { font-size: 0.75rem; }
+</style>

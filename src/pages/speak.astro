@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+
+// Set this to the published Google Form URL once Kranthi creates it.
+// Until then, the page falls back to a clear mailto and a checklist of what we want.
+const GOOGLE_FORM_EMBED_URL: string | undefined = undefined;
+---
+<BaseLayout
+  title="Speak at The AI Runtime"
+  description="Pitch a talk at a future AI Runtime meetup. Practitioner stories from production, no vendor pitches."
+>
+  <Section
+    eyebrow="Speak at an event"
+    title="Got a production AI story worth telling?"
+    lead="The AI Runtime meetups are practitioner-only. If you've shipped something real and learned something specific, we want to hear from you."
+  >
+    <div class="brief">
+      <h3>The brief</h3>
+      <p class="dim">
+        Walk us through one specific thing you learned shipping AI in production. Make it teachable.
+        Assume the audience is smart but hasn't done what you've done.
+      </p>
+      <ul class="dim">
+        <li>25 min talk + 10 min Q&A</li>
+        <li>Featured in the next AI Runtime issue (interview format)</li>
+        <li>Embroidered Pocket Blink polo</li>
+        <li>Photos and recording (with release)</li>
+      </ul>
+    </div>
+
+    {GOOGLE_FORM_EMBED_URL ? (
+      <div class="form-wrap">
+        <iframe src={GOOGLE_FORM_EMBED_URL} width="100%" height="900" frameborder="0">Loading…</iframe>
+      </div>
+    ) : (
+      <div class="card">
+        <h3>Pitch us</h3>
+        <p class="dim">
+          Email <a href="mailto:info@theairuntime.com?subject=Speaker%20pitch">info@theairuntime.com</a> with:
+        </p>
+        <ul class="dim">
+          <li>Your name, role, company</li>
+          <li>Working title for the talk</li>
+          <li>2–3 sentence abstract — what's the one specific thing the audience will learn?</li>
+          <li>What you shipped to production that earned this lesson</li>
+          <li>Which city you'd speak in (Boston now, NYC / SF coming)</li>
+          <li>When you could realistically speak by</li>
+        </ul>
+      </div>
+    )}
+  </Section>
+</BaseLayout>
+
+<style>
+  .brief { max-width: 38rem; margin-bottom: 2rem; }
+  .brief ul { padding-left: 1.25rem; }
+  .form-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+</style>

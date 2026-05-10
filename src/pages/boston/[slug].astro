@@ -1,0 +1,62 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventHero from '../../components/EventHero.astro';
+import AgendaList from '../../components/AgendaList.astro';
+import SpeakerCard from '../../components/SpeakerCard.astro';
+import PartnerStrip from '../../components/PartnerStrip.astro';
+import Section from '../../components/Section.astro';
+import ContactCTA from '../../components/ContactCTA.astro';
+
+export async function getStaticPaths() {
+  const events = await getCollection('events', (e) => e.slug.startsWith('boston/'));
+  return events.map((event) => ({
+    params: { slug: event.slug.replace(/^boston\//, '') },
+    props: { event },
+  }));
+}
+
+const { event } = Astro.props;
+const speakers = await Promise.all(
+  event.data.speakers.map((ref) => getEntry('speakers', (ref as any).slug ?? (ref as any).id)),
+);
+---
+<BaseLayout
+  title={`${event.data.title} · Boston · The AI Runtime`}
+  description={event.data.description ?? `${event.data.title} — The AI Runtime Boston meetup.`}
+>
+  <EventHero event={event} />
+
+  <Section id="speakers" eyebrow="Speakers" title="Who shared what">
+    <div class="grid">
+      {speakers.map((s) => s && <SpeakerCard speaker={s} eventSlug={event.slug} />)}
+    </div>
+  </Section>
+
+  <Section id="agenda" eyebrow="Agenda">
+    <AgendaList agenda={event.data.agenda} />
+    <div class="partners"><PartnerStrip partners={event.data.partners} /></div>
+  </Section>
+
+  {(event.data.recordingUrl || event.data.slidesUrl) && (
+    <Section eyebrow="Materials" title="Slides and recordings">
+      <ul class="materials">
+        {event.data.slidesUrl && <li><a href={event.data.slidesUrl}>Slides →</a></li>}
+        {event.data.recordingUrl && <li><a href={event.data.recordingUrl}>Recording →</a></li>}
+      </ul>
+    </Section>
+  )}
+
+  <Section><ContactCTA /></Section>
+</BaseLayout>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  .partners { margin-top: 1.5rem; }
+  .materials { list-style: none; padding: 0; margin: 0; display: flex; gap: 1rem; }
+</style>

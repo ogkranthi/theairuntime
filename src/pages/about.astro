@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import Blink from '../components/Blink.astro';
+import ContactCTA from '../components/ContactCTA.astro';
+
+const pillars = [
+  { name: 'Evals & Observability', body: 'How engineers know if AI works in production.' },
+  { name: 'Agents in Production', body: 'Patterns that survive contact with real users.' },
+  { name: 'Inference & Serving', body: 'What actually runs in production at scale.' },
+  { name: 'Reliability & Incidents', body: 'Postmortems, drift, recovery patterns.' },
+  { name: 'Cost & Performance', body: 'The economics of running AI.' },
+];
+---
+<BaseLayout
+  title="About · The AI Runtime"
+  description="The publication where AI engineers learn the production craft. Founded by Kranthi Manchikanti, AI Architect at Microsoft, based in Boston."
+>
+  <Section eyebrow="The publication">
+    <div class="hero">
+      <div>
+        <h1>Between the model and the product</h1>
+        <p class="lede dim">
+          The AI Runtime is the publication where AI engineers learn the production craft. We cover the
+          operational layer where AI systems actually run — evals, agents, inference, reliability, cost —
+          and the lessons from people shipping serious AI in production.
+        </p>
+        <p class="dim">
+          No vendor pitches. No idea-stage tourists. No "future of AI" speculation. The test for every
+          piece: <em>would a senior engineer at Anthropic, OpenAI, or DeepMind forward this to their team?</em>
+        </p>
+      </div>
+      <div class="art"><Blink size={140} showMotion={true} showCheeks={true} /></div>
+    </div>
+  </Section>
+
+  <Section eyebrow="Editorial pillars" title="What we cover">
+    <ul class="pillars">
+      {pillars.map((p, i) => (
+        <li>
+          <span class="num">{String(i + 1).padStart(2, '0')}</span>
+          <div>
+            <h3>{p.name}</h3>
+            <p class="dim">{p.body}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="Founder" title="Kranthi Manchikanti">
+    <div class="founder">
+      <p class="dim">
+        Kranthi is founder and editor-in-chief of The AI Runtime. He's an AI Architect at Microsoft based
+        in Boston, building the publication and the Boston meetup as a long-term home for engineers
+        shipping AI to production.
+      </p>
+      <p>
+        <a href="https://www.linkedin.com/in/kranthimanchikanti/">Connect on LinkedIn →</a>
+      </p>
+    </div>
+  </Section>
+
+  <Section>
+    <ContactCTA />
+  </Section>
+</BaseLayout>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 2rem;
+    align-items: center;
+  }
+  @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+  .lede { font-size: 1.1rem; max-width: 38rem; margin-top: 1rem; }
+  .art { display: flex; justify-content: center; }
+  .pillars {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .pillars li {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 1.25rem;
+  }
+  .founder { max-width: 38rem; }
+</style>
