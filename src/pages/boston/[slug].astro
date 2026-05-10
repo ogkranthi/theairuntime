@@ -47,6 +47,12 @@ const speakers = await Promise.all(
     </Section>
   )}
 
+  <Section eyebrow="Background reading" title="Curated for this event">
+    <p>
+      <a class="btn" href={`/boston/${event.slug.replace(/^boston\//, '')}/reading`}>See the reading list →</a>
+    </p>
+  </Section>
+
   <Section><ContactCTA /></Section>
 </BaseLayout>
 

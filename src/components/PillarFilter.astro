@@ -1,0 +1,47 @@
+---
+interface Props {
+  active?: string;
+  pillars: { key: string; label: string; count: number }[];
+  baseHref: string;
+}
+
+const { active = 'all', pillars, baseHref } = Astro.props;
+const total = pillars.reduce((acc, p) => acc + p.count, 0);
+---
+<nav class="filters">
+  <a href={baseHref} class:list={['chip', active === 'all' && 'active']}>All <span class="muted">({total})</span></a>
+  {pillars.map((p) => (
+    <a href={`${baseHref}?pillar=${p.key}`} class:list={['chip', active === p.key && 'active']}>
+      {p.label} <span class="muted">({p.count})</span>
+    </a>
+  ))}
+</nav>
+
+<style>
+  .filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-2);
+    text-decoration: none;
+    background: var(--bg-2);
+  }
+  .chip:hover { border-color: var(--accent); color: var(--text); }
+  .chip.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  .chip.active .muted { color: var(--bg); opacity: 0.7; }
+</style>

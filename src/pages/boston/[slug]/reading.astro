@@ -1,0 +1,102 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Section from '../../../components/Section.astro';
+import ReadingCard from '../../../components/ReadingCard.astro';
+import SubstackEmbed from '../../../components/SubstackEmbed.astro';
+
+export async function getStaticPaths() {
+  const events = await getCollection('events', (e) => e.slug.startsWith('boston/'));
+  return events.map((event) => ({
+    params: { slug: event.slug.replace(/^boston\//, '') },
+    props: { event },
+  }));
+}
+
+const { event } = Astro.props;
+const eventDateSlug = event.slug.replace(/^boston\//, '');
+
+const allReading = await getCollection('reading');
+
+// Two buckets: items explicitly tagged with this event, and items that share
+// a speaker with this event (related but not pinned).
+const eventSlugRefs = [event.slug, eventDateSlug];
+const eventSpeakerSlugs = event.data.speakers.map((s: any) => s.slug ?? s.id);
+
+const fromTheTalks = allReading
+  .filter((r) => r.data.relatedEvents.some((e) => eventSlugRefs.includes(e)))
+  .sort((a, b) => {
+    if (a.data.highlight !== b.data.highlight) return a.data.highlight ? -1 : 1;
+    return +b.data.addedAt - +a.data.addedAt;
+  });
+
+const fromTheTalksIds = new Set(fromTheTalks.map((r) => r.id));
+
+const relatedToSpeakers = allReading
+  .filter((r) => !fromTheTalksIds.has(r.id))
+  .filter((r) => r.data.relatedSpeakers.some((s: any) => eventSpeakerSlugs.includes(s.slug ?? s.id)))
+  .sort((a, b) => +b.data.addedAt - +a.data.addedAt);
+
+const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(event.data.date);
+
+const speakers = await Promise.all(
+  event.data.speakers.map((ref: any) => getEntry('speakers', ref.slug ?? ref.id)),
+);
+const speakerNames = speakers.filter(Boolean).map((s: any) => s.data.name).join(' and ');
+---
+<BaseLayout
+  title={`Reading list · ${event.data.title} · The AI Runtime`}
+  description={`Curated reading list for ${event.data.title} — production AI references for ${speakerNames}'s talks.`}
+>
+  <Section
+    eyebrow="Reading list"
+    title={event.data.title}
+    lead={`${dateFmt}${speakerNames ? ' · ' + speakerNames : ''}. Curated background reading for tonight's talks. Free, all from primary sources.`}
+  >
+    <p class="dim small">
+      <a href={`/boston/${eventDateSlug}`}>← Back to event</a> · <a href="/library">Full library →</a>
+    </p>
+  </Section>
+
+  {fromTheTalks.length > 0 && (
+    <Section eyebrow="From the talks" title="Direct background for tonight">
+      <div class="grid">
+        {fromTheTalks.map((r) => <ReadingCard entry={r} />)}
+      </div>
+    </Section>
+  )}
+
+  {relatedToSpeakers.length > 0 && (
+    <Section eyebrow="Related" title="More from the speakers' world">
+      <div class="grid">
+        {relatedToSpeakers.map((r) => <ReadingCard entry={r} />)}
+      </div>
+    </Section>
+  )}
+
+  {fromTheTalks.length === 0 && relatedToSpeakers.length === 0 && (
+    <Section>
+      <p class="dim">No reading list curated yet. The post-event roundup ships in the next newsletter — <a href="https://theairuntime.com">subscribe</a> to get it first.</p>
+    </Section>
+  )}
+
+  <Section eyebrow="Subscribe" title="Get the post-event recap">
+    <p class="dim wide">
+      The recap of tonight — including any new entries added to the reading list — lands in subscribers' inboxes first.
+    </p>
+    <SubstackEmbed
+      headline="The AI Runtime newsletter"
+      subhead="Production lessons, in your inbox."
+    />
+  </Section>
+</BaseLayout>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+  .small { font-size: 0.9rem; }
+  .wide { max-width: 42rem; }
+</style>

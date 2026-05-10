@@ -1,0 +1,64 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entry: CollectionEntry<'reading'>;
+  compact?: boolean;
+}
+
+const { entry, compact = false } = Astro.props;
+const data = entry.data;
+
+const host = new URL(data.url).host.replace(/^www\./, '');
+const dateFmt = data.publishedAt
+  ? new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(data.publishedAt)
+  : null;
+---
+<article class={`read ${compact ? 'compact' : ''}`} data-pillar={data.pillar}>
+  <header>
+    <span class="tag">{data.pillar}</span>
+    {data.highlight && <span class="pin" title="Highlighted">★</span>}
+    <span class="source muted">{data.source}{data.author && data.author !== data.source ? ` · ${data.author}` : ''}{dateFmt ? ` · ${dateFmt}` : ''}</span>
+  </header>
+  <h3>
+    <a href={data.url} target="_blank" rel="noopener">{data.title}</a>
+  </h3>
+  {!compact && <p class="dim">{data.summary}</p>}
+  <div class="meta">
+    <a class="muted" href={data.url} target="_blank" rel="noopener">{host} ↗</a>
+  </div>
+</article>
+
+<style>
+  .read {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color 120ms ease;
+  }
+  .read:hover { border-color: var(--accent); }
+  .read.compact { padding: 1rem 1.25rem; }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+  }
+  .pin {
+    color: var(--accent);
+    font-size: 0.9rem;
+  }
+  .source {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+  h3 { margin: 0; font-size: 1.1rem; }
+  h3 a { color: var(--text); text-decoration: none; }
+  h3 a:hover { color: var(--accent); }
+  .meta { font-family: var(--font-mono); font-size: 0.78rem; margin-top: 0.25rem; }
+</style>

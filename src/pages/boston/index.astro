@@ -57,6 +57,17 @@ const city = await getEntry('cities', 'boston');
     </p>
   </Section>
 
+  <Section eyebrow="Background reading" title="Read before the talks">
+    <p class="dim wide">
+      A curated reading list for tonight's topics — agent architectures, identity for agents, and the gap
+      between AI demos and production. Free, all from primary sources.
+    </p>
+    <p>
+      <a class="btn" href={`/boston/${upcoming.slug.replace(/^boston\//, '')}/reading`}>See the reading list →</a>
+      <a class="btn btn-ghost" href="/library">Full library</a>
+    </p>
+  </Section>
+
   <Section eyebrow="Resources · coming soon" title="The Agentic Architectures Checklist">
     <p class="dim wide">
       A practitioner-grade checklist for shipping AI agents — identity, trust, tool access, eval coverage,

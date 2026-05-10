@@ -1,0 +1,105 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import ReadingCard from '../../components/ReadingCard.astro';
+import SubstackEmbed from '../../components/SubstackEmbed.astro';
+
+const reading = await getCollection('reading');
+
+const pillarOrder = ['evals', 'agents', 'inference', 'reliability', 'cost'] as const;
+const pillarLabels: Record<string, string> = {
+  evals: 'Evals & Observability',
+  agents: 'Agents in Production',
+  inference: 'Inference & Serving',
+  reliability: 'Reliability & Incidents',
+  cost: 'Cost & Performance',
+};
+
+const byPillar = pillarOrder.map((pillar) => ({
+  pillar,
+  label: pillarLabels[pillar],
+  entries: reading
+    .filter((r) => r.data.pillar === pillar)
+    .sort((a, b) => {
+      // highlight first, then newest first
+      if (a.data.highlight !== b.data.highlight) return a.data.highlight ? -1 : 1;
+      return +b.data.addedAt - +a.data.addedAt;
+    }),
+}));
+
+const total = reading.length;
+const highlights = reading.filter((r) => r.data.highlight).slice(0, 4);
+---
+<BaseLayout
+  title="The Production AI Reading List · The AI Runtime"
+  description="Curated by The AI Runtime — the canonical reading list for engineers shipping AI to production. Evals, agents, inference, reliability, cost."
+>
+  <Section
+    eyebrow="The library"
+    title="The Production AI Reading List"
+    lead="A living, curated reading list for engineers shipping AI to production. Organized by pillar. New entries added as we read them."
+  >
+    <nav class="toc" aria-label="Jump to pillar">
+      {byPillar.filter((p) => p.entries.length > 0).map((p) => (
+        <a href={`#${p.pillar}`}>{p.label} <span class="muted">({p.entries.length})</span></a>
+      ))}
+    </nav>
+
+    <p class="muted small toc-meta">{total} entries · curated by The AI Runtime · last updated {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(Math.max(...reading.map((r) => +r.data.addedAt))))}</p>
+  </Section>
+
+  {highlights.length > 0 && (
+    <Section eyebrow="Start here" title="Highlights">
+      <div class="grid">
+        {highlights.map((r) => <ReadingCard entry={r} />)}
+      </div>
+    </Section>
+  )}
+
+  {byPillar.filter((p) => p.entries.length > 0).map((p) => (
+    <Section id={p.pillar} eyebrow={p.label}>
+      <div class="grid">
+        {p.entries.map((r) => <ReadingCard entry={r} />)}
+      </div>
+    </Section>
+  ))}
+
+  <Section eyebrow="Subscribe" title="Get the Reading Roundup">
+    <p class="dim wide">
+      Every few weeks, we ship a Reading Roundup issue — the best new items added to the library, with editorial notes.
+      No vendor pitches, no idea-stage tourists.
+    </p>
+    <SubstackEmbed
+      headline="The AI Runtime newsletter"
+      subhead="Production-grade reads, in your inbox."
+    />
+  </Section>
+</BaseLayout>
+
+<style>
+  .toc {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .toc a {
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-2);
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-decoration: none;
+  }
+  .toc a:hover { border-color: var(--accent); color: var(--text); }
+  .toc-meta { margin-top: 1rem; }
+  .small { font-size: 0.85rem; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+  .wide { max-width: 42rem; }
+</style>
