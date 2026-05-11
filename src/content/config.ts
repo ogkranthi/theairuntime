@@ -62,7 +62,7 @@ const events = defineCollection({
     agenda: z
       .array(
         z.object({
-          time: z.string(),
+          time: z.string().optional(),
           item: z.string(),
         }),
       )

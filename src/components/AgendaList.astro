@@ -1,14 +1,15 @@
 ---
 interface Props {
-  agenda: { time: string; item: string }[];
+  agenda: { time?: string; item: string }[];
 }
 
 const { agenda } = Astro.props;
+const anyTimes = agenda.some((a) => a.time);
 ---
-<ol class="agenda">
+<ol class="agenda" data-with-times={anyTimes ? 'true' : 'false'}>
   {agenda.map(({ time, item }) => (
     <li>
-      <span class="time">{time}</span>
+      {anyTimes && <span class="time">{time ?? ''}</span>}
       <span class="item">{item}</span>
     </li>
   ))}
@@ -22,16 +23,28 @@ const { agenda } = Astro.props;
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+    counter-reset: agenda;
   }
   .agenda li {
     display: grid;
-    grid-template-columns: 90px 1fr;
+    grid-template-columns: 1fr;
     align-items: baseline;
     gap: 1rem;
-    padding: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
+    counter-increment: agenda;
+  }
+  .agenda[data-with-times='true'] li {
+    grid-template-columns: 90px 1fr;
+  }
+  .agenda[data-with-times='false'] li::before {
+    content: counter(agenda, decimal-leading-zero);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    margin-right: 0.5rem;
   }
   .time {
     font-family: var(--font-mono);

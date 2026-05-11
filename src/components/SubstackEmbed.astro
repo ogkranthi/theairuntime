@@ -1,40 +1,40 @@
 ---
+import SubscribeForm from './SubscribeForm.tsx';
+
 interface Props {
-  publication?: string;
+  source?: string;
   variant?: 'card' | 'inline';
   headline?: string;
   subhead?: string;
+  buttonLabel?: string;
 }
 
 const {
-  publication = 'theairuntime',
+  source = 'site-subscribe',
   variant = 'card',
   headline = 'Get The AI Runtime in your inbox',
   subhead = 'Production lessons from engineers shipping AI. 1–2 pieces a week, no fluff.',
+  buttonLabel = 'Subscribe',
 } = Astro.props;
-
-const src = `https://${publication}.substack.com/embed`;
 ---
-<div class={`substack ${variant}`}>
+<div class={`subscribe ${variant}`}>
   {variant === 'card' && (
     <div class="copy">
       <h3>{headline}</h3>
       <p class="dim">{subhead}</p>
     </div>
   )}
-  <iframe
-    src={src}
-    width="100%"
-    height={variant === 'card' ? 220 : 180}
-    style="border:1px solid var(--border); background:var(--bg-2); border-radius:8px;"
-    frameborder="0"
-    scrolling="no"
-    title="Subscribe to The AI Runtime"
-  ></iframe>
+  <div class="form-slot">
+    <SubscribeForm client:load source={source} buttonLabel={buttonLabel} />
+    <p class="muted small foot">
+      Free. No spam. Unsubscribe in one click.
+      <a href="https://theairuntime.com">See past issues →</a>
+    </p>
+  </div>
 </div>
 
 <style>
-  .substack.card {
+  .subscribe.card {
     display: grid;
     grid-template-columns: 1.1fr 1fr;
     gap: 1.5rem;
@@ -42,10 +42,15 @@ const src = `https://${publication}.substack.com/embed`;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 1.5rem;
+    padding: 1.75rem;
   }
   @media (max-width: 720px) {
-    .substack.card { grid-template-columns: 1fr; }
+    .subscribe.card { grid-template-columns: 1fr; }
   }
-  .substack.inline iframe { max-width: 480px; }
+  .foot {
+    font-size: 0.8rem;
+    margin: 0.75rem 0 0;
+    font-family: var(--font-mono);
+  }
+  .small { font-size: 0.85rem; }
 </style>
