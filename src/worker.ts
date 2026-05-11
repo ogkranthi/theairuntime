@@ -10,7 +10,9 @@
 
 interface Env {
   ASSETS: Fetcher;
-  SUBSTACK_PUBLICATION?: string;
+  /** Origin where the Substack publication lives — Custom Domain by default. */
+  SUBSTACK_ORIGIN?: string;
+  /** Optional webhook (Slack, Make, Zapier) that mirrors every lead. */
   LEAD_WEBHOOK_URL?: string;
 }
 
@@ -50,8 +52,10 @@ async function handleSubscribe(request: Request, env: Env): Promise<Response> {
     return json({ error: 'Please provide a valid email.' }, { status: 400 });
   }
 
-  const publication = env.SUBSTACK_PUBLICATION ?? 'theairuntime';
-  const substackUrl = `https://${publication}.substack.com/api/v1/free?nojs=true`;
+  // Substack moved the publication to the Custom Domain (theairuntime.com).
+  // The legacy .substack.com subdomain no longer serves the subscribe API.
+  const origin = env.SUBSTACK_ORIGIN ?? 'https://theairuntime.com';
+  const substackUrl = `${origin}/api/v1/free?nojs=true`;
 
   const form = new URLSearchParams();
   form.set('email', email);
