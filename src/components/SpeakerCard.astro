@@ -9,7 +9,17 @@ interface Props {
 
 const { speaker, eventSlug, showLink = true } = Astro.props;
 const data = speaker.data;
-const talk = eventSlug ? data.talks.find((t) => t.eventSlug === eventSlug) : data.talks[0];
+// Speaker frontmatter uses the date-slug form (e.g. "2026-05-11-...") while
+// callers may pass either that or the prefixed form ("boston/2026-05-11-...").
+// Match either direction.
+const talk = eventSlug
+  ? data.talks.find(
+      (t) =>
+        t.eventSlug === eventSlug ||
+        eventSlug.endsWith(`/${t.eventSlug}`) ||
+        t.eventSlug.endsWith(`/${eventSlug}`),
+    )
+  : data.talks[0];
 const initials = data.name.split(' ').map((p) => p[0]).slice(0, 2).join('');
 ---
 <article class="speaker">
@@ -32,6 +42,16 @@ const initials = data.name.split(' ').map((p) => p[0]).slice(0, 2).join('');
       <div class="tag">Talk</div>
       <h3 class="title">{talk.title}</h3>
       <p class="dim">{talk.abstract}</p>
+      {(talk.slidesUrl || talk.recordingUrl) && (
+        <div class="materials">
+          {talk.slidesUrl && (
+            <a class="material" href={talk.slidesUrl} target="_blank" rel="noopener">Slides ↗</a>
+          )}
+          {talk.recordingUrl && (
+            <a class="material" href={talk.recordingUrl} target="_blank" rel="noopener">Recording ↗</a>
+          )}
+        </div>
+      )}
     </div>
   )}
 
@@ -66,5 +86,11 @@ const initials = data.name.split(' ').map((p) => p[0]).slice(0, 2).join('');
   .name { font-family: var(--font-mono); font-weight: 700; font-size: 1.05rem; }
   .role { font-size: 0.9rem; }
   .talk .title { margin: 0.5rem 0; }
+  .materials { display: flex; gap: 1rem; margin-top: 0.6rem; }
+  .material {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+  }
   .more { font-family: var(--font-mono); font-size: 0.85rem; }
 </style>

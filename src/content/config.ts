@@ -34,8 +34,8 @@ const speakers = defineCollection({
           eventSlug: z.string(),
           title: z.string(),
           abstract: z.string(),
-          slidesUrl: z.string().url().optional(),
-          recordingUrl: z.string().url().optional(),
+          slidesUrl: z.string().optional(),     // absolute URL or repo-relative path
+          recordingUrl: z.string().optional(),
         }),
       )
       .default([]),

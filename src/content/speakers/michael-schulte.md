@@ -14,6 +14,7 @@ talks:
       puts the framework to work: we'll deploy an AI agent into an existing
       codebase in real time, not a blank folder. The gap between demo and
       production, made concrete.
+    slidesUrl: /slides/schulte-greenfield-delusion.pdf
 ---
 
 Michael R. Schulte is an AI Builder at Harvard Business School working on the
