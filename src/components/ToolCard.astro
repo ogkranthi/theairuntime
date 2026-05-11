@@ -1,0 +1,62 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  tool: CollectionEntry<'tools'>;
+}
+
+const { tool } = Astro.props;
+const data = tool.data;
+const host = new URL(data.url).host.replace(/^www\./, '');
+---
+<article class="tool" data-category={data.category}>
+  <header>
+    <span class="tag">{data.category}</span>
+    {data.featured && <span class="pin" title="Featured">★</span>}
+    {data.isReferral && <span class="ref" title="Referral link — we may receive credit if you sign up">referral</span>}
+  </header>
+  <h3><a href={data.url} target="_blank" rel="noopener">{data.name}</a></h3>
+  <p class="tagline">{data.tagline}</p>
+  {data.why && <p class="why dim">{data.why}</p>}
+  <div class="meta">
+    <a class="muted" href={data.url} target="_blank" rel="noopener">{host} ↗</a>
+  </div>
+</article>
+
+<style>
+  .tool {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color 120ms ease;
+  }
+  .tool:hover { border-color: var(--accent); }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+  }
+  .pin { color: var(--accent); font-size: 0.9rem; }
+  .ref {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    border: 1px solid var(--border);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+  }
+  h3 { margin: 0; font-size: 1.15rem; }
+  h3 a { color: var(--text); text-decoration: none; }
+  h3 a:hover { color: var(--accent); }
+  .tagline { color: var(--text); margin: 0; font-size: 0.95rem; }
+  .why { font-size: 0.9rem; margin-top: 0.3rem; }
+  .meta { font-family: var(--font-mono); font-size: 0.78rem; margin-top: auto; padding-top: 0.4rem; }
+</style>

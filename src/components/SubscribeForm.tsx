@@ -5,7 +5,7 @@ interface Props {
   buttonLabel?: string;
 }
 
-type State = 'idle' | 'submitting' | 'ok' | 'error';
+type State = 'idle' | 'submitting' | 'ok';
 
 export default function SubscribeForm({
   source = 'site-subscribe',
@@ -13,12 +13,19 @@ export default function SubscribeForm({
 }: Props) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<State>('idle');
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  function fallbackToSubstack() {
+    // If our Worker can't reach Substack for any reason, send the user
+    // straight to theairuntime.com where they can subscribe natively.
+    // Pre-fill the email if the publication supports it.
+    const url = new URL('https://theairuntime.com/subscribe');
+    if (email) url.searchParams.set('email', email);
+    window.location.href = url.toString();
+  }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setState('submitting');
-    setErrorMsg(null);
 
     try {
       const res = await fetch('/api/subscribe', {
@@ -27,13 +34,12 @@ export default function SubscribeForm({
         body: JSON.stringify({ email, source }),
       });
       if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(data?.error ?? 'Subscription failed');
+        fallbackToSubstack();
+        return;
       }
       setState('ok');
-    } catch (err) {
-      setState('error');
-      setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
+    } catch {
+      fallbackToSubstack();
     }
   }
 
@@ -64,7 +70,6 @@ export default function SubscribeForm({
       <button type="submit" className="btn" disabled={state === 'submitting'}>
         {state === 'submitting' ? 'Subscribing…' : buttonLabel}
       </button>
-      {state === 'error' && <p className="sub-err">{errorMsg}</p>}
       <style>{`
         .sub-form { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; max-width: 32rem; }
         .sub-form input {
@@ -91,7 +96,6 @@ export default function SubscribeForm({
         }
         .sub-form .btn:hover { filter: brightness(1.08); }
         .sub-form .btn[disabled] { opacity: 0.6; cursor: not-allowed; }
-        .sub-err { color: #f87171; font-size: 0.85rem; flex-basis: 100%; margin: 0; }
       `}</style>
     </form>
   );

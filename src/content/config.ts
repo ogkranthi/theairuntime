@@ -129,4 +129,32 @@ const reading = defineCollection({
   }),
 });
 
-export const collections = { cities, speakers, events, resources, reading };
+// Tools we use and recommend — distinct from `reading` (content) and
+// `resources` (owned content we sell). Some entries are referral links;
+// `isReferral: true` flags them so the UI can disclose this transparently.
+const tools = defineCollection({
+  type: 'content',
+  schema: z.object({
+    name: z.string(),
+    url: z.string().url(),
+    category: z.enum([
+      'productivity',
+      'coding',
+      'writing',
+      'design',
+      'agents',
+      'evals',
+      'infra',
+      'observability',
+      'other',
+    ]),
+    pillar: z.enum(['evals', 'agents', 'inference', 'reliability', 'cost']).optional(),
+    tagline: z.string(),
+    why: z.string().optional(),
+    isReferral: z.boolean().default(false),
+    featured: z.boolean().default(false),
+    addedAt: z.coerce.date(),
+  }),
+});
+
+export const collections = { cities, speakers, events, resources, reading, tools };
