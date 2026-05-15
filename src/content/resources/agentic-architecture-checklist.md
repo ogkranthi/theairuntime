@@ -11,6 +11,6 @@ version: v1
 status: coming-soon
 ---
 
-A field-tested checklist for engineers shipping AI agents to production.
+A field-tested checklist for AI practitioners shipping AI agents to production.
 Drops to subscribers first. Drop your email below to get notified the day
 it's out.

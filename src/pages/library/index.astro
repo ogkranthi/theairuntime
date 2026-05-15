@@ -41,12 +41,12 @@ const highlights = reading.filter((r) => r.data.highlight).slice(0, 4);
 ---
 <BaseLayout
   title="The Production AI Reading List · The AI Runtime"
-  description="Curated by The AI Runtime — the canonical reading list for engineers shipping AI to production. Evals, agents, inference, reliability, cost."
+  description="Curated by The AI Runtime — the canonical reading list for AI practitioners. Evals, agents, inference, reliability, cost."
 >
   <Section
     eyebrow="The library"
     title="The Production AI Reading List"
-    lead="A living, curated reading list for engineers shipping AI to production. Organized by pillar. New entries added as we read them."
+    lead="A living, curated reading list for AI practitioners. Organized by pillar. New entries added as we read them."
   >
     <nav class="toc" aria-label="Jump to section">
       {byPillar.filter((p) => p.entries.length > 0).map((p) => (
@@ -112,7 +112,6 @@ const highlights = reading.filter((r) => r.data.highlight).slice(0, 4);
   <Section eyebrow="Subscribe" title="Get the Reading Roundup">
     <p class="dim wide">
       Every few weeks, we ship a Reading Roundup issue — the best new items added to the library, with editorial notes.
-      No vendor pitches, no idea-stage tourists.
     </p>
     <SubstackEmbed
       headline="The AI Runtime newsletter"

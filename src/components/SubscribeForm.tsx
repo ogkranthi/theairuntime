@@ -47,7 +47,7 @@ export default function SubscribeForm({
     return (
       <div className="sub-ok">
         <strong>✓ You're on the list.</strong>
-        <p>Production lessons from engineers shipping AI — your first issue lands soon.</p>
+        <p>Production lessons from AI practitioners — your first issue lands soon.</p>
         <style>{`
           .sub-ok strong { font-family: var(--font-mono); color: var(--accent); }
           .sub-ok p { margin: 0.5rem 0 0; color: var(--text-2); }
