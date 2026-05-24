@@ -33,19 +33,22 @@ A reference for anyone (human or AI) working on The AI Runtime. Covers palette, 
 
 ## Visual identity
 
+The site theme is **light/minimalist** (Medium/Substack-style — easier on the eyes for long reads). Blink and the brand orange are unchanged; the UI accent is a darker shade of the same orange for WCAG-AA contrast on white.
+
 | Token | Value | Use |
 |---|---|---|
-| `--bg` | `#0A0A0B` | primary background |
-| `--bg-2` | `#111113` | cards, surfaces |
-| `--border` | `#27272A` | dividers |
-| `--text` | `#FAFAFA` | headlines |
-| `--text-2` | `#A1A1AA` | body |
-| `--text-3` | `#71717A` | captions |
-| `--accent` | `#FB923C` | Blink orange — CTAs, highlights |
+| `--bg` | `#FFFFFF` | primary background |
+| `--bg-2` | `#FAFAF9` | cards, surfaces (subtle warm off-white) |
+| `--border` | `#E5E7EB` | dividers |
+| `--text` | `#18181B` | headlines |
+| `--text-2` | `#3F3F46` | body |
+| `--text-3` | `#71717A` | captions, muted |
+| `--accent` | `#EA580C` | UI accent — links, CTAs, tag borders (AA on white) |
+| `--brand-orange` | `#FB923C` | Blink mascot (hardcoded in SVG); never use for UI text on white |
 
-**Typography:** IBM Plex Mono for headers/brand, Inter for body. Wordmark "the AI runtime" is lowercase except "AI" — intentional.
+**Typography:** IBM Plex Mono for headers/brand/tags, Inter for body. Wordmark "the AI runtime" is lowercase except "AI" — intentional.
 
-**Color rule:** Black + warm orange. No blue (too generic), no green (too "matrix"), no pastels (too consumer).
+**Color rule:** White + warm orange. No blue (too generic), no green (too "matrix"), no pastels (too consumer). Orange is used sparingly — links, CTAs, the Blink mascot. Most of the page is black-on-white.
 
 ## Blink rules
 
