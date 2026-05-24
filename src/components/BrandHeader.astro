@@ -18,7 +18,7 @@ import BlinkLogo from './BlinkLogo.astro';
 <style>
   .hdr {
     border-bottom: 1px solid var(--border);
-    background: rgba(10, 10, 11, 0.85);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(8px);
     position: sticky;
     top: 0;
@@ -40,13 +40,13 @@ import BlinkLogo from './BlinkLogo.astro';
   nav a { color: var(--text-2); text-decoration: none; }
   nav a:hover { color: var(--text); }
   nav .cta {
-    color: var(--bg);
+    color: #FFFFFF;
     background: var(--accent);
     padding: 0.45rem 0.9rem;
     border-radius: 6px;
     font-weight: 700;
   }
-  nav .cta:hover { color: var(--bg); filter: brightness(1.08); }
+  nav .cta:hover { color: #FFFFFF; filter: brightness(1.08); }
   @media (max-width: 640px) {
     nav a:not(.cta) { display: none; }
   }

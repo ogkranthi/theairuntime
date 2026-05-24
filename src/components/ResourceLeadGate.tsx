@@ -106,7 +106,7 @@ export default function ResourceLeadGate({
           font-size: 0.95rem;
         }
         .gate input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-        .err { color: #f87171; font-size: 0.85rem; flex-basis: 100%; }
+        .err { color: #DC2626; font-size: 0.85rem; flex-basis: 100%; }
         .ok { color: var(--text); }
       `}</style>
     </form>
