@@ -4,36 +4,140 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 
 const speakers = await getCollection('speakers');
-speakers.sort((a, b) => a.data.name.localeCompare(b.data.name));
+const events = await getCollection('events');
+const eventBySlug = new Map(events.map((e) => [e.slug.split('/').pop()!, e]));
+
+type SpeakerEntry = (typeof speakers)[number];
+
+function latestEventTs(s: SpeakerEntry): number {
+  const tses = s.data.talks
+    .map((t) => eventBySlug.get(t.eventSlug)?.data.date)
+    .filter((d): d is Date => !!d)
+    .map((d) => +d);
+  return tses.length ? Math.max(...tses) : 0;
+}
+
+function hasUpcoming(s: SpeakerEntry): boolean {
+  return s.data.talks.some((t) => eventBySlug.get(t.eventSlug)?.data.status === 'upcoming');
+}
+
+const upcoming = speakers
+  .filter(hasUpcoming)
+  .sort((a, b) => latestEventTs(b) - latestEventTs(a));
+const past = speakers
+  .filter((s) => !hasUpcoming(s))
+  .sort((a, b) => latestEventTs(b) - latestEventTs(a));
+
+const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' });
+
+function eventLabel(eventSlug: string) {
+  const e = eventBySlug.get(eventSlug);
+  if (!e) return eventSlug;
+  const city = (e.data.city as any).slug ?? (e.data.city as any).id ?? 'boston';
+  const cityCap = city.charAt(0).toUpperCase() + city.slice(1);
+  return `${cityCap} · ${dateFmt.format(e.data.date)}`;
+}
+
+function eventHref(eventSlug: string) {
+  const e = eventBySlug.get(eventSlug);
+  if (!e) return undefined;
+  const city = (e.data.city as any).slug ?? (e.data.city as any).id ?? 'boston';
+  return `/${city}/${e.slug.replace(/^[^/]+\//, '')}`;
+}
 ---
 <BaseLayout
   title="Speakers · The AI Runtime"
-  description="Practitioners who have shared production AI engineering lessons at The AI Runtime."
+  description="Practitioners who have shared production AI engineering lessons at The AI Runtime — talks, slides, and recordings."
 >
   <Section
     eyebrow="Speakers"
     title="The people who've taught us something"
-    lead="Engineers and builders who walked us through one specific thing they learned shipping AI to production."
-  >
-    <ul class="grid">
-      {speakers.map((s) => {
-        const initials = s.data.name.split(' ').map((p) => p[0]).slice(0, 2).join('');
-        return (
-          <li>
-            <a href={`/speakers/${s.slug}`}>
-              <div class="avatar">
-                {s.data.photo ? <img src={s.data.photo} alt={s.data.name} /> : <span>{initials}</span>}
+    lead="Engineers and builders who walked us through one specific thing they learned shipping AI to production. All talks below — abstracts, slides, recordings."
+  />
+
+  {upcoming.length > 0 && (
+    <Section eyebrow="Upcoming" title="Speaking next">
+      <ul class="grid">
+        {upcoming.map((s) => {
+          const initials = s.data.name.split(' ').map((p) => p[0]).slice(0, 2).join('');
+          return (
+            <li>
+              <div class="head">
+                <div class="avatar">
+                  {s.data.photo ? <img src={s.data.photo} alt={s.data.name} /> : <span>{initials}</span>}
+                </div>
+                <div>
+                  <a class="name" href={`/speakers/${s.slug}`}>{s.data.name}</a>
+                  <div class="role muted">{s.data.title} · {s.data.company}</div>
+                </div>
               </div>
-              <div>
-                <div class="name">{s.data.name}</div>
-                <div class="role muted">{s.data.title} · {s.data.company}</div>
-                {s.data.talks[0] && <div class="talk dim">{s.data.talks[0].title}</div>}
+              <ul class="talks">
+                {s.data.talks.map((t) => (
+                  <li>
+                    <div class="talk-title">{t.title}</div>
+                    <div class="talk-meta muted">
+                      {eventHref(t.eventSlug) ? <a href={eventHref(t.eventSlug)}>{eventLabel(t.eventSlug)}</a> : eventLabel(t.eventSlug)}
+                    </div>
+                    {(t.slidesUrl || t.recordingUrl) && (
+                      <div class="talk-links">
+                        {t.slidesUrl && <a href={t.slidesUrl}>Slides →</a>}
+                        {t.recordingUrl && <a href={t.recordingUrl}>Recording →</a>}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          );
+        })}
+      </ul>
+    </Section>
+  )}
+
+  {past.length > 0 && (
+    <Section eyebrow="Archive" title="Past speakers">
+      <ul class="grid">
+        {past.map((s) => {
+          const initials = s.data.name.split(' ').map((p) => p[0]).slice(0, 2).join('');
+          return (
+            <li>
+              <div class="head">
+                <div class="avatar">
+                  {s.data.photo ? <img src={s.data.photo} alt={s.data.name} /> : <span>{initials}</span>}
+                </div>
+                <div>
+                  <a class="name" href={`/speakers/${s.slug}`}>{s.data.name}</a>
+                  <div class="role muted">{s.data.title} · {s.data.company}</div>
+                </div>
               </div>
-            </a>
-          </li>
-        );
-      })}
-    </ul>
+              <ul class="talks">
+                {s.data.talks.map((t) => (
+                  <li>
+                    <div class="talk-title">{t.title}</div>
+                    <div class="talk-meta muted">
+                      {eventHref(t.eventSlug) ? <a href={eventHref(t.eventSlug)}>{eventLabel(t.eventSlug)}</a> : eventLabel(t.eventSlug)}
+                    </div>
+                    {(t.slidesUrl || t.recordingUrl) && (
+                      <div class="talk-links">
+                        {t.slidesUrl && <a href={t.slidesUrl}>Slides →</a>}
+                        {t.recordingUrl && <a href={t.recordingUrl}>Recording →</a>}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          );
+        })}
+      </ul>
+    </Section>
+  )}
+
+  <Section eyebrow="Want to speak?" title="Pitch a talk">
+    <p class="dim wide">
+      We're booking Boston into the back half of the year. <a href="/speak">See the editorial bar</a>
+      — production stories from practitioners, not vendor pitches — and send us a brief.
+    </p>
   </Section>
 </BaseLayout>
 
@@ -43,21 +147,21 @@ speakers.sort((a, b) => a.data.name.localeCompare(b.data.name));
     padding: 0;
     margin: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 1rem;
   }
-  .grid a {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem;
+  .grid > li {
+    padding: 1.25rem;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    color: var(--text);
-    text-decoration: none;
-    align-items: center;
   }
-  .grid a:hover { border-color: var(--accent); }
+  .head {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
   .avatar {
     width: 48px; height: 48px;
     border-radius: 50%;
@@ -71,7 +175,16 @@ speakers.sort((a, b) => a.data.name.localeCompare(b.data.name));
     flex-shrink: 0;
   }
   .avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .name { font-family: var(--font-mono); font-weight: 700; }
-  .role { font-size: 0.85rem; }
-  .talk { font-size: 0.85rem; margin-top: 0.4rem; }
+  .name { font-family: var(--font-mono); font-weight: 700; color: var(--text); text-decoration: none; }
+  .name:hover { color: var(--accent); }
+  .role { font-size: 0.85rem; margin-top: 0.1rem; }
+  .talks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+  .talks > li { padding-top: 0.75rem; border-top: 1px dashed var(--border); }
+  .talks > li:first-child { padding-top: 0; border-top: none; }
+  .talk-title { font-size: 0.95rem; color: var(--text); }
+  .talk-meta { font-size: 0.8rem; font-family: var(--font-mono); margin-top: 0.2rem; }
+  .talk-meta a { color: var(--text-3); }
+  .talk-meta a:hover { color: var(--accent); }
+  .talk-links { display: flex; gap: 1rem; margin-top: 0.4rem; font-family: var(--font-mono); font-size: 0.85rem; }
+  .wide { max-width: 42rem; }
 </style>

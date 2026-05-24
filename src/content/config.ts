@@ -83,6 +83,24 @@ const events = defineCollection({
       )
       .default([]),
     description: z.string().optional(),
+    // Recap fields — populated after the event runs.
+    // `recap` is rendered from the markdown body; these are structured extras.
+    recapTakeaways: z
+      .array(
+        z.object({
+          speaker: z.string().optional(),
+          point: z.string(),
+        }),
+      )
+      .default([]),
+    recapPhotos: z
+      .array(
+        z.object({
+          src: z.string(),
+          alt: z.string().default(''),
+        }),
+      )
+      .default([]),
   }),
 });
 

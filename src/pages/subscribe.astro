@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import SubstackEmbed from '../components/SubstackEmbed.astro';
+import Blink from '../components/Blink.astro';
+---
+<BaseLayout
+  title="Subscribe · The AI Runtime"
+  description="Production lessons from AI practitioners, in your inbox. The publication where engineers shipping AI to production share what they have learned."
+>
+  <Section eyebrow="Subscribe">
+    <div class="hero">
+      <div>
+        <h1>Production lessons from AI practitioners</h1>
+        <p class="lede dim">
+          One free issue a week. Specific, sourced, anti-hype — the kind of piece you'd
+          forward to your team. Written by Kranthi Manchikanti and the practitioners who
+          speak at The AI Runtime.
+        </p>
+      </div>
+      <div class="art"><Blink size={140} showMotion={true} showCheeks={true} /></div>
+    </div>
+  </Section>
+
+  <Section>
+    <SubstackEmbed
+      source="subscribe-page"
+      headline="Free. New issue every week."
+      subhead="Evals, agents, inference, reliability, cost — the operational layer where AI systems actually run."
+    />
+  </Section>
+
+  <Section eyebrow="What you'll get" title="Five things our subscribers care about">
+    <ul class="pillars">
+      <li><strong>Evals & Observability.</strong> <span class="dim">How practitioners know AI works in production.</span></li>
+      <li><strong>Agents in Production.</strong> <span class="dim">Patterns that survive contact with real users.</span></li>
+      <li><strong>Inference & Serving.</strong> <span class="dim">What actually runs in production at scale.</span></li>
+      <li><strong>Reliability & Incidents.</strong> <span class="dim">Postmortems, drift, recovery patterns.</span></li>
+      <li><strong>Cost & Performance.</strong> <span class="dim">The economics of running AI.</span></li>
+    </ul>
+  </Section>
+
+  <Section eyebrow="Also" title="Come to a meetup">
+    <p class="dim wide">
+      The publication has an in-person companion. <a href="/boston">The AI Runtime — Boston</a>
+      is monthly in Cambridge. Two practitioners per night, real production stories.
+    </p>
+    <p>
+      <a class="btn btn-ghost" href="https://luma.com/tair">Subscribe to the Boston calendar →</a>
+    </p>
+  </Section>
+</BaseLayout>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 2rem;
+    align-items: center;
+  }
+  @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+  .lede { font-size: 1.1rem; max-width: 38rem; margin-top: 1rem; }
+  .art { display: flex; justify-content: center; }
+  .pillars {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.75rem;
+  }
+  .pillars li {
+    padding: 1rem 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .pillars strong { font-family: var(--font-mono); }
+  .wide { max-width: 42rem; }
+</style>

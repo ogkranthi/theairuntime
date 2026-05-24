@@ -2,40 +2,69 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 
-// Set this to the published Google Form URL once Kranthi creates it.
-// Until then, the page falls back to a clear mailto and a checklist of what we want.
 const GOOGLE_FORM_EMBED_URL: string | undefined = undefined;
+
+const strong = [
+  'One specific thing you learned shipping AI in production. Not five things; one.',
+  'A concrete artifact: numbers, code, an architecture diagram, an eval result, a postmortem.',
+  'A teachable takeaway — the audience leaves knowing something they can use Monday morning.',
+  "An audience-aware framing: assume smart engineers who haven't done what you've done.",
+  'Honesty about what didn\'t work. The failed experiment is often the best part of the talk.',
+];
+
+const reject = [
+  'Vendor pitches dressed as practitioner talks. We can spot a sales deck from the third slide.',
+  '"The future of AI" speculation, frontier-model release coverage, or AGI takes.',
+  'Idea-stage products — come back when you\'ve shipped and learned something.',
+  'Generic "we use LLMs at $COMPANY" overviews with no specific lesson.',
+  'Talks that demand NDA carve-outs so deep that nothing concrete can be said.',
+  'Founder-profile or fundraising-narrative talks.',
+];
 ---
 <BaseLayout
   title="Speak at The AI Runtime"
-  description="Pitch a talk at a future AI Runtime meetup. Where AI practitioners share what they've learned."
+  description="Pitch a talk at a future AI Runtime meetup. Production AI stories from practitioners, not vendor pitches."
 >
   <Section
-    eyebrow="Speak at an event"
+    eyebrow="Call for Speakers"
     title="Got a production AI story worth telling?"
-    lead="The AI Runtime meetups are practitioner-only. If you've shipped something real and learned something specific, we want to hear from you."
-  >
-    <div class="brief">
-      <h3>The brief</h3>
-      <p class="dim">
-        Walk us through one specific thing you learned shipping AI in production. Make it teachable.
-        Assume the audience is smart but hasn't done what you've done.
-      </p>
-      <p class="dim">
-        The AI Runtime is where AI practitioners share what they've learned. Speak at an event and join the network.
-      </p>
-      <ul class="dim">
-        <li>25 min talk + 10 min Q&A</li>
-      </ul>
-    </div>
+    lead="The AI Runtime meetups are practitioner-only. If you've shipped something real and learned something specific, we want to hear from you. The bar is high — here's exactly what it looks like."
+  />
 
+  <Section eyebrow="The format" title="What you're signing up for">
+    <ul class="format">
+      <li><strong>25 min talk + 10 min Q&A.</strong> <span class="dim">Tight. Practiced. No filler.</span></li>
+      <li><strong>Engineering audience.</strong> <span class="dim">~40 practitioners. Assume they're smart and they ship.</span></li>
+      <li><strong>One night.</strong> <span class="dim">Two talks per meetup. You're paired with another practitioner.</span></li>
+      <li><strong>Permanent home.</strong> <span class="dim">Your talk gets a page on <a href="/speakers">/speakers</a>, slides and recording hosted, recap linked from the newsletter.</span></li>
+    </ul>
+  </Section>
+
+  <Section eyebrow="What a strong talk looks like" title="The editorial bar">
+    <ul class="bar">
+      {strong.map((s) => <li><span class="check">✓</span> {s}</li>)}
+    </ul>
+  </Section>
+
+  <Section eyebrow="What we reject" title="Not a fit (and why)">
+    <ul class="bar reject">
+      {reject.map((s) => <li><span class="check">✗</span> {s}</li>)}
+    </ul>
+    <p class="dim small note">
+      We say no to ~80% of pitches. Most of the no's are vendor talks with a thin
+      practitioner veneer. We're protective of the audience — the meetup only works if
+      every talk passes the test: <em>would a senior AI engineer at Anthropic, OpenAI, or
+      DeepMind forward this to their team?</em>
+    </p>
+  </Section>
+
+  <Section eyebrow="Pitch us" title="Send us the brief">
     {GOOGLE_FORM_EMBED_URL ? (
       <div class="form-wrap">
         <iframe src={GOOGLE_FORM_EMBED_URL} width="100%" height="900" frameborder="0">Loading…</iframe>
       </div>
     ) : (
       <div class="card">
-        <h3>Pitch us</h3>
         <p class="dim">
           Email <a href="mailto:info@theairuntime.com?subject=Speaker%20pitch">info@theairuntime.com</a> with:
         </p>
@@ -43,16 +72,58 @@ const GOOGLE_FORM_EMBED_URL: string | undefined = undefined;
           <li>Your name, role, company</li>
           <li>Working title for the talk</li>
           <li>2–3 sentence abstract — what's the one specific thing the audience will learn?</li>
-          <li>Which city you'd speak in (Boston now, NYC / SF coming)</li>
+          <li>What did you ship, and what's the concrete artifact you'll share (numbers, code, postmortem)?</li>
+          <li>Which city you'd speak in (Boston now; NYC / SF coming)</li>
           <li>When you could realistically speak by</li>
         </ul>
+        <p class="dim small note">
+          We reply to every pitch within a week, even the no's. If we say no, you'll know
+          why.
+        </p>
       </div>
     )}
   </Section>
 </BaseLayout>
 
 <style>
-  .brief { max-width: 38rem; margin-bottom: 2rem; }
-  .brief ul { padding-left: 1.25rem; }
+  .format, .bar {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 42rem;
+  }
+  .format li {
+    padding: 1rem 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .format strong { font-family: var(--font-mono); }
+  .bar li {
+    padding: 0.85rem 1rem;
+    border-left: 2px solid var(--accent);
+    color: var(--text-2);
+  }
+  .bar.reject li { border-left-color: var(--text-3); }
+  .bar .check {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    margin-right: 0.5rem;
+  }
+  .bar.reject .check { color: var(--text-3); }
+  .card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    max-width: 42rem;
+  }
+  .card ul { padding-left: 1.25rem; }
   .form-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .note { margin-top: 1rem; font-size: 0.9rem; }
+  .small { font-size: 0.9rem; }
 </style>
