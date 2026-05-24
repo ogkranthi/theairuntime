@@ -2,12 +2,10 @@
 title: 'AI as a Teammate'
 city: boston
 date: 2026-06-16
-venue:
-  name: Kendall Square, Cambridge MA
+doorsAt: '6:00 PM'
+endsAt: '8:30 PM'
 status: upcoming
 lumaUrl: https://luma.com/du7lj7wp
-cohosts:
-  - Adam Chan
 agenda:
   - { item: 'Doors open · informal mingling' }
   - { item: 'Welcome — Kranthi Manchikanti' }
