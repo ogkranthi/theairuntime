@@ -4,7 +4,7 @@ cohost: Adam Chan
 venueName: Cambridge, MA (Kendall Square area)
 cadence: Monthly
 joinUrl: https://luma.com/tair
-currentEventSlug: 2026-05-11-agentic-architectures
+currentEventSlug: 2026-06-16-ai-as-a-teammate
 intro: |
   The AI Runtime — Boston is a monthly meetup for AI practitioners.
   Practitioner talks, real systems. Cambridge, MA.
