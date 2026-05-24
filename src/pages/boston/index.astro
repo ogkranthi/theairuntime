@@ -81,7 +81,7 @@ const city = await getEntry('cities', 'boston');
       <ul class="past">
         {past.map((e) => (
           <li>
-            <a href={`/boston/${e.slug}`}>
+            <a href={`/boston/${e.slug.replace(/^boston\//, '')}`}>
               <span class="date">{new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(e.data.date)}</span>
               <span class="title">{e.data.title}</span>
             </a>

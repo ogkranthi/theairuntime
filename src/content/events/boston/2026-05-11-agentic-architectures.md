@@ -4,7 +4,7 @@ city: boston
 date: 2026-05-11
 venue:
   name: Kendall Square, Cambridge MA
-status: upcoming
+status: past
 lumaUrl: https://luma.com/tair
 cohosts:
   - Adam Chan
