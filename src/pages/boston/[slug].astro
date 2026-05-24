@@ -20,6 +20,11 @@ const { event } = Astro.props;
 const speakers = await Promise.all(
   event.data.speakers.map((ref) => getEntry('speakers', (ref as any).slug ?? (ref as any).id)),
 );
+
+const { Content: RecapBody } = await event.render();
+const hasRecapBody = (event.body ?? '').trim().length > 0;
+const hasRecap =
+  hasRecapBody || event.data.recapTakeaways.length > 0 || event.data.recapPhotos.length > 0;
 ---
 <BaseLayout
   title={`${event.data.title} · Boston · The AI Runtime`}
@@ -47,6 +52,31 @@ const speakers = await Promise.all(
     </Section>
   )}
 
+  {event.data.status === 'past' && hasRecap && (
+    <Section id="recap" eyebrow="Recap" title="What happened">
+      {hasRecapBody && (
+        <div class="recap-body dim"><RecapBody /></div>
+      )}
+      {event.data.recapTakeaways.length > 0 && (
+        <ul class="takeaways">
+          {event.data.recapTakeaways.map((t) => (
+            <li>
+              {t.speaker && <span class="who">{t.speaker}</span>}
+              <span class="point">{t.point}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {event.data.recapPhotos.length > 0 && (
+        <ul class="photos">
+          {event.data.recapPhotos.map((p) => (
+            <li><img src={p.src} alt={p.alt} loading="lazy" /></li>
+          ))}
+        </ul>
+      )}
+    </Section>
+  )}
+
   <Section eyebrow="Background reading" title="Curated for this event">
     <p>
       <a class="btn" href={`/boston/${event.slug.replace(/^boston\//, '')}/reading`}>See the reading list →</a>
@@ -65,4 +95,44 @@ const speakers = await Promise.all(
   @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
   .partners { margin-top: 1.5rem; }
   .materials { list-style: none; padding: 0; margin: 0; display: flex; gap: 1rem; }
+  .recap-body { max-width: 42rem; }
+  .recap-body :global(p) { margin-bottom: 0.85rem; }
+  .takeaways {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    max-width: 42rem;
+  }
+  .takeaways li {
+    padding: 0.85rem 1rem;
+    border-left: 2px solid var(--accent);
+  }
+  .takeaways .who {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.2rem;
+  }
+  .takeaways .point { color: var(--text-2); }
+  .photos {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.5rem;
+  }
+  .photos img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
 </style>

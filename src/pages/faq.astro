@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import SubstackEmbed from '../components/SubstackEmbed.astro';
+
+const faqs = [
+  {
+    q: 'Who is this for?',
+    a: 'Engineers, ML/AI practitioners, and technical leaders shipping AI to production — and people who want to learn from them. If you build, deploy, evaluate, or operate AI systems at work, this is for you.',
+  },
+  {
+    q: 'Do I need to be technical?',
+    a: "The talks assume an engineering audience — we don't dumb things down. You don't need to be a senior staff engineer, but you should be comfortable with terms like eval, agent, inference, and prompt. PMs, designers, and AI-curious folks are welcome; the talks just won't be aimed at you.",
+  },
+  {
+    q: "What's the format?",
+    a: 'Two practitioner talks per night (~25 min + 10 min Q&A each), with mingling before and after. Doors at 6:00 PM, talks start ~6:30, wrap by 8:30. No sponsor pitches, no panels, no "future of AI."',
+  },
+  {
+    q: 'Is it recorded?',
+    a: 'Some talks are recorded with the speaker\'s consent; some aren\'t. Recordings and slides land on the event recap page within a week. Subscribe to the newsletter to get the recap.',
+  },
+  {
+    q: 'Can I bring colleagues?',
+    a: "Yes — please. The best meetups are full of people you'd want to work with. Forward the Luma link.",
+  },
+  {
+    q: 'Where is it?',
+    a: 'Cambridge, MA (Kendall Square area). The specific venue is shared with registrants on Luma once you RSVP.',
+  },
+  {
+    q: 'How much does it cost?',
+    a: "Free for attendees. We're supported by venue partners and a small number of sponsors who serve the audience. If you want to help, see the Sponsors page.",
+  },
+  {
+    q: 'How often does it happen?',
+    a: 'Monthly in Boston. NYC and SF are on the roadmap — subscribe to the newsletter to hear when they launch.',
+  },
+  {
+    q: 'Is there a Slack or Discord?',
+    a: "Not yet — we're collecting interest to gauge demand. If you'd like to be invited when the Slack opens, drop your email below.",
+  },
+  {
+    q: 'How do I speak at an event?',
+    a: 'See the Call for Speakers page. The bar is high (production stories, not vendor pitches), but we read every pitch.',
+  },
+];
+---
+<BaseLayout
+  title="FAQ · The AI Runtime"
+  description="Frequently asked questions about The AI Runtime meetups, the publication, recordings, and the practitioner Slack."
+>
+  <Section eyebrow="FAQ" title="Frequently asked">
+    <ul class="faq">
+      {faqs.map((f) => (
+        <li>
+          <h3>{f.q}</h3>
+          <p class="dim" set:html={f.a} />
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="Slack interest" title="Want to join the practitioner Slack?">
+    <p class="dim wide">
+      We're collecting interest for a private Slack for AI Runtime practitioners — speakers,
+      engaged attendees, and subscribers who want a place to share production lessons between
+      events. Drop your email and we'll invite you when it opens.
+    </p>
+    <SubstackEmbed
+      source="slack-interest"
+      headline="Reserve your Slack invite"
+      subhead="One-time email when the practitioner Slack opens. You'll also get the newsletter unless you unsubscribe."
+      buttonLabel="Request invite"
+      successTitle="You're on the Slack list."
+      successBody="We'll email you when the practitioner Slack opens. In the meantime, the newsletter is the best signal of what we're up to."
+      footer="slack"
+    />
+  </Section>
+
+  <Section eyebrow="Still curious?" title="Get in touch">
+    <p class="dim">
+      Email <a href="mailto:info@theairuntime.com">info@theairuntime.com</a> with anything
+      we haven't answered.
+    </p>
+  </Section>
+</BaseLayout>
+
+<style>
+  .faq { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1.5rem; max-width: 42rem; }
+  .faq h3 { font-family: var(--font-mono); margin-bottom: 0.4rem; }
+  .wide { max-width: 42rem; }
+</style>

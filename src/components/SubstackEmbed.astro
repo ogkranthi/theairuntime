@@ -7,6 +7,10 @@ interface Props {
   headline?: string;
   subhead?: string;
   buttonLabel?: string;
+  successTitle?: string;
+  successBody?: string;
+  fallbackToPublication?: boolean;
+  footer?: 'newsletter' | 'slack' | 'none';
 }
 
 const {
@@ -15,6 +19,10 @@ const {
   headline = 'Get The AI Runtime in your inbox',
   subhead = 'Production lessons from AI practitioners. New issues every week.',
   buttonLabel = 'Subscribe',
+  successTitle,
+  successBody,
+  fallbackToPublication = true,
+  footer = 'newsletter',
 } = Astro.props;
 ---
 <div class={`subscribe ${variant}`}>
@@ -25,11 +33,25 @@ const {
     </div>
   )}
   <div class="form-slot">
-    <SubscribeForm client:load source={source} buttonLabel={buttonLabel} />
-    <p class="muted small foot">
-      Free. No spam. Unsubscribe in one click.
-      <a href="https://theairuntime.com">See past issues →</a>
-    </p>
+    <SubscribeForm
+      client:load
+      source={source}
+      buttonLabel={buttonLabel}
+      successTitle={successTitle}
+      successBody={successBody}
+      fallbackToPublication={fallbackToPublication}
+    />
+    {footer === 'newsletter' && (
+      <p class="muted small foot">
+        Free. No spam. Unsubscribe in one click.
+        <a href="https://theairuntime.com">See past issues →</a>
+      </p>
+    )}
+    {footer === 'slack' && (
+      <p class="muted small foot">
+        We'll email you when the Slack opens. No spam, ever.
+      </p>
+    )}
   </div>
 </div>
 

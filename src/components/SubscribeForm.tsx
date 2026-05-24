@@ -3,6 +3,10 @@ import { useState, type FormEvent } from 'react';
 interface Props {
   source?: string;
   buttonLabel?: string;
+  successTitle?: string;
+  successBody?: string;
+  /** If false, do not redirect to Substack on failure (use for non-newsletter capture). */
+  fallbackToPublication?: boolean;
 }
 
 type State = 'idle' | 'submitting' | 'ok';
@@ -10,6 +14,9 @@ type State = 'idle' | 'submitting' | 'ok';
 export default function SubscribeForm({
   source = 'site-subscribe',
   buttonLabel = 'Subscribe',
+  successTitle = "You're on the list.",
+  successBody = 'Production lessons from AI practitioners — your first issue lands soon.',
+  fallbackToPublication = true,
 }: Props) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<State>('idle');
@@ -34,20 +41,22 @@ export default function SubscribeForm({
         body: JSON.stringify({ email, source }),
       });
       if (!res.ok) {
-        fallbackToSubstack();
+        if (fallbackToPublication) fallbackToSubstack();
+        else setState('ok');
         return;
       }
       setState('ok');
     } catch {
-      fallbackToSubstack();
+      if (fallbackToPublication) fallbackToSubstack();
+      else setState('ok');
     }
   }
 
   if (state === 'ok') {
     return (
       <div className="sub-ok">
-        <strong>✓ You're on the list.</strong>
-        <p>Production lessons from AI practitioners — your first issue lands soon.</p>
+        <strong>✓ {successTitle}</strong>
+        <p>{successBody}</p>
         <style>{`
           .sub-ok strong { font-family: var(--font-mono); color: var(--accent); }
           .sub-ok p { margin: 0.5rem 0 0; color: var(--text-2); }

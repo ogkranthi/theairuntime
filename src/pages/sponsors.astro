@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+
+const platformPartners = [
+  {
+    name: 'Hackersquad',
+    role: 'Platform partner',
+    url: 'https://hackersquad.com',
+    blurb: 'Distribution and community partner for The AI Runtime.',
+  },
+];
+
+const tiers = [
+  {
+    name: 'Venue host',
+    body: 'Host an upcoming Boston meetup. Capacity for ~40 practitioners, A/V for two talks, space to mingle. We bring the audience and the program; you bring the room (and ideally pizza).',
+  },
+  {
+    name: 'Refreshments',
+    body: 'Cover food and drinks for one or more events. Logo on the event page, mention from the stage, name in the recap.',
+  },
+  {
+    name: 'Platform partner',
+    body: 'Multi-event partnership. Co-marketing across the publication (8k+ practitioners), the events site, and on-stage acknowledgements. Limited to partners whose product or platform serves AI practitioners directly.',
+  },
+];
+---
+<BaseLayout
+  title="Sponsors & Partners · The AI Runtime"
+  description="Sponsor or partner with The AI Runtime — the publication and meetup community for engineers shipping AI to production."
+>
+  <Section eyebrow="Sponsors & Partners" title="Help us put on better meetups">
+    <p class="lead dim">
+      The AI Runtime is independent and practitioner-first. We work with a small number of
+      partners who actually serve the audience — venues, refreshment sponsors, and platforms
+      whose product helps engineers ship AI. We do not run vendor talks, and partnership
+      doesn't buy stage time.
+    </p>
+  </Section>
+
+  <Section eyebrow="Current partners">
+    <ul class="grid">
+      {platformPartners.map((p) => (
+        <li>
+          <a href={p.url} target="_blank" rel="noopener">
+            <span class="name">{p.name}</span>
+            <span class="role muted">{p.role}</span>
+          </a>
+          <p class="dim">{p.blurb}</p>
+        </li>
+      ))}
+      <li class="placeholder">
+        <span class="name muted">Your venue here</span>
+        <span class="role muted">Venue partner · Boston</span>
+        <p class="dim">We're looking for a recurring Boston venue host. <a href="mailto:info@theairuntime.com?subject=Venue%20partnership">Get in touch →</a></p>
+      </li>
+    </ul>
+  </Section>
+
+  <Section eyebrow="Ways to partner" title="What we offer">
+    <ul class="tiers">
+      {tiers.map((t) => (
+        <li>
+          <h3>{t.name}</h3>
+          <p class="dim">{t.body}</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="Interested?" title="Tell us what you have in mind">
+    <p class="dim wide">
+      Drop a line with what you're offering (venue / food / multi-event), which city, and the
+      timeframe. We'll reply within a few days.
+    </p>
+    <p>
+      <a class="btn" href="mailto:info@theairuntime.com?subject=Sponsorship%20interest">info@theairuntime.com</a>
+    </p>
+  </Section>
+</BaseLayout>
+
+<style>
+  .lead { max-width: 42rem; }
+  .grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .grid li {
+    padding: 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .grid li.placeholder { border-style: dashed; }
+  .grid a { display: flex; flex-direction: column; text-decoration: none; color: var(--text); }
+  .grid .name { font-family: var(--font-mono); font-weight: 700; font-size: 1.05rem; }
+  .grid .role { font-size: 0.8rem; margin-top: 0.2rem; }
+  .grid p { margin-top: 0.6rem; }
+  .tiers {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .tiers li {
+    padding: 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .tiers h3 { font-family: var(--font-mono); margin-bottom: 0.4rem; }
+  .wide { max-width: 42rem; }
+</style>
