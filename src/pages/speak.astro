@@ -58,6 +58,34 @@ const reject = [
     </p>
   </Section>
 
+  <Section eyebrow="Slide template" title="Use ours, or don't — your call">
+    <p class="dim wide">
+      A 12-slide template that maps to our editorial bar: thesis → context → what you
+      tried → what you shipped → numbers → what still doesn't work → takeaway. Each slide
+      has speaker notes explaining what belongs there. PowerPoint, Keynote, and Google
+      Slides all open <code>.pptx</code> natively.
+    </p>
+    <div class="deck">
+      <div class="deck-preview">
+        <a href="/speakers/the-ai-runtime-speaker-template.pdf" target="_blank" rel="noopener" aria-label="Preview the slide template (PDF)">
+          <img src="/speakers/the-ai-runtime-speaker-template-preview.png" alt="Speaker template title slide" loading="lazy" />
+        </a>
+      </div>
+      <div class="deck-actions">
+        <h3>The AI Runtime · Speaker Template</h3>
+        <p class="dim small">12 slides · 16:9 · light theme · IBM Plex Mono + Inter</p>
+        <div class="actions">
+          <a class="btn" href="/speakers/the-ai-runtime-speaker-template.pptx" download>Download .pptx →</a>
+          <a class="btn btn-ghost" href="/speakers/the-ai-runtime-speaker-template.pdf" target="_blank" rel="noopener">Preview PDF</a>
+        </div>
+        <p class="dim small note">
+          Not required — bring your own deck if you want. The template just exists so you
+          don't have to think about layout.
+        </p>
+      </div>
+    </div>
+  </Section>
+
   <Section eyebrow="Pitch us" title="Send us the brief">
     {GOOGLE_FORM_EMBED_URL ? (
       <div class="form-wrap">
@@ -126,4 +154,34 @@ const reject = [
   .form-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
   .note { margin-top: 1rem; font-size: 0.9rem; }
   .small { font-size: 0.9rem; }
+  .wide { max-width: 42rem; }
+  .deck {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2rem;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  @media (max-width: 720px) { .deck { grid-template-columns: 1fr; } }
+  .deck-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+  }
+  .deck-actions h3 { font-family: var(--font-mono); margin-bottom: 0.4rem; }
+  .deck-actions .actions { display: flex; gap: 0.75rem; margin: 1rem 0; flex-wrap: wrap; }
+  .deck code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    padding: 0.1em 0.35em;
+    background: rgba(0,0,0,0.04);
+    border-radius: 4px;
+  }
 </style>
