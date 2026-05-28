@@ -7,6 +7,7 @@ import SpeakerCard from '../../components/SpeakerCard.astro';
 import PartnerStrip from '../../components/PartnerStrip.astro';
 import Section from '../../components/Section.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
+import SubstackEmbed from '../../components/SubstackEmbed.astro';
 
 export async function getStaticPaths() {
   const events = await getCollection('events', (e) => e.slug.startsWith('boston/'));
@@ -83,6 +84,19 @@ const hasRecap =
     </p>
   </Section>
 
+  <Section eyebrow="Subscribe" title={event.data.status === 'past' ? 'Missed it? Get the next one.' : 'Get the recap'}>
+    <p class="dim wide">
+      {event.data.status === 'past'
+        ? 'Subscribers get the recap, slides, and the next Boston event before the public Luma drop.'
+        : 'Slides, recording, and the recap will land here within a week — and in subscribers\' inboxes first.'}
+    </p>
+    <SubstackEmbed
+      source={event.data.status === 'past' ? 'past-event' : 'upcoming-event'}
+      headline="The AI Runtime newsletter"
+      subhead="Production lessons from AI practitioners. New issues every week."
+    />
+  </Section>
+
   <Section><ContactCTA /></Section>
 </BaseLayout>
 
@@ -95,6 +109,7 @@ const hasRecap =
   @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
   .partners { margin-top: 1.5rem; }
   .materials { list-style: none; padding: 0; margin: 0; display: flex; gap: 1rem; }
+  .wide { max-width: 42rem; }
   .recap-body { max-width: 42rem; }
   .recap-body :global(p) { margin-bottom: 0.85rem; }
   .takeaways {

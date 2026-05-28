@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 import Blink from '../components/Blink.astro';
 import ContactCTA from '../components/ContactCTA.astro';
+import SubstackEmbed from '../components/SubstackEmbed.astro';
 
 const pillars = [
   { name: 'Evals & Observability', body: 'How practitioners know if AI works in production.' },
@@ -60,6 +61,18 @@ const pillars = [
     </div>
   </Section>
 
+  <Section eyebrow="Subscribe" title="Get The AI Runtime in your inbox">
+    <p class="dim wide">
+      Free, weekly, anti-hype. One issue a week with production lessons from AI practitioners
+      — the kind of piece you'd forward to your team.
+    </p>
+    <SubstackEmbed
+      source="about-page"
+      headline="Practitioner-grade. New issues every week."
+      subhead="Evals, agents, inference, reliability, cost. No vendor pitches."
+    />
+  </Section>
+
   <Section>
     <ContactCTA />
   </Section>
@@ -98,4 +111,5 @@ const pillars = [
     font-size: 1.25rem;
   }
   .founder { max-width: 38rem; }
+  .wide { max-width: 42rem; }
 </style>
