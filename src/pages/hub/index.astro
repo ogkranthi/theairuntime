@@ -1,0 +1,399 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import SubstackEmbed from '../../components/SubstackEmbed.astro';
+import { fetchSubstackPosts } from '../../lib/substack';
+
+// --- Newsletter: latest issues, auto-pulled from the Substack feed ---
+const substackPosts = await fetchSubstackPosts(6);
+
+// --- Speakers & talks: flatten every talk into one stream ---
+const speakers = await getCollection('speakers');
+const events = await getCollection('events');
+const eventBySlug = new Map(events.map((e) => [e.slug.split('/').pop()!, e]));
+
+const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const monthFmt = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' });
+
+function cityOf(e: (typeof events)[number]) {
+  return (e.data.city as any).slug ?? (e.data.city as any).id ?? 'boston';
+}
+function eventHref(e: (typeof events)[number]) {
+  return `/${cityOf(e)}/${e.slug.replace(/^[^/]+\//, '')}`;
+}
+function truncate(s: string, limit = 180): string {
+  const text = s.replace(/\s+/g, ' ').trim();
+  if (text.length <= limit) return text;
+  return text.slice(0, limit).replace(/\s+\S*$/, '') + '…';
+}
+
+type TalkRow = {
+  speakerName: string;
+  speakerSlug: string;
+  role: string;
+  photo?: string;
+  title: string;
+  abstract: string;
+  slidesUrl?: string;
+  recordingUrl?: string;
+  eventSlug: string;
+  eventDate: number;
+};
+
+const talks: TalkRow[] = speakers
+  .flatMap((s) =>
+    s.data.talks.map((t) => {
+      const ev = eventBySlug.get(t.eventSlug);
+      return {
+        speakerName: s.data.name,
+        speakerSlug: s.slug,
+        role: `${s.data.title} · ${s.data.company}`,
+        photo: s.data.photo,
+        title: t.title,
+        abstract: t.abstract,
+        slidesUrl: t.slidesUrl,
+        recordingUrl: t.recordingUrl,
+        eventSlug: t.eventSlug,
+        eventDate: ev ? +ev.data.date : 0,
+      };
+    }),
+  )
+  .sort((a, b) => b.eventDate - a.eventDate);
+
+function talkEventLabel(eventSlug: string) {
+  const e = eventBySlug.get(eventSlug);
+  if (!e) return eventSlug;
+  const city = cityOf(e);
+  return `${city.charAt(0).toUpperCase() + city.slice(1)} · ${monthFmt.format(e.data.date)}`;
+}
+function talkEventHref(eventSlug: string) {
+  const e = eventBySlug.get(eventSlug);
+  return e ? eventHref(e) : undefined;
+}
+
+// --- Events: upcoming first, then the archive ---
+const sortedEvents = [...events].sort((a, b) => +b.data.date - +a.data.date);
+const upcomingEvents = sortedEvents.filter((e) => e.data.status === 'upcoming');
+const pastEvents = sortedEvents.filter((e) => e.data.status === 'past');
+
+// --- Owned downloads: ebooks, checklists, playbooks, templates ---
+const resources = await getCollection('resources');
+resources.sort((a, b) => {
+  if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+  return a.data.title.localeCompare(b.data.title);
+});
+const statusLabel: Record<string, string> = {
+  'coming-soon': 'Coming soon',
+  free: 'Free',
+  'lead-gated': 'Free · email',
+  paid: 'Paid',
+};
+
+const initials = (name: string) =>
+  name.split(' ').map((p) => p[0]).slice(0, 2).join('');
+---
+<BaseLayout
+  title="Subscriber Hub · The AI Runtime"
+  description="Everything subscribers get in one place — newsletter issues, talk recordings and slides, past and upcoming events, and downloadable playbooks."
+>
+  <Section
+    eyebrow="For subscribers"
+    title="The subscriber hub"
+    lead="Everything in one place: the latest newsletter issues, talk recordings and slides from every speaker, the events we've run and the next one up, and the playbooks we've shipped. Bookmark this page."
+  >
+    <nav class="toc" aria-label="Jump to section">
+      {substackPosts.length > 0 && <a href="#newsletter">Newsletter</a>}
+      {talks.length > 0 && <a href="#talks">Talks &amp; recordings <span class="muted">({talks.length})</span></a>}
+      {(upcomingEvents.length > 0 || pastEvents.length > 0) && (
+        <a href="#events">Events <span class="muted">({sortedEvents.length})</span></a>
+      )}
+      {resources.length > 0 && <a href="#downloads">Downloads <span class="muted">({resources.length})</span></a>}
+    </nav>
+  </Section>
+
+  {substackPosts.length > 0 && (
+    <Section id="newsletter" eyebrow="From the newsletter" title="Latest issues">
+      <p class="dim wide">
+        Production lessons from AI practitioners, straight from our Substack.
+        <a href="https://theairuntime.com">See all issues →</a>
+      </p>
+      <div class="grid">
+        {substackPosts.map((p) => (
+          <article class="own">
+            <header>
+              <span class="tag">Issue</span>
+              <span class="source muted">{dateFmt.format(p.publishedAt)}</span>
+            </header>
+            <h3><a href={p.url} target="_blank" rel="noopener">{p.title}</a></h3>
+            <p class="dim">{p.summary}</p>
+            <a class="more" href={p.url} target="_blank" rel="noopener">Read the issue →</a>
+          </article>
+        ))}
+      </div>
+    </Section>
+  )}
+
+  {talks.length > 0 && (
+    <Section id="talks" eyebrow="Talks & recordings" title="Every talk, with slides and recordings">
+      <p class="dim wide">
+        The full archive of talks from our meetups — abstracts, slide decks, and recordings as they go up.
+        Browse the people behind them on the <a href="/speakers">speakers page</a>.
+      </p>
+      <ul class="talks-grid">
+        {talks.map((t) => (
+          <li>
+            <div class="head">
+              <div class="avatar">
+                {t.photo ? <img src={t.photo} alt={t.speakerName} /> : <span>{initials(t.speakerName)}</span>}
+              </div>
+              <div>
+                <a class="name" href={`/speakers/${t.speakerSlug}`}>{t.speakerName}</a>
+                <div class="role muted">{t.role}</div>
+              </div>
+            </div>
+            <h3 class="talk-title">{t.title}</h3>
+            <div class="talk-meta muted">
+              {talkEventHref(t.eventSlug)
+                ? <a href={talkEventHref(t.eventSlug)}>{talkEventLabel(t.eventSlug)}</a>
+                : talkEventLabel(t.eventSlug)}
+            </div>
+            <p class="dim abstract">{truncate(t.abstract)}</p>
+            <div class="talk-links">
+              {t.slidesUrl && <a href={t.slidesUrl}>Slides →</a>}
+              {t.recordingUrl && <a href={t.recordingUrl}>Recording →</a>}
+              {!t.slidesUrl && !t.recordingUrl && <span class="muted">Recap coming soon</span>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )}
+
+  {(upcomingEvents.length > 0 || pastEvents.length > 0) && (
+    <Section id="events" eyebrow="Events" title="Where we've been — and what's next">
+      {upcomingEvents.length > 0 && (
+        <>
+          <h3 class="sub">Upcoming</h3>
+          <ul class="events">
+            {upcomingEvents.map((e) => (
+              <li class="next">
+                <a href={eventHref(e)}>
+                  <span class="date">{dateFmt.format(e.data.date)}</span>
+                  <span class="ev-body">
+                    <span class="title">{e.data.title}</span>
+                    {e.data.venue?.name && <span class="venue muted">{e.data.venue.name}</span>}
+                  </span>
+                </a>
+                {e.data.lumaUrl && (
+                  <a class="rsvp" href={e.data.lumaUrl} target="_blank" rel="noopener">RSVP →</a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {pastEvents.length > 0 && (
+        <>
+          <h3 class="sub">Archive</h3>
+          <ul class="events">
+            {pastEvents.map((e) => (
+              <li>
+                <a href={eventHref(e)}>
+                  <span class="date">{dateFmt.format(e.data.date)}</span>
+                  <span class="ev-body">
+                    <span class="title">{e.data.title}</span>
+                    {e.data.venue?.name && <span class="venue muted">{e.data.venue.name}</span>}
+                  </span>
+                </a>
+                <span class="ev-links">
+                  {e.data.slidesUrl && <a href={e.data.slidesUrl} target="_blank" rel="noopener">Slides</a>}
+                  {e.data.recordingUrl && <a href={e.data.recordingUrl} target="_blank" rel="noopener">Recording</a>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </Section>
+  )}
+
+  {resources.length > 0 && (
+    <Section id="downloads" eyebrow="Downloads" title="Playbooks, checklists & templates">
+      <p class="dim wide">
+        Practitioner-grade resources we've built. Subscribers get them first.
+        <a href="/resources">See all resources →</a>
+      </p>
+      <ul class="grid res-grid">
+        {resources.map((r) => (
+          <li>
+            <a href={`/resources/${r.slug}`}>
+              <div class="row">
+                <span class="tag">{r.data.type}</span>
+                <span class="status muted">{statusLabel[r.data.status]}</span>
+              </div>
+              <h3>{r.data.title}</h3>
+              <p class="dim">{r.data.description}</p>
+              <div class="meta muted">
+                {r.data.length ?? ''} {r.data.length && r.data.pillar ? '·' : ''} {r.data.pillar}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )}
+
+  <Section eyebrow="Subscribe" title="Get it all in your inbox">
+    <p class="dim wide">
+      Not a subscriber yet? Join free. New issues every week, the recap after every meetup, and the next
+      event before the public Luma drop.
+    </p>
+    <SubstackEmbed
+      source="hub-subscribe"
+      headline="The AI Runtime newsletter"
+      subhead="Production lessons from AI practitioners. New issues every week."
+    />
+  </Section>
+</BaseLayout>
+
+<style>
+  .toc {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .toc a {
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-2);
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-decoration: none;
+  }
+  .toc a:hover { border-color: var(--accent); color: var(--text); }
+  .wide { max-width: 42rem; }
+
+  .grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+
+  /* Newsletter cards */
+  .own {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.06), var(--bg-2));
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .own header { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; font-size: 0.8rem; }
+  .own .source { font-family: var(--font-mono); font-size: 0.78rem; }
+  .own h3 { margin: 0; font-size: 1.1rem; }
+  .own h3 a { color: var(--text); text-decoration: none; }
+  .own h3 a:hover { color: var(--accent); }
+  .own .more { font-family: var(--font-mono); font-size: 0.85rem; margin-top: auto; }
+
+  /* Talk cards */
+  .talks-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+  .talks-grid > li {
+    padding: 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+  }
+  .head { display: flex; gap: 0.85rem; align-items: center; margin-bottom: 0.9rem; }
+  .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .name { font-family: var(--font-mono); font-weight: 700; color: var(--text); text-decoration: none; }
+  .name:hover { color: var(--accent); }
+  .role { font-size: 0.82rem; margin-top: 0.1rem; }
+  .talk-title { font-size: 1.05rem; margin: 0 0 0.3rem; }
+  .talk-meta { font-size: 0.8rem; font-family: var(--font-mono); }
+  .talk-meta a { color: var(--text-3); }
+  .talk-meta a:hover { color: var(--accent); }
+  .abstract { font-size: 0.92rem; margin: 0.6rem 0 0.9rem; }
+  .talk-links {
+    display: flex; gap: 1rem; margin-top: auto;
+    font-family: var(--font-mono); font-size: 0.85rem;
+  }
+
+  /* Events */
+  .sub { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); margin: 1.5rem 0 0.6rem; }
+  .sub:first-child { margin-top: 0; }
+  .events { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  .events > li {
+    display: flex; align-items: center; gap: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 1rem;
+  }
+  .events > li:hover { border-color: var(--accent); }
+  .events > li.next { border-color: var(--accent); background: var(--accent-soft); }
+  .events > li > a {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 1rem;
+    align-items: center;
+    color: var(--text);
+    text-decoration: none;
+    padding: 0.35rem 0;
+  }
+  .events .date { font-family: var(--font-mono); color: var(--text-3); font-size: 0.85rem; }
+  .ev-body { display: flex; flex-direction: column; }
+  .venue { font-size: 0.8rem; }
+  .ev-links { display: flex; gap: 0.85rem; font-family: var(--font-mono); font-size: 0.82rem; }
+  .rsvp { font-family: var(--font-mono); font-size: 0.85rem; white-space: nowrap; }
+
+  /* Downloads */
+  .res-grid a {
+    display: block;
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+    height: 100%;
+  }
+  .res-grid a:hover { border-color: var(--accent); }
+  .res-grid .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+  .res-grid .status { font-family: var(--font-mono); font-size: 0.75rem; }
+  .res-grid h3 { margin-top: 0.4rem; }
+  .res-grid .meta { font-size: 0.8rem; margin-top: 0.5rem; font-family: var(--font-mono); }
+
+  @media (max-width: 560px) {
+    .events > li { flex-wrap: wrap; }
+    .events > li > a { grid-template-columns: 1fr; gap: 0.15rem; }
+  }
+</style>
