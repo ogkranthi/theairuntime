@@ -30,26 +30,13 @@ export default function SubscribeForm({
     window.location.href = url.toString();
   }
 
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+  function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setState('submitting');
-
-    try {
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source }),
-      });
-      if (!res.ok) {
-        if (fallbackToPublication) fallbackToSubstack();
-        else setState('ok');
-        return;
-      }
-      setState('ok');
-    } catch {
-      if (fallbackToPublication) fallbackToSubstack();
-      else setState('ok');
-    }
+    // Newsletter signup lives on the publication (theairuntime.com).
+    // Send the subscriber straight there with their email pre-filled so
+    // they finish on Substack's own double-opt-in flow.
+    fallbackToSubstack();
   }
 
   if (state === 'ok') {
