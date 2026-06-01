@@ -4,21 +4,37 @@ interface Props {
   eyebrow?: string;
   title?: string;
   lead?: string;
+  /** Constrain the section body to the Medium-style reading column. */
+  narrow?: boolean;
+  /** Drop the divider above the section (default: hairline top border). */
+  flush?: boolean;
 }
-const { id, eyebrow, title, lead } = Astro.props;
+const { id, eyebrow, title, lead, narrow = false, flush = false } = Astro.props;
 ---
-<section id={id} class="section">
+<section id={id} class:list={['section', { flush }]}>
   <div class="container">
-    {eyebrow && <span class="tag">{eyebrow}</span>}
-    {title && <h2>{title}</h2>}
-    {lead && <p class="lead dim">{lead}</p>}
-    <div class="body"><slot /></div>
+    <div class:list={['inner', { narrow }]}>
+      {eyebrow && <span class="tag eyebrow">{eyebrow}</span>}
+      {title && <h2>{title}</h2>}
+      {lead && <p class="lead dim">{lead}</p>}
+      <div class="body"><slot /></div>
+    </div>
   </div>
 </section>
 
 <style>
-  .section { padding: 3.5rem 0; }
-  .section .body { margin-top: 1.5rem; }
-  .lead { max-width: 42rem; }
-  h2 { margin-top: 0.6rem; }
+  .section {
+    padding: var(--space-section) 0;
+    border-top: 1px solid var(--border);
+  }
+  .section.flush { border-top: none; }
+  .inner.narrow { max-width: var(--reading); }
+  .eyebrow { margin-bottom: 0.9rem; }
+  h2 { margin-top: 0; }
+  .lead {
+    max-width: var(--reading);
+    font-size: 1.1rem;
+    margin-top: 0.4rem;
+  }
+  .body { margin-top: 1.75rem; }
 </style>

@@ -17,6 +17,7 @@ import Blink from './Blink.astro';
           <li><a href="https://theairuntime.com">Newsletter archive</a></li>
           <li><a href="/library">Reading list</a></li>
           <li><a href="/resources">Resources</a></li>
+          <li><a href="/subscriber-only">Subscriber-only</a></li>
           <li><a href="/about">About</a></li>
         </ul>
       </div>
@@ -26,19 +27,10 @@ import Blink from './Blink.astro';
         <ul>
           <li><a href="/boston">Boston meetup</a></li>
           <li><a href="/speakers">Speakers</a></li>
-          <li><a href="https://luma.com/tair">Luma calendar</a></li>
           <li><a href="/speak">Speak at an event</a></li>
           <li><a href="/sponsors">Sponsor / partner</a></li>
           <li><a href="/faq">FAQ</a></li>
-          <li><a href="/code-of-conduct">Code of Conduct</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h4>Get in touch</h4>
-        <ul>
-          <li><a href="mailto:info@theairuntime.com">info@theairuntime.com</a></li>
-          <li><a href="https://www.linkedin.com/in/kranthimanchikanti/">Founder on LinkedIn</a></li>
+          <li><a href="mailto:info@theairuntime.com">Contact</a></li>
         </ul>
       </div>
     </div>
@@ -52,17 +44,18 @@ import Blink from './Blink.astro';
 <style>
   .ftr {
     border-top: 1px solid var(--border);
-    padding: 3rem 0 2rem;
-    margin-top: 4rem;
+    padding: 3.5rem 0 2.5rem;
+    margin-top: 0;
     background: var(--bg-2);
   }
   .grid {
     display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr 1fr;
-    gap: 2rem;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 2.5rem;
   }
   @media (max-width: 720px) {
-    .grid { grid-template-columns: 1fr 1fr; }
+    .grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .brand { grid-column: 1 / -1; }
   }
   h4 {
     font-family: var(--font-mono);

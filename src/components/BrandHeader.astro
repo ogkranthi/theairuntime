@@ -9,7 +9,6 @@ import BlinkLogo from './BlinkLogo.astro';
       <a href="/speakers">Speakers</a>
       <a href="/library">Library</a>
       <a href="/resources">Resources</a>
-      <a href="/subscriber-only">Subscriber-only</a>
       <a href="/about">About</a>
       <a href="/subscribe" class="cta">Subscribe</a>
     </nav>
@@ -19,8 +18,8 @@ import BlinkLogo from './BlinkLogo.astro';
 <style>
   .hdr {
     border-bottom: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -29,26 +28,28 @@ import BlinkLogo from './BlinkLogo.astro';
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 64px;
+    height: 60px;
   }
   nav {
     display: flex;
-    gap: 1.25rem;
+    gap: 1.5rem;
     align-items: center;
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-family: var(--font-sans);
+    font-size: 0.92rem;
   }
-  nav a { color: var(--text-2); text-decoration: none; }
-  nav a:hover { color: var(--text); }
+  nav a { color: var(--text-2); text-decoration: none; transition: color 120ms ease; }
+  nav a:hover { color: var(--text); text-decoration: none; }
   nav .cta {
     color: #FFFFFF;
     background: var(--accent);
-    padding: 0.45rem 0.9rem;
-    border-radius: 6px;
-    font-weight: 700;
+    padding: 0.4rem 0.95rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
   }
-  nav .cta:hover { color: #FFFFFF; filter: brightness(1.08); }
-  @media (max-width: 640px) {
+  nav .cta:hover { color: #FFFFFF; background: var(--accent-hover); }
+  @media (max-width: 720px) {
     nav a:not(.cta) { display: none; }
   }
 </style>
