@@ -5,6 +5,7 @@ import Section from '../../components/Section.astro';
 import ReadingCard from '../../components/ReadingCard.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import JsonLd from '../../components/JsonLd.astro';
+import { breadcrumbList } from '../../lib/breadcrumbs';
 
 export async function getStaticPaths() {
   const speakers = await getCollection('speakers');
@@ -51,13 +52,21 @@ const personSchema = {
       }
     : {}),
 };
+
+const breadcrumbSchema = breadcrumbList(
+  [
+    { name: 'Speakers', path: '/speakers' },
+    { name: data.name, path: `/speakers/${speaker.slug}` },
+  ],
+  Astro.site,
+);
 ---
 <BaseLayout
   title={`${data.name} · The AI Runtime`}
   description={`${data.name} — ${data.title} at ${data.company}. ${data.talks[0]?.title ?? ''}`}
   ogType="profile"
 >
-  <JsonLd slot="jsonld" schema={personSchema} />
+  <JsonLd slot="jsonld" schema={[personSchema, breadcrumbSchema]} />
   <Section eyebrow="Speaker">
     <div class="head">
       <div class="avatar">
