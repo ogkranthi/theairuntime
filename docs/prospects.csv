@@ -1,0 +1,3 @@
+# The AI Runtime scouting ledger. See docs/scouting-routine.md.
+# track: speaker|collaborator|amplifier (one or more). status: lead -> verified -> contacted -> responded -> booked|passed.
+name,track,pillar,role,company,score,linkedin,twitter,youtube,reddit,source_url,notes,status
