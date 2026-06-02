@@ -6,6 +6,13 @@ import Section from '../../components/Section.astro';
 const resources = await getCollection('resources');
 resources.sort((a, b) => a.data.title.localeCompare(b.data.title));
 
+// Surface a featured free download at the top of the page so it's the first
+// thing visitors see. Prefer a featured + free resource with a real PDF.
+const featured = resources.find(
+  (r) => r.data.featured && r.data.status === 'free' && r.data.pdfUrl,
+);
+const rest = featured ? resources.filter((r) => r.slug !== featured.slug) : resources;
+
 const statusLabel: Record<string, string> = {
   'coming-soon': 'Coming soon',
   free: 'Free',
@@ -17,13 +24,39 @@ const statusLabel: Record<string, string> = {
   title="Resources · The AI Runtime"
   description="Practitioner-grade ebooks, checklists, and playbooks for AI practitioners."
 >
+  {featured && (
+    <section class="featured-wrap">
+      <div class="container">
+        <div class="featured">
+          <div class="copy">
+            <span class="tag">Free download · {featured.data.type}</span>
+            <h1>{featured.data.title}</h1>
+            <p class="dim">{featured.data.description}</p>
+            <div class="cta-row">
+              <a class="btn" href={featured.data.pdfUrl} download>Download the PDF →</a>
+              <a class="btn btn-ghost" href={`/resources/${featured.slug}`}>Learn more</a>
+            </div>
+            <p class="muted small">Free. No email required.</p>
+          </div>
+          <a class="cover" href={featured.data.pdfUrl} download aria-label={`Download ${featured.data.title}`}>
+            <span class="doc">
+              <span class="doc-kicker">The AI Runtime</span>
+              <span class="doc-title">Field Guide</span>
+              <span class="doc-foot">PDF</span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
   <Section
     eyebrow="Resources"
     title="Playbooks for AI practitioners"
     lead="Field-tested checklists, ebooks, and playbooks. Subscribers get them first."
   >
     <ul class="grid">
-      {resources.map((r) => (
+      {rest.map((r) => (
         <li>
           <a href={`/resources/${r.slug}`}>
             <div class="row">
@@ -43,6 +76,51 @@ const statusLabel: Record<string, string> = {
 </BaseLayout>
 
 <style>
+  .featured-wrap {
+    padding: var(--space-section) 0 0;
+  }
+  .featured {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    background:
+      radial-gradient(ellipse at top right, rgba(251, 146, 60, 0.10), transparent 60%),
+      var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+  }
+  .featured h1 { margin: 0.6rem 0 0.5rem; font-size: clamp(1.8rem, 3.5vw, 2.4rem); }
+  .featured .dim { max-width: 34rem; }
+  .cta-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.25rem 0 0.6rem; }
+  .small { font-size: 0.85rem; }
+  .cover {
+    display: block;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(150deg, var(--accent), var(--accent-hover));
+    box-shadow: 0 14px 40px rgba(234, 88, 12, 0.22);
+    text-decoration: none;
+    transition: transform 160ms ease;
+  }
+  .cover:hover { transform: translateY(-3px); text-decoration: none; }
+  .doc {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem;
+    color: #fff;
+    font-family: var(--font-mono);
+  }
+  .doc-kicker { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.85; }
+  .doc-title { font-size: 1.9rem; font-weight: 700; line-height: 1.05; }
+  .doc-foot { font-size: 0.8rem; letter-spacing: 0.14em; opacity: 0.85; }
+  @media (max-width: 720px) {
+    .featured { grid-template-columns: 1fr; padding: 1.75rem; }
+    .cover { max-width: 220px; order: -1; }
+  }
   .grid {
     list-style: none;
     padding: 0;
