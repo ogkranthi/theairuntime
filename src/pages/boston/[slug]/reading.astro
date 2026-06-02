@@ -4,6 +4,8 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Section from '../../../components/Section.astro';
 import ReadingCard from '../../../components/ReadingCard.astro';
 import SubstackEmbed from '../../../components/SubstackEmbed.astro';
+import JsonLd from '../../../components/JsonLd.astro';
+import { breadcrumbList } from '../../../lib/breadcrumbs';
 
 export async function getStaticPaths() {
   const events = await getCollection('events', (e) => e.slug.startsWith('boston/'));
@@ -43,11 +45,21 @@ const speakers = await Promise.all(
   event.data.speakers.map((ref: any) => getEntry('speakers', ref.slug ?? ref.id)),
 );
 const speakerNames = speakers.filter(Boolean).map((s: any) => s.data.name).join(' and ');
+
+const breadcrumbSchema = breadcrumbList(
+  [
+    { name: 'Boston', path: '/boston' },
+    { name: event.data.title, path: `/boston/${eventDateSlug}` },
+    { name: 'Reading list', path: `/boston/${eventDateSlug}/reading` },
+  ],
+  Astro.site,
+);
 ---
 <BaseLayout
   title={`Reading list · ${event.data.title} · The AI Runtime`}
   description={`Curated reading list for ${event.data.title} — production AI references for ${speakerNames}'s talks.`}
 >
+  <JsonLd slot="jsonld" schema={breadcrumbSchema} />
   <Section
     eyebrow="Reading list"
     title={event.data.title}

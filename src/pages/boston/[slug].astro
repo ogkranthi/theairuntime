@@ -9,6 +9,7 @@ import Section from '../../components/Section.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import JsonLd from '../../components/JsonLd.astro';
+import { breadcrumbList } from '../../lib/breadcrumbs';
 
 export async function getStaticPaths() {
   const events = await getCollection('events', (e) => e.slug.startsWith('boston/'));
@@ -100,12 +101,20 @@ const eventSchema = {
     : {}),
   isAccessibleForFree: true,
 };
+
+const breadcrumbSchema = breadcrumbList(
+  [
+    { name: 'Boston', path: '/boston' },
+    { name: d.title, path: `/boston/${event.slug.replace(/^boston\//, '')}` },
+  ],
+  Astro.site,
+);
 ---
 <BaseLayout
   title={`${event.data.title} · Boston · The AI Runtime`}
   description={event.data.description ?? `${event.data.title} — The AI Runtime Boston meetup.`}
 >
-  <JsonLd slot="jsonld" schema={eventSchema} />
+  <JsonLd slot="jsonld" schema={[eventSchema, breadcrumbSchema]} />
   <EventHero event={event} />
 
   <Section id="speakers" eyebrow="Speakers" title="Who shared what">

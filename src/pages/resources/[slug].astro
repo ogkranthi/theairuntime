@@ -3,6 +3,8 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import ResourceLeadGate from '../../components/ResourceLeadGate.tsx';
+import JsonLd from '../../components/JsonLd.astro';
+import { breadcrumbList } from '../../lib/breadcrumbs';
 
 export async function getStaticPaths() {
   const resources = await getCollection('resources');
@@ -22,11 +24,20 @@ const statusLabel: Record<string, string> = {
   'lead-gated': 'Free · email required',
   paid: 'Paid',
 };
+
+const breadcrumbSchema = breadcrumbList(
+  [
+    { name: 'Resources', path: '/resources' },
+    { name: data.title, path: `/resources/${resource.slug}` },
+  ],
+  Astro.site,
+);
 ---
 <BaseLayout
   title={`${data.title} · The AI Runtime`}
   description={data.description}
 >
+  <JsonLd slot="jsonld" schema={breadcrumbSchema} />
   <Section eyebrow={data.type} title={data.title} lead={data.description}>
     <div class="meta">
       <span class="tag">{statusLabel[data.status]}</span>
