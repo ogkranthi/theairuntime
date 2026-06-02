@@ -7,12 +7,15 @@ import '@fontsource/inter/700.css';
 import '../styles/tokens.css';
 import BrandHeader from '../components/BrandHeader.astro';
 import BrandFooter from '../components/BrandFooter.astro';
+import JsonLd from '../components/JsonLd.astro';
 
 interface Props {
   title: string;
   description?: string;
   ogImage?: string;
   noindex?: boolean;
+  /** Override the OG/Twitter card type (e.g. 'article', 'profile'). */
+  ogType?: string;
 }
 
 const {
@@ -20,10 +23,55 @@ const {
   description = 'The publication where AI practitioners share what they have learned. LEARN. SHIP. RUN.',
   ogImage = '/og-default.png',
   noindex = false,
+  ogType = 'website',
 } = Astro.props;
 
 const fullTitle = title.includes('AI Runtime') ? title : `${title} · The AI Runtime`;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://events.theairuntime.com';
+
+// Site-wide structured data. Present on every page so AI engines and search
+// crawlers always have a clear, machine-readable identity for the brand.
+const orgSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': `${siteUrl}/#organization`,
+  name: 'The AI Runtime',
+  alternateName: 'The AI Runtime — Boston',
+  url: 'https://theairuntime.com',
+  description:
+    'The publication and community for engineers shipping AI to production. Evals, agents, inference, reliability, and cost — the operational layer where AI systems actually run.',
+  slogan: 'LEARN. SHIP. RUN.',
+  knowsAbout: [
+    'AI evaluation',
+    'AI agents in production',
+    'LLM inference and serving',
+    'AI reliability and incident response',
+    'AI cost and performance optimization',
+  ],
+  founder: {
+    '@type': 'Person',
+    name: 'Kranthi Manchikanti',
+    jobTitle: 'AI Architect',
+    sameAs: 'https://www.linkedin.com/in/kranthimanchikanti/',
+  },
+  sameAs: [
+    'https://theairuntime.com',
+    'https://www.linkedin.com/in/kranthimanchikanti/',
+    'https://luma.com/tair',
+  ],
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${siteUrl}/#website`,
+  url: siteUrl,
+  name: 'The AI Runtime — Events & Community',
+  description,
+  publisher: { '@id': `${siteUrl}/#organization` },
+  inLanguage: 'en-US',
+};
 ---
 <!doctype html>
 <html lang="en">
@@ -34,24 +82,32 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {noindex
+      ? <meta name="robots" content="noindex, nofollow" />
+      : <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />}
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#FFFFFF" />
+    <meta name="author" content="The AI Runtime" />
 
     <!-- Open Graph -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={new URL(ogImage, Astro.site).toString()} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="The AI Runtime" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={new URL(ogImage, Astro.site).toString()} />
+
+    <!-- Structured data: site-wide identity + optional per-page schema -->
+    <JsonLd schema={[orgSchema, websiteSchema]} />
+    <slot name="jsonld" />
   </head>
   <body>
     <BrandHeader />

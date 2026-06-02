@@ -1,0 +1,56 @@
+# robots.txt for events.theairuntime.com
+# Posture: maximize discoverability. AI crawlers are allowed so the events
+# surface in AI answers and search. Adjust ai-train below if you want to allow
+# search/grounding while reserving training rights.
+
+# --- Content usage preferences (contentsignals.org / AIPREF) ---
+# search   = appear in search indexes and AI search results
+# ai-input = usable for RAG / grounding / real-time AI answers
+# ai-train = usable for model training or fine-tuning
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
+
+# --- AI search + answer crawlers (allow: they drive citations and referrals) ---
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# --- AI training crawlers (allowed here; flip to Disallow: / to reserve) ---
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# --- Aggressive / low-value scrapers (blocked) ---
+User-agent: Bytespider
+Disallow: /
+
+# --- Everyone else ---
+User-agent: *
+Allow: /
+Disallow: /subscriber-only
+
+Sitemap: https://events.theairuntime.com/sitemap-index.xml

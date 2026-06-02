@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import ReadingCard from '../../components/ReadingCard.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
+import JsonLd from '../../components/JsonLd.astro';
 
 export async function getStaticPaths() {
   const speakers = await getCollection('speakers');
@@ -22,11 +23,41 @@ const allReading = await getCollection('reading');
 const recommendedReading = allReading
   .filter((r) => r.data.relatedSpeakers.some((s: any) => (s.slug ?? s.id) === speaker.slug))
   .sort((a, b) => +b.data.addedAt - +a.data.addedAt);
+
+// Person schema — makes each speaker an entity AI engines can recognize
+// and attribute talks to.
+const sameAs = [
+  data.social.linkedin,
+  data.social.twitter,
+  data.social.github,
+  data.social.website,
+].filter((u): u is string => !!u);
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: data.name,
+  jobTitle: data.title,
+  worksFor: { '@type': 'Organization', name: data.company },
+  url: new URL(Astro.url.pathname, Astro.site).toString(),
+  ...(data.photo ? { image: new URL(data.photo, Astro.site).toString() } : {}),
+  ...(sameAs.length ? { sameAs } : {}),
+  ...(data.talks.length
+    ? {
+        performerIn: data.talks.map((t) => ({
+          '@type': 'Event',
+          name: t.title,
+          organizer: { '@type': 'Organization', name: 'The AI Runtime' },
+        })),
+      }
+    : {}),
+};
 ---
 <BaseLayout
   title={`${data.name} · The AI Runtime`}
   description={`${data.name} — ${data.title} at ${data.company}. ${data.talks[0]?.title ?? ''}`}
+  ogType="profile"
 >
+  <JsonLd slot="jsonld" schema={personSchema} />
   <Section eyebrow="Speaker">
     <div class="head">
       <div class="avatar">

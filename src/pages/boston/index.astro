@@ -8,6 +8,7 @@ import PartnerStrip from '../../components/PartnerStrip.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
 import Section from '../../components/Section.astro';
+import JsonLd from '../../components/JsonLd.astro';
 
 const allEvents = await getCollection('events', (e) => e.slug.startsWith('boston/'));
 allEvents.sort((a, b) => +b.data.date - +a.data.date);
@@ -23,11 +24,76 @@ const speakers = await Promise.all(
 );
 
 const city = await getEntry('cities', 'boston');
+
+// Event schema for the canonical /boston/ hub (the active upcoming event).
+const d = upcoming.data;
+const toIso = (date: Date, time?: string) => {
+  if (!time) return date.toISOString().slice(0, 10);
+  const m = time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+  if (!m) return date.toISOString().slice(0, 10);
+  let h = parseInt(m[1], 10);
+  const mer = m[3]?.toUpperCase();
+  if (mer === 'PM' && h !== 12) h += 12;
+  if (mer === 'AM' && h === 12) h = 0;
+  const y = date.getFullYear();
+  const mo = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${y}-${mo}-${day}T${String(h).padStart(2, '0')}:${m[2]}:00-04:00`;
+};
+const eventSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: d.title,
+  description: d.description ?? `${d.title} — The AI Runtime Boston meetup.`,
+  startDate: toIso(d.date, d.doorsAt ?? d.startsAt),
+  ...(d.endsAt ? { endDate: toIso(d.date, d.endsAt) } : {}),
+  eventStatus: 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  url: new URL('/boston/', Astro.site).toString(),
+  image: new URL('/og-default.png', Astro.site).toString(),
+  ...(d.venue?.name
+    ? {
+        location: {
+          '@type': 'Place',
+          name: d.venue.name,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Cambridge',
+            addressRegion: 'MA',
+            addressCountry: 'US',
+          },
+        },
+      }
+    : {}),
+  organizer: { '@type': 'Organization', name: 'The AI Runtime', url: 'https://theairuntime.com' },
+  performer: speakers
+    .filter((s): s is NonNullable<typeof s> => !!s)
+    .map((s) => ({
+      '@type': 'Person',
+      name: s.data.name,
+      jobTitle: s.data.title,
+      worksFor: { '@type': 'Organization', name: s.data.company },
+    })),
+  ...(d.lumaUrl
+    ? {
+        offers: {
+          '@type': 'Offer',
+          name: 'RSVP',
+          price: '0',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+          url: d.lumaUrl,
+        },
+      }
+    : {}),
+  isAccessibleForFree: true,
+};
 ---
 <BaseLayout
   title="Boston · The AI Runtime"
   description={`${upcoming.data.title} — ${upcoming.data.speakers.length} talks on the production engineering of AI agents. ${city?.data.venueName ?? ''}`}
 >
+  <JsonLd slot="jsonld" schema={eventSchema} />
   <EventHero event={upcoming} />
 
   <Section id="speakers" eyebrow="Tonight's lineup" title="Two practitioners. Two production stories.">

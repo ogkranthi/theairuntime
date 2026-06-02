@@ -1,0 +1,15 @@
+---
+/**
+ * Renders a Schema.org JSON-LD block into the page <head>.
+ *
+ * Structured data is the highest-leverage move for AI discoverability:
+ * it's how Google, ChatGPT, Perplexity, Claude, and Gemini parse what a
+ * page actually *is* (an Event, a Person, an FAQ, an Organization) rather
+ * than guessing from prose. Pass any schema object (or array of objects).
+ */
+interface Props {
+  schema: Record<string, unknown> | Record<string, unknown>[];
+}
+const { schema } = Astro.props;
+---
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

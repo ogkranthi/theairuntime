@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="The AI Runtime — LEARN. SHIP. RUN.">
+  <rect width="1200" height="630" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="1200" height="12" fill="#EA580C"/>
+
+  <!-- Blink mascot: orange running cursor -->
+  <g transform="translate(120 220)">
+    <rect x="0" y="0" width="150" height="190" rx="18" fill="#FB923C"/>
+    <circle cx="48" cy="78" r="15" fill="#1A1A1A"/>
+    <circle cx="102" cy="78" r="15" fill="#1A1A1A"/>
+    <path d="M45 120 Q75 150 105 120" stroke="#1A1A1A" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <rect x="34" y="190" width="22" height="46" rx="11" fill="#FB923C"/>
+    <rect x="94" y="190" width="22" height="46" rx="11" fill="#FB923C"/>
+  </g>
+
+  <!-- Wordmark + tagline -->
+  <g font-family="'IBM Plex Mono', ui-monospace, Menlo, monospace">
+    <text x="340" y="290" font-size="72" font-weight="700" letter-spacing="-2" fill="#1A1A1A">the <tspan fill="#EA580C">AI</tspan> runtime</text>
+    <text x="344" y="350" font-size="30" letter-spacing="6" fill="#8A8A82">LEARN. SHIP. RUN.</text>
+    <text x="344" y="412" font-size="26" font-family="'Inter', system-ui, sans-serif" fill="#44443F">The publication &amp; community for engineers</text>
+    <text x="344" y="448" font-size="26" font-family="'Inter', system-ui, sans-serif" fill="#44443F">shipping AI to production.</text>
+  </g>
+</svg>

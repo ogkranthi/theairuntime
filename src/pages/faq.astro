@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
+import JsonLd from '../components/JsonLd.astro';
 
 const faqs = [
   {
@@ -45,11 +46,26 @@ const faqs = [
     a: 'See the Call for Speakers page. The bar is high (production stories, not vendor pitches), but we read every pitch.',
   },
 ];
+
+// Strip any inline HTML from answers so the schema carries clean text.
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: f.a.replace(/<[^>]+>/g, ''),
+    },
+  })),
+};
 ---
 <BaseLayout
   title="FAQ · The AI Runtime"
   description="Frequently asked questions about The AI Runtime meetups, the publication, recordings, and the practitioner Slack."
 >
+  <JsonLd slot="jsonld" schema={faqSchema} />
   <Section eyebrow="FAQ" title="Frequently asked">
     <ul class="faq">
       {faqs.map((f) => (
