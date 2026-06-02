@@ -3,7 +3,7 @@
  * Used by /library and /about to auto-surface latest issues without
  * requiring a manual reading-list entry for each new post.
  *
- * Build-time only — runs once per deploy. Soft-fails if the feed is
+ * Build-time only, runs once per deploy. Soft-fails if the feed is
  * unreachable so a network blip never breaks the build.
  */
 

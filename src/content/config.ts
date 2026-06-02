@@ -83,7 +83,7 @@ const events = defineCollection({
       )
       .default([]),
     description: z.string().optional(),
-    // Recap fields — populated after the event runs.
+    // Recap fields, populated after the event runs.
     // `recap` is rendered from the markdown body; these are structured extras.
     recapTakeaways: z
       .array(
@@ -147,7 +147,7 @@ const reading = defineCollection({
   }),
 });
 
-// Tools we use and recommend — distinct from `reading` (content) and
+// Tools we use and recommend, distinct from `reading` (content) and
 // `resources` (owned content we sell). Some entries are referral links;
 // `isReferral: true` flags them so the UI can disclose this transparently.
 const tools = defineCollection({

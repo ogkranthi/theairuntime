@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import SubstackEmbed from '../components/SubstackEmbed.astro';
+import Blink from '../components/Blink.astro';
+import { fetchSubstackPosts } from '../lib/substack';
+
+const posts = await fetchSubstackPosts(4);
+const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+---
+<BaseLayout
+  title="The AI Runtime"
+  description="The publication and community for engineers shipping AI to production. Evals, agents, inference, reliability, cost. New issues every week."
+>
+  <section class="hero">
+    <div class="container">
+      <div class="grid">
+        <div class="copy">
+          <span class="tag">The AI Runtime</span>
+          <h1>Production lessons from AI practitioners</h1>
+          <p class="lede dim">
+            The publication and community for engineers shipping AI to production. Evals, agents,
+            inference, reliability, cost. One free issue a week, the kind of piece you'd forward to
+            your team.
+          </p>
+          <div class="sub">
+            <SubstackEmbed
+              source="home-hero"
+              variant="inline"
+              buttonLabel="Subscribe free"
+            />
+          </div>
+        </div>
+        <div class="art"><Blink size={150} showMotion={true} showCheeks={true} /></div>
+      </div>
+    </div>
+  </section>
+
+  {posts.length > 0 && (
+    <Section eyebrow="Latest issues" title="Fresh from the newsletter">
+      <ul class="issues">
+        {posts.map((p) => (
+          <li>
+            <a href={p.url} target="_blank" rel="noopener">
+              <span class="date muted">{dateFmt.format(p.publishedAt)}</span>
+              <span class="t">{p.title}</span>
+              <span class="sum dim">{p.summary}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p class="more"><a href="https://theairuntime.com">Read every issue at theairuntime.com →</a></p>
+    </Section>
+  )}
+
+  <Section eyebrow="In person" title="The AI Runtime Boston" narrow>
+    <p class="dim">
+      A monthly meetup in Cambridge for engineers shipping AI to production. Two practitioner talks a
+      night, real production stories, no vendor pitches.
+    </p>
+    <p>
+      <a class="btn" href="/boston">See the next event →</a>
+      <a class="btn btn-ghost" href="/speakers">Past speakers</a>
+    </p>
+  </Section>
+
+  <Section eyebrow="Free resource" title="The AI Runtime Field Guide" narrow>
+    <p class="dim">
+      A guided reading path through The AI Runtime for AI practitioners. The essential reads on AI
+      engineering, Model Reliability Engineering, and vertical agents, in the order that builds real
+      production intuition. Free, no email required.
+    </p>
+    <p>
+      <a class="btn" href="/resources/the-ai-runtime-field-guide.pdf" download>Download the PDF →</a>
+      <a class="btn btn-ghost" href="/library">Reading library</a>
+    </p>
+  </Section>
+
+  <Section eyebrow="Subscribe" title="Get it in your inbox" narrow>
+    <p class="dim">
+      Free, weekly, anti-hype. Production lessons from practitioners, plus the next Boston event
+      before the public drop.
+    </p>
+    <SubstackEmbed source="home-footer" />
+  </Section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: 4.5rem 0 4rem;
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(ellipse at top right, rgba(251, 146, 60, 0.10), transparent 55%),
+      var(--bg);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  @media (max-width: 720px) {
+    .grid { grid-template-columns: 1fr; }
+    .art { order: -1; }
+  }
+  h1 { margin: 0.7rem 0 0; }
+  .lede { font-size: 1.15rem; max-width: 36rem; margin-top: 1rem; }
+  .sub { margin-top: 1.75rem; max-width: 32rem; }
+  .art { display: flex; justify-content: center; }
+
+  .issues { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .issues a {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    grid-template-areas: 'date title' 'date sum';
+    gap: 0.1rem 1.25rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .issues a:hover { border-color: var(--accent); }
+  .issues .date { grid-area: date; font-family: var(--font-mono); font-size: 0.8rem; padding-top: 0.15rem; }
+  .issues .t { grid-area: title; font-family: var(--font-mono); font-weight: 700; }
+  .issues .sum { grid-area: sum; font-size: 0.92rem; }
+  @media (max-width: 560px) {
+    .issues a { grid-template-columns: 1fr; grid-template-areas: 'date' 'title' 'sum'; gap: 0.25rem; }
+  }
+  .more { margin-top: 1.25rem; font-family: var(--font-mono); font-size: 0.9rem; }
+</style>

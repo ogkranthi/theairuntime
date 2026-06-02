@@ -70,7 +70,7 @@ export default function ResourceLeadGate({
     const ctaCopy =
       status === 'coming-soon'
         ? "You're on the list. We'll email you the day it drops."
-        : 'Check your inbox — the download link is on the way.';
+        : 'Check your inbox, the download link is on the way.';
     return (
       <div className="ok">
         <strong>✓ Got it.</strong>

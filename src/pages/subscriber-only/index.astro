@@ -95,13 +95,13 @@ const initials = (name: string) =>
 ---
 <BaseLayout
   title="Subscriber-only · The AI Runtime"
-  description="A gated channel for subscribers — talk recordings and slides, newsletter issues, event archives, and downloadable playbooks. Free to unlock with your email."
+  description="A gated channel for subscribers, talk recordings and slides, newsletter issues, event archives, and downloadable playbooks. Free to unlock with your email."
   noindex={true}
 >
   <Section
     eyebrow="Subscriber-only"
     title="The subscriber-only channel"
-    lead="A gated home for the good stuff: talk recordings and slide decks, every newsletter issue, the full event archive, and the playbooks we've shipped. Free for subscribers — unlock it with your email."
+    lead="A gated home for the good stuff: talk recordings and slide decks, every newsletter issue, the full event archive, and the playbooks we've shipped. Free for subscribers. Unlock it with your email."
   >
     <nav class="toc" aria-label="Inside the channel">
       {substackPosts.length > 0 && <span>Newsletter</span>}
@@ -143,7 +143,7 @@ const initials = (name: string) =>
     {talks.length > 0 && (
       <Section id="talks" eyebrow="Talks & recordings" title="Every talk, with slides and recordings">
         <p class="dim wide">
-          The full archive of talks from our meetups — abstracts, slide decks, and recordings as they go up.
+          The full archive of talks from our meetups, abstracts, slide decks, and recordings as they go up.
           Browse the people behind them on the <a href="/speakers">speakers page</a>.
         </p>
         <ul class="talks-grid">
@@ -177,7 +177,7 @@ const initials = (name: string) =>
     )}
 
     {(upcomingEvents.length > 0 || pastEvents.length > 0) && (
-      <Section id="events" eyebrow="Events" title="Where we've been — and what's next">
+      <Section id="events" eyebrow="Events" title="Where we've been, and what's next">
         {upcomingEvents.length > 0 && (
           <>
             <h3 class="sub">Upcoming</h3>

@@ -25,7 +25,7 @@ const recommendedReading = allReading
   .filter((r) => r.data.relatedSpeakers.some((s: any) => (s.slug ?? s.id) === speaker.slug))
   .sort((a, b) => +b.data.addedAt - +a.data.addedAt);
 
-// Person schema — makes each speaker an entity AI engines can recognize
+// Person schema, makes each speaker an entity AI engines can recognize
 // and attribute talks to.
 const sameAs = [
   data.social.linkedin,
@@ -63,7 +63,7 @@ const breadcrumbSchema = breadcrumbList(
 ---
 <BaseLayout
   title={`${data.name} · The AI Runtime`}
-  description={`${data.name} — ${data.title} at ${data.company}. ${data.talks[0]?.title ?? ''}`}
+  description={`${data.name}, ${data.title} at ${data.company}. ${data.talks[0]?.title ?? ''}`}
   ogType="profile"
 >
   <JsonLd slot="jsonld" schema={[personSchema, breadcrumbSchema]} />
@@ -116,7 +116,7 @@ const breadcrumbSchema = breadcrumbList(
 
   <Section eyebrow="Subscribe" title="Get more talks like this one">
     <p class="dim wide">
-      The AI Runtime publishes weekly issues from practitioners shipping AI to production —
+      The AI Runtime publishes weekly issues from practitioners shipping AI to production,
       and announces every new meetup talk first.
     </p>
     <SubstackEmbed

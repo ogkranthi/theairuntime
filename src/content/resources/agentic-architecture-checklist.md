@@ -3,7 +3,7 @@ title: The Agentic Architectures Checklist
 type: checklist
 pillar: agents
 description: |
-  A practitioner-grade checklist for agentic system design — identity, trust,
+  A practitioner-grade checklist for agentic system design, identity, trust,
   tool access, eval coverage, observability, and the failure modes that take
   down production agents. Free PDF for subscribers.
 length: 12 pages

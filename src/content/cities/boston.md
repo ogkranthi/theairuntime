@@ -6,10 +6,10 @@ cadence: Monthly
 joinUrl: https://luma.com/tair
 currentEventSlug: 2026-06-16-ai-as-a-teammate
 intro: |
-  The AI Runtime — Boston is a monthly meetup for AI practitioners.
+  The AI Runtime Boston is a monthly meetup for AI practitioners.
   Practitioner talks, real systems. Cambridge, MA.
 ---
 
-The AI Runtime — Boston is the in-person companion to the publication.
+The AI Runtime Boston is the in-person companion to the publication.
 Once a month, two practitioners walk us through one specific thing they
-learned shipping AI in production — the kind of talk you'd forward to your team.
+learned shipping AI in production, the kind of talk you'd forward to your team.

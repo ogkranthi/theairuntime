@@ -5,7 +5,7 @@ source: Anthropic
 pillar: agents
 tags: [agents, tool-use, protocols, mcp, identity]
 summary: |
-  MCP — the open protocol Anthropic shipped for connecting agents to tools
+  MCP, the open protocol Anthropic shipped for connecting agents to tools
   and data sources. Read this before designing any agent that needs to act
   on systems it doesn't own. Relevant tonight: how agents authenticate and
   enumerate capabilities at endpoints they've never seen.

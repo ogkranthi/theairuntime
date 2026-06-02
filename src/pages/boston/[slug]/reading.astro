@@ -57,7 +57,7 @@ const breadcrumbSchema = breadcrumbList(
 ---
 <BaseLayout
   title={`Reading list · ${event.data.title} · The AI Runtime`}
-  description={`Curated reading list for ${event.data.title} — production AI references for ${speakerNames}'s talks.`}
+  description={`Curated reading list for ${event.data.title}, production AI references for ${speakerNames}'s talks.`}
 >
   <JsonLd slot="jsonld" schema={breadcrumbSchema} />
   <Section
@@ -88,13 +88,13 @@ const breadcrumbSchema = breadcrumbList(
 
   {fromTheTalks.length === 0 && relatedToSpeakers.length === 0 && (
     <Section>
-      <p class="dim">No reading list curated yet. The post-event roundup ships in the next newsletter — <a href="https://theairuntime.com">subscribe</a> to get it first.</p>
+      <p class="dim">No reading list curated yet. The post-event roundup ships in the next newsletter, <a href="https://theairuntime.com">subscribe</a> to get it first.</p>
     </Section>
   )}
 
   <Section eyebrow="Subscribe" title="Get the post-event recap">
     <p class="dim wide">
-      The recap of tonight — including any new entries added to the reading list — lands in subscribers' inboxes first.
+      The recap of tonight, including any new entries added to the reading list, lands in subscribers' inboxes first.
     </p>
     <SubstackEmbed
       headline="The AI Runtime newsletter"

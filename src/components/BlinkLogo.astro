@@ -12,7 +12,7 @@ const { size = 'md', withTagline = true, href = '/' } = Astro.props;
 const blinkSize = size === 'sm' ? 28 : size === 'lg' ? 64 : 40;
 const wordmarkSize = size === 'sm' ? '1rem' : size === 'lg' ? '1.6rem' : '1.2rem';
 ---
-<a href={href} class="logo" aria-label="The AI Runtime — home">
+<a href={href} class="logo" aria-label="The AI Runtime, home">
   <Blink size={blinkSize} showLegs={size !== 'sm'} showMotion={size === 'lg'} ariaLabel="Blink mascot" />
   <span class="lockup">
     <span class="wordmark" style={`font-size: ${wordmarkSize}`}>

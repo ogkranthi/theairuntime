@@ -8,8 +8,8 @@ status: upcoming
 lumaUrl: https://luma.com/du7lj7wp
 agenda:
   - { item: 'Doors open · informal mingling' }
-  - { item: 'Welcome — Kranthi Manchikanti' }
-  - { item: 'Talk · Nirmal Jingar — AI as a Teammate' }
+  - { item: 'Welcome, Kranthi Manchikanti' }
+  - { item: 'Talk · Nirmal Jingar, AI as a Teammate' }
   - { item: 'Open discussion · networking' }
   - { item: 'Close' }
 speakers:
@@ -17,6 +17,6 @@ speakers:
 description: |
   An evening for people building, shipping, and scaling with AI. Nirmal
   Jingar (Wayfair) on treating AI as an active teammate in the software
-  development lifecycle — and the double-digit engineering productivity
+  development lifecycle, and the double-digit engineering productivity
   gains that come from embedding it into daily workflows.
 ---

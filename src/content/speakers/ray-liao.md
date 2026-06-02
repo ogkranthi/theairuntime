@@ -9,7 +9,7 @@ talks:
     title: Tradeoffs and Learnings with AI Agent Self-Signups
     abstract: |
       As AI agents increasingly become first-class actors on the internet, every
-      existing auth model breaks down — they all assume a logged-in human at the
+      existing auth model breaks down, they all assume a logged-in human at the
       start of the flow, but agents now arrive at endpoints before any human
       does. At Inkbox, Ray and his team recently enabled agent self-registration,
       which forced them to rethink identity, trust, and permissions from the
@@ -18,5 +18,5 @@ talks:
 ---
 
 Ray Liao is a cofounder of Inkbox and an MIT CS PhD. His team is among the
-first to ship production support for AI agents registering themselves —
+first to ship production support for AI agents registering themselves,
 the kind of work where the lessons can only come from doing it.

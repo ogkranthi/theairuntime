@@ -4,13 +4,13 @@
  * Static site (built by Astro into dist/) is served via the ASSETS binding.
  * Dynamic routes are handled here:
  *
- *   POST /api/subscribe — capture lead emails from the resource lead-gate.
+ *   POST /api/subscribe, capture lead emails from the resource lead-gate.
  *                         Forwards to Substack and optionally mirrors to a webhook.
  */
 
 interface Env {
   ASSETS: Fetcher;
-  /** Origin where the Substack publication lives — Custom Domain by default. */
+  /** Origin where the Substack publication lives, Custom Domain by default. */
   SUBSTACK_ORIGIN?: string;
   /** Optional webhook (Slack, Make, Zapier) that mirrors every lead. */
   LEAD_WEBHOOK_URL?: string;

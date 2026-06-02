@@ -1,4 +1,4 @@
-# events.theairuntime.com — Cloudflare Pages site for the meetup hub,
+# events.theairuntime.com, Cloudflare Pages site for the meetup hub,
 # speaker archive, and resources library. The publication itself lives
 # at theairuntime.com (Substack Custom Domain) and serves /p/*, /feed,
-# /archive natively — no redirects needed here.
+# /archive natively, no redirects needed here.
