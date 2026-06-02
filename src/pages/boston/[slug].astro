@@ -8,6 +8,7 @@ import PartnerStrip from '../../components/PartnerStrip.astro';
 import Section from '../../components/Section.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
+import JsonLd from '../../components/JsonLd.astro';
 
 export async function getStaticPaths() {
   const events = await getCollection('events', (e) => e.slug.startsWith('boston/'));
@@ -26,11 +27,85 @@ const { Content: RecapBody } = await event.render();
 const hasRecapBody = (event.body ?? '').trim().length > 0;
 const hasRecap =
   hasRecapBody || event.data.recapTakeaways.length > 0 || event.data.recapPhotos.length > 0;
+
+// Schema.org Event — built from frontmatter so every event page is
+// machine-readable for Google rich results and AI answer engines.
+const d = event.data;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const toIso = (date: Date, time?: string) => {
+  // Times in frontmatter are local (US/Eastern, -04:00 in summer).
+  if (!time) return date.toISOString().slice(0, 10);
+  const m = time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+  if (!m) return date.toISOString().slice(0, 10);
+  let h = parseInt(m[1], 10);
+  const min = m[2];
+  const mer = m[3]?.toUpperCase();
+  if (mer === 'PM' && h !== 12) h += 12;
+  if (mer === 'AM' && h === 12) h = 0;
+  const y = date.getFullYear();
+  const mo = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${y}-${mo}-${day}T${String(h).padStart(2, '0')}:${min}:00-04:00`;
+};
+
+const eventSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: d.title,
+  description: d.description ?? `${d.title} — The AI Runtime Boston meetup.`,
+  startDate: toIso(d.date, d.doorsAt ?? d.startsAt),
+  ...(d.endsAt ? { endDate: toIso(d.date, d.endsAt) } : {}),
+  eventStatus: 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  url: canonicalUrl,
+  image: new URL('/og-default.png', Astro.site).toString(),
+  ...(d.venue?.name
+    ? {
+        location: {
+          '@type': 'Place',
+          name: d.venue.name,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Cambridge',
+            addressRegion: 'MA',
+            addressCountry: 'US',
+          },
+        },
+      }
+    : {}),
+  organizer: {
+    '@type': 'Organization',
+    name: 'The AI Runtime',
+    url: 'https://theairuntime.com',
+  },
+  performer: speakers
+    .filter((s): s is NonNullable<typeof s> => !!s)
+    .map((s) => ({
+      '@type': 'Person',
+      name: s.data.name,
+      jobTitle: s.data.title,
+      worksFor: { '@type': 'Organization', name: s.data.company },
+    })),
+  ...(d.lumaUrl
+    ? {
+        offers: {
+          '@type': 'Offer',
+          name: 'RSVP',
+          price: '0',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+          url: d.lumaUrl,
+        },
+      }
+    : {}),
+  isAccessibleForFree: true,
+};
 ---
 <BaseLayout
   title={`${event.data.title} · Boston · The AI Runtime`}
   description={event.data.description ?? `${event.data.title} — The AI Runtime Boston meetup.`}
 >
+  <JsonLd slot="jsonld" schema={eventSchema} />
   <EventHero event={event} />
 
   <Section id="speakers" eyebrow="Speakers" title="Who shared what">
