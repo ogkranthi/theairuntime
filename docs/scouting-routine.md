@@ -28,13 +28,11 @@ A single person can fit more than one track. Tag all that apply.
 
 ### Editorial fit (must pass)
 
-Look for people whose public work is about one of the five pillars:
+Look for people whose public work is about one of the three pillars:
 
-1. Evals & Observability
-2. Agents in Production
-3. Inference & Serving
-4. Reliability & Incidents
-5. Cost & Performance
+1. Model Reliability Engineering for AI
+2. Vertical Agents
+3. Lessons from the Trenches for AI
 
 ### Auto-reject signals
 
@@ -48,11 +46,12 @@ filter in `BRAND.md`.
 Reuse these phrase banks across every platform. Combine a pillar phrase with a
 production-signal phrase for the highest-signal queries.
 
-**Pillar phrases:** LLM evals, eval harness, agent observability, LLM
-tracing, agents in production, multi-agent systems, tool calling reliability,
-inference optimization, model serving, vLLM, GPU utilization, KV cache, LLM
-latency, prompt regression, RAG in production, LLM cost optimization, token
-cost, LLM incident, hallucination guardrails, LLM reliability.
+**Pillar phrases:** model reliability engineering, LLM reliability, agent
+reliability, hallucination guardrails, LLM incident, agent postmortem, eval
+harness, agent observability, LLM tracing, vertical AI agent, domain-specific
+agent, agents in production, multi-agent systems, tool calling reliability,
+context engineering, harness engineering, RAG in production, what we shipped,
+lessons from the trenches.
 
 **Production-signal phrases:** at scale, in production, postmortem, we
 shipped, lessons learned, runbook, on-call, we migrated, cut our cost, p99
