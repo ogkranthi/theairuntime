@@ -193,19 +193,48 @@ the person's actual work in the first line. Subscribe link is always
 > is useful to your readers, a share would mean a lot. Either way, keep up the
 > {specific} work.
 
-## 7. Cadence and hygiene
+## 7. Cadence and hygiene (never repeat content)
 
-- Run weekly. Start each run by reading `docs/prospects.csv` and the existing
-  `src/content/speakers/*.md` so you never re-add or re-contact someone.
-- Cap outreach drafts at the top 10 unworked rows per run.
-- Never auto-send. The routine drafts; a human reviews and sends.
+- Start every run by reading `docs/prospects.csv` and the existing
+  `src/content/speakers/*.md`. Build a seen-set of normalized names (lowercase,
+  trimmed) and of every `source_url`. Anyone in that set is off limits: do not
+  re-add them and do not re-draft outreach for them.
+- Dedupe key is name OR source_url. If either already exists, skip the hit.
+- For recurring runs, bias toward fresh material: set `freshness=week` (web),
+  `date_posted=last-week` (Google), `uploadDate=this_week` (YouTube), and
+  rotate the search vocabulary so you are not re-mining the same queries.
+- Cap outreach drafts at the top 3 NEW rows per run. Never auto-send. The
+  routine drafts; a human reviews and sends.
 - Respect each platform's rules (some subreddits forbid promotion). When a
   source is community-run, lead with value, not a pitch.
-- Log the run date at the top of `docs/prospects.csv` as a comment.
+- Log each run as a `# Run <date>` comment above its appended rows.
 
-## 8. Running it
+## 8. Running it on demand
 
-Ask Claude: "Run the scouting routine for the {pillar} pillar." Claude will
-seed with web search, work each platform with the tools above, score, and
-append rows to `docs/prospects.csv` with drafted outreach for the top
+Ask Claude: "Run the scouting routine for the {pillar} pillar." Claude seeds
+with web search, works each platform with the tools above, scores, and appends
+net-new rows to `docs/prospects.csv` with drafted outreach for the top
 prospects. Narrow by pillar, city, or track to keep runs focused.
+
+## 9. Scheduling (daily at 7 AM)
+
+The exact prompt for an unattended run lives in `docs/scouting-daily-prompt.md`.
+It runs all three pillars, dedupes against the ledger, and appends only
+net-new prospects.
+
+Web sessions run in an ephemeral container that is reclaimed after inactivity,
+so an in-session loop will not survive until the next morning. Use a scheduled
+trigger instead:
+
+1. In the Claude Code web app, open this repo's environment and create a
+   Scheduled session (trigger). Docs:
+   https://code.claude.com/docs/en/claude-code-on-the-web
+2. Cadence: daily at 07:00 America/New_York (Boston). Adjust the timezone if
+   the operator is elsewhere.
+3. Branch: `claude/elegant-noether-Qhlxg`.
+4. Prompt: paste the body of `docs/scouting-daily-prompt.md` (or simply
+   "Follow docs/scouting-daily-prompt.md").
+
+The scheduled run commits and pushes its additions and posts a summary with the
+top 3 drafts. Because every run reads the ledger first and dedupes on name and
+source_url, content never repeats across days.
