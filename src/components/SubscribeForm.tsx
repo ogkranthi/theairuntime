@@ -15,7 +15,7 @@ export default function SubscribeForm({
   source = 'site-subscribe',
   buttonLabel = 'Subscribe',
   successTitle = "You're on the list.",
-  successBody = 'Production lessons from AI practitioners — your first issue lands soon.',
+  successBody = 'Production lessons from AI practitioners, your first issue lands soon.',
   fallbackToPublication = true,
 }: Props) {
   const [email, setEmail] = useState('');

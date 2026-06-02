@@ -5,7 +5,7 @@ source: Anthropic
 pillar: agents
 tags: [agents, context, prompting, production]
 summary: |
-  Practical guide to designing the context that agents see — how to build
+  Practical guide to designing the context that agents see, how to build
   inputs that survive long-horizon tool use without devolving into
   prompt-stuffing. Closes the gap between "this works in the playground"
   and "this works in production with real users."

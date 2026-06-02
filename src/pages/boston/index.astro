@@ -44,7 +44,7 @@ const eventSchema = {
   '@context': 'https://schema.org',
   '@type': 'Event',
   name: d.title,
-  description: d.description ?? `${d.title} — The AI Runtime Boston meetup.`,
+  description: d.description ?? `${d.title}, The AI Runtime Boston meetup.`,
   startDate: toIso(d.date, d.doorsAt ?? d.startsAt),
   ...(d.endsAt ? { endDate: toIso(d.date, d.endsAt) } : {}),
   eventStatus: 'https://schema.org/EventScheduled',
@@ -91,7 +91,7 @@ const eventSchema = {
 ---
 <BaseLayout
   title="Boston · The AI Runtime"
-  description={`${upcoming.data.title} — ${upcoming.data.speakers.length} talks on the production engineering of AI agents. ${city?.data.venueName ?? ''}`}
+  description={`${upcoming.data.title}, ${upcoming.data.speakers.length} talks on the production engineering of AI agents. ${city?.data.venueName ?? ''}`}
 >
   <JsonLd slot="jsonld" schema={eventSchema} />
   <EventHero event={upcoming} />
@@ -109,9 +109,9 @@ const eventSchema = {
     </div>
   </Section>
 
-  <Section eyebrow="Subscribe" title="Get the recap — and the next event before it sells out">
+  <Section eyebrow="Subscribe" title="Get the recap, and the next event before it sells out">
     <p class="dim wide">
-      Slides and links from tonight's talks land here Thursday. Subscribers get the recap first — and an
+      Slides and links from tonight's talks land here Thursday. Subscribers get the recap first, and an
       invite to next month's Boston meetup before the public Luma drop.
     </p>
     <SubstackEmbed
@@ -125,7 +125,7 @@ const eventSchema = {
 
   <Section eyebrow="Background reading" title="Read before the talks">
     <p class="dim wide">
-      A curated reading list for tonight's topics — agent architectures, identity for agents, and the gap
+      A curated reading list for tonight's topics, agent architectures, identity for agents, and the gap
       between AI demos and production. Free, all from primary sources.
     </p>
     <p>
@@ -136,7 +136,7 @@ const eventSchema = {
 
   <Section eyebrow="Free resource" title="The AI Runtime Field Guide">
     <p class="dim wide">
-      A guided reading path through The AI Runtime for AI practitioners — AI engineering, Model Reliability
+      A guided reading path through The AI Runtime for AI practitioners. AI engineering, Model Reliability
       Engineering, and vertical agents, in the order that builds real production intuition. Free, no email required.
     </p>
     <p>

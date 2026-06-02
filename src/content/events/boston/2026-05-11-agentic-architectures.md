@@ -14,9 +14,9 @@ partners:
     url: https://hackersquad.com
 agenda:
   - { item: 'Doors open · informal mingling' }
-  - { item: 'Welcome — Kranthi Manchikanti' }
-  - { item: 'Talk 1 · Ray Liao — AI Agent Self-Signups' }
-  - { item: 'Talk 2 · Michael R. Schulte — The Greenfield Delusion' }
+  - { item: 'Welcome, Kranthi Manchikanti' }
+  - { item: 'Talk 1 · Ray Liao, AI Agent Self-Signups' }
+  - { item: 'Talk 2 · Michael R. Schulte, The Greenfield Delusion' }
   - { item: 'Open discussion · networking' }
   - { item: 'Close' }
 speakers:
@@ -26,5 +26,5 @@ description: |
   Two practitioners on the production engineering of AI agents. Ray Liao
   (Inkbox) on rethinking identity and trust when agents self-register.
   Michael R. Schulte (HBS) on the three questions every AI deployment dies
-  on — with a live deploy into a real codebase.
+  on, with a live deploy into a real codebase.
 ---

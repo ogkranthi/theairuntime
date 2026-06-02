@@ -29,7 +29,7 @@ const hasRecapBody = (event.body ?? '').trim().length > 0;
 const hasRecap =
   hasRecapBody || event.data.recapTakeaways.length > 0 || event.data.recapPhotos.length > 0;
 
-// Schema.org Event — built from frontmatter so every event page is
+// Schema.org Event, built from frontmatter so every event page is
 // machine-readable for Google rich results and AI answer engines.
 const d = event.data;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
@@ -53,7 +53,7 @@ const eventSchema = {
   '@context': 'https://schema.org',
   '@type': 'Event',
   name: d.title,
-  description: d.description ?? `${d.title} — The AI Runtime Boston meetup.`,
+  description: d.description ?? `${d.title}, The AI Runtime Boston meetup.`,
   startDate: toIso(d.date, d.doorsAt ?? d.startsAt),
   ...(d.endsAt ? { endDate: toIso(d.date, d.endsAt) } : {}),
   eventStatus: 'https://schema.org/EventScheduled',
@@ -112,7 +112,7 @@ const breadcrumbSchema = breadcrumbList(
 ---
 <BaseLayout
   title={`${event.data.title} · Boston · The AI Runtime`}
-  description={event.data.description ?? `${event.data.title} — The AI Runtime Boston meetup.`}
+  description={event.data.description ?? `${event.data.title}, The AI Runtime Boston meetup.`}
 >
   <JsonLd slot="jsonld" schema={[eventSchema, breadcrumbSchema]} />
   <EventHero event={event} />
@@ -172,7 +172,7 @@ const breadcrumbSchema = breadcrumbList(
     <p class="dim wide">
       {event.data.status === 'past'
         ? 'Subscribers get the recap, slides, and the next Boston event before the public Luma drop.'
-        : 'Slides, recording, and the recap will land here within a week — and in subscribers\' inboxes first.'}
+        : 'Slides, recording, and the recap will land here within a week, and in subscribers\' inboxes first.'}
     </p>
     <SubstackEmbed
       source={event.data.status === 'past' ? 'past-event' : 'upcoming-event'}

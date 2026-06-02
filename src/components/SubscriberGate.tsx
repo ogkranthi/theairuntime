@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
  * The gated content is server-rendered inside `#subscriber-content` (with the
  * `locked` class). This island reveals it once the visitor subscribes via
  * `/api/subscribe`, or if they've unlocked before (remembered in localStorage).
- * Not a hard paywall — the same lead-gate model the rest of the site uses.
+ * Not a hard paywall, the same lead-gate model the rest of the site uses.
  */
 
 const STORAGE_KEY = 'tair_subscriber_unlocked';
@@ -33,7 +33,7 @@ export default function SubscriberGate({ source = 'subscriber-only' }: Props) {
         setUnlocked(true);
       }
     } catch {
-      /* localStorage unavailable — leave gated */
+      /* localStorage unavailable, leave gated */
     }
   }, []);
 
@@ -72,7 +72,7 @@ export default function SubscriberGate({ source = 'subscriber-only' }: Props) {
       <span class="lock" aria-hidden="true">🔒</span>
       <h3>Subscriber-only channel</h3>
       <p>
-        Talk recordings, slide decks, event archives, and downloadable playbooks — free for subscribers.
+        Talk recordings, slide decks, event archives, and downloadable playbooks, free for subscribers.
         Drop your email to unlock the full channel.
       </p>
       <form onSubmit={handleSubmit} class="gate-form">

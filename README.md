@@ -1,6 +1,6 @@
 # events.theairuntime.com
 
-Web platform for [The AI Runtime](https://theairuntime.com) — the publication and community for engineers shipping AI to production.
+Web platform for [The AI Runtime](https://theairuntime.com), the publication and community for engineers shipping AI to production.
 
 **Domain split:**
 - `theairuntime.com` → Substack (Custom Domain). The publication itself: `/`, `/p/*`, `/feed`, `/archive`.
@@ -68,13 +68,13 @@ Drop `src/content/resources/<slug>.md`. Set `status` to `coming-soon`, `lead-gat
 
 ## Deploy
 
-Connected to Cloudflare Pages. Build command `npm run build`, output `dist/`. Custom domain `events.theairuntime.com` bound to the Pages project. Root domain `theairuntime.com` is owned by Substack Custom Domain — do not bind the apex to Pages.
+Connected to Cloudflare Pages. Build command `npm run build`, output `dist/`. Custom domain `events.theairuntime.com` bound to the Pages project. Root domain `theairuntime.com` is owned by Substack Custom Domain, do not bind the apex to Pages.
 
 ### Required env vars (Cloudflare Pages dashboard)
 
-- `SUBSTACK_PUBLICATION` — defaults to `theairuntime`
-- `LEAD_WEBHOOK_URL` *(optional)* — Slack/Make/Zapier webhook to mirror every lead capture
+- `SUBSTACK_PUBLICATION`, defaults to `theairuntime`
+- `LEAD_WEBHOOK_URL` *(optional)*, Slack/Make/Zapier webhook to mirror every lead capture
 
 ## Brand
 
-See [`BRAND.md`](./BRAND.md) for the full brand reference — palette, typography, voice, Blink mascot spec, multi-city expansion playbook.
+See [`BRAND.md`](./BRAND.md) for the full brand reference, palette, typography, voice, Blink mascot spec, multi-city expansion playbook.

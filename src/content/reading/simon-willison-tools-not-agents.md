@@ -6,7 +6,7 @@ author: Simon Willison
 pillar: inference
 tags: [survey, tools, agents, costs]
 summary: |
-  Simon's yearly LLM survey — the most read 30 minutes you can spend
+  Simon's yearly LLM survey, the most read 30 minutes you can spend
   before designing anything new. Tools matured. Agents didn't (yet).
   Per-token costs cratered. Required reading for grounding intuition.
 publishedAt: 2024-12-31

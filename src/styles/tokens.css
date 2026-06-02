@@ -67,7 +67,7 @@ p { margin: 0 0 1.15em; color: var(--text-2); }
   padding: 0 1.5rem;
 }
 
-/* Eyebrow — quieter than the old bordered pill */
+/* Eyebrow, quieter than the old bordered pill */
 .tag {
   display: inline-block;
   font-family: var(--font-mono);
@@ -89,7 +89,7 @@ p { margin: 0 0 1.15em; color: var(--text-2); }
 .muted { color: var(--text-3); }
 .dim   { color: var(--text-2); }
 
-/* Cards — hairline, airy, no heavy fill */
+/* Cards, hairline, airy, no heavy fill */
 .card {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -131,5 +131,5 @@ hr {
 
 ::selection { background: var(--accent); color: #FFFFFF; }
 
-/* First section on a page sits flush under the header — no doubled divider. */
+/* First section on a page sits flush under the header, no doubled divider. */
 main > .section:first-child { border-top: none; }

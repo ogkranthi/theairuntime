@@ -1,16 +1,16 @@
-# The AI Runtime — Brand Reference
+# The AI Runtime, Brand Reference
 
 A reference for anyone (human or AI) working on The AI Runtime. Covers palette, voice, mascot, architecture, and the multi-city expansion playbook. Inlined from the canonical brand doc.
 
 ## Quick facts
 
-- **Brand:** The AI Runtime — publication and community for engineers shipping AI to production
+- **Brand:** The AI Runtime, publication and community for engineers shipping AI to production
 - **Tagline:** LEARN. SHIP. RUN.
 - **Domain:** theairuntime.com (Substack publication) · events.theairuntime.com (this site)
-- **Mascot:** Blink (running cursor character — orange rectangle, two eyes, smile, running legs)
+- **Mascot:** Blink (running cursor character, orange rectangle, two eyes, smile, running legs)
 - **Founder:** Kranthi Manchikanti (AI Architect at Microsoft, Boston)
 - **Newsletter:** Substack at theairuntime.substack.com (root `/` redirects there)
-- **In-person:** The AI Runtime — Boston, monthly in Cambridge
+- **In-person:** The AI Runtime Boston, monthly in Cambridge
 
 ## Editorial pillars
 
@@ -30,10 +30,13 @@ A reference for anyone (human or AI) working on The AI Runtime. Covers palette, 
 - Practitioner-first (engineers shipping, not "users")
 - Words to use: practitioner, production, ship, eval, agent, runtime
 - Words to avoid: disrupt, revolutionize, leverage (verb), state-of-the-art, "in this article we will explore"
+- **Punctuation: never use em dashes (—), anywhere.** Use commas or
+  parentheses for asides, and a period or colon to break clauses. Do not use
+  en dashes (–) as a substitute; hyphens are only for ranges and compounds.
 
 ## Visual identity
 
-The site theme is **light/minimalist** (Medium/Substack-style — easier on the eyes for long reads). Blink and the brand orange are unchanged; the UI accent is a darker shade of the same orange for WCAG-AA contrast on white.
+The site theme is **light/minimalist** (Medium/Substack-style, easier on the eyes for long reads). Blink and the brand orange are unchanged; the UI accent is a darker shade of the same orange for WCAG-AA contrast on white.
 
 | Token | Value | Use |
 |---|---|---|
@@ -43,12 +46,12 @@ The site theme is **light/minimalist** (Medium/Substack-style — easier on the 
 | `--text` | `#18181B` | headlines |
 | `--text-2` | `#3F3F46` | body |
 | `--text-3` | `#71717A` | captions, muted |
-| `--accent` | `#EA580C` | UI accent — links, CTAs, tag borders (AA on white) |
+| `--accent` | `#EA580C` | UI accent, links, CTAs, tag borders (AA on white) |
 | `--brand-orange` | `#FB923C` | Blink mascot (hardcoded in SVG); never use for UI text on white |
 
-**Typography:** IBM Plex Mono for headers/brand/tags, Inter for body. Wordmark "the AI runtime" is lowercase except "AI" — intentional.
+**Typography:** IBM Plex Mono for headers/brand/tags, Inter for body. Wordmark "the AI runtime" is lowercase except "AI", intentional.
 
-**Color rule:** White + warm orange. No blue (too generic), no green (too "matrix"), no pastels (too consumer). Orange is used sparingly — links, CTAs, the Blink mascot. Most of the page is black-on-white.
+**Color rule:** White + warm orange. No blue (too generic), no green (too "matrix"), no pastels (too consumer). Orange is used sparingly, links, CTAs, the Blink mascot. Most of the page is black-on-white.
 
 ## Blink rules
 
@@ -56,7 +59,7 @@ The site theme is **light/minimalist** (Medium/Substack-style — easier on the 
 - Pronouns: "they" (default) or "he" (casual)
 - Used liberally in social/community copy, sparingly in editorial pieces
 - Never make Blink chat as a persona inside the publication
-- Never call Blink "Blinky" — softens the brand
+- Never call Blink "Blinky", softens the brand
 
 ## Architecture
 
