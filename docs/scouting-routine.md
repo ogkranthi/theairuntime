@@ -20,11 +20,12 @@ Three tracks, one routine:
 
 | Track | Definition | Primary outcome |
 |---|---|---|
-| **Speaker** | Practitioner with a concrete production story to tell | Invite to a Boston meetup or future city |
+| **Speaker** | Practitioner with a concrete production story to tell | Boston meetup invite (in-person) if geo score = 2; podcast guest if geo score 0-1 |
+| **Podcast** | Strong practitioner voice, not Boston-local, best served remote | Record a practitioner episode for the publication |
 | **Collaborator** | Runs a community, newsletter, or event in the same space | Cross-promo, co-hosted event, guest swap |
 | **Amplifier** | Has reach with our exact audience and would share us | Newsletter mention, repost, Luma cross-post |
 
-A single person can fit more than one track. Tag all that apply.
+A single person can fit more than one track. Tag all that apply. The geo score (see section 4) drives which speaker ask to make: Boston/Cambridge area gets a meetup invite; everyone else gets a podcast ask. Never send a meetup invite to someone outside the Boston area.
 
 ### Editorial fit (must pass)
 
@@ -144,9 +145,11 @@ descending order.
 | **Reachability** | No public contact | Indirect | Open DMs or public contact |
 | **Geo (in-person bonus)** | Remote-only fit | Travels | Boston / Cambridge area |
 
-- **8-10:** prioritize now. Speaker invite or direct collab ask.
+- **8-10:** prioritize now. Speaker invite (Boston meetup if geo = 2, podcast if geo 0-1) or direct collab ask.
 - **5-7:** nurture. Engage publicly first, then reach out.
 - **<5:** archive unless a specific event theme needs them.
+
+Geo score also sets the outreach template: score 2 = meetup invite; score 0-1 = podcast guest ask.
 
 ## 5. Output format
 
@@ -157,7 +160,7 @@ person. Columns:
 name,track,pillar,role,company,score,linkedin,twitter,youtube,reddit,source_url,notes,status
 ```
 
-`track` is one or more of `speaker|collaborator|amplifier`. `status` moves
+`track` is one or more of `speaker|podcast|collaborator|amplifier`. `status` moves
 through `lead -> verified -> contacted -> responded -> booked|passed`.
 
 When a prospect reaches `booked` as a speaker, create
@@ -171,13 +174,22 @@ the person's actual work in the first line. Subscribe link is always
 `https://theairuntime.com/subscribe`. Public Luma calendar:
 `https://luma.com/tair`.
 
-### Speaker invite
+### Speaker invite (Boston/Cambridge area only, geo score = 2)
 
 > Hi {name}, your {talk/post on <specific topic>} is exactly the kind of
 > production story The AI Runtime exists for. We run a monthly Boston meetup
 > for engineers shipping AI to production (pillars: evals, agents, inference,
 > reliability, cost). Would you give a 20-25 minute talk on {topic}? Happy to
 > work around your schedule. Calendar: https://luma.com/tair
+
+### Podcast guest (non-Boston, geo score 0-1)
+
+> Hi {name}, your {talk/post on <specific topic>} is exactly the kind of
+> production story The AI Runtime exists for. We publish practitioner-first
+> content for engineers shipping AI to production. Would you be up for a
+> recorded conversation on {topic}? We keep it specific and grounded: what you
+> built, what broke, and what you would do differently. No hype, no slides.
+> Subscribe link if you want context first: https://theairuntime.com/subscribe
 
 ### Collaborator
 
