@@ -42,9 +42,11 @@ Run the daily scouting pass for The AI Runtime. Work on branch
    comment line `# Run <YYYY-MM-DD> (daily)` and use the column order in the
    header. Quote any field containing a comma. Do not rewrite existing rows.
 
-7. Draft outreach for the top 3 new prospects only (speaker / collaborator /
-   amplifier template from the routine, brand voice, no em dashes). Put drafts
-   in the run summary, not in the repo. Never send anything.
+7. Draft outreach for the top 3 new prospects only. Use the correct template
+   from the routine: geo score 2 (Boston/Cambridge) gets the meetup speaker
+   invite; geo score 0-1 gets the podcast guest ask; collaborator and amplifier
+   get their own templates. Brand voice, no em dashes. Put drafts in the run
+   summary, not in the repo. Never send anything.
 
 8. Commit and push. Message: `Daily scouting pass <YYYY-MM-DD>: <N> new
    prospects`. Then post a short summary: new prospects with scores and tracks,
