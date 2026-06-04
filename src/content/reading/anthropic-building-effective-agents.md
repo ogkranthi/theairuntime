@@ -3,7 +3,7 @@ title: Building Effective Agents
 url: https://www.anthropic.com/research/building-effective-agents
 source: Anthropic
 author: Erik Schluntz, Barry Zhang
-pillar: agents
+pillar: vertical-agents
 tags: [agents, patterns, workflows]
 summary: |
   Anthropic's reference taxonomy of agent patterns, when to build a workflow

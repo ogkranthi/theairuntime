@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { pillarLabel } from '../lib/pillars';
 
 interface Props {
   entry: CollectionEntry<'reading'>;
@@ -16,7 +17,7 @@ const dateFmt = data.publishedAt
 ---
 <article class={`read ${compact ? 'compact' : ''}`} data-pillar={data.pillar}>
   <header>
-    <span class="tag">{data.pillar}</span>
+    <a class="tag" href={`/topics/${data.pillar}`}>{pillarLabel(data.pillar)}</a>
     {data.highlight && <span class="pin" title="Highlighted">★</span>}
     <span class="source muted">{data.source}{data.author && data.author !== data.source ? ` · ${data.author}` : ''}{dateFmt ? ` · ${dateFmt}` : ''}</span>
   </header>
@@ -49,6 +50,8 @@ const dateFmt = data.publishedAt
     flex-wrap: wrap;
     font-size: 0.8rem;
   }
+  a.tag { text-decoration: none; }
+  a.tag:hover { text-decoration: underline; }
   .pin {
     color: var(--accent);
     font-size: 0.9rem;

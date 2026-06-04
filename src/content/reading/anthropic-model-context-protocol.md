@@ -2,7 +2,7 @@
 title: Introducing the Model Context Protocol
 url: https://www.anthropic.com/news/model-context-protocol
 source: Anthropic
-pillar: agents
+pillar: vertical-agents
 tags: [agents, tool-use, protocols, mcp, identity]
 summary: |
   MCP, the open protocol Anthropic shipped for connecting agents to tools

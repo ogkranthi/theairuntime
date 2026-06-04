@@ -3,7 +3,7 @@ title: A Field Guide to Rapidly Improving AI Products
 url: https://hamel.dev/blog/posts/field-guide/
 source: Hamel Husain
 author: Hamel Husain
-pillar: evals
+pillar: reliability-engineering
 tags: [evals, iteration, error-analysis, production]
 summary: |
   How to actually improve an AI product after the demo: build evals from

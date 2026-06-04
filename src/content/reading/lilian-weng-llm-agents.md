@@ -3,7 +3,7 @@ title: LLM-Powered Autonomous Agents
 url: https://lilianweng.github.io/posts/2023-06-23-agent/
 source: Lil'Log
 author: Lilian Weng
-pillar: agents
+pillar: vertical-agents
 tags: [agents, planning, memory, reflection]
 summary: |
   The canonical survey of agent design, planning, memory, tool use,

@@ -3,7 +3,7 @@ title: Patterns for Building LLM-based Systems & Products
 url: https://eugeneyan.com/writing/llm-patterns/
 source: Eugene Yan
 author: Eugene Yan
-pillar: agents
+pillar: lessons-trenches
 tags: [patterns, evals, production, retrieval, guardrails]
 summary: |
   Seven production patterns (evals, RAG, fine-tuning, caching, guardrails,

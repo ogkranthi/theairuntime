@@ -1,7 +1,7 @@
 ---
 title: The AI Runtime Field Guide
 type: ebook
-pillar: agents
+pillar: lessons-trenches
 description: |
   A guided reading path through The AI Runtime for AI practitioners. The
   essential reads on AI engineering, Model Reliability Engineering, and

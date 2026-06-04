@@ -1,7 +1,7 @@
 ---
 title: The Agentic Architectures Checklist
 type: checklist
-pillar: agents
+pillar: vertical-agents
 description: |
   A practitioner-grade checklist for agentic system design, identity, trust,
   tool access, eval coverage, observability, and the failure modes that take

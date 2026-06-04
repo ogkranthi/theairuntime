@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
 import Blink from '../components/Blink.astro';
+import { PILLARS } from '../lib/pillars';
 ---
 <BaseLayout
   title="Subscribe · The AI Runtime"
@@ -26,17 +27,18 @@ import Blink from '../components/Blink.astro';
     <SubstackEmbed
       source="subscribe-page"
       headline="Free. New issue every week."
-      subhead="Evals, agents, inference, reliability, cost, the operational layer where AI systems actually run."
+      subhead="AI model reliability engineering, vertical agents, and lessons from the trenches: the operational layer where AI systems actually run."
     />
   </Section>
 
-  <Section eyebrow="What you'll get" title="Five things our subscribers care about">
+  <Section eyebrow="What you'll get" title="What our subscribers care about">
     <ul class="pillars">
-      <li><strong>Evals & Observability.</strong> <span class="dim">How practitioners know AI works in production.</span></li>
-      <li><strong>Agents in Production.</strong> <span class="dim">Patterns that survive contact with real users.</span></li>
-      <li><strong>Inference & Serving.</strong> <span class="dim">What actually runs in production at scale.</span></li>
-      <li><strong>Reliability & Incidents.</strong> <span class="dim">Postmortems, drift, recovery patterns.</span></li>
-      <li><strong>Cost & Performance.</strong> <span class="dim">The economics of running AI.</span></li>
+      {PILLARS.map((p) => (
+        <li>
+          <strong><a href={`/topics/${p.key}`}>{p.label}.</a></strong>{' '}
+          <span class="dim">{p.tagline}</span>
+        </li>
+      ))}
     </ul>
   </Section>
 
@@ -76,5 +78,7 @@ import Blink from '../components/Blink.astro';
     border-radius: var(--radius);
   }
   .pillars strong { font-family: var(--font-mono); }
+  .pillars strong a { color: var(--text); text-decoration: none; }
+  .pillars strong a:hover { color: var(--accent); }
   .wide { max-width: 42rem; }
 </style>

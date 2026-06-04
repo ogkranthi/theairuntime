@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
+import { pillarLabel } from '../../lib/pillars';
 
 const resources = await getCollection('resources');
 resources.sort((a, b) => a.data.title.localeCompare(b.data.title));
@@ -66,7 +67,7 @@ const statusLabel: Record<string, string> = {
             <h3>{r.data.title}</h3>
             <p class="dim">{r.data.description}</p>
             <div class="meta muted">
-              {r.data.length ?? ''} {r.data.length && r.data.pillar ? '·' : ''} {r.data.pillar}
+              {r.data.length ?? ''} {r.data.length && r.data.pillar ? '·' : ''} {pillarLabel(r.data.pillar)}
             </div>
           </a>
         </li>

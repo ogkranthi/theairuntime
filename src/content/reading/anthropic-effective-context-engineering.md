@@ -2,7 +2,7 @@
 title: Effective Context Engineering for AI Agents
 url: https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
 source: Anthropic
-pillar: agents
+pillar: vertical-agents
 tags: [agents, context, prompting, production]
 summary: |
   Practical guide to designing the context that agents see, how to build

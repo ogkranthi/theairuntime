@@ -1,4 +1,7 @@
 import { defineCollection, reference, z } from 'astro:content';
+import { PILLAR_KEYS } from '../lib/pillars';
+
+const pillarEnum = z.enum(PILLAR_KEYS);
 
 const cities = defineCollection({
   type: 'content',
@@ -68,6 +71,8 @@ const events = defineCollection({
       )
       .default([]),
     status: z.enum(['upcoming', 'past']).default('upcoming'),
+    // Pillars this event speaks to, so it surfaces on /topics/<pillar>.
+    pillars: z.array(pillarEnum).default([]),
     lumaUrl: z.string().url().optional(),
     recordingUrl: z.string().url().optional(),
     slidesUrl: z.string().url().optional(),
@@ -109,7 +114,7 @@ const resources = defineCollection({
   schema: z.object({
     title: z.string(),
     type: z.enum(['ebook', 'checklist', 'playbook', 'template']),
-    pillar: z.enum(['evals', 'agents', 'inference', 'reliability', 'cost']),
+    pillar: pillarEnum,
     cover: z.string().optional(),
     description: z.string(),
     length: z.string().optional(),
@@ -135,7 +140,7 @@ const reading = defineCollection({
     url: z.string().url(),
     source: z.string(), // e.g. "Anthropic", "Eugene Yan", "The AI Runtime"
     author: z.string().optional(),
-    pillar: z.enum(['evals', 'agents', 'inference', 'reliability', 'cost']),
+    pillar: pillarEnum,
     tags: z.array(z.string()).default([]),
     summary: z.string(),
     publishedAt: z.coerce.date().optional(),
@@ -166,7 +171,7 @@ const tools = defineCollection({
       'observability',
       'other',
     ]),
-    pillar: z.enum(['evals', 'agents', 'inference', 'reliability', 'cost']).optional(),
+    pillar: pillarEnum.optional(),
     tagline: z.string(),
     why: z.string().optional(),
     isReferral: z.boolean().default(false),

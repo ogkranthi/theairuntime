@@ -1,0 +1,78 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import { breadcrumbList } from '../../lib/breadcrumbs';
+import { PILLARS } from '../../lib/pillars';
+
+const [reading, tools, resources, events] = await Promise.all([
+  getCollection('reading'),
+  getCollection('tools'),
+  getCollection('resources'),
+  getCollection('events'),
+]);
+
+const cards = PILLARS.map((pillar) => {
+  const count =
+    reading.filter((r) => r.data.pillar === pillar.key).length +
+    tools.filter((t) => t.data.pillar === pillar.key).length +
+    resources.filter((r) => r.data.pillar === pillar.key).length +
+    events.filter((e) => e.data.pillars.includes(pillar.key)).length;
+  return { pillar, count };
+});
+
+const breadcrumbSchema = breadcrumbList([{ name: 'Topics', path: '/topics' }], Astro.site);
+---
+<BaseLayout
+  title="Topics · The AI Runtime"
+  description="The three pillars of The AI Runtime: AI model reliability engineering, vertical agents, and lessons from the trenches."
+>
+  <JsonLd slot="jsonld" schema={breadcrumbSchema} />
+
+  <Section
+    eyebrow="Topics"
+    title="Three pillars"
+    lead="Everything we publish, host, and recommend sorts into three pillars. Pick one to see the reads, tools, resources, and talks behind it."
+  >
+    <ul class="grid">
+      {cards.map(({ pillar, count }, i) => (
+        <li>
+          <a href={`/topics/${pillar.key}`}>
+            <span class="num">{String(i + 1).padStart(2, '0')}</span>
+            <h2>{pillar.label}</h2>
+            <p class="dim">{pillar.description}</p>
+            <span class="count muted">{count} {count === 1 ? 'item' : 'items'} →</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </Section>
+</BaseLayout>
+
+<style>
+  .grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .grid a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    height: 100%;
+    padding: 1.75rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .grid a:hover { border-color: var(--accent); }
+  .num { font-family: var(--font-mono); font-weight: 700; color: var(--accent); font-size: 1.1rem; }
+  .grid h2 { margin: 0; font-size: 1.3rem; }
+  .count { font-family: var(--font-mono); font-size: 0.8rem; margin-top: auto; }
+</style>

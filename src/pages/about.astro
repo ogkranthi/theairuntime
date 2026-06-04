@@ -4,14 +4,9 @@ import Section from '../components/Section.astro';
 import Blink from '../components/Blink.astro';
 import ContactCTA from '../components/ContactCTA.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
+import { PILLARS } from '../lib/pillars';
 
-const pillars = [
-  { name: 'Evals & Observability', body: 'How practitioners know if AI works in production.' },
-  { name: 'Agents in Production', body: 'Patterns that survive contact with real users.' },
-  { name: 'Inference & Serving', body: 'What actually runs in production at scale.' },
-  { name: 'Reliability & Incidents', body: 'Postmortems, drift, recovery patterns.' },
-  { name: 'Cost & Performance', body: 'The economics of running AI.' },
-];
+const pillars = PILLARS.map((p) => ({ key: p.key, name: p.label, body: p.tagline }));
 ---
 <BaseLayout
   title="About · The AI Runtime"
@@ -23,8 +18,9 @@ const pillars = [
         <h1>Between the model and the product</h1>
         <p class="lede dim">
           The AI Runtime is the publication where AI practitioners share what they've learned. We cover the
-          operational layer where AI systems actually run (evals, agents, inference, reliability, cost)
-          and the lessons from people shipping serious AI in production.
+          operational layer where AI systems actually run (AI model reliability engineering, vertical
+          agents, and lessons from the trenches) and the stories from people shipping serious AI in
+          production.
         </p>
         <p class="dim">
           Practitioner-grade content: specific, sourced, and forward-looking. The kind of pieces you'd
@@ -41,7 +37,7 @@ const pillars = [
         <li>
           <span class="num">{String(i + 1).padStart(2, '0')}</span>
           <div>
-            <h3>{p.name}</h3>
+            <h3><a href={`/topics/${p.key}`}>{p.name}</a></h3>
             <p class="dim">{p.body}</p>
           </div>
         </li>
@@ -104,6 +100,9 @@ const pillars = [
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
+  .pillars h3 { margin: 0 0 0.3rem; }
+  .pillars h3 a { color: var(--text); text-decoration: none; }
+  .pillars h3 a:hover { color: var(--accent); }
   .num {
     font-family: var(--font-mono);
     font-weight: 700;

@@ -5,6 +5,7 @@ import Section from '../../components/Section.astro';
 import ResourceLeadGate from '../../components/ResourceLeadGate.tsx';
 import JsonLd from '../../components/JsonLd.astro';
 import { breadcrumbList } from '../../lib/breadcrumbs';
+import { pillarLabel } from '../../lib/pillars';
 
 export async function getStaticPaths() {
   const resources = await getCollection('resources');
@@ -41,7 +42,7 @@ const breadcrumbSchema = breadcrumbList(
   <Section eyebrow={data.type} title={data.title} lead={data.description}>
     <div class="meta">
       <span class="tag">{statusLabel[data.status]}</span>
-      <span class="muted">{data.pillar}</span>
+      <a class="muted pillar-link" href={`/topics/${data.pillar}`}>{pillarLabel(data.pillar)}</a>
       {data.length && <span class="muted">{data.length}</span>}
       <span class="muted">{data.version}</span>
     </div>
@@ -64,6 +65,8 @@ const breadcrumbSchema = breadcrumbList(
 
 <style>
   .meta { display: flex; gap: 0.75rem; align-items: center; font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .pillar-link { text-decoration: none; }
+  .pillar-link:hover { color: var(--accent); text-decoration: underline; }
   .body { max-width: 38rem; margin-bottom: 2rem; }
   .gate-wrap { padding-top: 1rem; border-top: 1px solid var(--border); }
 </style>

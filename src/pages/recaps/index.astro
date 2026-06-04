@@ -1,0 +1,146 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import SubstackEmbed from '../../components/SubstackEmbed.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import { breadcrumbList } from '../../lib/breadcrumbs';
+import { pillarLabel } from '../../lib/pillars';
+
+const events = await getCollection('events');
+
+const hasRecap = (e: (typeof events)[number]) =>
+  (e.body ?? '').trim().length > 0 ||
+  e.data.recapTakeaways.length > 0 ||
+  e.data.recapPhotos.length > 0;
+
+const recaps = (
+  await Promise.all(
+    events
+      .filter((e) => e.data.status === 'past' && hasRecap(e))
+      .sort((a, b) => +b.data.date - +a.data.date)
+      .map(async (event) => {
+        const speakers = await Promise.all(
+          event.data.speakers.map((ref) =>
+            getEntry('speakers', (ref as any).slug ?? (ref as any).id),
+          ),
+        );
+        const slug = event.slug.replace(/^boston\//, '');
+        return { event, speakers: speakers.filter(Boolean), slug };
+      }),
+  )
+);
+
+const dateFmt = (d: Date) =>
+  new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(d);
+
+const breadcrumbSchema = breadcrumbList([{ name: 'Recaps', path: '/recaps' }], Astro.site);
+---
+<BaseLayout
+  title="Event recaps · The AI Runtime"
+  description="What happened at The AI Runtime meetups: takeaways, slides, and recordings from every past event."
+>
+  <JsonLd slot="jsonld" schema={breadcrumbSchema} />
+
+  <Section
+    eyebrow="Recaps"
+    title="What happened"
+    lead="Every past meetup, recapped. The takeaways that stuck, plus slides and recordings where we have them."
+  >
+    {recaps.length === 0 && (
+      <p class="dim wide">No recaps yet. Once an event runs, its takeaways land here.</p>
+    )}
+
+    <ul class="recaps">
+      {recaps.map(({ event, speakers, slug }) => (
+        <li>
+          <a class="card" href={`/boston/${slug}#recap`}>
+            <div class="head">
+              <span class="when muted">{dateFmt(event.data.date)}</span>
+              {event.data.pillars.length > 0 && (
+                <span class="pillars">
+                  {event.data.pillars.map((p) => <span class="pill">{pillarLabel(p)}</span>)}
+                </span>
+              )}
+            </div>
+            <h2>{event.data.title}</h2>
+            {speakers.length > 0 && (
+              <p class="who muted">
+                {speakers.map((s) => s && `${s.data.name} (${s.data.company})`).filter(Boolean).join(' · ')}
+              </p>
+            )}
+            {event.data.recapTakeaways.length > 0 && (
+              <ul class="takeaways">
+                {event.data.recapTakeaways.slice(0, 2).map((t) => (
+                  <li class="dim">{t.point}</li>
+                ))}
+              </ul>
+            )}
+            <div class="links">
+              <span class="more">Read the recap →</span>
+              {event.data.slidesUrl && <span class="badge">Slides</span>}
+              {event.data.recordingUrl && <span class="badge">Recording</span>}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="Subscribe" title="Get the next recap first">
+    <p class="dim wide">
+      Subscribers get the recap, slides, and the next Boston date before the public Luma drop.
+    </p>
+    <SubstackEmbed
+      source="recaps-index"
+      headline="The AI Runtime newsletter"
+      subhead="Production lessons from AI practitioners. New issues every week."
+    />
+  </Section>
+</BaseLayout>
+
+<style>
+  .recaps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.75rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .card:hover { border-color: var(--accent); }
+  .head { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .when { font-family: var(--font-mono); font-size: 0.8rem; }
+  .pillars { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+  }
+  .card h2 { margin: 0; font-size: 1.4rem; }
+  .who { font-size: 0.85rem; font-family: var(--font-mono); }
+  .takeaways { margin: 0.4rem 0 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.35rem; }
+  .takeaways li { color: var(--text-2); }
+  .links { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.4rem; flex-wrap: wrap; }
+  .more { color: var(--accent); font-weight: 600; }
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+  }
+  .wide { max-width: 42rem; }
+</style>

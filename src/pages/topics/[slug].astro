@@ -1,0 +1,225 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import ReadingCard from '../../components/ReadingCard.astro';
+import ToolCard from '../../components/ToolCard.astro';
+import SubstackEmbed from '../../components/SubstackEmbed.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import { breadcrumbList } from '../../lib/breadcrumbs';
+import { PILLARS } from '../../lib/pillars';
+
+export async function getStaticPaths() {
+  return PILLARS.map((pillar) => ({
+    params: { slug: pillar.key },
+    props: { pillar },
+  }));
+}
+
+const { pillar } = Astro.props;
+
+const [reading, tools, resources, events] = await Promise.all([
+  getCollection('reading'),
+  getCollection('tools'),
+  getCollection('resources'),
+  getCollection('events'),
+]);
+
+const pillarReading = reading
+  .filter((r) => r.data.pillar === pillar.key)
+  .sort((a, b) => {
+    if (a.data.highlight !== b.data.highlight) return a.data.highlight ? -1 : 1;
+    return +b.data.addedAt - +a.data.addedAt;
+  });
+
+const pillarTools = tools
+  .filter((t) => t.data.pillar === pillar.key)
+  .sort((a, b) => {
+    if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+    return +b.data.addedAt - +a.data.addedAt;
+  });
+
+const pillarResources = resources
+  .filter((r) => r.data.pillar === pillar.key)
+  .sort((a, b) => a.data.title.localeCompare(b.data.title));
+
+const pillarEvents = events
+  .filter((e) => e.data.pillars.includes(pillar.key))
+  .sort((a, b) => +b.data.date - +a.data.date);
+
+const statusLabel: Record<string, string> = {
+  'coming-soon': 'Coming soon',
+  free: 'Free',
+  'lead-gated': 'Free · email',
+  paid: 'Paid',
+};
+
+const totalCount =
+  pillarReading.length + pillarTools.length + pillarResources.length + pillarEvents.length;
+
+const canonicalPath = `/topics/${pillar.key}`;
+const breadcrumbSchema = breadcrumbList(
+  [
+    { name: 'Topics', path: '/topics' },
+    { name: pillar.label, path: canonicalPath },
+  ],
+  Astro.site,
+);
+const collectionSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: `${pillar.label} · The AI Runtime`,
+  description: pillar.description,
+  url: new URL(canonicalPath, Astro.site).toString(),
+  isPartOf: { '@type': 'WebSite', name: 'The AI Runtime', url: 'https://theairuntime.com' },
+};
+---
+<BaseLayout
+  title={`${pillar.label} · The AI Runtime`}
+  description={pillar.description}
+>
+  <JsonLd slot="jsonld" schema={[collectionSchema, breadcrumbSchema]} />
+
+  <Section eyebrow="Topic" title={pillar.label} lead={pillar.description}>
+    <nav class="crumbs" aria-label="Other topics">
+      {PILLARS.map((p) => (
+        <a href={`/topics/${p.key}`} class:list={['chip', p.key === pillar.key && 'active']}>
+          {p.short}
+        </a>
+      ))}
+    </nav>
+    <p class="muted small">{totalCount} items across reading, tools, resources, and events.</p>
+  </Section>
+
+  {pillarReading.length > 0 && (
+    <Section eyebrow="Reading" title="Curated reads">
+      <div class="grid">
+        {pillarReading.map((r) => <ReadingCard entry={r} />)}
+      </div>
+    </Section>
+  )}
+
+  {pillarResources.length > 0 && (
+    <Section eyebrow="Resources" title="Playbooks and checklists">
+      <ul class="cards">
+        {pillarResources.map((r) => (
+          <li>
+            <a href={`/resources/${r.slug}`}>
+              <div class="row">
+                <span class="tag">{r.data.type}</span>
+                <span class="status muted">{statusLabel[r.data.status]}</span>
+              </div>
+              <h3>{r.data.title}</h3>
+              <p class="dim">{r.data.description}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )}
+
+  {pillarTools.length > 0 && (
+    <Section eyebrow="Tools" title="Tools for this work">
+      <div class="grid">
+        {pillarTools.map((t) => <ToolCard tool={t} />)}
+      </div>
+    </Section>
+  )}
+
+  {pillarEvents.length > 0 && (
+    <Section eyebrow="Events" title="Talks on this topic">
+      <ul class="events">
+        {pillarEvents.map((e) => (
+          <li>
+            <a href={`/boston/${e.slug.replace(/^boston\//, '')}`}>
+              <span class="when muted">
+                {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(e.data.date)}
+                {e.data.status === 'past' ? ' · recap' : ' · upcoming'}
+              </span>
+              <span class="title">{e.data.title}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )}
+
+  {totalCount === 0 && (
+    <Section>
+      <p class="dim wide">
+        We're building this topic out. Subscribe and it'll fill up fast, new reads,
+        tools, and talks land here first.
+      </p>
+    </Section>
+  )}
+
+  <Section eyebrow="Subscribe" title="Go deeper on this topic">
+    <p class="dim wide">
+      The newsletter covers {pillar.label.toLowerCase()} every week: specific, sourced, anti-hype.
+    </p>
+    <SubstackEmbed
+      source={`topic-${pillar.key}`}
+      headline="The AI Runtime newsletter"
+      subhead="Production lessons from AI practitioners. New issues every week."
+    />
+  </Section>
+</BaseLayout>
+
+<style>
+  .crumbs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .chip {
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-2);
+    text-decoration: none;
+    background: var(--bg-2);
+  }
+  .chip:hover { border-color: var(--accent); color: var(--text); }
+  .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .small { font-size: 0.85rem; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+  .cards {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .cards a {
+    display: block;
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .cards a:hover { border-color: var(--accent); }
+  .cards .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+  .cards h3 { margin: 0.4rem 0; }
+  .status { font-family: var(--font-mono); font-size: 0.75rem; }
+  .events { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .events a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.85rem 1.1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .events a:hover { border-color: var(--accent); }
+  .events .when { font-family: var(--font-mono); font-size: 0.78rem; }
+  .events .title { font-weight: 600; }
+  .wide { max-width: 42rem; }
+</style>

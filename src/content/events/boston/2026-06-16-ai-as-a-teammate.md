@@ -5,6 +5,9 @@ date: 2026-06-16
 doorsAt: '6:00 PM'
 endsAt: '8:30 PM'
 status: upcoming
+pillars:
+  - lessons-trenches
+  - vertical-agents
 lumaUrl: https://luma.com/du7lj7wp
 agenda:
   - { item: 'Doors open · informal mingling' }

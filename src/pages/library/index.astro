@@ -6,6 +6,7 @@ import ReadingCard from '../../components/ReadingCard.astro';
 import ToolCard from '../../components/ToolCard.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import { fetchSubstackPosts } from '../../lib/substack';
+import { PILLARS } from '../../lib/pillars';
 
 const reading = await getCollection('reading');
 const tools = await getCollection('tools');
@@ -15,18 +16,9 @@ tools.sort((a, b) => {
 });
 const substackPosts = await fetchSubstackPosts(6);
 
-const pillarOrder = ['evals', 'agents', 'inference', 'reliability', 'cost'] as const;
-const pillarLabels: Record<string, string> = {
-  evals: 'Evals & Observability',
-  agents: 'Agents in Production',
-  inference: 'Inference & Serving',
-  reliability: 'Reliability & Incidents',
-  cost: 'Cost & Performance',
-};
-
-const byPillar = pillarOrder.map((pillar) => ({
+const byPillar = PILLARS.map(({ key: pillar, label }) => ({
   pillar,
-  label: pillarLabels[pillar],
+  label,
   entries: reading
     .filter((r) => r.data.pillar === pillar)
     .sort((a, b) => {
@@ -41,7 +33,7 @@ const highlights = reading.filter((r) => r.data.highlight).slice(0, 4);
 ---
 <BaseLayout
   title="The Production AI Reading List · The AI Runtime"
-  description="Curated by The AI Runtime, the canonical reading list for AI practitioners. Evals, agents, inference, reliability, cost."
+  description="Curated by The AI Runtime, the canonical reading list for AI practitioners. AI model reliability engineering, vertical agents, lessons from the trenches."
 >
   <Section
     eyebrow="The library"
@@ -57,7 +49,7 @@ const highlights = reading.filter((r) => r.data.highlight).slice(0, 4);
       )}
     </nav>
 
-    <p class="muted small toc-meta">{total} entries · curated by The AI Runtime · last updated {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(Math.max(...reading.map((r) => +r.data.addedAt))))}</p>
+    <p class="muted small toc-meta">{total} entries · curated by The AI Runtime · last updated {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(Math.max(...reading.map((r) => +r.data.addedAt))))} · <a href="/topics">browse by topic →</a></p>
   </Section>
 
   {substackPosts.length > 0 && (
