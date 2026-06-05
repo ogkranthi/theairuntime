@@ -49,6 +49,27 @@ This skill works both levers and measures the result.
 All tools are on the WriteStack Notes MCP server
 (`mcp__d6d5cff4-…__<tool>`). Read `strategy.md` and `playbook.md` before drafting.
 
+## Modes
+
+- **Full run (default):** Phases 0 to 4. Drafts are presented, and on approval
+  the skill schedules them (Phase 3).
+- **Draft-only:** run Phases 0, 1, 2, and the measurement half of 4, then STOP.
+  Create every note as `status: "draft"` and never call `schedule_notes` or
+  publish. Use this for the recurring weekly run so the user reviews and
+  schedules each batch by hand. Trigger phrase: "draft-only mode".
+
+### Weekly recurring run
+
+This environment cannot self-schedule a 7-day loop (no cron primitive, and the
+remote container is ephemeral). To run weekly, set up a recurring scheduled
+session in Claude Code on the web
+(https://code.claude.com/docs/en/claude-code-on-the-web) with this prompt:
+
+> Run the substack-growth skill in draft-only mode: calibrate, produce the
+> Network Overlap engagement target list, and create 2 to 4 notes as drafts for
+> my review. Do not schedule or publish anything. Update playbook.md with any
+> new stats learnings and commit it to branch claude/loving-mendel-0U3CT.
+
 ## The loop
 
 ### Phase 0: Calibrate (read only)
