@@ -2,20 +2,34 @@
 interface Props {
   active?: string;
   pillars: { key: string; label: string; count: number }[];
-  baseHref: string;
+  /** Link mode navigates to baseHref?pillar=key. Filter mode emits buttons that
+   *  a page-level inline script uses to show/hide content client-side. */
+  mode?: 'link' | 'filter';
+  baseHref?: string;
 }
 
-const { active = 'all', pillars, baseHref } = Astro.props;
+const { active = 'all', pillars, mode = 'link', baseHref = '' } = Astro.props;
 const total = pillars.reduce((acc, p) => acc + p.count, 0);
 ---
-<nav class="filters">
-  <a href={baseHref} class:list={['chip', active === 'all' && 'active']}>All <span class="muted">({total})</span></a>
-  {pillars.map((p) => (
-    <a href={`${baseHref}?pillar=${p.key}`} class:list={['chip', active === p.key && 'active']}>
-      {p.label} <span class="muted">({p.count})</span>
-    </a>
-  ))}
-</nav>
+{mode === 'filter' ? (
+  <nav class="filters" data-pillar-filter aria-label="Filter by topic">
+    <button type="button" class:list={['chip', active === 'all' && 'active']} data-pillar="all" aria-pressed={active === 'all'}>All <span class="muted">({total})</span></button>
+    {pillars.map((p) => (
+      <button type="button" class:list={['chip', active === p.key && 'active']} data-pillar={p.key} aria-pressed={active === p.key}>
+        {p.label} <span class="muted">({p.count})</span>
+      </button>
+    ))}
+  </nav>
+) : (
+  <nav class="filters" aria-label="Filter by topic">
+    <a href={baseHref} class:list={['chip', active === 'all' && 'active']}>All <span class="muted">({total})</span></a>
+    {pillars.map((p) => (
+      <a href={`${baseHref}?pillar=${p.key}`} class:list={['chip', active === p.key && 'active']}>
+        {p.label} <span class="muted">({p.count})</span>
+      </a>
+    ))}
+  </nav>
+)}
 
 <style>
   .filters {
@@ -36,7 +50,10 @@ const total = pillars.reduce((acc, p) => acc + p.count, 0);
     color: var(--text-2);
     text-decoration: none;
     background: var(--bg-2);
+    cursor: pointer;
+    line-height: 1.3;
   }
+  button.chip { font: inherit; font-family: var(--font-mono); font-size: 0.85rem; }
   .chip:hover { border-color: var(--accent); color: var(--text); }
   .chip.active {
     background: var(--accent);

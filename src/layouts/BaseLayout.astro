@@ -30,6 +30,11 @@ const fullTitle = title.includes('AI Runtime') ? title : `${title} · The AI Run
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://events.theairuntime.com';
 
+// Cloudflare Web Analytics. Cookieless, privacy-friendly. The beacon only
+// renders when PUBLIC_CF_BEACON_TOKEN is set, so set it in the Cloudflare Pages
+// dashboard (or .env) to turn analytics on. No code change needed to enable.
+const cfBeaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+
 // Site-wide structured data. Present on every page so AI engines and search
 // crawlers always have a clear, machine-readable identity for the brand.
 const orgSchema = {
@@ -111,9 +116,17 @@ const websiteSchema = {
   </head>
   <body>
     <BrandHeader />
-    <main>
+    <main data-pagefind-body>
       <slot />
     </main>
     <BrandFooter />
+    {cfBeaconToken && (
+      <script
+        is:inline
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={`{"token": "${cfBeaconToken}"}`}
+      />
+    )}
   </body>
 </html>

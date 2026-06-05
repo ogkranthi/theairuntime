@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+
+// Search is powered by Pagefind, which indexes the built site into
+// /pagefind/ during `npm run build` (astro build && pagefind --site dist).
+// The UI assets only exist after a build, so they are loaded with is:inline
+// script/link tags rather than bundled by Astro.
+---
+<BaseLayout
+  title="Search · The AI Runtime"
+  description="Search events, speakers, talks, reading, and resources across The AI Runtime."
+>
+  <Section eyebrow="Search" title="Search The AI Runtime" narrow>
+    <p class="dim">
+      Find events, speakers, talks, reading list entries, and resources.
+    </p>
+    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+    <div id="search" data-pagefind-ignore></div>
+    <noscript>
+      <p class="muted">Search needs JavaScript. Browse the <a href="/library">library</a>,
+      <a href="/speakers">speakers</a>, or <a href="/boston">events</a> instead.</p>
+    </noscript>
+    <script is:inline src="/pagefind/pagefind-ui.js"></script>
+    <script is:inline>
+      window.addEventListener('DOMContentLoaded', () => {
+        // eslint-disable-next-line no-undef
+        new PagefindUI({
+          element: '#search',
+          showSubResults: true,
+          showImages: false,
+        });
+      });
+    </script>
+  </Section>
+</BaseLayout>
+
+<style>
+  #search {
+    margin-top: 1.5rem;
+    /* Map Pagefind UI tokens to the brand palette. */
+    --pagefind-ui-primary: var(--accent);
+    --pagefind-ui-text: var(--text);
+    --pagefind-ui-background: var(--bg);
+    --pagefind-ui-border: var(--border);
+    --pagefind-ui-tag: var(--bg-2);
+    --pagefind-ui-border-radius: var(--radius-sm);
+    --pagefind-ui-font: var(--font-sans);
+  }
+</style>

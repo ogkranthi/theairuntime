@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
+import PillarFilter from '../../components/PillarFilter.astro';
 
 const resources = await getCollection('resources');
 resources.sort((a, b) => a.data.title.localeCompare(b.data.title));
@@ -19,6 +20,21 @@ const statusLabel: Record<string, string> = {
   'lead-gated': 'Free · email',
   paid: 'Paid',
 };
+
+// Topic chips for the client-side filter, derived from the grid items.
+const pillarLabels: Record<string, string> = {
+  evals: 'Evals',
+  agents: 'Agents',
+  inference: 'Inference',
+  reliability: 'Reliability',
+  cost: 'Cost',
+};
+const pillarChips = Object.entries(
+  rest.reduce<Record<string, number>>((acc, r) => {
+    acc[r.data.pillar] = (acc[r.data.pillar] ?? 0) + 1;
+    return acc;
+  }, {}),
+).map(([key, count]) => ({ key, label: pillarLabels[key] ?? key, count }));
 ---
 <BaseLayout
   title="Resources · The AI Runtime"
@@ -55,9 +71,10 @@ const statusLabel: Record<string, string> = {
     title="Playbooks for AI practitioners"
     lead="Field-tested checklists, ebooks, and playbooks. Subscribers get them first."
   >
+    {pillarChips.length > 1 && <PillarFilter mode="filter" pillars={pillarChips} />}
     <ul class="grid">
       {rest.map((r) => (
-        <li>
+        <li data-pillar={r.data.pillar}>
           <a href={`/resources/${r.slug}`}>
             <div class="row">
               <span class="tag">{r.data.type}</span>
@@ -73,6 +90,26 @@ const statusLabel: Record<string, string> = {
       ))}
     </ul>
   </Section>
+
+  <script>
+    // Client-side topic filter for the resource grid. Toggles `hidden` on each
+    // card so the a11y tree stays correct. No JS = all cards visible.
+    const filter = document.querySelector('[data-pillar-filter]');
+    const cards = document.querySelectorAll('.grid > li[data-pillar]');
+    filter?.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('button[data-pillar]') as HTMLElement | null;
+      if (!btn) return;
+      const want = btn.dataset.pillar;
+      filter.querySelectorAll('button').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b === btn));
+        b.classList.toggle('active', b === btn);
+      });
+      cards.forEach((c) => {
+        const card = c as HTMLElement;
+        card.hidden = !(want === 'all' || card.dataset.pillar === want);
+      });
+    });
+  </script>
 </BaseLayout>
 
 <style>
