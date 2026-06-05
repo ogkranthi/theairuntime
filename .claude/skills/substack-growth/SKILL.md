@@ -58,6 +58,11 @@ All tools are on the WriteStack Notes MCP server
   publish. Use this for the recurring weekly run so the user reviews and
   schedules each batch by hand. Trigger phrase: "draft-only mode".
 
+Every run, full or draft-only, appends a dated entry to the working log at
+`docs/substack-growth-log.md` (newest at the bottom, under "Weekly changelog"):
+what was drafted, what the newest stats showed, and any pattern that changed.
+Commit the log alongside `playbook.md`.
+
 ### Weekly recurring run
 
 This environment cannot self-schedule a 7-day loop (no cron primitive, and the
@@ -67,8 +72,9 @@ session in Claude Code on the web
 
 > Run the substack-growth skill in draft-only mode: calibrate, produce the
 > Network Overlap engagement target list, and create 2 to 4 notes as drafts for
-> my review. Do not schedule or publish anything. Update playbook.md with any
-> new stats learnings and commit it to branch claude/loving-mendel-0U3CT.
+> my review. Do not schedule or publish anything. Append this week's learnings
+> as a dated entry to docs/substack-growth-log.md, update playbook.md with any
+> new stats learnings, and commit both to branch claude/loving-mendel-0U3CT.
 
 ## The loop
 
