@@ -10,10 +10,14 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      // Keep noindex / gated routes out of the sitemap so crawlers spend
-      // budget on indexable pages and never surface the gated channel.
+      // Keep noindex / gated routes and non-HTML feeds out of the sitemap so
+      // crawlers spend budget on indexable pages and never surface the gated
+      // channel, the search page, or the .ics calendar files.
       filter: (page) =>
-        !page.includes('/subscriber-only') && !page.includes('/404'),
+        !page.includes('/subscriber-only') &&
+        !page.includes('/404') &&
+        !page.includes('/search') &&
+        !page.endsWith('.ics'),
     }),
     react(),
   ],
