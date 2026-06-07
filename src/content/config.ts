@@ -36,6 +36,7 @@ const speakers = defineCollection({
           abstract: z.string(),
           slidesUrl: z.string().optional(),     // absolute URL or repo-relative path
           recordingUrl: z.string().optional(),
+          audioOverviewUrl: z.string().optional(), // NotebookLM Deep Dive MP3
         }),
       )
       .default([]),
@@ -71,6 +72,7 @@ const events = defineCollection({
     lumaUrl: z.string().url().optional(),
     recordingUrl: z.string().url().optional(),
     slidesUrl: z.string().url().optional(),
+    audioOverviewUrl: z.string().optional(), // NotebookLM Deep Dive MP3
     cohosts: z.array(z.string()).default([]),
     partners: z
       .array(
@@ -144,6 +146,7 @@ const reading = defineCollection({
     relatedSpeakers: z.array(reference('speakers')).default([]),
     byKranthi: z.boolean().default(false), // surfaces on his profile + on /about
     highlight: z.boolean().default(false), // pin to top of /library
+    audioOverviewUrl: z.string().optional(), // NotebookLM Deep Dive MP3
   }),
 });
 

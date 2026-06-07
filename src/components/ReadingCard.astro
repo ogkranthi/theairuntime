@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import AudioOverview from './AudioOverview.astro';
 
 interface Props {
   entry: CollectionEntry<'reading'>;
@@ -26,7 +27,9 @@ const dateFmt = data.publishedAt
   {!compact && <p class="dim">{data.summary}</p>}
   <div class="meta">
     <a class="muted" href={data.url} target="_blank" rel="noopener">{host} ↗</a>
+    {compact && data.audioOverviewUrl && <a class="audio-link" href={data.audioOverviewUrl}>🎧 Listen</a>}
   </div>
+  {!compact && data.audioOverviewUrl && <AudioOverview src={data.audioOverviewUrl} label={`Listen — a Deep Dive on "${data.title}"`} />}
 </article>
 
 <style>
@@ -60,5 +63,13 @@ const dateFmt = data.publishedAt
   h3 { margin: 0; font-size: 1.1rem; }
   h3 a { color: var(--text); text-decoration: none; }
   h3 a:hover { color: var(--accent); }
-  .meta { font-family: var(--font-mono); font-size: 0.78rem; margin-top: 0.25rem; }
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    margin-top: 0.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  .audio-link { color: var(--accent); }
 </style>

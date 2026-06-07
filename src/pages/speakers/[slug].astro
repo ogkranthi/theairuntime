@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import ReadingCard from '../../components/ReadingCard.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
+import AudioOverview from '../../components/AudioOverview.astro';
 import JsonLd from '../../components/JsonLd.astro';
 import { breadcrumbList } from '../../lib/breadcrumbs';
 
@@ -98,6 +99,7 @@ const breadcrumbSchema = breadcrumbList(
                 {t.slidesUrl && <a href={t.slidesUrl}>Slides →</a>}
                 {t.recordingUrl && <a href={t.recordingUrl}>Recording →</a>}
               </div>
+              {t.audioOverviewUrl && <AudioOverview src={t.audioOverviewUrl} label={`Listen — a Deep Dive on "${t.title}"`} />}
             </li>
           ))}
         </ul>
