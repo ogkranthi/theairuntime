@@ -7,12 +7,21 @@
  * unreachable so a network blip never breaks the build.
  */
 
+import overlays from '../data/substack-overlays.json';
+
 export interface SubstackPost {
   title: string;
   url: string;
   publishedAt: Date;
   summary: string;
   author?: string;
+  audioOverviewUrl?: string;
+}
+
+interface Overlay { audioOverviewUrl?: string }
+function getOverlay(url: string): Overlay | undefined {
+  const map = overlays as Record<string, Overlay>;
+  return map[url];
 }
 
 const FEED_URL = 'https://theairuntime.com/feed';
@@ -66,12 +75,14 @@ export async function fetchSubstackPosts(limit = 6): Promise<SubstackPost[]> {
   const items = Array.from(xml.matchAll(/<item>([\s\S]*?)<\/item>/g));
   const posts: SubstackPost[] = items.slice(0, limit).map((m) => {
     const item = m[1];
+    const url = pick(item, 'link');
     return {
       title: pick(item, 'title'),
-      url: pick(item, 'link'),
+      url,
       publishedAt: new Date(pick(item, 'pubDate') || Date.now()),
       summary: stripHtml(pick(item, 'description')),
       author: pick(item, 'dc:creator') || undefined,
+      audioOverviewUrl: getOverlay(url)?.audioOverviewUrl,
     };
   });
 

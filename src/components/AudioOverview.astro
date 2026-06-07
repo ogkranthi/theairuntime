@@ -1,0 +1,42 @@
+---
+interface Props {
+  src: string;
+  label?: string;
+}
+
+const { src, label = 'Listen — a Deep Dive on this' } = Astro.props;
+---
+<div class="audio-overview">
+  <div class="head">
+    <span class="badge">DEEP DIVE</span>
+    <span class="label">{label}</span>
+  </div>
+  <audio controls preload="none" src={src}>
+    <a href={src}>Download the audio overview</a>
+  </audio>
+  <p class="note muted">Two-host audio summary generated with NotebookLM.</p>
+</div>
+
+<style>
+  .audio-overview {
+    margin-top: 0.85rem;
+    padding: 0.85rem 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+    border-radius: var(--radius-sm);
+  }
+  .head { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.6rem; }
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+  .label { font-size: 0.85rem; color: var(--text-2); }
+  audio { width: 100%; max-width: 32rem; display: block; }
+  .note { margin: 0.4rem 0 0; font-size: 0.75rem; font-family: var(--font-mono); }
+</style>

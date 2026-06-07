@@ -1,0 +1,8 @@
+{
+  "_doc": "Map of Substack post URL -> { audioOverviewUrl }. Populate by running scripts/notebooklm-overview.py substack <url> and pasting the printed entry here. The leading underscore key is ignored.",
+  "_example": {
+    "https://theairuntime.com/p/some-issue": {
+      "audioOverviewUrl": "/audio/substack-some-issue.mp3"
+    }
+  }
+}

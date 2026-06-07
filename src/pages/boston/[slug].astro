@@ -9,6 +9,7 @@ import Section from '../../components/Section.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import ReadingCard from '../../components/ReadingCard.astro';
+import AudioOverview from '../../components/AudioOverview.astro';
 import JsonLd from '../../components/JsonLd.astro';
 import { breadcrumbList } from '../../lib/breadcrumbs';
 
@@ -150,12 +151,15 @@ const breadcrumbSchema = breadcrumbList(
     <div class="partners"><PartnerStrip partners={event.data.partners} /></div>
   </Section>
 
-  {(event.data.recordingUrl || event.data.slidesUrl) && (
+  {(event.data.recordingUrl || event.data.slidesUrl || event.data.audioOverviewUrl) && (
     <Section eyebrow="Materials" title="Slides and recordings">
       <ul class="materials">
         {event.data.slidesUrl && <li><a href={event.data.slidesUrl}>Slides →</a></li>}
         {event.data.recordingUrl && <li><a href={event.data.recordingUrl}>Recording →</a></li>}
       </ul>
+      {event.data.audioOverviewUrl && (
+        <AudioOverview src={event.data.audioOverviewUrl} label={`Listen — a Deep Dive on ${event.data.title}`} />
+      )}
     </Section>
   )}
 

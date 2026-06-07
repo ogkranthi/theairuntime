@@ -71,6 +71,7 @@ const pillarChips = byPillar
             <header>
               <span class="tag">Issue</span>
               <span class="source muted">The AI Runtime · {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(p.publishedAt)}</span>
+              {p.audioOverviewUrl && <a class="audio-link" href={p.audioOverviewUrl}>🎧 Listen</a>}
             </header>
             <h3><a href={p.url} target="_blank" rel="noopener">{p.title}</a></h3>
             <p class="dim">{p.summary}</p>
@@ -183,4 +184,6 @@ const pillarChips = byPillar
   .own h3 { margin: 0; font-size: 1.1rem; }
   .own h3 a { color: var(--text); text-decoration: none; }
   .own h3 a:hover { color: var(--accent); }
+  .audio-link { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); text-decoration: none; }
+  .audio-link:hover { text-decoration: underline; }
 </style>
