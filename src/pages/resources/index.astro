@@ -3,9 +3,16 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import PillarFilter from '../../components/PillarFilter.astro';
+import SubstackEmbed from '../../components/SubstackEmbed.astro';
 
 const resources = await getCollection('resources');
-resources.sort((a, b) => a.data.title.localeCompare(b.data.title));
+// Newest first, so the series reads chronologically and the latest issue leads.
+resources.sort((a, b) => {
+  const ad = a.data.publishedAt ? +a.data.publishedAt : 0;
+  const bd = b.data.publishedAt ? +b.data.publishedAt : 0;
+  if (ad !== bd) return bd - ad;
+  return a.data.title.localeCompare(b.data.title);
+});
 
 // Surface a featured free download at the top of the page so it's the first
 // thing visitors see. Prefer a featured + free resource with a real PDF.
@@ -45,14 +52,14 @@ const pillarChips = Object.entries(
       <div class="container">
         <div class="featured">
           <div class="copy">
-            <span class="tag">Free download · {featured.data.type}</span>
+            <span class="tag">Latest issue · free</span>
             <h1>{featured.data.title}</h1>
             <p class="dim">{featured.data.description}</p>
             <div class="cta-row">
               <a class="btn" href={featured.data.pdfUrl} download>Download the PDF →</a>
-              <a class="btn btn-ghost" href={`/resources/${featured.slug}`}>Learn more</a>
+              <a class="btn btn-ghost" href={`/resources/${featured.slug}`}>Get it emailed</a>
             </div>
-            <p class="muted small">Free. No email required.</p>
+            <p class="muted small">Free. The latest issue is always free. Subscribers get each new one first.</p>
           </div>
           <a class="cover" href={featured.data.pdfUrl} download aria-label={`Download ${featured.data.title}`}>
             <span class="doc">
@@ -67,9 +74,9 @@ const pillarChips = Object.entries(
   )}
 
   <Section
-    eyebrow="Resources"
-    title="Playbooks for AI practitioners"
-    lead="Field-tested checklists, ebooks, and playbooks. Subscribers get them first."
+    eyebrow="The series"
+    title="Every issue, in one place"
+    lead="Field-tested checklists, ebooks, and playbooks for AI practitioners. A new issue ships regularly. The latest is always free; subscribers get each one first."
   >
     {pillarChips.length > 1 && <PillarFilter mode="filter" pillars={pillarChips} />}
     <ul class="grid">
@@ -89,6 +96,20 @@ const pillarChips = Object.entries(
         </li>
       ))}
     </ul>
+  </Section>
+
+  <Section eyebrow="Never miss an issue" title="Get every new issue in your inbox">
+    <SubstackEmbed
+      source="resources-series"
+      headline="Subscribe to the series"
+      subhead="Each new checklist, ebook, and playbook lands in your inbox the day it ships."
+      buttonLabel="Subscribe free"
+      bullets={[
+        'The latest issue, always free',
+        'New issues the day they drop, before anyone else',
+        'Plus the weekly newsletter and the next Boston meetup first',
+      ]}
+    />
   </Section>
 
   <script>

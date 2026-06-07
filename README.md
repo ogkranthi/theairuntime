@@ -62,9 +62,25 @@ Drop `src/content/speakers/<slug>.md` with bio + `talks: []` referencing event s
 
 ### A new resource (ebook / checklist / playbook)
 Drop `src/content/resources/<slug>.md`. Set `status` to `coming-soon`, `lead-gated`, `free`, or `paid`.
-- **Free:** `pdfUrl: /resources/<slug>.pdf`, drop the PDF in `public/resources/`.
+- **Free:** `pdfUrl: /resources/<slug>.pdf`, drop the PDF in `public/resources/`. Shows a no-friction download plus an "email me the PDF" path that subscribes the reader.
 - **Lead-gated:** lead-gate captures email via `/api/subscribe`, then emails the link.
 - **Paid:** `paymentLinkUrl: <stripe/gumroad/lemonsqueezy URL>`.
+
+### The PDF issue series (how each new PDF grows subscribers)
+`/resources` is framed as an ongoing series. The play for every new issue:
+1. **Publish the new issue as `status: free`** with `featured: true` and a
+   `publishedAt` date. It becomes the "Latest issue" hero (always free, the
+   top-of-funnel hook). Remove `featured` from the previous issue.
+2. **Demote the previous issue to `status: lead-gated`.** Back issues now
+   require an email to unlock, so the archive converts. Keep its `pdfUrl`; the
+   lead-gate emails the link after capture.
+3. **Optionally pre-announce the next issue as `status: coming-soon`** (no
+   `pdfUrl` yet). The lead-gate becomes a "Notify me" form that collects
+   subscribers before the PDF exists; email them on release.
+4. Sort is by `publishedAt` (newest first), so set it on every issue.
+5. Add a subscribe CTA on the **last page of the PDF itself**
+   ("Get the next issue: events.theairuntime.com/resources") so the asset
+   converts even when shared off-site.
 
 ## Deploy
 
