@@ -81,7 +81,17 @@ const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric
       Free, weekly, anti-hype. Production lessons from practitioners, plus the next Boston event
       before the public drop.
     </p>
-    <SubstackEmbed source="home-footer" />
+    <SubstackEmbed
+      source="home-footer"
+      headline="Get The AI Runtime in your inbox"
+      subhead="One free issue a week. The operational layer where AI actually runs."
+      buttonLabel="Subscribe free"
+      bullets={[
+        'Evals, agents, inference, reliability, cost',
+        'Specific and sourced, the kind of piece you forward to your team',
+        'The next Boston meetup before the public Luma drop',
+      ]}
+    />
   </Section>
 </BaseLayout>
 

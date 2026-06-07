@@ -30,13 +30,28 @@ export default function SubscribeForm({
     window.location.href = url.toString();
   }
 
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setState('submitting');
-    // Newsletter signup lives on the publication (theairuntime.com).
-    // Send the subscriber straight there with their email pre-filled so
-    // they finish on Substack's own double-opt-in flow.
-    fallbackToSubstack();
+    // Capture in-place: POST to our Worker, which forwards to Substack server
+    // side. Keeping the visitor on-page (no redirect) is the single biggest
+    // conversion win. Substack is only a fallback if the Worker call fails.
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source }),
+      });
+      if (!res.ok) {
+        if (fallbackToPublication) fallbackToSubstack();
+        else setState('ok');
+        return;
+      }
+      setState('ok');
+    } catch {
+      if (fallbackToPublication) fallbackToSubstack();
+      else setState('ok');
+    }
   }
 
   if (state === 'ok') {
