@@ -11,6 +11,10 @@ interface Props {
   successBody?: string;
   fallbackToPublication?: boolean;
   footer?: 'newsletter' | 'slack' | 'none';
+  /** Conversion value bullets shown above the form (card variant). */
+  bullets?: string[];
+  /** Qualitative social proof line, e.g. "engineers from Microsoft, Wayfair, HBS, MIT". */
+  proof?: string;
 }
 
 const {
@@ -21,8 +25,10 @@ const {
   buttonLabel = 'Subscribe',
   successTitle,
   successBody,
-  fallbackToPublication = true,
+  fallbackToPublication = false,
   footer = 'newsletter',
+  bullets = [],
+  proof = 'Read by engineers shipping AI at Microsoft, Wayfair, HBS, and MIT.',
 } = Astro.props;
 ---
 <div class={`subscribe ${variant}`}>
@@ -30,6 +36,11 @@ const {
     <div class="copy">
       <h3>{headline}</h3>
       <p class="dim">{subhead}</p>
+      {bullets.length > 0 && (
+        <ul class="bullets">
+          {bullets.map((b) => <li>{b}</li>)}
+        </ul>
+      )}
     </div>
   )}
   <div class="form-slot">
@@ -41,6 +52,7 @@ const {
       successBody={successBody}
       fallbackToPublication={fallbackToPublication}
     />
+    {proof && <p class="proof muted small">{proof}</p>}
     {footer === 'newsletter' && (
       <p class="muted small foot">
         Free. No spam. Unsubscribe in one click.
@@ -69,9 +81,34 @@ const {
   @media (max-width: 720px) {
     .subscribe.card { grid-template-columns: 1fr; }
   }
-  .foot {
+  .bullets {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .bullets li {
+    position: relative;
+    padding-left: 1.4rem;
+    font-size: 0.92rem;
+    color: var(--text-2);
+  }
+  .bullets li::before {
+    content: '\2713';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .proof {
     font-size: 0.8rem;
     margin: 0.75rem 0 0;
+  }
+  .foot {
+    font-size: 0.8rem;
+    margin: 0.4rem 0 0;
     font-family: var(--font-mono);
   }
   .small { font-size: 0.85rem; }

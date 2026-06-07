@@ -8,6 +8,7 @@ import '../styles/tokens.css';
 import BrandHeader from '../components/BrandHeader.astro';
 import BrandFooter from '../components/BrandFooter.astro';
 import JsonLd from '../components/JsonLd.astro';
+import StickySubscribeBar from '../components/StickySubscribeBar.tsx';
 
 interface Props {
   title: string;
@@ -16,6 +17,8 @@ interface Props {
   noindex?: boolean;
   /** Override the OG/Twitter card type (e.g. 'article', 'profile'). */
   ogType?: string;
+  /** Hide the sticky subscribe bar (e.g. on /subscribe or the gated channel). */
+  noSubBar?: boolean;
 }
 
 const {
@@ -24,6 +27,7 @@ const {
   ogImage = '/og-default.png',
   noindex = false,
   ogType = 'website',
+  noSubBar = false,
 } = Astro.props;
 
 const fullTitle = title.includes('AI Runtime') ? title : `${title} · The AI Runtime`;
@@ -120,6 +124,7 @@ const websiteSchema = {
       <slot />
     </main>
     <BrandFooter />
+    {!noSubBar && <StickySubscribeBar client:idle />}
     {cfBeaconToken && (
       <script
         is:inline
