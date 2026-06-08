@@ -20,6 +20,6 @@ description: |
   An evening for people building, shipping, and scaling with AI. Two
   practitioners on AI as a teammate. Nirmal Jingar (Wayfair) on the
   productivity gains from embedding AI in daily engineering workflows.
-  Ananya Shah on the patterns for collaborative AI that work for whole
-  teams, not just individuals.
+  Ananya Shah (Cartesian) on the patterns for collaborative AI that work
+  for whole teams, not just individuals.
 ---
