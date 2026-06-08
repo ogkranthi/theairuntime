@@ -1,0 +1,34 @@
+---
+import QRCode from 'qrcode';
+
+interface Props {
+  value: string;
+  size?: number;
+  color?: string;
+}
+
+const { value, size = 280, color = '#1A1A1A' } = Astro.props;
+
+// Generate at build time so the page ships zero-JS for the QR.
+// "M" error correction is the sweet spot for a printed/projected QR:
+// readable at distance, still tolerant of a thumb covering part of it.
+const svgString = await QRCode.toString(value, {
+  type: 'svg',
+  margin: 1,
+  color: { dark: color, light: '#FFFFFF' },
+  errorCorrectionLevel: 'M',
+  width: size,
+});
+---
+<div class="qr" set:html={svgString} />
+
+<style>
+  .qr { line-height: 0; display: inline-block; }
+  .qr :global(svg) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+</style>
