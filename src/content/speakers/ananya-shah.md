@@ -1,7 +1,7 @@
 ---
 name: Ananya Shah
 title: AI Strategist & Consultant
-company: Independent
+company: Cartesian
 photo: /speakers/ananya-shah.jpg
 social: {}
 talks:
