@@ -1,0 +1,34 @@
+[
+  {
+    "candidate_name": "Agents: team, teams, one",
+    "pillar": "agents",
+    "pattern_description": "Talks in the 'agents' pillar share themes around team, teams, one. Supported by 2 talks across events.",
+    "evidence_talks": [
+      {
+        "event_slug": "2026-06-16-ai-as-a-teammate",
+        "talk_title": "Beyond the Private Chatbot: Bringing AI to Collaborative Work"
+      },
+      {
+        "event_slug": "2026-05-11-agentic-architectures",
+        "talk_title": "Tradeoffs and Learnings with AI Agent Self-Signups"
+      }
+    ],
+    "talk_count": 2
+  },
+  {
+    "candidate_name": "Reliability: time",
+    "pillar": "reliability",
+    "pattern_description": "Talks in the 'reliability' pillar share themes around time. Supported by 2 talks across events.",
+    "evidence_talks": [
+      {
+        "event_slug": "2026-05-11-agentic-architectures",
+        "talk_title": "The Greenfield Delusion: Shipping AI Inside Real Organizations"
+      },
+      {
+        "event_slug": "2026-06-16-ai-as-a-teammate",
+        "talk_title": "AI as a Teammate: Driving Double-Digit Engineering Productivity Gains"
+      }
+    ],
+    "talk_count": 2
+  }
+]

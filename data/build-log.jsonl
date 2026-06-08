@@ -1,0 +1,4 @@
+{"ts": "2026-06-08T04:19:31.890759+00:00", "feature": "F1", "tier": "A", "records_written": 4, "eval_gate": "skip", "notes": "4 talk records extracted from content files"}
+{"ts": "2026-06-08T04:19:31.897964+00:00", "feature": "F3", "tier": "A", "candidates_written": 2, "rejected": 0, "notes": "2 framework candidates from 2 pillars"}
+{"ts": "2026-06-08T04:19:31.905881+00:00", "feature": "F2", "tier": "B", "drafted": 0, "suppressed": 0, "notes": "Skipped: no OPENROUTER_API_KEY"}
+{"ts": "2026-06-08T04:19:31.910559+00:00", "feature": "F4", "tier": "B", "status": "scaffold_only", "notes": "F4: No transcript provided. Pass --transcript <path> after the event."}

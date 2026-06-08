@@ -27,3 +27,4 @@ pnpm-debug.log*
 # astro
 .astro/
 scripts/__pycache__/
+__pycache__/
