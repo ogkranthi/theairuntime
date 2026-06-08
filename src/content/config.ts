@@ -124,6 +124,9 @@ const resources = defineCollection({
     previewUrl: z.string().optional(),
     paymentLinkUrl: z.string().url().optional(),
     featured: z.boolean().default(false),
+    // Free resources can require a social share to reveal the download, turning
+    // each reader into a referrer. Only meaningful with status: free + pdfUrl.
+    shareToUnlock: z.boolean().default(false),
   }),
 });
 

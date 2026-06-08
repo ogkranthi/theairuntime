@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { getRef, shareUrlForEmail } from '../lib/referral';
 
 interface Props {
   source?: string;
@@ -7,6 +8,8 @@ interface Props {
   successBody?: string;
   /** If false, do not redirect to Substack on failure (use for non-newsletter capture). */
   fallbackToPublication?: boolean;
+  /** Show a "refer a friend" share link in the success state. */
+  showReferral?: boolean;
 }
 
 type State = 'idle' | 'submitting' | 'ok';
@@ -17,9 +20,11 @@ export default function SubscribeForm({
   successTitle = "You're on the list.",
   successBody = 'Production lessons from AI practitioners, your first issue lands soon.',
   fallbackToPublication = true,
+  showReferral = false,
 }: Props) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<State>('idle');
+  const [copied, setCopied] = useState(false);
 
   function fallbackToSubstack() {
     // If our Worker can't reach Substack for any reason, send the user
@@ -40,7 +45,7 @@ export default function SubscribeForm({
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source }),
+        body: JSON.stringify({ email, source, ref: getRef() }),
       });
       if (!res.ok) {
         if (fallbackToPublication) fallbackToSubstack();
@@ -55,13 +60,44 @@ export default function SubscribeForm({
   }
 
   if (state === 'ok') {
+    const shareUrl = email ? shareUrlForEmail(email) : '';
+    async function copyShare() {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setCopied(true);
+      } catch {
+        /* clipboard may be unavailable; the link is still selectable */
+      }
+    }
     return (
       <div className="sub-ok">
         <strong>✓ {successTitle}</strong>
         <p>{successBody}</p>
+        {showReferral && shareUrl && (
+          <div className="refer">
+            <p className="refer-lbl">Know someone shipping AI? Send them in:</p>
+            <div className="refer-row">
+              <input readOnly value={shareUrl} onFocus={(e) => e.currentTarget.select()} aria-label="Your referral link" />
+              <button type="button" className="btn" onClick={copyShare}>{copied ? 'Copied' : 'Copy link'}</button>
+            </div>
+          </div>
+        )}
         <style>{`
           .sub-ok strong { font-family: var(--font-mono); color: var(--accent); }
           .sub-ok p { margin: 0.5rem 0 0; color: var(--text-2); }
+          .refer { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+          .refer-lbl { margin: 0 0 0.5rem !important; font-size: 0.9rem; }
+          .refer-row { display: flex; gap: 0.5rem; flex-wrap: wrap; max-width: 32rem; }
+          .refer-row input {
+            flex: 1 1 16rem; padding: 0.6rem 0.8rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-2); color: var(--text-2);
+            font-family: var(--font-mono); font-size: 0.8rem;
+          }
+          .refer-row .btn {
+            padding: 0.6rem 1.1rem; border-radius: 8px; background: var(--accent); color: var(--bg);
+            border: 1px solid var(--accent); font-family: var(--font-mono); font-weight: 700;
+            font-size: 0.85rem; cursor: pointer;
+          }
         `}</style>
       </div>
     );

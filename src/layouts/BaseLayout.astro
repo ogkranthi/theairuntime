@@ -124,6 +124,13 @@ const websiteSchema = {
       <slot />
     </main>
     <BrandFooter />
+    {/* Referral capture: store ?ref= (first-touch) so subscribe calls can attribute it. */}
+    <script is:inline>
+      try {
+        var r = new URLSearchParams(location.search).get('ref');
+        if (r && !localStorage.getItem('tair_ref')) localStorage.setItem('tair_ref', r.slice(0, 64));
+      } catch (e) {}
+    </script>
     {!noSubBar && <StickySubscribeBar client:idle />}
     {cfBeaconToken && (
       <script

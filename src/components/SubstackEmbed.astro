@@ -15,6 +15,8 @@ interface Props {
   bullets?: string[];
   /** Qualitative social proof line, e.g. "engineers from Microsoft, Wayfair, HBS, MIT". */
   proof?: string;
+  /** Show a "refer a friend" share link after a successful subscribe. */
+  showReferral?: boolean;
 }
 
 const {
@@ -29,6 +31,7 @@ const {
   footer = 'newsletter',
   bullets = [],
   proof = 'Read by AI practitioners at IBM, Amazon, Meta, Google, Nvidia, OpenAI, MIT, Harvard, and more for production learnings.',
+  showReferral = false,
 } = Astro.props;
 ---
 <div class={`subscribe ${variant}`}>
@@ -51,6 +54,7 @@ const {
       successTitle={successTitle}
       successBody={successBody}
       fallbackToPublication={fallbackToPublication}
+      showReferral={showReferral}
     />
     {proof && <p class="proof muted small">{proof}</p>}
     {footer === 'newsletter' && (

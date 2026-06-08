@@ -21,6 +21,8 @@ interface SubscribeBody {
   source?: string;
   resourceSlug?: string;
   resourceTitle?: string;
+  /** Referral id this visitor arrived with (?ref=). Attribution only. */
+  ref?: string;
 }
 
 const json = (data: unknown, init: ResponseInit = {}) =>
@@ -57,11 +59,17 @@ async function handleSubscribe(request: Request, env: Env): Promise<Response> {
   const origin = env.SUBSTACK_ORIGIN ?? 'https://theairuntime.com';
   const substackUrl = `${origin}/api/v1/free?nojs=true`;
 
+  // Fold the referral id into the source so it rides Substack's own attribution
+  // alongside our webhook mirror. Sanitize to keep the value tidy.
+  const baseSource = body.source ?? 'theairuntime-site';
+  const ref = (body.ref ?? '').trim().slice(0, 64).replace(/[^\w.-]/g, '');
+  const source = ref ? `${baseSource}|ref:${ref}` : baseSource;
+
   const form = new URLSearchParams();
   form.set('email', email);
   form.set('first_url', `https://events.theairuntime.com/resources/${body.resourceSlug ?? ''}`);
   form.set('first_referrer', 'events.theairuntime.com');
-  form.set('source', body.source ?? 'theairuntime-site');
+  form.set('source', source);
 
   let substackOk = false;
   try {
@@ -85,7 +93,8 @@ async function handleSubscribe(request: Request, env: Env): Promise<Response> {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           email,
-          source: body.source ?? 'theairuntime-site',
+          source: baseSource,
+          ref: ref || null,
           resourceSlug: body.resourceSlug ?? null,
           resourceTitle: body.resourceTitle ?? null,
           substackForwarded: substackOk,

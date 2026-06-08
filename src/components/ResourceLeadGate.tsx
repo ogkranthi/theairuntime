@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { getRef, SHARE_ORIGIN } from '../lib/referral';
 
 interface Props {
   resourceSlug: string;
@@ -7,9 +8,13 @@ interface Props {
   pdfUrl?: string;
   paymentLinkUrl?: string;
   priceUsd?: number;
+  /** Free resources only: require a social share to reveal the download. */
+  shareToUnlock?: boolean;
 }
 
 type State = 'idle' | 'submitting' | 'ok' | 'error';
+
+const unlockKey = (slug: string) => `tair_unlocked_${slug}`;
 
 export default function ResourceLeadGate({
   resourceSlug,
@@ -18,21 +23,64 @@ export default function ResourceLeadGate({
   pdfUrl,
   paymentLinkUrl,
   priceUsd,
+  shareToUnlock = false,
 }: Props) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<State>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [unlocked, setUnlocked] = useState(() => {
+    try {
+      return localStorage.getItem(unlockKey(resourceSlug)) === '1';
+    } catch {
+      return false;
+    }
+  });
 
   async function subscribe(source: string) {
     const res = await fetch('/api/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, source, resourceSlug, resourceTitle }),
+      body: JSON.stringify({ email, source, resourceSlug, resourceTitle, ref: getRef() }),
     });
     if (!res.ok) {
       const data = (await res.json().catch(() => null)) as { error?: string } | null;
       throw new Error(data?.error ?? 'Subscription failed');
     }
+  }
+
+  // Share-to-unlock: a free resource that reveals its download only after the
+  // reader shares it. The shared link carries ?ref=share-<slug>, so signups it
+  // drives are attributable through /api/subscribe. Honor-system reveal, like
+  // the SubscriberGate localStorage unlock.
+  if (status === 'free' && pdfUrl && shareToUnlock && !unlocked) {
+    const pageUrl = `${SHARE_ORIGIN}/resources/${resourceSlug}?ref=share-${resourceSlug}`;
+    const shareText = `Worth a read: ${resourceTitle} from The AI Runtime`;
+    const linkedin = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`;
+    const x = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`;
+    function unlock() {
+      try {
+        localStorage.setItem(unlockKey(resourceSlug), '1');
+      } catch {
+        /* unlock is best-effort */
+      }
+      setUnlocked(true);
+    }
+    return (
+      <div className="share-gate">
+        <p className="lbl">Share it to unlock the download. It stays free, and it helps another engineer find it.</p>
+        <div className="row">
+          <a className="btn" href={linkedin} target="_blank" rel="noopener" onClick={unlock}>Share on LinkedIn</a>
+          <a className="btn btn-ghost" href={x} target="_blank" rel="noopener" onClick={unlock}>Share on X</a>
+        </div>
+        <button type="button" className="link" onClick={unlock}>Already shared? Unlock it</button>
+        <style>{`
+          .share-gate { display: flex; flex-direction: column; gap: 0.7rem; max-width: 32rem; }
+          .share-gate .lbl { color: var(--text-2); margin: 0; }
+          .share-gate .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+          .share-gate .link { background: none; border: none; color: var(--text-3); font-size: 0.8rem; text-decoration: underline; cursor: pointer; align-self: flex-start; padding: 0; }
+        `}</style>
+      </div>
+    );
   }
 
   // Free resources: keep the no-friction direct download, AND offer an

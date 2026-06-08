@@ -38,8 +38,13 @@ from typing import Sequence
 import yaml
 
 try:
-    from notebooklm import NotebookLMClient
-    from notebooklm.errors import ArtifactTimeoutError, ArtifactDownloadError
+    from notebooklm import (
+        NotebookLMClient,
+        ArtifactTimeoutError,
+        ArtifactDownloadError,
+        AudioFormat,
+        AudioLength,
+    )
 except ImportError:
     sys.stderr.write(
         "notebooklm-py is not installed.\n"
@@ -51,6 +56,31 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT = ROOT / "src" / "content"
 PUBLIC_AUDIO = ROOT / "public" / "audio"
+
+
+# ---------- AI Runtime house voice ----------
+
+# Default host instructions come from the shared brand module so audio and text
+# enrichment stay in one voice (see scripts/brand.py and BRAND.md). Override per
+# run with --instructions.
+from brand import audio_instructions
+
+DEFAULT_INSTRUCTIONS = audio_instructions()
+
+# CLI value -> NotebookLM enum. NotebookLM offers four conversational formats;
+# CRITIQUE and DEBATE pressure-test claims instead of two hosts agreeing,
+# which suits an anti-hype brand for opinionated pieces.
+AUDIO_FORMATS = {
+    "deep-dive": AudioFormat.DEEP_DIVE,
+    "brief": AudioFormat.BRIEF,
+    "critique": AudioFormat.CRITIQUE,
+    "debate": AudioFormat.DEBATE,
+}
+AUDIO_LENGTHS = {
+    "short": AudioLength.SHORT,
+    "default": AudioLength.DEFAULT,
+    "long": AudioLength.LONG,
+}
 
 
 # ---------- frontmatter loading ----------
@@ -173,9 +203,16 @@ def resolve_substack(url: str, title: str | None) -> Job:
 
 # ---------- generation ----------
 
-async def generate(job: Job) -> None:
+async def generate(
+    job: Job,
+    *,
+    instructions: str,
+    audio_format: AudioFormat,
+    audio_length: AudioLength,
+) -> None:
     print(f"→ Notebook: {job.notebook_name}")
     print(f"→ Sources : {len(job.url_sources)} URL(s), {len(job.text_sources)} text snippet(s)")
+    print(f"→ Format  : {audio_format.name} / {audio_length.name}")
     print(f"→ Output  : {job.output_path.relative_to(ROOT)}")
 
     async with NotebookLMClient.from_storage() as client:
@@ -187,17 +224,15 @@ async def generate(job: Job) -> None:
 
         for title, body in job.text_sources:
             print(f"   + Text: {title}")
-            # add_text signature mirrors add_url in this library
-            await client.sources.add_text(nb.id, body, title=title, wait=True)
+            # add_text(notebook_id, title, content, *, wait=...) in notebooklm-py 0.7.x
+            await client.sources.add_text(nb.id, title, body, wait=True)
 
-        print("→ Generating Deep Dive audio overview…")
+        print("→ Generating audio overview in The AI Runtime voice…")
         status = await client.artifacts.generate_audio(
             nb.id,
-            instructions=(
-                "Two-host Deep Dive format. Practitioner audience — engineers "
-                "shipping AI to production. Focus on the specific, concrete "
-                "lessons; skip hype and speculation."
-            ),
+            instructions=instructions,
+            audio_format=audio_format,
+            audio_length=audio_length,
         )
 
         try:
@@ -215,27 +250,49 @@ async def generate(job: Job) -> None:
 
     rel_url = "/" + str(job.output_path.relative_to(ROOT / "public")).replace("\\", "/")
     print()
-    print("Next step — add the audio URL to your content:")
+    print("Next step: add the audio URL to your content.")
     print(f"  file : {job.suggested_frontmatter_path.relative_to(ROOT)}")
-    print(f"  field: {job.suggested_frontmatter_field}: {rel_url}")
+    if job.suggested_frontmatter_path.suffix == ".json":
+        # The substack overlays file takes a full JSON entry (already includes
+        # the URL), so print it as-is rather than as a `field: value` line.
+        print(f"  entry: {job.suggested_frontmatter_field}")
+    else:
+        print(f"  field: {job.suggested_frontmatter_field}: {rel_url}")
 
 
 # ---------- CLI ----------
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    # Audio-shaping flags shared by every subcommand. Defaults render the
+    # branded AI Runtime Deep Dive; override per run as needed.
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument(
+        "--format", dest="audio_format", choices=list(AUDIO_FORMATS), default="deep-dive",
+        help="NotebookLM audio format (default: deep-dive). critique/debate pressure-test claims.",
+    )
+    common.add_argument(
+        "--length", dest="audio_length", choices=list(AUDIO_LENGTHS), default="default",
+        help="Audio length (default: default). short suits a newsletter issue, long a field guide.",
+    )
+    common.add_argument(
+        "--instructions", default=None,
+        help="Override the branded host instructions with custom text for this run.",
+    )
+
     sub = p.add_subparsers(dest="kind", required=True)
 
-    sp = sub.add_parser("speaker", help="Generate overview for a past talk")
+    sp = sub.add_parser("speaker", parents=[common], help="Generate overview for a past talk")
     sp.add_argument("slug", help="Speaker slug, e.g. ray-liao")
 
-    rd = sub.add_parser("reading", help="Generate overview for a reading-list entry")
+    rd = sub.add_parser("reading", parents=[common], help="Generate overview for a reading-list entry")
     rd.add_argument("slug", help="Reading slug, e.g. hamel-husain-field-guide")
 
-    ev = sub.add_parser("event", help="Generate overview for an event (city/slug)")
+    ev = sub.add_parser("event", parents=[common], help="Generate overview for an event (city/slug)")
     ev.add_argument("rel_slug", help="e.g. boston/2026-05-11-agentic-architectures")
 
-    ss = sub.add_parser("substack", help="Generate overview for a Substack issue URL")
+    ss = sub.add_parser("substack", parents=[common], help="Generate overview for a Substack issue URL")
     ss.add_argument("url")
     ss.add_argument("--title", default=None)
 
@@ -261,7 +318,14 @@ def main() -> None:
             "recordingUrl, abstract, or description and retry."
         )
 
-    asyncio.run(generate(job))
+    asyncio.run(
+        generate(
+            job,
+            instructions=args.instructions or DEFAULT_INSTRUCTIONS,
+            audio_format=AUDIO_FORMATS[args.audio_format],
+            audio_length=AUDIO_LENGTHS[args.audio_length],
+        )
+    )
 
 
 if __name__ == "__main__":
