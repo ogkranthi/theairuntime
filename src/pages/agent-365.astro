@@ -1,0 +1,277 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import SubstackEmbed from '../components/SubstackEmbed.astro';
+import ReadingCard from '../components/ReadingCard.astro';
+import QRCode from '../components/QRCode.astro';
+
+// ─────────────────────────────────────────────────────────────────────
+// Talk metadata, edit these and redeploy.
+// ─────────────────────────────────────────────────────────────────────
+
+const TALK = {
+  title: 'From Chaos to Control: Managing AI Agents at Scale with Agent 365',
+  conference: 'AI Developer Summit',
+  date: 'June 9, 2026',
+  thesis:
+    'A field guide for the operational layer that keeps AI agents reliable, governed, and accountable in production.',
+  // Drop a PDF into /public/slides/agent-365.pdf and set this to '/slides/agent-365.pdf',
+  // or paste a Google Slides / SpeakerDeck link.
+  slidesUrl: undefined as string | undefined,
+  slidesLabel: 'View slides',
+};
+
+const HIGHLIGHTS = [
+  {
+    title: 'The chaos',
+    body: 'What happens when AI agents proliferate without governance: identity sprawl, untracked tool access, audit trails that go cold.',
+  },
+  {
+    title: 'Identity for agents',
+    body: 'How agents authenticate, what they act on behalf of, and how every action gets attributed back to a human or service.',
+  },
+  {
+    title: 'Tool access and policy',
+    body: 'Scoped, revocable, observable. The least-privilege patterns that survive contact with a thousand autonomous workers.',
+  },
+  {
+    title: 'Observability at scale',
+    body: 'Tracing, evals, and incident response for agent fleets. What changes when "works on my machine" meets autonomous execution.',
+  },
+  {
+    title: 'Agent 365 in production',
+    body: 'The control plane in practice: rollouts, kill switches, lifecycle, and the boring-but-essential operational primitives.',
+  },
+];
+
+// Replace these with real production stories. The "metric" line is the hook,
+// keep it concrete (latency, $/agent, incidents avoided, hours saved, etc.).
+const CASE_STUDIES = [
+  {
+    org: 'Add organization',
+    title: 'Case study 1',
+    body: 'Replace this with the production story: what they shipped, what scale, what changed when Agent 365 went in. 2 to 3 sentences.',
+    metric: 'Key metric here',
+  },
+  {
+    org: 'Add organization',
+    title: 'Case study 2',
+    body: 'Replace with another concrete story. The specific failure mode it solved is the most valuable line.',
+    metric: 'Key metric here',
+  },
+  {
+    org: 'Add organization',
+    title: 'Case study 3',
+    body: 'Replace with a third example. Different industry or use case to show the pattern generalizes.',
+    metric: 'Key metric here',
+  },
+];
+
+const allReading = await getCollection('reading');
+const relatedReading = allReading
+  .filter((r) => r.data.pillar === 'agents')
+  .sort((a, b) => {
+    if (a.data.highlight !== b.data.highlight) return a.data.highlight ? -1 : 1;
+    return +b.data.addedAt - +a.data.addedAt;
+  })
+  .slice(0, 4);
+
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+---
+<BaseLayout
+  title={`${TALK.title} · The AI Runtime`}
+  description={TALK.thesis}
+  ogType="article"
+>
+  <Section eyebrow={`${TALK.conference} · ${TALK.date}`}>
+    <div class="hero">
+      <div>
+        <h1>{TALK.title}</h1>
+        <p class="thesis">{TALK.thesis}</p>
+        <div class="speaker">
+          <strong>Kranthi Manchikanti</strong>
+          <span class="muted">AI Architect, Microsoft · Editor, The AI Runtime · Boston</span>
+        </div>
+        <div class="cta">
+          {TALK.slidesUrl ? (
+            <a class="btn" href={TALK.slidesUrl} target="_blank" rel="noopener">{TALK.slidesLabel} →</a>
+          ) : (
+            <a class="btn btn-ghost" href="#subscribe">Slides drop here after the talk · get notified</a>
+          )}
+          <a class="btn btn-ghost" href="https://theairuntime.com" target="_blank" rel="noopener">Read the publication</a>
+        </div>
+      </div>
+      <aside class="qr-block">
+        <QRCode value={pageUrl} size={260} />
+        <p class="qr-cap muted small">Scan to bookmark, share, or revisit.</p>
+        <p class="qr-url muted small"><code>events.theairuntime.com/agent-365</code></p>
+      </aside>
+    </div>
+  </Section>
+
+  <Section eyebrow="What the talk covered" title="Five problems Agent 365 solves">
+    <ul class="highlights">
+      {HIGHLIGHTS.map((h, i) => (
+        <li>
+          <span class="num">{String(i + 1).padStart(2, '0')}</span>
+          <div>
+            <h3>{h.title}</h3>
+            <p class="dim">{h.body}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="In production" title="How teams use Agent 365">
+    <p class="dim wide">
+      Production stories from teams running agents at scale. Each one is a
+      different failure mode the operational layer makes tractable.
+    </p>
+    <ul class="cases">
+      {CASE_STUDIES.map((c) => (
+        <li>
+          <span class="org">{c.org}</span>
+          <h3>{c.title}</h3>
+          <p class="dim">{c.body}</p>
+          <p class="metric">{c.metric}</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  {relatedReading.length > 0 && (
+    <Section eyebrow="From The AI Runtime" title="Background reading on agents in production">
+      <p class="dim wide">
+        Curated from <a href="/library">our library</a>. Primary sources we
+        recommend if you want to go deeper than the talk.
+      </p>
+      <div class="reading-grid">
+        {relatedReading.map((r) => <ReadingCard entry={r} />)}
+      </div>
+    </Section>
+  )}
+
+  <Section id="subscribe" eyebrow="Subscribe" title="Get the next one in your inbox">
+    <SubstackEmbed
+      source="agent-365"
+      headline="Production lessons from AI practitioners"
+      subhead="One issue a week. No vendor pitches. Talks announced here first."
+    />
+  </Section>
+</BaseLayout>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1.6fr auto;
+    gap: 3rem;
+    align-items: start;
+  }
+  @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+  .thesis {
+    font-size: 1.15rem;
+    max-width: 36rem;
+    margin-top: 1rem;
+    color: var(--text);
+  }
+  .speaker {
+    margin-top: 1.5rem;
+    font-family: var(--font-mono);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .speaker strong { color: var(--text); font-size: 1rem; }
+  .speaker .muted { font-size: 0.85rem; }
+  .cta {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+    flex-wrap: wrap;
+  }
+  .qr-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    max-width: 320px;
+  }
+  .qr-cap { margin: 0.5rem 0 0; text-align: center; }
+  .qr-url { margin: 0; text-align: center; }
+  .qr-url code {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-3);
+  }
+
+  .highlights {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .highlights li {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .highlights .num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .highlights h3 { font-size: 1rem; margin-bottom: 0.4rem; }
+
+  .cases {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .cases li {
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .cases .org {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .cases h3 { margin: 0; font-size: 1.05rem; }
+  .cases .metric {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin: 0.75rem 0 0;
+  }
+  .reading-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .wide { max-width: 42rem; }
+  .small { font-size: 0.85rem; }
+</style>
