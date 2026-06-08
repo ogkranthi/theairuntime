@@ -2,9 +2,9 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
-import SubstackEmbed from '../components/SubstackEmbed.astro';
 import ReadingCard from '../components/ReadingCard.astro';
 import QRCode from '../components/QRCode.astro';
+import SubscriberGate from '../components/SubscriberGate.tsx';
 
 // ─────────────────────────────────────────────────────────────────────
 // Talk metadata, edit these and redeploy.
@@ -83,6 +83,7 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
   title={`${TALK.title} · The AI Runtime`}
   description={TALK.thesis}
   ogType="article"
+  noSubBar
 >
   <Section eyebrow={`${TALK.conference} · ${TALK.date}`}>
     <div class="hero">
@@ -93,73 +94,80 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
           <strong>Kranthi Manchikanti</strong>
           <span class="muted">AI Architect, Microsoft · Editor, The AI Runtime · Boston</span>
         </div>
-        <div class="cta">
-          {TALK.slidesUrl ? (
-            <a class="btn" href={TALK.slidesUrl} target="_blank" rel="noopener">{TALK.slidesLabel} →</a>
-          ) : (
-            <a class="btn btn-ghost" href="#subscribe">Slides drop here after the talk · get notified</a>
-          )}
-          <a class="btn btn-ghost" href="https://theairuntime.com" target="_blank" rel="noopener">Read the publication</a>
-        </div>
+        <p class="inside">
+          <span class="lock-inline" aria-hidden="true">🔒</span>
+          Subscribe to unlock the slides, the case studies, and the curated reading list.
+        </p>
       </div>
       <aside class="qr-block">
         <QRCode value={pageUrl} size={260} />
-        <p class="qr-cap muted small">Scan to bookmark, share, or revisit.</p>
+        <p class="qr-cap muted small">Scan to revisit on your phone.</p>
         <p class="qr-url muted small"><code>events.theairuntime.com/agent-365</code></p>
       </aside>
     </div>
   </Section>
 
-  <Section eyebrow="What the talk covered" title="Five problems Agent 365 solves">
-    <ul class="highlights">
-      {HIGHLIGHTS.map((h, i) => (
-        <li>
-          <span class="num">{String(i + 1).padStart(2, '0')}</span>
-          <div>
-            <h3>{h.title}</h3>
-            <p class="dim">{h.body}</p>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </Section>
+  <div class="container gate-wrap">
+    <SubscriberGate client:load source="agent-365" />
+  </div>
 
-  <Section eyebrow="In production" title="How teams use Agent 365">
-    <p class="dim wide">
-      Production stories from teams running agents at scale. Each one is a
-      different failure mode the operational layer makes tractable.
-    </p>
-    <ul class="cases">
-      {CASE_STUDIES.map((c) => (
-        <li>
-          <span class="org">{c.org}</span>
-          <h3>{c.title}</h3>
-          <p class="dim">{c.body}</p>
-          <p class="metric">{c.metric}</p>
-        </li>
-      ))}
-    </ul>
-  </Section>
-
-  {relatedReading.length > 0 && (
-    <Section eyebrow="From The AI Runtime" title="Background reading on agents in production">
-      <p class="dim wide">
-        Curated from <a href="/library">our library</a>. Primary sources we
-        recommend if you want to go deeper than the talk.
-      </p>
-      <div class="reading-grid">
-        {relatedReading.map((r) => <ReadingCard entry={r} />)}
-      </div>
+  <div id="subscriber-content" class="locked">
+    <Section eyebrow="Slides" title="The deck">
+      {TALK.slidesUrl ? (
+        <p>
+          <a class="btn" href={TALK.slidesUrl} target="_blank" rel="noopener">{TALK.slidesLabel} →</a>
+        </p>
+      ) : (
+        <p class="dim wide">
+          The deck will be posted here within an hour of the talk. Subscribers get an
+          email when it lands.
+        </p>
+      )}
     </Section>
-  )}
 
-  <Section id="subscribe" eyebrow="Subscribe" title="Get the next one in your inbox">
-    <SubstackEmbed
-      source="agent-365"
-      headline="Production lessons from AI practitioners"
-      subhead="One issue a week. No vendor pitches. Talks announced here first."
-    />
-  </Section>
+    <Section eyebrow="What the talk covered" title="Five problems Agent 365 solves">
+      <ul class="highlights">
+        {HIGHLIGHTS.map((h, i) => (
+          <li>
+            <span class="num">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <h3>{h.title}</h3>
+              <p class="dim">{h.body}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Section>
+
+    <Section eyebrow="In production" title="How teams use Agent 365">
+      <p class="dim wide">
+        Production stories from teams running agents at scale. Each one is a
+        different failure mode the operational layer makes tractable.
+      </p>
+      <ul class="cases">
+        {CASE_STUDIES.map((c) => (
+          <li>
+            <span class="org">{c.org}</span>
+            <h3>{c.title}</h3>
+            <p class="dim">{c.body}</p>
+            <p class="metric">{c.metric}</p>
+          </li>
+        ))}
+      </ul>
+    </Section>
+
+    {relatedReading.length > 0 && (
+      <Section eyebrow="From The AI Runtime" title="Background reading on agents in production">
+        <p class="dim wide">
+          Curated from <a href="/library">our library</a>. Primary sources we
+          recommend if you want to go deeper than the talk.
+        </p>
+        <div class="reading-grid">
+          {relatedReading.map((r) => <ReadingCard entry={r} />)}
+        </div>
+      </Section>
+    )}
+  </div>
 </BaseLayout>
 
 <style>
@@ -185,12 +193,13 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
   }
   .speaker strong { color: var(--text); font-size: 1rem; }
   .speaker .muted { font-size: 0.85rem; }
-  .cta {
-    display: flex;
-    gap: 0.75rem;
+  .inside {
     margin-top: 1.75rem;
-    flex-wrap: wrap;
+    font-size: 0.95rem;
+    color: var(--text-2);
+    max-width: 36rem;
   }
+  .lock-inline { margin-right: 0.4rem; }
   .qr-block {
     display: flex;
     flex-direction: column;
@@ -208,6 +217,25 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     font-family: var(--font-mono);
     font-size: 0.78rem;
     color: var(--text-3);
+  }
+
+  /* Gate + the wall it guards (matches /subscriber-only) */
+  .gate-wrap { margin-bottom: 0.5rem; }
+  #subscriber-content { transition: filter 200ms ease, opacity 200ms ease; }
+  #subscriber-content.locked {
+    position: relative;
+    max-height: 520px;
+    overflow: hidden;
+    filter: blur(6px);
+    opacity: 0.5;
+    pointer-events: none;
+    user-select: none;
+  }
+  #subscriber-content.locked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent, var(--bg) 95%);
   }
 
   .highlights {
