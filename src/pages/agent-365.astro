@@ -126,10 +126,16 @@ const LAB_PATTERNS = [
   },
 ];
 
-// Case studies. Specific to the talk; edit to match the live narrative.
+// Case studies. Drop logos at /public/logos/<slug>.svg|png; if the file
+// isn't there, the card falls back to a styled wordmark. The
+// `practitioner` line is the person at that org who shared the story:
+// adds credibility ("this is a real practitioner account, not a marketing
+// page") and is the conventional credit pattern for case studies.
 const CASE_STUDIES = [
   {
     org: 'Amgen',
+    logo: '/logos/amgen.svg',
+    practitioner: 'Add practitioner name, role',
     industry: 'Pharma · Drug discovery',
     title: 'Scientist-attributed agents for regulated R&D',
     body: 'AI in drug discovery has to clear the same bar as a human researcher: every claim is auditable, every cited dataset is traceable, every output can be reviewed. Agent 365\'s identity and audit layers make scientist-attributed agents safe to deploy across research workflows, with policy enforced per data classification.',
@@ -137,6 +143,8 @@ const CASE_STUDIES = [
   },
   {
     org: 'Dow',
+    logo: '/logos/dow.svg',
+    practitioner: 'Add practitioner name, role',
     industry: 'Industrial · Materials & supply chain',
     title: 'Cross-business-unit rollout with regional policy',
     body: 'A global manufacturer running agents that touch supply chain, pricing, and customer systems across business units and jurisdictions. Different BUs, different data residency rules, one agent template. Agent 365\'s policy layer lets the same agent operate under the right rules for each region without code forks.',
@@ -144,6 +152,8 @@ const CASE_STUDIES = [
   },
   {
     org: 'Bayer',
+    logo: '/logos/bayer.svg',
+    practitioner: 'Add practitioner name, role',
     industry: 'Pharma · Global research',
     title: 'Multi-region agents for research and IP-sensitive workflows',
     body: 'Research distributed across continents, trial data and IP under different regulators, scientists who need the same productivity tools wherever they sit. Region-specific policies enforced at the agent layer let a Berlin agent and a Cambridge agent share a template but obey different rules, with attribution intact.',
@@ -151,6 +161,8 @@ const CASE_STUDIES = [
   },
   {
     org: 'Mastercard',
+    logo: '/logos/mastercard.svg',
+    practitioner: 'Add practitioner name, role',
     industry: 'Financial services · Risk & customer data',
     title: 'Auditor-grade observability for customer-facing agents',
     body: 'Financial-services agents touching customer PII, transactional history, and merchant data need per-customer attribution, kill switches, and continuous evals against drift. Agent 365\'s observability layer gives security and compliance teams real-time visibility into what every agent touched and why.',
@@ -286,12 +298,14 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     <ul class="cases">
       {CASE_STUDIES.map((c) => (
         <li>
-          <header>
-            <span class="org">{c.org}</span>
-            <span class="industry muted">{c.industry}</span>
-          </header>
+          <div class="case-logo">
+            <img src={c.logo} alt={`${c.org} logo`} onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'" />
+            <span class="wordmark">{c.org}</span>
+          </div>
+          <span class="industry muted">{c.industry}</span>
           <h3>{c.title}</h3>
           <p class="dim body">{c.body}</p>
+          {c.practitioner && <p class="practitioner muted">Shared by {c.practitioner}</p>}
           <p class="outcome">{c.outcome}</p>
         </li>
       ))}
@@ -490,18 +504,20 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     flex-direction: column;
     gap: 0.4rem;
   }
-  .cases header {
+  .case-logo {
     display: flex;
-    gap: 0.6rem;
-    align-items: baseline;
-    flex-wrap: wrap;
-    margin-bottom: 0.2rem;
+    align-items: center;
+    min-height: 44px;
+    margin-bottom: 0.4rem;
   }
-  .cases .org {
+  .case-logo img { max-height: 36px; width: auto; max-width: 140px; }
+  .case-logo .wordmark {
+    display: none;
     font-family: var(--font-mono);
     font-weight: 700;
     color: var(--text);
-    font-size: 1rem;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
   }
   .cases .industry {
     font-family: var(--font-mono);
@@ -511,6 +527,11 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
   }
   .cases h3 { margin: 0.2rem 0; font-size: 1.05rem; }
   .cases .body { font-size: 0.92rem; margin: 0.3rem 0 0.6rem; }
+  .cases .practitioner {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    margin: 0 0 0.5rem;
+  }
   .cases .outcome {
     font-family: var(--font-mono);
     color: var(--accent);
