@@ -13,3 +13,11 @@ not_found_handling = "404-page"
 # Uncomment to turn on AI answers (no API key needed, Workers AI is native):
 # [ai]
 # binding = "AI"
+
+# Student cohort waitlist storage. Until this is bound, /api/waitlist returns
+# 503 and the cohort form falls back to PUBLIC_COHORT_JOIN_URL. To enable:
+#   npx wrangler kv namespace create WAITLIST
+# then paste the returned id below and uncomment.
+# [[kv_namespaces]]
+# binding = "WAITLIST"
+# id = "<your-kv-namespace-id>"
