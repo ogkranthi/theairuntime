@@ -181,4 +181,26 @@ const tools = defineCollection({
   }),
 });
 
-export const collections = { cities, speakers, events, resources, reading, tools };
+const signal = defineCollection({
+  type: 'content',
+  schema: z.object({
+    month: z.string(),
+    year: z.number(),
+    problem: z.string(),
+    context: z.string(),
+    question: z.string(),
+    answer: z.string(),
+    answeredBy: z.string(),
+    reads: z.array(
+      z.object({
+        title: z.string(),
+        url: z.string().url(),
+        why: z.string(),
+      }),
+    ),
+    featured: z.boolean().default(false),
+    publishedAt: z.coerce.date(),
+  }),
+});
+
+export const collections = { cities, speakers, events, resources, reading, tools, signal };

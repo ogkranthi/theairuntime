@@ -1,0 +1,127 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import SubstackEmbed from '../../components/SubstackEmbed.astro';
+
+export async function getStaticPaths() {
+  const signals = await getCollection('signal');
+  signals.sort((a, b) => +b.data.publishedAt - +a.data.publishedAt);
+  return signals.map((entry) => ({
+    params: { month: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+---
+<BaseLayout
+  title={`Signal · ${d.month}`}
+  description={`${d.problem}. One problem, one question from the room, one honest answer.`}
+>
+  <!-- Hero -->
+  <Section flush>
+    <span class="tag eyebrow">{`Boston · ${d.month}`}</span>
+    <h1 class="hero-title">{d.problem}</h1>
+    <p class="context dim">{d.context}</p>
+  </Section>
+
+  <!-- Question from the room -->
+  <Section eyebrow="Anonymous" title="The question from the room">
+    <blockquote class="signal-quote">{d.question}</blockquote>
+    <p class="muted small">Collected anonymously from practitioners in the room.</p>
+  </Section>
+
+  <!-- Practitioner answer -->
+  <Section eyebrow={d.answeredBy} title="A practitioner answers">
+    <div class="answer">{d.answer}</div>
+    <p class="byline muted small">{d.answeredBy}</p>
+  </Section>
+
+  <!-- Read deeper -->
+  <Section eyebrow="Go deeper" title="Read deeper">
+    <div class="reads-grid">
+      {d.reads.map((r) => (
+        <a class="read-card" href={r.url} target="_blank" rel="noopener">
+          <h3>{r.title}</h3>
+          <p class="dim">{r.why}</p>
+          <span class="arrow muted">Read &#8594;</span>
+        </a>
+      ))}
+    </div>
+  </Section>
+
+  <!-- Subscribe CTA -->
+  <Section eyebrow="Subscribe">
+    <SubstackEmbed
+      source="signal-archive"
+      headline="Get the next Signal in your inbox"
+      subhead="One problem. One question. One answer. Monthly, from the Boston practitioner community."
+    />
+  </Section>
+</BaseLayout>
+
+<style>
+  .hero-title {
+    font-size: 2.4rem;
+    line-height: 1.15;
+    margin: 0.5rem 0 1.25rem;
+    max-width: 36rem;
+  }
+  @media (max-width: 720px) {
+    .hero-title { font-size: 1.6rem; }
+  }
+  .context {
+    max-width: 40rem;
+    white-space: pre-line;
+    line-height: 1.7;
+  }
+  .signal-quote {
+    font-size: 1.25rem;
+    line-height: 1.55;
+    border-left: 3px solid var(--accent);
+    padding-left: 1.25rem;
+    margin: 0 0 1rem;
+    max-width: 38rem;
+    font-style: italic;
+  }
+  .answer {
+    max-width: 40rem;
+    white-space: pre-line;
+    line-height: 1.7;
+  }
+  .byline {
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+  }
+  .reads-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  @media (max-width: 720px) {
+    .reads-grid { grid-template-columns: 1fr; }
+  }
+  .read-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color 120ms ease;
+  }
+  .read-card:hover { border-color: var(--accent); }
+  .read-card h3 { margin: 0; font-size: 1.05rem; }
+  .read-card p { margin: 0; font-size: 0.92rem; }
+  .arrow {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    margin-top: auto;
+  }
+  .small { font-size: 0.85rem; }
+</style>

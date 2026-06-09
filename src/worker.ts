@@ -14,6 +14,8 @@ interface Env {
   SUBSTACK_ORIGIN?: string;
   /** Optional webhook (Slack, Make, Zapier) that mirrors every lead. */
   LEAD_WEBHOOK_URL?: string;
+  /** Optional webhook for anonymous signal questions submitted via /signal. */
+  SIGNAL_WEBHOOK_URL?: string;
 }
 
 interface SubscribeBody {
@@ -116,12 +118,56 @@ async function handleSubscribe(request: Request, env: Env): Promise<Response> {
   return json({ ok: true });
 }
 
+interface SignalQuestionBody {
+  question: string;
+}
+
+async function handleSignalQuestion(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, { status: 405 });
+  }
+
+  let body: SignalQuestionBody;
+  try {
+    body = (await request.json()) as SignalQuestionBody;
+  } catch {
+    return json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const question = typeof body.question === 'string' ? body.question.trim() : '';
+  if (!question || question.length > 1000) {
+    return json({ error: 'Question must be a non-empty string (max 1000 characters).' }, { status: 400 });
+  }
+
+  if (env.SIGNAL_WEBHOOK_URL) {
+    try {
+      await fetch(env.SIGNAL_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          question,
+          ts: new Date().toISOString(),
+          source: 'signal-page',
+        }),
+      });
+    } catch {
+      // Webhook is best-effort.
+    }
+  }
+
+  return json({ ok: true });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === '/api/subscribe') {
       return handleSubscribe(request, env);
+    }
+
+    if (url.pathname === '/api/signal-question') {
+      return handleSignalQuestion(request, env);
     }
 
     return env.ASSETS.fetch(request);

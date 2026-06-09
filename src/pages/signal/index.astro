@@ -1,0 +1,194 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import SubstackEmbed from '../../components/SubstackEmbed.astro';
+
+const signals = await getCollection('signal');
+signals.sort((a, b) => +b.data.publishedAt - +a.data.publishedAt);
+const current = signals.find((s) => s.data.featured) ?? signals[0];
+if (!current) throw new Error('No signal entries found in src/content/signal/');
+const d = current.data;
+---
+<BaseLayout
+  title="Signal"
+  description="What the Boston AI practitioner community is working through right now. One problem, one question from the room, one honest answer."
+>
+  <!-- Hero -->
+  <Section flush>
+    <span class="tag eyebrow">{`Boston · ${d.month}`}</span>
+    <h1 class="hero-title">{d.problem}</h1>
+    <p class="context dim">{d.context}</p>
+  </Section>
+
+  <!-- Question from the room -->
+  <Section eyebrow="Anonymous" title="The question from the room">
+    <blockquote class="signal-quote">{d.question}</blockquote>
+    <p class="muted small">Collected anonymously from practitioners in the room.</p>
+  </Section>
+
+  <!-- Practitioner answer -->
+  <Section eyebrow={d.answeredBy} title="A practitioner answers">
+    <div class="answer">{d.answer}</div>
+    <p class="byline muted small">{d.answeredBy}</p>
+  </Section>
+
+  <!-- Read deeper -->
+  <Section eyebrow="Go deeper" title="Read deeper">
+    <div class="reads-grid">
+      {d.reads.map((r) => (
+        <a class="read-card" href={r.url} target="_blank" rel="noopener">
+          <h3>{r.title}</h3>
+          <p class="dim">{r.why}</p>
+          <span class="arrow muted">Read &#8594;</span>
+        </a>
+      ))}
+    </div>
+  </Section>
+
+  <!-- Submit your question -->
+  <Section eyebrow="Next month" title="Submit your question">
+    <p class="dim narrow-p">
+      What is the AI question you are too embarrassed to ask out loud? It goes to our speaker bench.
+      One question, one honest answer, published next month.
+    </p>
+    <form id="signal-form" class="signal-form">
+      <textarea
+        name="question"
+        rows={4}
+        maxlength={1000}
+        placeholder="Your question (anonymous)"
+        required
+      ></textarea>
+      <button type="submit" class="btn">Submit anonymously</button>
+      <p id="signal-success" class="success-msg" style="display:none;">Received. We read every one.</p>
+      <p id="signal-error" class="error-msg" style="display:none;">Something went wrong. Try again.</p>
+    </form>
+  </Section>
+
+  <!-- Subscribe CTA -->
+  <Section eyebrow="Subscribe">
+    <SubstackEmbed
+      source="signal-page"
+      headline="Get the next Signal in your inbox"
+      subhead="One problem. One question. One answer. Monthly, from the Boston practitioner community."
+    />
+  </Section>
+</BaseLayout>
+
+<script is:inline>
+  document.getElementById('signal-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var form = e.target;
+    var btn = form.querySelector('button[type="submit"]');
+    var q = form.querySelector('textarea[name="question"]').value.trim();
+    if (!q) return;
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    try {
+      var res = await fetch('/api/signal-question', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ question: q }),
+      });
+      if (res.ok) {
+        document.getElementById('signal-success').style.display = 'block';
+        document.getElementById('signal-error').style.display = 'none';
+        form.querySelector('textarea').value = '';
+      } else {
+        document.getElementById('signal-error').style.display = 'block';
+      }
+    } catch (_) {
+      document.getElementById('signal-error').style.display = 'block';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Submit anonymously';
+  });
+</script>
+
+<style>
+  .hero-title {
+    font-size: 2.4rem;
+    line-height: 1.15;
+    margin: 0.5rem 0 1.25rem;
+    max-width: 36rem;
+  }
+  @media (max-width: 720px) {
+    .hero-title { font-size: 1.6rem; }
+  }
+  .context {
+    max-width: 40rem;
+    white-space: pre-line;
+    line-height: 1.7;
+  }
+  .signal-quote {
+    font-size: 1.25rem;
+    line-height: 1.55;
+    border-left: 3px solid var(--accent);
+    padding-left: 1.25rem;
+    margin: 0 0 1rem;
+    max-width: 38rem;
+    font-style: italic;
+  }
+  .answer {
+    max-width: 40rem;
+    white-space: pre-line;
+    line-height: 1.7;
+  }
+  .byline {
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+  }
+  .reads-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  @media (max-width: 720px) {
+    .reads-grid { grid-template-columns: 1fr; }
+  }
+  .read-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color 120ms ease;
+  }
+  .read-card:hover { border-color: var(--accent); }
+  .read-card h3 { margin: 0; font-size: 1.05rem; }
+  .read-card p { margin: 0; font-size: 0.92rem; }
+  .arrow {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    margin-top: auto;
+  }
+  .narrow-p { max-width: 38rem; }
+  .signal-form {
+    max-width: 32rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .signal-form textarea {
+    font-family: var(--font-body, inherit);
+    font-size: 1rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm, 6px);
+    background: var(--bg-2, #f9f9f9);
+    color: var(--text);
+    resize: vertical;
+  }
+  .signal-form textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .success-msg { color: var(--accent); font-weight: 600; }
+  .error-msg { color: #c44; font-weight: 600; }
+  .small { font-size: 0.85rem; }
+</style>
