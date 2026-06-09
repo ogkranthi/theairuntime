@@ -9,6 +9,7 @@ signals.sort((a, b) => +b.data.publishedAt - +a.data.publishedAt);
 const current = signals.find((s) => s.data.featured) ?? signals[0];
 if (!current) throw new Error('No signal entries found in src/content/signal/');
 const d = current.data;
+const archive = signals.filter((s) => s.id !== current.id);
 ---
 <BaseLayout
   title="Signal"
@@ -65,6 +66,23 @@ const d = current.data;
       <p id="signal-error" class="error-msg" style="display:none;">Something went wrong. Try again.</p>
     </form>
   </Section>
+
+  <!-- Archive -->
+  {archive.length > 0 && (
+    <Section eyebrow="Archive" title="Past editions">
+      <ul class="archive-list">
+        {archive.map((s) => (
+          <li>
+            <a href={`/signal/${s.slug}`}>
+              <span class="arch-month">{s.data.month}</span>
+              <span class="arch-problem">{s.data.problem}</span>
+              <span class="arch-arrow muted">&#8594;</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )}
 
   <!-- Subscribe CTA -->
   <Section eyebrow="Subscribe">
@@ -191,4 +209,41 @@ const d = current.data;
   .success-msg { color: var(--accent); font-weight: 600; }
   .error-msg { color: #c44; font-weight: 600; }
   .small { font-size: 0.85rem; }
+  .archive-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    max-width: 44rem;
+  }
+  .archive-list a {
+    display: grid;
+    grid-template-columns: 110px 1fr 1.5rem;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 120ms ease;
+  }
+  .archive-list a:hover { border-color: var(--accent); }
+  .arch-month {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+  .arch-problem {
+    font-size: 0.95rem;
+    color: var(--text-2);
+  }
+  .arch-arrow {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    text-align: right;
+  }
 </style>
