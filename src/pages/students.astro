@@ -1,0 +1,242 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import SubstackEmbed from '../components/SubstackEmbed.astro';
+
+// Curated, high-value programs for students learning to ship AI. Links go to
+// official program pages. Keep claims accurate: describe what each program is,
+// not specific credit amounts that change over time.
+
+const microsoft = [
+  {
+    name: 'Azure for Students',
+    url: 'https://azure.microsoft.com/free/students/',
+    body: 'Free Azure credit with no credit card required, plus a set of always-free services. Spin up AI models, databases, and compute to build real projects.',
+  },
+  {
+    name: 'GitHub Student Developer Pack',
+    url: 'https://education.github.com/pack',
+    body: 'The big one. Free GitHub Copilot, plus dozens of partner tools and credits bundled for verified students. If you do one thing on this page, do this.',
+  },
+  {
+    name: 'Microsoft Learn',
+    url: 'https://learn.microsoft.com/training/',
+    body: 'Free, structured learning paths on AI, Azure AI Foundry, and agents, with hands-on modules. Pairs well with a student certification.',
+  },
+  {
+    name: 'Microsoft Imagine Cup',
+    url: 'https://imaginecup.microsoft.com/',
+    body: 'Global student startup competition. Build an AI project, get mentorship, and compete for funding and Azure credits.',
+  },
+];
+
+const nvidia = [
+  {
+    name: 'NVIDIA Deep Learning Institute',
+    url: 'https://www.nvidia.com/en-us/training/',
+    body: 'Hands-on, self-paced courses on deep learning, LLMs, and accelerated computing. Some courses are free; many offer student access and certificates.',
+  },
+  {
+    name: 'NVIDIA for Students & Educators',
+    url: 'https://www.nvidia.com/en-us/training/educator-programs/',
+    body: 'Teaching kits, course materials, and academic programs. A direct line into the tooling practitioners use to train and serve models at scale.',
+  },
+  {
+    name: 'NVIDIA Developer Program',
+    url: 'https://developer.nvidia.com/developer-program',
+    body: 'Free to join. SDKs, CUDA, NeMo, and the libraries behind production AI, plus technical docs and community.',
+  },
+  {
+    name: 'NVIDIA Inception',
+    url: 'https://www.nvidia.com/en-us/startups/',
+    body: 'Building a startup out of your research? Inception offers credits, tooling, and go-to-market support for early-stage AI companies.',
+  },
+];
+
+const more = [
+  {
+    name: 'Free GPUs: Colab & Kaggle',
+    url: 'https://www.kaggle.com/code',
+    body: 'Train and run models for free. Google Colab and Kaggle Notebooks both give free GPU time, enough to ship your first real AI project.',
+  },
+  {
+    name: 'Hugging Face',
+    url: 'https://huggingface.co/learn',
+    body: 'Free courses, open models, datasets, and Spaces to host demos. The fastest way to go from tutorial to a working model.',
+  },
+  {
+    name: 'DeepLearning.AI',
+    url: 'https://www.deeplearning.ai/courses/',
+    body: 'Short, practical courses on LLMs, RAG, agents, and evals. Many are free to audit and built with the labs shipping this tech.',
+  },
+  {
+    name: 'fast.ai',
+    url: 'https://www.fast.ai/',
+    body: 'A free, code-first deep learning course that has launched a lot of careers. Practical from lesson one.',
+  },
+];
+---
+<BaseLayout
+  title="For Students · The AI Runtime"
+  description="High-value free resources for students learning to ship AI: Microsoft for Students, NVIDIA for Students, free compute, free courses, and a way into the practitioner community."
+>
+  <Section eyebrow="For students" title="Learn to ship AI, for free">
+    <p class="lead dim">
+      If you're a student, you can get most of the tools practitioners use in production for free.
+      Here is the high-value set we'd point a younger version of ourselves to: credits, compute,
+      courses, and a way into the community. Start with the ones marked, then go build something.
+    </p>
+  </Section>
+
+  <Section eyebrow="Microsoft for students" title="Microsoft for Students">
+    <p class="dim wide">
+      Microsoft's student programs are one of the best free on-ramps to building and shipping AI.
+    </p>
+    <ul class="grid">
+      {microsoft.map((r) => (
+        <li>
+          <a href={r.url} target="_blank" rel="noopener">
+            <span class="name">{r.name}</span>
+          </a>
+          <p class="dim">{r.body}</p>
+          <a class="go" href={r.url} target="_blank" rel="noopener">Open program →</a>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="NVIDIA for students" title="NVIDIA for Students">
+    <p class="dim wide">
+      NVIDIA is where you learn the compute and training stack behind production AI, much of it free.
+    </p>
+    <ul class="grid">
+      {nvidia.map((r) => (
+        <li>
+          <a href={r.url} target="_blank" rel="noopener">
+            <span class="name">{r.name}</span>
+          </a>
+          <p class="dim">{r.body}</p>
+          <a class="go" href={r.url} target="_blank" rel="noopener">Open program →</a>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="More free resources" title="Compute, courses, and models">
+    <p class="dim wide">
+      The rest of what you need to go from learning to shipping. All free or free to start.
+    </p>
+    <ul class="grid">
+      {more.map((r) => (
+        <li>
+          <a href={r.url} target="_blank" rel="noopener">
+            <span class="name">{r.name}</span>
+          </a>
+          <p class="dim">{r.body}</p>
+          <a class="go" href={r.url} target="_blank" rel="noopener">Open →</a>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="From The AI Runtime" title="What we give students directly">
+    <ul class="ours">
+      <li>
+        <h3><a href="/resources/the-ai-runtime-field-guide.pdf" download>The Field Guide (free PDF)</a></h3>
+        <p class="dim">A guided reading path through production AI. No email required. Start here if you don't know where to start.</p>
+      </li>
+      <li>
+        <h3><a href="/library">The reading library</a></h3>
+        <p class="dim">Our curated, canonical reading list for AI practitioners. Organized by topic. Always free.</p>
+      </li>
+      <li>
+        <h3><a href="/boston">Free meetup entry</a></h3>
+        <p class="dim">Our Boston meetups are free, and students are especially welcome. Two practitioner talks a night, real production stories. Come learn and meet people who hire.</p>
+      </li>
+      <li>
+        <h3><a href="/speak">Student lightning talks</a></h3>
+        <p class="dim">Shipped something interesting in a class or side project? We make room for student lightning talks. Pitch us.</p>
+      </li>
+    </ul>
+  </Section>
+
+  <Section eyebrow="Subscribe" title="Get production lessons while you learn">
+    <p class="dim wide">
+      The AI Runtime is the publication where practitioners share what they learned shipping AI to
+      production. Free, weekly, and the fastest way to learn what classes don't teach yet.
+    </p>
+    <SubstackEmbed
+      source="students"
+      headline="The AI Runtime newsletter"
+      subhead="Evals, agents, inference, reliability, cost. Free for students, and everyone."
+      buttonLabel="Subscribe free"
+      bullets={[
+        'What production AI actually looks like, beyond the tutorial',
+        'A weekly curated read, plus our free guides',
+        'The Boston meetup before the public drop',
+      ]}
+    />
+  </Section>
+
+  <Section eyebrow="Know a program we missed?" title="Help us keep this list strong">
+    <p class="dim">
+      Student offer we should add? Email <a href="mailto:info@theairuntime.com?subject=Student%20resource%20suggestion">info@theairuntime.com</a>.
+      We keep this page current.
+    </p>
+  </Section>
+</BaseLayout>
+
+<style>
+  .lead { max-width: 42rem; }
+  .wide { max-width: 42rem; }
+  .grid {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .grid li {
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    transition: border-color 140ms ease;
+  }
+  .grid li:hover { border-color: var(--accent); }
+  .grid .name {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .grid > li > a:first-child { text-decoration: none; }
+  .grid > li > a:first-child:hover .name { color: var(--accent); }
+  .grid p { margin: 0.6rem 0 1rem; font-size: 0.95rem; }
+  .grid .go {
+    margin-top: auto;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+  .ours {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .ours li {
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--accent);
+  }
+  .ours h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+  .ours p { margin: 0; font-size: 0.95rem; }
+</style>
