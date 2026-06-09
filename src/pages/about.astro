@@ -4,6 +4,7 @@ import Section from '../components/Section.astro';
 import Blink from '../components/Blink.astro';
 import ContactCTA from '../components/ContactCTA.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
+import AskQuestion from '../components/AskQuestion.astro';
 
 const pillars = [
   { name: 'Evals & Observability', body: 'How practitioners know if AI works in production.' },
@@ -71,6 +72,10 @@ const pillars = [
       headline="Practitioner-grade. New issues every week."
       subhead="Evals, agents, inference, reliability, cost. No vendor pitches."
     />
+  </Section>
+
+  <Section eyebrow="Questions" title="Ask us a specific question">
+    <AskQuestion eyebrow="" title="" subjectTag="About question" />
   </Section>
 
   <Section>
