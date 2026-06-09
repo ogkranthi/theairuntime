@@ -7,3 +7,9 @@ compatibility_flags = ["nodejs_compat"]
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"
+
+# "Ask the Library" uses Cloudflare Workers AI. Until this binding is enabled,
+# /api/ask still returns the matched reads, just without a generated answer.
+# Uncomment to turn on AI answers (no API key needed, Workers AI is native):
+# [ai]
+# binding = "AI"
