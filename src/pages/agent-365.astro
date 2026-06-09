@@ -8,159 +8,199 @@ import SubstackEmbed from '../components/SubstackEmbed.astro';
 import SubscribePopup from '../components/SubscribePopup.tsx';
 
 // ─────────────────────────────────────────────────────────────────────
-// Talk metadata, edit and redeploy.
+// Talk metadata. Pulled from the live deck:
+// "From Chaos to Control: Managing Agents at Scale" / "The Agent 365 Control Plane".
 // ─────────────────────────────────────────────────────────────────────
 
 const TALK = {
   title: 'From Chaos to Control: Managing AI Agents at Scale with Agent 365',
-  conference: 'AI Developer Summit',
+  conference: 'DeveloperWeek New York · AI DevSummit',
   date: 'June 9, 2026',
-  thesis:
-    'A field guide for the operational layer that keeps AI agents reliable, governed, and accountable in production.',
-  // Drop a PDF into /public/slides/agent-365.pdf and set this to '/slides/agent-365.pdf',
-  // or paste a Google Slides / SpeakerDeck link.
-  slidesUrl: undefined as string | undefined,
-  slidesLabel: 'View slides',
+  thesis: 'Identity, security, and observability for AI agents, at enterprise scale.',
+  slidesUrl: '/slides/agent-365.pdf',
+  slidesLabel: 'Download the deck (PDF)',
 };
 
-// Seven governance principles. The thesis: governance is an operational layer,
-// not a policy document; the runtime enforces these, not the prompt.
-const PRINCIPLES = [
+// ── Slide 2 ─ The Shift ─
+const SHIFT_BULLETS = [
   {
-    title: 'Identity is the foundation',
-    body: 'Every agent action runs under a credential tied to a human, a service, or a synthetic principal. No anonymous agents in production.',
+    title: 'They span everything',
+    body: 'Copilot, Teams, and M365, plus local assistants and SaaS agents on emerging platforms.',
   },
   {
-    title: 'Tool access is least-privilege and revocable',
-    body: 'Tool grants carry scope (which data, which region, which user) and are revocable in a single click. The default is no access.',
+    title: 'They act, not just chat',
+    body: 'Invoke tools, access data, and talk to other agents. Decisions happen in seconds.',
   },
   {
-    title: 'Every action is logged and attributable',
-    body: 'Prompts, tool calls, outputs, and downstream side effects all stream into an audit log keyed by agent identity and human owner.',
-  },
-  {
-    title: 'Policy lives in the runtime, not the prompt',
-    body: 'Region constraints, data classification, allowed-output rules: enforced by the agent runtime, not pleaded for in the system prompt.',
-  },
-  {
-    title: 'Kill switches ship on day one',
-    body: "When an agent goes wrong, you stop it without a redeploy. Agent registries with revocation are table stakes, not a future roadmap item.",
-  },
-  {
-    title: 'Evals are continuous, not pre-launch',
-    body: 'Behavior drift is the rule, not the exception. Catch regressions in production with offline plus online evals tied to real-user outcomes.',
-  },
-  {
-    title: 'Humans in the loop for high-stakes actions',
-    body: 'A defined ladder of action tiers. The top tier requires explicit human approval, with the agent\'s reasoning surfaced in the review.',
+    title: 'They multiply fast',
+    body: 'Easier to build and deploy means your attack surface grows with every new agent.',
   },
 ];
 
-// Concrete categories with real-world tools, organized as a toolkit
-// practitioners can actually shop from on Monday.
-const TOOLKIT = [
+// ── Slide 3 ─ The Problem ─
+const PROBLEMS = [
   {
-    area: 'Identity & access',
-    body: 'Per-agent credentials, scoped tokens, delegated trust patterns. Treat agents as first-class principals.',
-    tools: ['Microsoft Entra ID', 'Auth0 + OPA', 'Workload Identity Federation', 'Microsoft Agent 365'],
+    title: 'Invisible',
+    body: 'No inventory, no owner. Shadow and ownerless agents run outside the view of the teams accountable for risk.',
   },
   {
-    area: 'Audit & observability',
-    body: 'Trace every prompt, tool call, and output. Attach the human owner. Make the audit log queryable, not just archived.',
-    tools: ['OpenTelemetry GenAI spans', 'Langfuse', 'Arize Phoenix', 'Microsoft Fabric Real-Time Intelligence'],
+    title: 'Insecure',
+    body: 'Over-privileged access, tool misuse, and prompt injection turn a "helpful" workflow into data oversharing in seconds.',
   },
   {
-    area: 'Policy & guardrails',
-    body: 'Runtime enforcement of region, data classification, and output rules. Policy code lives next to the agent, not buried in a prompt.',
-    tools: ['Open Policy Agent (OPA)', 'AWS Cedar', 'NeMo Guardrails', 'Azure AI Content Safety'],
-  },
-  {
-    area: 'Tool sandboxing',
-    body: 'Agents that touch code, files, or the web run in isolated containers with short-lived credentials and quotas.',
-    tools: ['E2B Sandbox', 'Modal', 'Daytona', 'Anthropic Claude Code sandbox'],
-  },
-  {
-    area: 'Evals & quality',
-    body: 'Offline regression suites plus online production replays. Tie evals to outcomes the business already measures.',
-    tools: ['Promptfoo', 'Inspect AI', 'Braintrust', 'OpenAI Evals'],
-  },
-  {
-    area: 'Kill switches & rollout',
-    body: "Feature flags for agents. Canary rollouts. An always-on registry that can revoke an agent's credentials in seconds.",
-    tools: ['LaunchDarkly', 'GrowthBook', 'Argo Rollouts', 'Agent registries with revocation'],
+    title: 'Unmanaged',
+    body: 'Built across many tools and frameworks with no consistent policy, lifecycle, or audit trail.',
   },
 ];
 
-// Patterns from the frontier AI labs. Where we have a corresponding library
-// entry we link to it so the takeaway sits next to the primary source.
-const LAB_PATTERNS = [
+// ── Slide 4 ─ The Answer (Observe / Govern / Secure) ─
+const PILLARS = [
   {
-    lab: 'Anthropic',
-    title: 'Building Effective Agents',
-    body: 'Workflows beat agents until you actually need an agent. Start with chain, route, and parallelize patterns; reach for autonomous loops only when the task demands it.',
-    readingSlug: 'anthropic-building-effective-agents',
+    n: '01',
+    title: 'Observe',
+    body: 'One inventory of every agent: telemetry, dashboards, and an agent map across the whole fleet.',
   },
   {
-    lab: 'Anthropic',
-    title: 'Model Context Protocol',
-    body: 'A standard interface for tool integration that survives across model versions. Treat tools as an open contract, not a vendor-specific schema.',
-    readingSlug: 'anthropic-model-context-protocol',
+    n: '02',
+    title: 'Govern',
+    body: 'Identity, least-privilege access, policy templates, and full lifecycle. Manage agents like your workforce.',
   },
   {
-    lab: 'Anthropic',
-    title: 'Effective Context Engineering',
-    body: 'Context is the unit of design, not the prompt. Curate what enters the window, instrument what does, and version it like code.',
-    readingSlug: 'anthropic-effective-context-engineering',
-  },
-  {
-    lab: 'Lilian Weng (ex-OpenAI)',
-    title: 'LLM Powered Autonomous Agents',
-    body: 'The canonical taxonomy of agent components: planning, memory, tool use, reflection. The shared vocabulary the rest of the field built on.',
-    readingSlug: 'lilian-weng-llm-agents',
-  },
-  {
-    lab: 'Simon Willison',
-    title: 'Tools, Not Agents',
-    body: 'The pragmatic case for narrow, well-defined tools over open-ended autonomy. Less marketing, more shipping.',
-    readingSlug: 'simon-willison-tools-not-agents',
+    n: '03',
+    title: 'Secure',
+    body: 'Runtime threat detection, prompt-injection defense, DLP, and compliance built in.',
   },
 ];
 
-// Case studies. The card leads with a styled wordmark of the org name.
-// If/when you have permission-cleared logo SVGs, drop them in
-// /public/logos/<slug>.svg and add `logo: '/logos/<slug>.svg'` to the entry;
-// the rendering already supports it.
+// ── Slide 5 ─ Architecture ─
+const STACK = [
+  { name: 'Microsoft Entra', body: 'Agent ID, the identity and access-control foundation.' },
+  { name: 'Microsoft Defender', body: 'Threat detection, runtime protection, shadow-AI discovery.' },
+  { name: 'Microsoft Purview', body: 'Data security and compliance: DLP, sensitivity labels, eDiscovery.' },
+  { name: 'Intune + Windows 365', body: 'Device discovery and a secured, managed runtime.' },
+];
+
+// ── Slides 6-11 ─ Five Capabilities ─
+const CAPABILITIES = [
+  {
+    n: '01',
+    title: 'Registry',
+    sub: 'Stop sprawl at the source: one inventory of every agent.',
+    does: 'Single source of truth across Entra Agent ID, Teams Store, and discovered shadow agents. Defender + Intune find local and cloud agents on the Shadow AI page. Unsanctioned agents are quarantined on day one. Registry sync extends to AWS Bedrock and Google Cloud (preview).',
+    learned: 'Make discovery continuous, not a one-time audit. Require an owner at registration; a registry without owners is just a list. Quarantine the unsanctioned first, then onboard the rest under policy.',
+  },
+  {
+    n: '02',
+    title: 'Access Control',
+    sub: 'Every agent gets a unique identity, and only the access it needs.',
+    does: 'Unique Agent ID per agent (no shared service accounts). Least privilege by default: scope access to the task, shrink the blast radius. Policy templates enforce a baseline at onboarding. Adaptive Conditional Access via Entra applies risk-based policy in real time and blocks compromised agents.',
+    learned: 'One Agent ID per agent, scoped tightly to its task. Enforce the baseline with policy templates at onboarding, not later. Let Conditional Access revoke access automatically on risk signals.',
+  },
+  {
+    n: '03',
+    title: 'Visualization',
+    sub: 'Move from monitoring to actionable insight across the fleet.',
+    does: 'An Agent Map of every connection among agents, users, and resources. Telemetry and alerts with anomaly detection so blind spots do not become incidents. Role-based reporting: IT, security, and business leaders each see the metrics that matter. Per-agent performance plus logging and eDiscovery to stay audit-ready.',
+    learned: 'Define alerts and ROI metrics before go-live, not after. Use the Agent Map to trace every agent-to-data path. Give IT, security, and business their own role-based views.',
+  },
+  {
+    n: '04',
+    title: 'Interoperability',
+    sub: 'Agents get the same context as the people they work alongside.',
+    does: 'Native M365 access (Word, Excel, SharePoint, Dynamics 365), the same data your users touch. Framework-agnostic: Microsoft, open-source, and third-party agents are first-class. Secure agent-to-agent interop without bespoke plumbing. Three operating modes: delegated and behind-the-scenes are GA; team workflows in preview.',
+    learned: 'Grant task-scoped access through the Agent ID, never standing broad rights. Treat interop as a privilege to scope, not a door to leave open. Make OSS and third-party agents first-class, but governed.',
+  },
+  {
+    n: '05',
+    title: 'Security',
+    sub: 'Defense in depth, from runtime behavior to the data agents touch.',
+    does: 'Defender XDR detects threats and protects agents as they execute. Network-level protection stops prompt injection before it reaches the agent. Purview DSPM for AI, DLP, and sensitivity labels guard against oversharing. Insider risk and audit: detect, retain, and investigate risky agent interactions.',
+    learned: 'Layer runtime + network + data controls. One guardrail is not enough. Assume the agent is a target and plan blast-radius containment. Use Purview DSPM/DLP to catch oversharing before it ships.',
+  },
+];
+
+// ── Slide 12 ─ Six Best Practices ─
+const BEST_PRACTICES = [
+  { n: '01', title: 'Manage agents like a workforce', body: 'Onboard, assign an owner, and offboard. No ownerless agents.' },
+  { n: '02', title: 'Identity-first, least privilege', body: 'A unique Agent ID per agent, scoped to its task. Templates enforce the baseline.' },
+  { n: '03', title: 'Discover before you govern', body: 'Switch on shadow-AI discovery early. Quarantine, then bring the rest under policy.' },
+  { n: '04', title: 'Instrument for observability', body: 'Define alerts and ROI metrics at launch. Watch agent-to-resource paths.' },
+  { n: '05', title: 'Layer your defenses', body: 'Runtime + network + data controls together. Assume compromise.' },
+  { n: '06', title: 'Reuse the trust fabric', body: 'Extend Entra, Defender, and Purview. Do not rebuild governance.' },
+];
+
+// ── Slide 13 ─ Crawl / Walk / Run ─
+const ROADMAP = [
+  {
+    n: '01',
+    phase: 'Crawl',
+    sub: 'Discover & inventory',
+    bullets: ['Enable registry + shadow-AI discovery', 'Baseline every agent and its owner', 'Quarantine the unsanctioned'],
+  },
+  {
+    n: '02',
+    phase: 'Walk',
+    sub: 'Govern',
+    bullets: ['Apply policy templates and least privilege', 'Adaptive Conditional Access via Entra', 'Stand up dashboards and alerts'],
+  },
+  {
+    n: '03',
+    phase: 'Run',
+    sub: 'Secure & scale',
+    bullets: ['Runtime + prompt-injection defense', 'Purview DLP, labels, and eDiscovery', 'Measure ROI; sync multi-cloud agents'],
+  },
+];
+
+// ── Slides 14, 15 ─ Customer case studies ─
+// Content lifted from the live deck and the Microsoft customer stories cited on
+// those slides (Microsoft Ignite 2025).
 const CASE_STUDIES = [
   {
     org: 'Amgen',
-    industry: 'Pharma · Drug discovery',
-    title: 'Scientist-attributed agents for regulated R&D',
-    body: 'AI in drug discovery has to clear the same bar as a human researcher: every claim is auditable, every cited dataset is traceable, every output can be reviewed. Agent 365\'s identity and audit layers make scientist-attributed agents safe to deploy across research workflows, with policy enforced per data classification.',
-    outcome: 'Agents that move at scientist speed without compromising the regulatory paper trail.',
+    industry: 'Biotechnology & R&D',
+    title: 'From concept to a governed R&D agent in just six weeks.',
+    challenge: 'Speed up drug research without adding new governance or security risk.',
+    agent: 'An R&D agent that mines research data and drafts scientific insights.',
+    governance: 'A unique Entra Agent ID, least-privilege access, and full auditability.',
+    outcomeLabel: '6 weeks',
+    outcomeBody: 'From idea to a production-ready, governed agent.',
+    outcomeBullets: ['Built with Microsoft Copilot Studio', 'Observed and secured end-to-end in Agent 365'],
+    source: 'Microsoft customer stories · Microsoft Ignite 2025',
   },
   {
     org: 'Dow',
-    industry: 'Industrial · Materials & supply chain',
-    title: 'Cross-business-unit rollout with regional policy',
-    body: 'A global manufacturer running agents that touch supply chain, pricing, and customer systems across business units and jurisdictions. Different BUs, different data residency rules, one agent template. Agent 365\'s policy layer lets the same agent operate under the right rules for each region without code forks.',
-    outcome: 'Single agent fleet, region-aware policy, audit posture maintained across BUs.',
-  },
-  {
-    org: 'Bayer',
-    industry: 'Pharma · Global research',
-    title: 'Multi-region agents for research and IP-sensitive workflows',
-    body: 'Research distributed across continents, trial data and IP under different regulators, scientists who need the same productivity tools wherever they sit. Region-specific policies enforced at the agent layer let a Berlin agent and a Cambridge agent share a template but obey different rules, with attribution intact.',
-    outcome: 'Researcher productivity at global scale; compliance maintained per region.',
-  },
-  {
-    org: 'Mastercard',
-    industry: 'Financial services · Risk & customer data',
-    title: 'Auditor-grade observability for customer-facing agents',
-    body: 'Financial-services agents touching customer PII, transactional history, and merchant data need per-customer attribution, kill switches, and continuous evals against drift. Agent 365\'s observability layer gives security and compliance teams real-time visibility into what every agent touched and why.',
-    outcome: 'Customer-facing agents in production with auditor-grade traceability.',
+    industry: 'Materials Science',
+    title: 'Reimagining productivity and supply chain with a fleet of agents.',
+    challenge: 'Scale agents across global operations without losing oversight.',
+    agent: 'Productivity and supply-chain agents working alongside employees.',
+    governance: 'One control plane to observe, secure, and measure the whole fleet.',
+    outcomeLabel: 'Millions',
+    outcomeBody: 'In targeted cost savings across global productivity and supply chain.',
+    outcomeBullets: ['Powered by Microsoft 365 Copilot and agents', 'Every agent carries a governed identity'],
+    source: 'Microsoft customer stories · Microsoft Ignite 2025',
   },
 ];
 
+// ── Slide 16 ─ Three takeaways ─
+const TAKEAWAYS = [
+  {
+    n: '01',
+    title: 'Visibility is the prerequisite',
+    body: 'You cannot govern or secure what you cannot see. Start with discovery and a single registry.',
+  },
+  {
+    n: '02',
+    title: 'Identity is the control point',
+    body: 'A unique Agent ID with least-privilege access turns ungoverned agents into managed ones.',
+  },
+  {
+    n: '03',
+    title: "Extend, don't rebuild",
+    body: 'Agent 365 brings agents into Entra, Defender, and Purview, the trust fabric you already run.',
+  },
+];
+
+// Background reading auto-pulled from /library
 const allReading = await getCollection('reading');
 const relatedReading = allReading
   .filter((r) => r.data.pillar === 'agents')
@@ -170,8 +210,6 @@ const relatedReading = allReading
   })
   .slice(0, 4);
 
-const readingBySlug = new Map(allReading.map((r) => [r.slug, r]));
-
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 ---
 <BaseLayout
@@ -180,23 +218,21 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
   ogType="article"
   noSubBar
 >
-  <Section eyebrow={`${TALK.conference} · ${TALK.date}`}>
+  <Section eyebrow={`Best Practices Session · ${TALK.conference} · ${TALK.date}`}>
     <div class="hero">
       <div>
         <h1>{TALK.title}</h1>
+        <p class="subtitle">The Agent 365 Control Plane</p>
         <p class="thesis">{TALK.thesis}</p>
         <div class="speaker">
-          <strong>Kranthi Manchikanti</strong>
-          <span class="muted">AI Architect, Microsoft · Editor, The AI Runtime · Boston</span>
+          <strong>Kranthi Kumar Manchikanti</strong>
+          <span class="muted">AI Architect · Microsoft · Editor, The AI Runtime</span>
         </div>
         <div class="cta">
-          {TALK.slidesUrl ? (
-            <a class="btn" href={TALK.slidesUrl} target="_blank" rel="noopener">{TALK.slidesLabel} →</a>
-          ) : (
-            <a class="btn btn-ghost" href="#governance">Read the field guide ↓</a>
-          )}
-          <a class="btn btn-ghost" href="https://theairuntime.com" target="_blank" rel="noopener">The publication</a>
+          <a class="btn" href={TALK.slidesUrl} target="_blank" rel="noopener">{TALK.slidesLabel} →</a>
+          <a class="btn btn-ghost" href="#takeaways">Three takeaways ↓</a>
         </div>
+        <p class="ga muted small">Agent 365 · Generally available May 2026</p>
       </div>
       <aside class="qr-block">
         <QRCode value={pageUrl} size={260} />
@@ -206,29 +242,98 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     </div>
   </Section>
 
-  <Section eyebrow="Slides" title="The deck">
-    {TALK.slidesUrl ? (
-      <p>
-        <a class="btn" href={TALK.slidesUrl} target="_blank" rel="noopener">{TALK.slidesLabel} →</a>
-      </p>
-    ) : (
-      <p class="dim wide">
-        The deck will be posted here within an hour of the talk. If you want
-        them in your inbox automatically, subscribe at the bottom.
-      </p>
-    )}
+  <Section eyebrow="The shift" title="Agents are no longer coming. They're already here.">
+    <div class="shift">
+      <div class="stat">
+        <div class="num">1.3B</div>
+        <div class="label muted">agents in enterprises by 2028</div>
+        <div class="src muted small">Directional. IDC projection.</div>
+      </div>
+      <ul class="bullets">
+        {SHIFT_BULLETS.map((b) => (
+          <li>
+            <h3>{b.title}</h3>
+            <p class="dim">{b.body}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
   </Section>
 
-  <Section id="governance" eyebrow="Agent governance, in practice" title="Seven principles the runtime has to enforce">
-    <p class="dim wide">
-      Governance is not a policy document. It is a runtime. These seven
-      principles are the contract Agent 365 (and any control plane like it)
-      has to honor for an agent to ship into a real organization.
-    </p>
-    <ul class="principles">
-      {PRINCIPLES.map((p, i) => (
+  <Section eyebrow="The problem" title="Without a control plane, agents become...">
+    <ul class="problems">
+      {PROBLEMS.map((p) => (
         <li>
-          <span class="num">{String(i + 1).padStart(2, '0')}</span>
+          <h3>{p.title}</h3>
+          <p class="dim">{p.body}</p>
+        </li>
+      ))}
+    </ul>
+    <p class="quote">You can't govern what you can't see, and you can't secure what you don't understand.</p>
+  </Section>
+
+  <Section eyebrow="The answer" title="Agent 365: the control plane for AI agents">
+    <p class="dim wide">
+      Observe, govern, and secure every agent (Microsoft-built, open-source, or third-party) using
+      the admin and security workflows your teams already run.
+    </p>
+    <ul class="pillars">
+      {PILLARS.map((p) => (
+        <li>
+          <span class="num">{p.n}</span>
+          <h3>{p.title}</h3>
+          <p class="dim">{p.body}</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="Architecture" title="Built on the systems that already run your enterprise">
+    <p class="dim wide">
+      Your agents (Copilot, Teams, open-source, SaaS, custom) sit on top. The control plane handles
+      Registry · Access Control · Visualization · Interoperability · Security. The four Microsoft
+      services below are the trust fabric.
+    </p>
+    <ul class="stack">
+      {STACK.map((s) => (
+        <li>
+          <h3>{s.name}</h3>
+          <p class="dim">{s.body}</p>
+        </li>
+      ))}
+    </ul>
+    <p class="quote">No new trust fabric to rebuild. The same identity, security, and compliance stack, now covering agents.</p>
+  </Section>
+
+  <Section eyebrow="The control plane" title="Five capabilities that make enterprise-scale agents possible">
+    <ul class="capabilities">
+      {CAPABILITIES.map((c) => (
+        <li>
+          <header>
+            <span class="num">{c.n}</span>
+            <div>
+              <h3>{c.title}</h3>
+              <p class="sub dim">{c.sub}</p>
+            </div>
+          </header>
+          <div class="block">
+            <span class="label">What it does</span>
+            <p class="dim">{c.does}</p>
+          </div>
+          <div class="block">
+            <span class="label">What we learned</span>
+            <p class="dim">{c.learned}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="Best practices" title="Patterns for safely scaling agent-based solutions">
+    <ul class="practices">
+      {BEST_PRACTICES.map((p) => (
+        <li>
+          <span class="num">{p.n}</span>
           <div>
             <h3>{p.title}</h3>
             <p class="dim">{p.body}</p>
@@ -238,72 +343,93 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     </ul>
   </Section>
 
-  <Section eyebrow="The toolkit" title="A governance stack you can shop from on Monday">
-    <p class="dim wide">
-      Six categories, with the tools we actually see practitioners reach for.
-      The stack is opinionated but composable. Pick one from each row and
-      you have a defensible Day 1 posture.
-    </p>
-    <ul class="toolkit">
-      {TOOLKIT.map((t) => (
+  <Section eyebrow="Adoption roadmap" title="From where you are to enterprise AI at scale">
+    <ul class="roadmap">
+      {ROADMAP.map((r) => (
         <li>
-          <h3>{t.area}</h3>
-          <p class="dim">{t.body}</p>
-          <ul class="tool-list">
-            {t.tools.map((name) => <li>{name}</li>)}
+          <header>
+            <span class="num">{r.n}</span>
+            <h3>{r.phase}</h3>
+          </header>
+          <p class="sub dim">{r.sub}</p>
+          <ul class="rb">
+            {r.bullets.map((b) => <li>{b}</li>)}
           </ul>
         </li>
       ))}
     </ul>
   </Section>
 
-  <Section eyebrow="What the labs say" title="Architectural patterns worth stealing">
+  <Section eyebrow="In production" title="Customer stories">
     <p class="dim wide">
-      Production-grade engineering rarely starts from scratch. These are the
-      patterns the frontier labs and the most-cited practitioners have
-      published, with a one-line takeaway and a link to the primary source.
-    </p>
-    <ul class="patterns">
-      {LAB_PATTERNS.map((p) => {
-        const entry = readingBySlug.get(p.readingSlug);
-        const href = entry?.data.url;
-        return (
-          <li>
-            <span class="lab">{p.lab}</span>
-            <h3>{href ? <a href={href} target="_blank" rel="noopener">{p.title}</a> : p.title}</h3>
-            <p class="dim">{p.body}</p>
-            {entry && (
-              <a class="ref muted" href={`/library#${p.readingSlug}`}>In our library →</a>
-            )}
-          </li>
-        );
-      })}
-    </ul>
-  </Section>
-
-  <Section eyebrow="In production" title="How four enterprises use the operational layer">
-    <p class="dim wide">
-      Each case study is a different failure mode the operational layer
-      makes tractable. The pattern matters more than the logo.
+      Two enterprise rollouts of Agent 365 from the live deck. Both sourced from Microsoft
+      customer stories published at Microsoft Ignite 2025.
     </p>
     <ul class="cases">
       {CASE_STUDIES.map((c) => (
         <li>
-          <span class="wordmark">{c.org}</span>
-          <span class="industry muted">{c.industry}</span>
+          <header>
+            <span class="industry">{c.industry}</span>
+            <span class="wordmark">{c.org}</span>
+          </header>
           <h3>{c.title}</h3>
-          <p class="dim body">{c.body}</p>
-          <p class="outcome">{c.outcome}</p>
+          <dl class="meta">
+            <dt>The challenge</dt>
+            <dd>{c.challenge}</dd>
+            <dt>The agent</dt>
+            <dd>{c.agent}</dd>
+            <dt>Governed by Agent 365</dt>
+            <dd>{c.governance}</dd>
+          </dl>
+          <div class="outcome">
+            <div class="ol">{c.outcomeLabel}</div>
+            <div class="ob dim">{c.outcomeBody}</div>
+            <ul class="ou">
+              {c.outcomeBullets.map((b) => <li>{b}</li>)}
+            </ul>
+          </div>
+          <p class="src muted small">Source: {c.source}</p>
         </li>
       ))}
+    </ul>
+  </Section>
+
+  <Section id="takeaways" eyebrow="Takeaways" title="If you remember three things">
+    <ul class="takeaways">
+      {TAKEAWAYS.map((t) => (
+        <li>
+          <span class="num">{t.n}</span>
+          <div>
+            <h3>{t.title}</h3>
+            <p class="dim">{t.body}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="Go deeper" title="Where to read more">
+    <ul class="deeper">
+      <li>
+        <h3><a href="https://aka.ms/Agent365" target="_blank" rel="noopener">aka.ms/Agent365</a></h3>
+        <p class="dim">The official Agent 365 home: product, docs, and roadmap.</p>
+      </li>
+      <li>
+        <h3>Agent Governance Whitepaper</h3>
+        <p class="dim">Microsoft's published guidance on operating agents at enterprise scale. Linked from aka.ms/Agent365.</p>
+      </li>
+      <li>
+        <h3><a href="/slides/agent-365.pdf" target="_blank" rel="noopener">This deck (PDF)</a></h3>
+        <p class="dim">The 17-slide deck from the session, with capability breakdowns and the customer stories.</p>
+      </li>
     </ul>
   </Section>
 
   {relatedReading.length > 0 && (
     <Section eyebrow="From The AI Runtime" title="Background reading on agents in production">
       <p class="dim wide">
-        Curated from <a href="/library">our library</a>. Primary sources we
-        recommend if you want to go deeper than the talk.
+        Curated from <a href="/library">our library</a>. Primary sources we recommend if you want
+        to go deeper than the talk.
       </p>
       <div class="reading-grid">
         {relatedReading.map((r) => <ReadingCard entry={r} />)}
@@ -324,7 +450,7 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     source="agent-365-popup"
     delayMs={18000}
     scrollPercent={45}
-    headline="Like what you read? Get the next one."
+    headline="Liked the field guide? Get the next one."
     subhead="The AI Runtime publishes weekly issues on agents, evals, and reliability, for engineers shipping AI to production."
   />
 </BaseLayout>
@@ -337,11 +463,19 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     align-items: start;
   }
   @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+  .subtitle {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+  }
   .thesis {
     font-size: 1.15rem;
     max-width: 36rem;
-    margin-top: 1rem;
+    margin: 0.4rem 0 0;
     color: var(--text);
+    font-style: italic;
   }
   .speaker {
     margin-top: 1.5rem;
@@ -358,6 +492,7 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     margin-top: 1.75rem;
     flex-wrap: wrap;
   }
+  .ga { margin: 1rem 0 0; font-family: var(--font-mono); }
   .qr-block {
     display: flex;
     flex-direction: column;
@@ -377,68 +512,121 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     color: var(--text-3);
   }
 
-  .principles {
+  /* The Shift */
+  .shift {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) 2fr;
+    gap: 2rem;
+    align-items: start;
+    margin-top: 1.5rem;
+  }
+  @media (max-width: 720px) { .shift { grid-template-columns: 1fr; } }
+  .stat {
+    padding: 2rem 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+  .stat .num {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .stat .label { margin-top: 0.5rem; font-family: var(--font-mono); }
+  .stat .src { margin-top: 1rem; font-style: italic; }
+  .bullets {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .bullets li {
+    padding: 1rem 1.25rem;
+    border-left: 3px solid var(--accent);
+  }
+  .bullets h3 { margin: 0 0 0.3rem; font-size: 1rem; }
+  .bullets p { margin: 0; }
+
+  /* The Problem */
+  .problems {
     list-style: none;
     padding: 0;
     margin: 1.5rem 0 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 1rem;
   }
-  .principles li {
-    display: flex;
-    gap: 1rem;
-    padding: 1.25rem;
+  .problems li {
+    padding: 1.5rem;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
-  .principles .num {
-    font-family: var(--font-mono);
-    font-weight: 700;
-    color: var(--accent);
-    font-size: 1.05rem;
-    flex-shrink: 0;
+  .problems h3 { color: var(--accent); margin: 0 0 0.5rem; }
+  .problems p { margin: 0; }
+  .quote {
+    margin: 1.5rem 0 0;
+    padding: 1rem 1.25rem;
+    font-style: italic;
+    color: var(--text);
+    max-width: 42rem;
+    border-left: 3px solid var(--accent);
   }
-  .principles h3 { font-size: 1rem; margin-bottom: 0.4rem; }
 
-  .toolkit {
+  /* Pillars (Observe / Govern / Secure) */
+  .pillars {
     list-style: none;
     padding: 0;
     margin: 1.5rem 0 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 1rem;
   }
-  .toolkit li {
-    padding: 1.25rem;
+  .pillars li {
+    padding: 1.5rem;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-  }
-  .toolkit h3 { font-size: 1rem; margin: 0; }
-  .tool-list {
-    list-style: none;
-    padding: 0;
-    margin: 0.5rem 0 0;
-    display: flex;
-    flex-wrap: wrap;
     gap: 0.4rem;
   }
-  .tool-list li {
-    padding: 0.25rem 0.6rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 999px;
+  .pillars .num {
     font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--text-2);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
   }
+  .pillars h3 { margin: 0; }
+  .pillars p { margin: 0; }
 
-  .patterns {
+  /* Stack */
+  .stack {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .stack li {
+    padding: 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .stack h3 { font-size: 1rem; margin: 0 0 0.4rem; }
+  .stack p { margin: 0; }
+
+  /* Capabilities */
+  .capabilities {
     list-style: none;
     padding: 0;
     margin: 1.5rem 0 0;
@@ -446,35 +634,46 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 1rem;
   }
-  .patterns li {
+  .capabilities > li {
     padding: 1.5rem;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
   }
-  .patterns .lab {
+  .capabilities > li > header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+  }
+  .capabilities .num {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+  .capabilities h3 { margin: 0; font-size: 1.1rem; }
+  .capabilities .sub { margin: 0.2rem 0 0; font-style: italic; font-size: 0.92rem; }
+  .capabilities .block {
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border);
+  }
+  .capabilities .label {
     font-family: var(--font-mono);
     font-size: 0.72rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--accent);
+    display: block;
+    margin-bottom: 0.3rem;
   }
-  .patterns h3 { font-size: 1.05rem; margin: 0; }
-  .patterns h3 a { color: var(--text); text-decoration: none; }
-  .patterns h3 a:hover { color: var(--accent); }
-  .patterns .ref {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    margin-top: auto;
-    color: var(--text-3);
-    text-decoration: none;
-  }
-  .patterns .ref:hover { color: var(--accent); }
+  .capabilities .block p { margin: 0; font-size: 0.92rem; }
 
-  .cases {
+  /* Best practices */
+  .practices {
     list-style: none;
     padding: 0;
     margin: 1.5rem 0 0;
@@ -482,43 +681,186 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1rem;
   }
-  .cases li {
+  .practices li {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .practices .num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 1.05rem;
+    flex-shrink: 0;
+  }
+  .practices h3 { margin: 0 0 0.3rem; font-size: 1rem; }
+  .practices p { margin: 0; }
+
+  /* Roadmap (Crawl / Walk / Run) */
+  .roadmap {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .roadmap > li {
     padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    border-top: 3px solid var(--accent);
+  }
+  .roadmap > li > header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+  .roadmap .num {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .roadmap h3 { margin: 0; font-size: 1.25rem; }
+  .roadmap .sub { margin: 0 0 0.85rem; font-family: var(--font-mono); font-size: 0.85rem; }
+  .roadmap .rb { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .roadmap .rb li {
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 0.92rem;
+    color: var(--text-2);
+  }
+  .roadmap .rb li:last-child { border-bottom: none; }
+
+  /* Case studies */
+  .cases {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1rem;
+  }
+  .cases > li {
+    padding: 1.75rem;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.75rem;
+  }
+  .cases > li > header { display: flex; flex-direction: column; gap: 0.2rem; }
+  .cases .industry {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-3);
   }
   .cases .wordmark {
     font-family: var(--font-mono);
     font-weight: 700;
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
     color: var(--text);
-    font-size: 1.4rem;
-    letter-spacing: -0.01em;
-    padding: 0.2rem 0 0.5rem;
-    border-left: 3px solid var(--accent);
-    padding-left: 0.7rem;
-    margin: 0 0 0.4rem;
-    align-self: flex-start;
   }
-  .cases .industry {
+  .cases h3 { margin: 0; font-size: 1.05rem; }
+  .cases .meta { margin: 0.5rem 0 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .cases .meta dt {
     font-family: var(--font-mono);
     font-size: 0.72rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-  }
-  .cases h3 { margin: 0.2rem 0; font-size: 1.05rem; }
-  .cases .body { font-size: 0.92rem; margin: 0.3rem 0 0.6rem; }
-  .cases .outcome {
-    font-family: var(--font-mono);
     color: var(--accent);
-    font-size: 0.88rem;
-    margin: auto 0 0;
-    padding-top: 0.5rem;
-    border-top: 1px dashed var(--border);
   }
+  .cases .meta dd { margin: 0.15rem 0 0; color: var(--text-2); font-size: 0.92rem; }
+  .cases .outcome {
+    margin-top: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+  }
+  .cases .ol {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 2.2rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .cases .ob { margin: 0.4rem 0 0.75rem; }
+  .cases .ou { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+  .cases .ou li {
+    font-size: 0.85rem;
+    color: var(--text-2);
+    padding-left: 1rem;
+    position: relative;
+  }
+  .cases .ou li::before {
+    content: '■';
+    color: var(--accent);
+    position: absolute;
+    left: 0;
+    top: 0.1rem;
+    font-size: 0.6rem;
+  }
+  .cases .src { margin: 0; font-style: italic; }
+
+  /* Takeaways */
+  .takeaways {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 48rem;
+  }
+  .takeaways li {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .takeaways .num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 1.6rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .takeaways h3 { margin: 0 0 0.4rem; }
+  .takeaways p { margin: 0; }
+
+  /* Go deeper */
+  .deeper {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .deeper li {
+    padding: 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .deeper h3 { font-size: 1rem; margin: 0 0 0.4rem; }
+  .deeper p { margin: 0; }
+
   .reading-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
