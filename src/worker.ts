@@ -20,6 +20,10 @@ interface Env {
    *  matched reads, just without a generated answer. Add in wrangler.toml:
    *  [ai]\n binding = "AI" */
   AI?: { run: (model: string, input: unknown) => Promise<{ response?: string }> };
+  /** KV namespace for the student cohort waitlist. When unset, /api/waitlist
+   *  returns 503 and the UI falls back to PUBLIC_COHORT_JOIN_URL. Create with
+   *  `npx wrangler kv namespace create WAITLIST` and bind in wrangler.toml. */
+  WAITLIST?: { put: (key: string, value: string) => Promise<void>; get: (key: string) => Promise<string | null> };
 }
 
 interface SubscribeBody {
@@ -271,6 +275,40 @@ async function handleAsk(request: Request, env: Env): Promise<Response> {
 
 }
 
+async function handleWaitlist(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, { status: 405 });
+  }
+
+  let body: { email?: string };
+  try {
+    body = (await request.json()) as { email?: string };
+  } catch {
+    return json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const email = (body.email ?? '').trim().toLowerCase();
+  if (!isValidEmail(email)) {
+    return json({ error: 'Please provide a valid email.' }, { status: 400 });
+  }
+
+  // No KV bound yet: tell the client so it can hand off to the join URL.
+  if (!env.WAITLIST) {
+    return json({ error: 'Waitlist is not enabled.' }, { status: 503 });
+  }
+
+  try {
+    const existing = await env.WAITLIST.get(`cohort:${email}`);
+    if (existing) {
+      return json({ ok: true, duplicate: true });
+    }
+    await env.WAITLIST.put(`cohort:${email}`, new Date().toISOString());
+    return json({ ok: true });
+  } catch {
+    return json({ error: 'Could not save your spot. Please try again.' }, { status: 500 });
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -284,6 +322,10 @@ export default {
 
     if (url.pathname === '/api/signal-question') {
       return handleSignalQuestion(request, env);
+    }
+
+    if (url.pathname === '/api/waitlist') {
+      return handleWaitlist(request, env);
     }
 
     return env.ASSETS.fetch(request);
