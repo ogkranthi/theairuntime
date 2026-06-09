@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
+import AskQuestion from '../components/AskQuestion.astro';
 import JsonLd from '../components/JsonLd.astro';
 
 const faqs = [
@@ -94,11 +95,13 @@ const faqSchema = {
     />
   </Section>
 
-  <Section eyebrow="Still curious?" title="Get in touch">
-    <p class="dim">
-      Email <a href="mailto:info@theairuntime.com">info@theairuntime.com</a> with anything
-      we haven't answered.
-    </p>
+  <Section eyebrow="Still curious?" title="Ask us anything we haven't answered">
+    <AskQuestion
+      eyebrow=""
+      title=""
+      lead="Have a question that's not above? Send it to our team and we'll get back to you."
+      subjectTag="FAQ question"
+    />
   </Section>
 </BaseLayout>
 
