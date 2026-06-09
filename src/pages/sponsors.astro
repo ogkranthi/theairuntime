@@ -2,11 +2,29 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 
+// Drop SVG/PNG logos into /public/logos/<slug>.svg|png. If the file isn't
+// there, the card falls back to a styled wordmark of the partner name, so
+// the page never breaks on a missing asset.
 const platformPartners = [
   {
-    name: 'Hackersquad',
+    name: 'NVIDIA',
+    role: 'Compute & inference partner',
+    url: 'https://www.nvidia.com',
+    logo: '/logos/nvidia.svg',
+    blurb: 'The compute stack practitioners reach for when training, evaluating, and serving models at production scale.',
+  },
+  {
+    name: 'Microsoft',
     role: 'Platform partner',
+    url: 'https://www.microsoft.com',
+    logo: '/logos/microsoft.svg',
+    blurb: 'Azure AI Foundry, Entra ID, and Agent 365 underpin the operational layer for practitioners shipping agents at enterprise scale.',
+  },
+  {
+    name: 'HackerSquad',
+    role: 'Community & distribution partner',
     url: 'https://hackersquad.com',
+    logo: '/logos/hackersquad.svg',
     blurb: 'Distribution and community partner for The AI Runtime.',
   },
 ];
@@ -28,23 +46,37 @@ const tiers = [
 ---
 <BaseLayout
   title="Sponsors & Partners · The AI Runtime"
-  description="Sponsor or partner with The AI Runtime, the publication and meetup community for engineers shipping AI to production."
+  description="The companies that help us put on The AI Runtime, NVIDIA, Microsoft, HackerSquad, and our venue partners. Practitioner-first, no vendor stage time."
 >
-  <Section eyebrow="Sponsors & Partners" title="Help us put on better meetups">
+  <Section eyebrow="Sponsors & Partners" title="The companies that help us put on better meetups">
     <p class="lead dim">
       The AI Runtime is independent and practitioner-first. We work with a small number of
-      partners who actually serve the audience, venues, refreshment sponsors, and platforms
-      whose product helps engineers ship AI. We do not run vendor talks, and partnership
-      doesn't buy stage time.
+      partners who actually serve the audience, compute and platform sponsors whose product
+      ships with practitioners, plus venue and refreshment hosts. We do not run vendor talks,
+      and partnership doesn't buy stage time.
     </p>
   </Section>
 
-  <Section eyebrow="Current partners">
+  <Section eyebrow="Current sponsors" title="Practitioner-grade partners">
+    <ul class="logos-strip">
+      {platformPartners.map((p) => (
+        <li>
+          <a href={p.url} target="_blank" rel="noopener" aria-label={p.name}>
+            <img src={p.logo} alt={p.name} class="logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'" />
+            <span class="wordmark">{p.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
     <ul class="grid">
       {platformPartners.map((p) => (
         <li>
           <a href={p.url} target="_blank" rel="noopener">
-            <span class="name">{p.name}</span>
+            <div class="card-logo">
+              <img src={p.logo} alt={p.name} onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'" />
+              <span class="wordmark">{p.name}</span>
+            </div>
             <span class="role muted">{p.role}</span>
           </a>
           <p class="dim">{p.blurb}</p>
@@ -82,6 +114,45 @@ const tiers = [
 
 <style>
   .lead { max-width: 42rem; }
+
+  /* Horizontal logo strip at the top, conventional sponsors layout */
+  .logos-strip {
+    list-style: none;
+    padding: 1.25rem;
+    margin: 0 0 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .logos-strip li { display: flex; align-items: center; }
+  .logos-strip a {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text);
+    transition: opacity 140ms ease;
+  }
+  .logos-strip a:hover { opacity: 0.75; text-decoration: none; }
+  .logos-strip .logo {
+    height: 40px;
+    width: auto;
+    max-width: 180px;
+    display: inline-block;
+  }
+  .logos-strip .wordmark {
+    display: none;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
   .grid {
     list-style: none;
     padding: 0;
@@ -91,16 +162,35 @@ const tiers = [
     gap: 1rem;
   }
   .grid li {
-    padding: 1.25rem;
+    padding: 1.5rem;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
+    transition: border-color 140ms ease;
   }
+  .grid li:hover { border-color: var(--border-strong); }
   .grid li.placeholder { border-style: dashed; }
-  .grid a { display: flex; flex-direction: column; text-decoration: none; color: var(--text); }
+  .grid a { display: flex; flex-direction: column; text-decoration: none; color: var(--text); gap: 0.4rem; }
+  .card-logo { display: flex; align-items: center; min-height: 48px; }
+  .card-logo img { max-height: 42px; width: auto; max-width: 180px; }
+  .card-logo .wordmark {
+    display: none;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
   .grid .name { font-family: var(--font-mono); font-weight: 700; font-size: 1.05rem; }
-  .grid .role { font-size: 0.8rem; margin-top: 0.2rem; }
-  .grid p { margin-top: 0.6rem; }
+  .grid .role {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .grid p { margin: 0.75rem 0 0; }
+
   .tiers {
     list-style: none;
     padding: 0;
