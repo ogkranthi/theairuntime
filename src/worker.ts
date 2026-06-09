@@ -160,6 +160,7 @@ async function handleSignalQuestion(request: Request, env: Env): Promise<Respons
   }
 
   return json({ ok: true });
+}
 
 interface ReadingEntry {
   title: string;
