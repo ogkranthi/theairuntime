@@ -9,9 +9,9 @@ import Section from '../components/Section.astro';
 const platformPartners = [
   {
     name: 'NVIDIA',
-    role: 'Compute & inference partner',
+    role: 'Food & drinks sponsor',
     url: 'https://www.nvidia.com',
-    blurb: 'The compute stack practitioners reach for when training, evaluating, and serving models at production scale.',
+    blurb: 'NVIDIA sponsors the food and drinks at our Boston meetups, keeping practitioners fed while they talk shop. Also the compute stack many reach for when training, evaluating, and serving models at production scale.',
   },
   {
     name: 'Microsoft',
@@ -34,7 +34,15 @@ const tiers = [
   },
   {
     name: 'Refreshments',
-    body: 'Cover food and drinks for one or more events. Logo on the event page, mention from the stage, name in the recap.',
+    body: 'Cover food and drinks for one or more events. Logo on the event page, mention from the stage, name in the recap. NVIDIA currently sponsors this.',
+  },
+  {
+    name: 'Build events, demo nights & hackathons',
+    body: 'Beyond talks, we run hands-on build events, demo nights, and hackathons where practitioners ship real things with your tools in the room. Sponsor a format, set a challenge, or put your platform in front of builders.',
+  },
+  {
+    name: 'Credits & compute partner',
+    body: 'Provide API credits, GPU time, or platform access for our build events and hackathons. Practitioners try your product on a real problem, the highest-signal way to earn adoption. Credits partners, and partners beyond compute, are welcome to reach out.',
   },
   {
     name: 'Platform partner',
@@ -44,14 +52,15 @@ const tiers = [
 ---
 <BaseLayout
   title="Sponsors & Partners · The AI Runtime"
-  description="The companies that help us put on The AI Runtime, NVIDIA, Microsoft, HackerSquad, and our venue partners. Practitioner-first, no vendor stage time."
+  description="The companies that help us put on The AI Runtime, NVIDIA, Microsoft, HackerSquad, and our venue partners. NVIDIA sponsors the food and drinks at our Boston meetups."
 >
   <Section eyebrow="Sponsors & Partners" title="The companies that help us put on better meetups">
     <p class="lead dim">
       The AI Runtime is independent and practitioner-first. We work with a small number of
       partners who actually serve the audience, compute and platform sponsors whose product
-      ships with practitioners, plus venue and refreshment hosts. We do not run vendor talks,
-      and partnership doesn't buy stage time.
+      ships with practitioners, plus venue and refreshment hosts. A special thanks to NVIDIA
+      for keeping our practitioners fed and caffeinated: NVIDIA sponsors the food and drinks
+      at our meetups.
     </p>
   </Section>
 
@@ -97,8 +106,9 @@ const tiers = [
 
   <Section eyebrow="Interested?" title="Tell us what you have in mind">
     <p class="dim wide">
-      Drop a line with what you're offering (venue / food / multi-event), which city, and the
-      timeframe. We'll reply within a few days.
+      Drop a line with what you're offering (venue, food, API or compute credits, a hackathon
+      challenge, or a multi-event partnership), which city, and the timeframe. We'll reply within
+      a few days.
     </p>
     <p>
       <a class="btn" href="mailto:info@theairuntime.com?subject=Sponsorship%20interest">info@theairuntime.com</a>
