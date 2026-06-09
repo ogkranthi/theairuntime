@@ -6,6 +6,7 @@ import ReadingCard from '../../components/ReadingCard.astro';
 import ToolCard from '../../components/ToolCard.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import PillarFilter from '../../components/PillarFilter.astro';
+import AskLibrary from '../../components/AskLibrary.tsx';
 import { fetchSubstackPosts } from '../../lib/substack';
 
 const reading = await getCollection('reading');
@@ -57,6 +58,14 @@ const pillarChips = byPillar
     <PillarFilter mode="filter" pillars={pillarChips} />
 
     <p class="muted small toc-meta">{total} entries · curated by The AI Runtime · last updated {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(Math.max(...reading.map((r) => +r.data.addedAt))))}</p>
+  </Section>
+
+  <Section eyebrow="Ask the library" title="Not sure where to start?" flush>
+    <p class="dim wide">
+      Ask a question and get pointed to the right reads from the library, grounded in what we have
+      curated. Built on The AI Runtime, naturally.
+    </p>
+    <AskLibrary client:visible />
   </Section>
 
   {substackPosts.length > 0 && (
