@@ -16,34 +16,35 @@ const joinUrl =
 const gates = [
   {
     n: '01',
-    title: 'Define the vertical',
-    body: 'Pick a regulated industry and a narrow, real task. Write the spec and the failure cases before you write the agent.',
+    title: 'Pick a real problem',
+    body: 'Choose a focused, real-world task worth solving. Write down what good looks like and where it could go wrong before you build.',
   },
   {
     n: '02',
-    title: 'Ship a grounded build',
-    body: 'Build the agent from scratch, grounded in real sources. No demo shortcuts: it has to work on inputs you did not hand-pick.',
+    title: 'Build something grounded',
+    body: 'Go from idea to a working build, grounded in real sources. The goal is something that holds up beyond a hand-picked demo.',
   },
   {
     n: '03',
-    title: 'Instrument the harness',
-    body: 'Add the eval harness: traces, checks, and the metrics that tell you when it breaks. Reliability is measured, not claimed.',
+    title: 'Measure reliability',
+    body: 'Add the checks and signals that tell you when it works and when it breaks. Reliability is measured, not claimed.',
   },
   {
     n: '04',
-    title: 'Record the demo',
-    body: 'Cut a two-minute demo of the working agent for the channel. Show the task, the guardrails, and one failure you caught.',
+    title: 'Show your work',
+    body: 'Share a short demo with the community. Walk through the problem, your approach, and one thing you learned.',
   },
 ];
 ---
 <section id="cohort" class="cohort" aria-labelledby="cohort-title">
   <div class="cohort-inner">
     <p class="kicker">The AI Runtime · Student Cohort</p>
-    <h2 id="cohort-title">Build a production-grade vertical agent, on your own clock.</h2>
+    <h2 id="cohort-title">Build something real with AI, on your own clock.</h2>
     <p class="lede">
-      A free, async cohort for a small group of motivated builders. Start from scratch, ship one
-      real vertical agent in a regulated industry, and record a two-minute demo for the channel.
-      Five to ten builders per run.
+      A free, async cohort for a small group of motivated builders. Work through a real project at
+      your own pace, learn what production reliability actually takes, and share what you build with
+      the community. Small groups per run. Exact scope and format are still taking shape, join the
+      list and we'll shape it together.
     </p>
 
     <ol class="gates">
@@ -58,13 +59,13 @@ const gates = [
 
     <div class="payoff">
       <p>
-        Completion is credentialed against Run Levels R0 to R4. Ship a self-correcting agent and
-        earn R4.
+        We're shaping a credential that recognizes how far you take it, from a first working build
+        to an agent that catches and corrects its own mistakes.
       </p>
     </div>
 
     <div class="join">
-      <form class="waitlist" data-join-url={joinUrl} novalidate>
+      <form class="waitlist" action={joinUrl} method="get" target="_blank" novalidate>
         <label class="vh" for="cohort-email">Your email</label>
         <input
           id="cohort-email"
@@ -74,10 +75,7 @@ const gates = [
           autocomplete="email"
           placeholder="you@school.edu"
         />
-        <a class="btn btn-primary wl-fallback" href={joinUrl} target="_blank" rel="noopener">
-          Join the cohort
-        </a>
-        <button class="btn btn-primary wl-submit" type="submit" hidden>Join the cohort</button>
+        <button class="btn btn-primary wl-submit" type="submit">Join the cohort</button>
       </form>
       <p class="join-sub">
         Limited spots per run. If the current run is full, you join a rolling waitlist and we email
@@ -93,15 +91,11 @@ const gates = [
   // /api/waitlist and show a success state. If JS is off, the anchor link
   // (PUBLIC_COHORT_JOIN_URL) is what the visitor uses instead.
   document.querySelectorAll<HTMLFormElement>('.waitlist').forEach((form) => {
-    const fallback = form.querySelector<HTMLAnchorElement>('.wl-fallback');
     const submit = form.querySelector<HTMLButtonElement>('.wl-submit');
     const email = form.querySelector<HTMLInputElement>('.wl-email');
     const status = form.parentElement?.querySelector<HTMLElement>('.wl-status');
-    const joinUrl = form.dataset.joinUrl || '';
-
-    // Swap the link for the submit button now that JS is available.
-    if (fallback) fallback.hidden = true;
-    if (submit) submit.hidden = false;
+    // With JS off, the form's action/target sends the visitor to the join URL.
+    const joinUrl = form.getAttribute('action') || '';
 
     function show(msg: string) {
       if (!status) return;
