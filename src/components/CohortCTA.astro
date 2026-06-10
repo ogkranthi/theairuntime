@@ -1,17 +1,17 @@
 ---
 /**
- * CohortCTA: the "Agent Reliability" student cohort signup section.
+ * CohortCTA: the "Field Lab" pilot signup section for students.
  *
  * Self-contained and scoped: drop it on any page. A distinctive dark band that
- * stands apart from the light site, using the cohort design tokens locally so
- * nothing leaks. Two join actions are driven by a single config value
+ * stands apart from the light site, using the section design tokens locally so
+ * nothing leaks. One join action is driven by a single config value
  * (PUBLIC_COHORT_JOIN_URL). An optional inline waitlist form posts to
  * /api/waitlist with progressive enhancement, and degrades to the join link
  * when JavaScript is off or the backend is not enabled.
  */
 const joinUrl =
   import.meta.env.PUBLIC_COHORT_JOIN_URL ||
-  'mailto:info@theairuntime.com?subject=Agent%20Reliability%20cohort';
+  'mailto:info@theairuntime.com?subject=Field%20Lab%20pilot';
 
 const gates = [
   {
@@ -38,13 +38,13 @@ const gates = [
 ---
 <section id="cohort" class="cohort" aria-labelledby="cohort-title">
   <div class="cohort-inner">
-    <p class="kicker">The AI Runtime · Student Cohort</p>
+    <p class="kicker">The AI Runtime · Field Lab Pilot</p>
     <h2 id="cohort-title">Build something real with AI, on your own clock.</h2>
     <p class="lede">
-      A free, async cohort for a small group of motivated builders. Work through a real project at
-      your own pace, learn what production reliability actually takes, and share what you build with
-      the community. Small groups per run. Exact scope and format are still taking shape, join the
-      list and we'll shape it together.
+      The Field Lab is a free, async pilot for a small group of motivated student builders. Work
+      through a real project at your own pace, learn what production reliability actually takes, and
+      share what you build with the community. Small groups per run. Exact scope and format are
+      still taking shape, join the list and we'll shape it together.
     </p>
 
     <ol class="gates">
@@ -75,7 +75,7 @@ const gates = [
           autocomplete="email"
           placeholder="you@school.edu"
         />
-        <button class="btn btn-primary wl-submit" type="submit">Join the cohort</button>
+        <button class="btn btn-primary wl-submit" type="submit">Join the Field Lab</button>
       </form>
       <p class="join-sub">
         Limited spots per run. If the current run is full, you join a rolling waitlist and we email
