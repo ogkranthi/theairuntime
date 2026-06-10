@@ -13,7 +13,7 @@ const strong = [
 ];
 
 const reject = [
-  'Vendor pitches dressed as practitioner talks. We can spot a sales deck from the third slide.',
+  'Sales decks dressed as practitioner talks. We can spot one from the third slide.',
   '"The future of AI" speculation, frontier-model release coverage, or AGI takes.',
   'Idea-stage products, come back when you\'ve shipped and learned something.',
   'Generic "we use LLMs at $COMPANY" overviews with no specific lesson.',
@@ -23,7 +23,7 @@ const reject = [
 ---
 <BaseLayout
   title="Speak at The AI Runtime"
-  description="Pitch a talk at a future AI Runtime meetup. Production AI stories from practitioners, not vendor pitches."
+  description="Pitch a talk at a future AI Runtime meetup. Real production AI stories from practitioners who have shipped."
 >
   <Section
     eyebrow="Call for Speakers"
@@ -51,7 +51,7 @@ const reject = [
       {reject.map((s) => <li><span class="check">✗</span> {s}</li>)}
     </ul>
     <p class="dim small note">
-      We say no to ~80% of pitches. Most of the no's are vendor talks with a thin
+      We say no to ~80% of pitches. Most of the no's are sales talks with a thin
       practitioner veneer. We're protective of the audience, the meetup only works if
       every talk passes the test: <em>would a senior AI engineer at Anthropic, OpenAI, or
       DeepMind forward this to their team?</em>
