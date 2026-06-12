@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
 import Blink from '../components/Blink.astro';
-import CohortCTA from '../components/CohortCTA.astro';
 import { fetchSubstackPosts } from '../lib/substack';
 
 const posts = await fetchSubstackPosts(4);
@@ -62,11 +61,19 @@ const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric
     <p>
       <a class="btn" href="/boston">See the next event →</a>
       <a class="btn btn-ghost" href="/speakers">Past speakers</a>
-      <a class="btn btn-ghost" href="#cohort">Field Lab pilot</a>
     </p>
   </Section>
 
-  <CohortCTA />
+  <Section eyebrow="The Field Lab" title="Build on real problems, not demos" narrow>
+    <p class="dim">
+      The Field Lab is where builders and students work on real, production-shaped AI problems. A
+      library of buildable briefs, a build pilot, and the free tools to start.
+    </p>
+    <p>
+      <a class="btn" href="/field-lab">Explore the Field Lab →</a>
+      <a class="btn btn-ghost" href="/briefs">Field Briefs</a>
+    </p>
+  </Section>
 
   <Section eyebrow="Free resource" title="The AI Runtime Field Guide" narrow>
     <p class="dim">

@@ -55,7 +55,7 @@ const metaDesc =
     <!-- Hero -->
     <section class="hero">
       <div class="wrap">
-        <p class="kicker">The AI Runtime Field Lab</p>
+        <p class="kicker"><a href="/field-lab">The AI Runtime Field Lab</a></p>
         <h1>Real AI problems, scoped for serious builders.</h1>
         <p class="sub">
           A public library of sanitized AI workflow problems from startups and operators, turned into
@@ -320,6 +320,8 @@ const metaDesc =
       font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase;
       color: var(--fl-accent); font-weight: 600; margin: 0 0 0.85rem;
     }
+    .fl .kicker a { color: inherit; text-decoration: none; }
+    .fl .kicker a:hover { text-decoration: underline; }
     .fl .hero h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.12; margin: 0 0 1rem; max-width: 20ch; }
     .fl .hero .sub { font-size: 1.15rem; color: var(--fl-body); max-width: 44rem; margin: 0 0 1.75rem; }
     .fl .cta-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }

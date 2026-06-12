@@ -1,0 +1,71 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import CohortCTA from '../../components/CohortCTA.astro';
+import SubstackEmbed from '../../components/SubstackEmbed.astro';
+
+const problems = await getCollection('problems');
+const briefCount = problems.length;
+const verticals = [...new Set(problems.map((p) => p.data.vertical))].sort();
+---
+<BaseLayout
+  title="Field Lab · The AI Runtime"
+  description="The AI Runtime Field Lab: a library of real, production-shaped AI problems, a build pilot for students, and the free tools to start. Build on real problems, not demos."
+>
+  <Section eyebrow="The AI Runtime Field Lab" title="Build production-grade AI on real problems" flush>
+    <p class="lede dim">
+      The Field Lab is where builders and students work on real, production-shaped AI problems instead
+      of random demos. Browse the problem library, join the pilot, and find the free tools to start.
+    </p>
+    <p class="jump">
+      <a class="btn" href="/briefs">Field Briefs</a>
+      <a class="btn btn-ghost" href="#cohort">Join the pilot</a>
+      <a class="btn btn-ghost" href="/students">For students</a>
+    </p>
+  </Section>
+
+  <Section eyebrow="Field Briefs" title="A library of real AI problems">
+    <p class="dim wide">
+      {briefCount} sanitized, production-shaped problems scoped to be buildable and testable, each with
+      a stated reliability bar. Every brief includes the pain, the workflow, inputs and outputs,
+      evaluation ideas, the boundaries, and a reliability target.
+    </p>
+    <p class="muted small verticals">Across {verticals.join(', ')}.</p>
+    <p>
+      <a class="btn" href="/briefs">Browse Field Briefs →</a>
+    </p>
+  </Section>
+
+  <CohortCTA />
+
+  <Section eyebrow="For students" title="Free tools to start building">
+    <p class="dim wide">
+      Most of the tools practitioners use in production are free for students. Microsoft for Students,
+      NVIDIA, free compute and courses, plus the free Field Guide and meetup entry from The AI Runtime.
+    </p>
+    <p>
+      <a class="btn" href="/students">See student resources →</a>
+    </p>
+  </Section>
+
+  <Section eyebrow="Subscribe" title="Stay in the loop" narrow>
+    <p class="dim">
+      New briefs, the next pilot run, and weekly production lessons from practitioners. Free.
+    </p>
+    <SubstackEmbed
+      source="field-lab"
+      headline="The AI Runtime newsletter"
+      subhead="Evals, agents, inference, reliability, cost. New issues every week."
+      buttonLabel="Subscribe free"
+    />
+  </Section>
+</BaseLayout>
+
+<style>
+  .lede { font-size: 1.15rem; max-width: 44rem; }
+  .jump { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .wide { max-width: 44rem; }
+  .verticals { margin-top: 0.5rem; }
+  .small { font-size: 0.9rem; }
+</style>
