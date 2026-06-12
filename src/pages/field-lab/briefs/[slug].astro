@@ -1,0 +1,193 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProblemCard from '../../../components/ProblemCard.astro';
+import { RUN_LEVELS, plainRunLevel, SCOPE_ENVELOPE, intakeUrl } from '../../../lib/field-briefs';
+
+export async function getStaticPaths() {
+  const problems = await getCollection('problems');
+  return problems.map((p) => ({ params: { slug: p.id }, props: { p, all: problems } }));
+}
+
+const { p, all } = Astro.props;
+const d = p.data;
+
+const familyMatched =
+  d.provenance === 'failure-derived' && d.failure_family
+    ? all.filter(
+        (x: any) => x.id !== p.id && x.data.status === 'Open' && x.data.failure_family === d.failure_family,
+      )
+    : [];
+---
+<BaseLayout
+  title={`${d.title} | The AI Runtime Field Lab`}
+  description={d.one_line}
+  noSubBar
+>
+  <div class="fl">
+    <article class="brief">
+      <div class="wrap">
+        <p class="back"><a href="/field-lab/briefs">Field Briefs</a></p>
+
+        <header class="head">
+          <div class="meta-row">
+            <span class="m vertical">{d.vertical}</span>
+            <span class="m">{d.difficulty}</span>
+            <span class="m">{d.build_type}</span>
+            <span class={`m status status-${d.status.toLowerCase()}`}>{d.status}</span>
+            {d.verified_at && <span class="m verified">Verified at {d.verified_at}</span>}
+            {d.draft && <span class="m draft">Draft, pending editorial review</span>}
+          </div>
+          <h1>{d.title}</h1>
+          <p class="one-line">{d.one_line}</p>
+        </header>
+
+        {d.provenance === 'failure-derived' && d.failure_story && (
+          <section class="failure">
+            <h2>The failure behind this brief</h2>
+            <div class="story-block"><span class="lbl">What happened</span><p>{d.failure_story.what_happened}</p></div>
+            <div class="story-block"><span class="lbl">Root cause read</span><p>{d.failure_story.root_cause_read}</p></div>
+            <div class="story-block"><span class="lbl">Engineering lesson</span><p>{d.failure_story.engineering_lesson}</p></div>
+            {d.field_signals?.length > 0 && (
+              <ul class="signals">{d.field_signals.map((s: string) => <li>{s}</li>)}</ul>
+            )}
+            {d.sources?.length > 0 && (
+              <p class="sources"><span class="lbl">Sources</span>
+                {d.sources.map((s: string, i: number) => <a href={s} target="_blank" rel="noopener">Source {i + 1}</a>)}
+              </p>
+            )}
+            {d.primary_source_note && <p class="psn">Editorial note: {d.primary_source_note}</p>}
+          </section>
+        )}
+
+        <section class="body">
+          <h2>Why this matters</h2>
+          <p>{d.why_it_matters}</p>
+
+          <h2>Persona</h2>
+          <p>{d.persona}</p>
+
+          <h2>Current manual workflow</h2>
+          <p>{d.current_workflow}</p>
+
+          <h2>The AI workflow to build</h2>
+          <p>{d.ai_workflow}</p>
+
+          {d.inputs?.length > 0 && (<><h2>Inputs</h2><ul>{d.inputs.map((x: string) => <li>{x}</li>)}</ul></>)}
+          {d.outputs?.length > 0 && (<><h2>Outputs</h2><ul>{d.outputs.map((x: string) => <li>{x}</li>)}</ul></>)}
+
+          <h2>Definition of done</h2>
+          <p>{d.definition_of_done}</p>
+          {(d.example_input || d.example_output) && (
+            <div class="example">
+              {d.example_input && (<div><span class="lbl">Example input</span><p>{d.example_input}</p></div>)}
+              {d.example_output && (<div><span class="lbl">Example output</span><p>{d.example_output}</p></div>)}
+            </div>
+          )}
+
+          <h2>Data plan</h2>
+          <p class="cap">{d.data_plan} data</p>
+
+          {d.non_goals?.length > 0 && (<><h2>Boundaries and non-goals</h2><ul>{d.non_goals.map((x: string) => <li>{x}</li>)}</ul></>)}
+          {d.evaluation_ideas?.length > 0 && (<><h2>Evaluation ideas</h2><ul>{d.evaluation_ideas.map((x: string) => <li>{x}</li>)}</ul></>)}
+
+          <h2>Run Level target</h2>
+          <p class="runlevel">
+            <span class="rl">{d.run_level} {RUN_LEVELS[d.run_level]}</span>
+            <span class="plain">Plain translation: {plainRunLevel(d.run_level)}.</span>
+          </p>
+
+          <h2>Scope envelope</h2>
+          <p class="scope">{SCOPE_ENVELOPE}</p>
+
+          {d.suggested_tools?.length > 0 ? (
+            <>
+              <h2>Suggested tools</h2>
+              <ul>{d.suggested_tools.map((x: string) => <li>{x}</li>)}</ul>
+              <p class="tool-note">Suggested options, never requirements; briefs are tool-agnostic.</p>
+            </>
+          ) : (
+            <>
+              <h2>Suggested tools</h2>
+              <p class="tool-note">Suggested options, never requirements; briefs are tool-agnostic.</p>
+            </>
+          )}
+
+          {d.thesis_questions?.length > 0 && (
+            <><h2>Product thesis questions</h2><ul>{d.thesis_questions.map((x: string) => <li>{x}</li>)}</ul></>
+          )}
+        </section>
+
+        {d.provenance === 'failure-derived' && (
+          <section class="family-cta">
+            {familyMatched.length > 0 && (
+              <div class="family-open">
+                <h2>Open briefs in this failure family</h2>
+                <div class="cards">{familyMatched.map((x: any) => <ProblemCard id={x.id} data={x.data} />)}</div>
+              </div>
+            )}
+            <div class="company-cta">
+              <p>Seen this failure in your own stack? Submit your version.</p>
+              <a class="btn solid" href={intakeUrl(d.failure_family)} target="_blank" rel="noopener">Submit your version</a>
+            </div>
+          </section>
+        )}
+      </div>
+    </article>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .fl {
+    --fl-ink: #161616; --fl-body: #3a352e; --fl-muted: #6f6a61; --fl-faint: #8a857c;
+    --fl-paper: #fdfcfa; --fl-surface: #fbfaf7; --fl-chip: #f1ede4; --fl-border: #e6e1d6;
+    --fl-accent: #e8852b; --fl-accent-hover: #f5a04f; --fl-dark-text: #ece6dc;
+    --fl-serif: Georgia, 'Times New Roman', serif;
+    --fl-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: var(--fl-paper); color: var(--fl-body); font-family: var(--fl-sans);
+  }
+  .fl .wrap { max-width: 46rem; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
+  .fl .back { margin: 0 0 1.5rem; }
+  .fl .back a { color: var(--fl-accent); text-decoration: none; font-size: 0.9rem; }
+  .fl h1 { font-family: var(--fl-serif); color: var(--fl-ink); font-size: clamp(1.7rem, 4vw, 2.4rem); line-height: 1.15; margin: 0.75rem 0 0.75rem; }
+  .fl h2 { font-family: var(--fl-serif); color: var(--fl-ink); font-size: 1.25rem; margin: 2rem 0 0.5rem; }
+  .fl p { line-height: 1.7; color: var(--fl-body); }
+  .fl .meta-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .fl .m {
+    font-family: var(--fl-sans); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.22rem 0.6rem; border-radius: 999px; border: 1px solid var(--fl-border); color: var(--fl-muted);
+  }
+  .fl .m.vertical { color: var(--fl-faint); }
+  .fl .status-featured { border-color: var(--fl-accent); color: var(--fl-accent); }
+  .fl .status-shipped { border-color: #4a7c59; color: #3f6b4d; }
+  .fl .m.verified { border-color: #4a7c59; color: #3f6b4d; }
+  .fl .m.draft { background: #fbe8d6; border-color: #f0c79a; color: #9a5a1e; }
+  .fl .one-line { font-size: 1.15rem; color: var(--fl-ink); font-family: var(--fl-serif); margin: 0; }
+  .fl ul { padding-left: 1.2rem; }
+  .fl li { margin-bottom: 0.35rem; color: var(--fl-body); }
+  .fl .cap { text-transform: capitalize; }
+  .fl .lbl { display: block; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fl-accent); margin-bottom: 0.25rem; }
+  .fl .example { display: grid; gap: 1rem; margin-top: 1rem; padding: 1.25rem; background: var(--fl-surface); border: 1px solid var(--fl-border); border-radius: 10px; }
+  .fl .example p { margin: 0; font-size: 0.95rem; }
+  .fl .runlevel { display: flex; flex-direction: column; gap: 0.25rem; }
+  .fl .rl { font-weight: 700; color: var(--fl-ink); }
+  .fl .plain { color: var(--fl-muted); font-size: 0.95rem; }
+  .fl .scope { padding: 1rem 1.25rem; border-left: 3px solid var(--fl-accent); background: var(--fl-surface); border-radius: 0 8px 8px 0; }
+  .fl .tool-note { font-size: 0.9rem; color: var(--fl-muted); font-style: italic; }
+  .fl .failure { margin-top: 1.5rem; padding: 1.5rem; background: var(--fl-surface); border: 1px solid var(--fl-border); border-radius: 12px; }
+  .fl .failure h2:first-child { margin-top: 0; }
+  .fl .story-block { margin-bottom: 1rem; }
+  .fl .story-block p { margin: 0; font-size: 0.96rem; }
+  .fl .signals { margin: 0.5rem 0 0; }
+  .fl .signals li { font-size: 0.92rem; color: var(--fl-muted); }
+  .fl .sources { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: baseline; }
+  .fl .sources a { color: var(--fl-accent); font-size: 0.88rem; }
+  .fl .psn { font-size: 0.82rem; color: var(--fl-faint); font-style: italic; }
+  .fl .cards { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1rem; }
+  .fl .company-cta { margin-top: 2rem; padding: 1.5rem; background: var(--fl-paper); border: 1px solid var(--fl-accent); border-radius: 10px; }
+  .fl .company-cta p { margin: 0 0 1rem; font-family: var(--fl-serif); font-size: 1.1rem; color: var(--fl-ink); }
+  .fl .btn { display: inline-block; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 0.95rem; text-decoration: none; border: 1px solid var(--fl-ink); }
+  .fl .btn.solid { background: var(--fl-ink); color: var(--fl-paper); }
+  .fl .btn.solid:hover { background: var(--fl-accent); border-color: var(--fl-accent); color: var(--fl-ink); }
+  .fl .btn:focus-visible { outline: 2px solid var(--fl-accent); outline-offset: 3px; }
+</style>

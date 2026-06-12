@@ -1,0 +1,99 @@
+---
+import { familySlug } from '../lib/field-briefs';
+
+interface Props {
+  id: string;
+  data: any;
+}
+const { id, data } = Astro.props;
+const href = `/field-lab/briefs/${id}`;
+---
+<article
+  class="brief-card"
+  data-vertical={data.vertical}
+  data-difficulty={data.difficulty}
+  data-build-type={data.build_type}
+  data-status={data.status}
+  data-provenance={data.provenance}
+  data-family={data.failure_family ? familySlug(data.failure_family) : ''}
+>
+  <div class="row">
+    <span class="vertical">{data.vertical}</span>
+    <span class={`status status-${data.status.toLowerCase()}`}>{data.status}</span>
+  </div>
+  <h3><a href={href}>{data.title}</a></h3>
+  <p class="one-line">{data.one_line}</p>
+  <div class="tags">
+    <span class="tag">{data.difficulty}</span>
+    <span class="tag">{data.build_type}</span>
+    <span class="tag run">{data.run_level}</span>
+    {data.draft && <span class="tag draft">Draft</span>}
+  </div>
+  {data.reliability_focus?.length > 0 && (
+    <p class="focus"><span class="focus-label">Reliability focus</span> {data.reliability_focus.join(', ')}</p>
+  )}
+  <a class="view" href={href}>View Brief</a>
+</article>
+
+<style>
+  .brief-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.4rem;
+    background: var(--fl-surface, #fbfaf7);
+    border: 1px solid var(--fl-border, #e6e1d6);
+    border-radius: 10px;
+  }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+  .vertical {
+    font-family: var(--fl-sans);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fl-faint, #8a857c);
+  }
+  .status {
+    font-family: var(--fl-sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--fl-border, #e6e1d6);
+    color: var(--fl-muted, #6f6a61);
+  }
+  .status-featured { border-color: var(--fl-accent, #e8852b); color: var(--fl-accent, #e8852b); }
+  .status-shipped { border-color: #4a7c59; color: #3f6b4d; }
+  h3 { font-family: var(--fl-serif); font-size: 1.2rem; line-height: 1.25; margin: 0; }
+  h3 a { color: var(--fl-ink, #161616); text-decoration: none; }
+  h3 a:hover { color: var(--fl-accent, #e8852b); }
+  .one-line { font-family: var(--fl-sans); color: var(--fl-body, #3a352e); font-size: 0.95rem; line-height: 1.55; margin: 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .tag {
+    font-family: var(--fl-sans);
+    font-size: 0.74rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--fl-chip, #f1ede4);
+    color: var(--fl-muted, #6f6a61);
+  }
+  .tag.run { font-weight: 700; color: var(--fl-ink, #161616); }
+  .tag.draft { background: #fbe8d6; color: #9a5a1e; }
+  .focus { font-family: var(--fl-sans); font-size: 0.82rem; color: var(--fl-muted, #6f6a61); margin: 0; }
+  .focus-label {
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fl-faint, #8a857c);
+    display: block; margin-bottom: 0.15rem;
+  }
+  .view {
+    margin-top: auto;
+    align-self: flex-start;
+    font-family: var(--fl-sans);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--fl-accent, #e8852b);
+    text-decoration: none;
+  }
+  .view:hover { text-decoration: underline; }
+  .view:focus-visible { outline: 2px solid var(--fl-accent, #e8852b); outline-offset: 3px; }
+</style>

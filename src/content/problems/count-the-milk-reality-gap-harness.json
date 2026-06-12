@@ -1,0 +1,43 @@
+{
+  "id": "count-the-milk-reality-gap-harness",
+  "title": "Count the Milk: A Reality-Gap Eval Harness for Vision Inventory Systems",
+  "one_line": "Build an evaluation harness that measures how a vision-based inventory counter degrades from controlled to messy real-world conditions, and gates deployment on consistency under variance, not demo accuracy.",
+  "vertical": "Retail",
+  "difficulty": "Intermediate",
+  "build_type": "Eval",
+  "status": "Featured",
+  "run_level": "R3",
+  "provenance": "failure-derived",
+  "month": "2026-06",
+  "draft": true,
+  "failure_family": "eval-production gap",
+  "failure_story": {
+    "what_happened": "Starbucks terminated its AI inventory counting program across all North American stores nine months after a chain-wide launch. The image-recognition system, built by NomadGo, frequently miscounted and mislabeled stock, confusing milk types or failing to detect items entirely, and stores reverted to manual counting. An internal memo reviewed by Reuters read: Effective immediately, Automated Counting will be discontinued.",
+    "root_cause_read": "A vision model that performed under controlled conditions was deployed at scale into thousands of variable retail environments, where lighting, placement, lookalike packaging, and human workflow did not match the training distribution. Instead of catching shortages, the system added a new layer of inaccuracy to the supply chain it was meant to fix.",
+    "engineering_lesson": "Eval-production skew at chain scale: the gap between accuracy in a demo environment and consistency under real-world variance was never measured before full deployment. A staged rollout with a shadow-mode comparison against manual ground truth would have surfaced the gap at ten stores instead of all of them."
+  },
+  "sources": [
+    "https://www.reddit.com/r/InterstellarKinetics/comments/1tksdgm/cancelled_starbucks_has_terminated_its_ai_powered/"
+  ],
+  "primary_source_note": "Reuters reporting and the company statement are the primary sources; attach the Reuters link in the editorial verification pass before publish.",
+  "field_signals": [
+    "A chain-wide AI inventory system was terminated nine months after launch because it frequently miscounted and mislabeled items, including confusing milk types and failing to detect a syrup bottle in the company's own launch video.",
+    "Reporting described the system introducing a new layer of inaccuracy into the supply chain it was designed to fix, compounding the stockouts it was meant to solve.",
+    "The replacement was a return to manual counting plus more frequent restocking, meaning the AI deployment delivered negative value at full scale."
+  ],
+  "reliability_focus": ["eval-production skew", "variance testing", "deployment gating"],
+  "why_it_matters": "A vision system that counts perfectly under demo conditions and unreliably under store conditions is worse than manual counting, because its errors arrive with confidence and propagate into ordering decisions. The missing artifact is not a better model, it is an eval that measures the degradation before deployment does.",
+  "persona": "Team deploying vision-based counting, shelf-audit, or inventory systems into physical environments",
+  "current_workflow": "The model is validated on clean benchmark images, piloted briefly under favorable conditions, and rolled out broadly; degradation under real conditions is discovered through downstream stockouts months later.",
+  "ai_workflow": "The harness evaluates any counting model against a paired image set: a controlled baseline and matched messy variants covering lighting shifts, partial occlusion, lookalike packaging shelved adjacently, cluttered placement, and varied camera angles. It reports accuracy per condition, the degradation curve from clean to messy, per-class confusion showing which lookalikes get merged, and repeated-run consistency per scene, then issues a deploy or hold verdict against a stated consistency threshold.",
+  "inputs": ["a fixture set of 30 shelf scenes in matched clean and messy variants with ground-truth counts, including at least three lookalike product pairs", "a counting model to evaluate (any off-the-shelf vision model or API)", "a consistency threshold configuration"],
+  "outputs": ["a per-condition accuracy report with the degradation curve", "a lookalike confusion matrix", "repeated-run consistency per scene", "a deploy or hold verdict with the failing conditions named"],
+  "definition_of_done": "Against a fixture where the model is known to degrade on lookalikes and occlusion, the harness quantifies the clean-to-messy gap, names the two failing conditions, reports consistency across five repeated runs per scene, and issues a hold verdict; against a deliberately easy fixture it issues a deploy verdict, demonstrating that the gate discriminates rather than always blocking.",
+  "example_input": "A counting model that scores 96 percent on the clean set, evaluated against the messy set containing oat milk and whole milk cartons shelved adjacent under dim lighting.",
+  "example_output": "Report: clean 96 percent, messy 71 percent, degradation concentrated in the lookalike condition (oat and whole milk merged in 8 of 10 scenes) and occlusion, consistency 60 percent across repeated runs on affected scenes, verdict hold with the two failing conditions named.",
+  "data_plan": "synthetic",
+  "non_goals": ["training a better counting model", "real store deployment", "camera or hardware integration"],
+  "evaluation_ideas": ["gap quantification accuracy on a model with seeded degradation", "verdict discrimination between the easy and hard fixtures", "report clarity scored against a rubric: can a non-ML operations lead act on it"],
+  "suggested_tools": ["any vision model or API as the system under test", "any image augmentation library for generating messy variants"],
+  "thesis_questions": ["What consistency threshold should gate a physical-world vision deployment?", "Would a shadow-mode comparison against manual counts have caught this at pilot scale instead of chain scale?"]
+}
