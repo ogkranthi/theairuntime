@@ -1,8 +1,8 @@
 ---
 import { getCollection } from 'astro:content';
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import ProblemCard from '../../../components/ProblemCard.astro';
-import { intakeUrl, builderUrl } from '../../../lib/field-briefs';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProblemCard from '../../components/ProblemCard.astro';
+import { intakeUrl, builderUrl } from '../../lib/field-briefs';
 
 const all = await getCollection('problems');
 
