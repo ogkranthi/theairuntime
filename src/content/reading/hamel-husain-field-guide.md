@@ -12,7 +12,7 @@ summary: |
   works, now what."
 publishedAt: 2024-05-21
 addedAt: 2026-05-10
-relatedSpeakers: [michael-schulte]
-relatedEvents: [2026-05-11-agentic-architectures]
+relatedSpeakers: [michael-schulte, nirmal-jingar]
+relatedEvents: [2026-05-11-agentic-architectures, 2026-06-16-ai-as-a-teammate]
 highlight: true
 ---

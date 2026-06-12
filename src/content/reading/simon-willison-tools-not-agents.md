@@ -11,4 +11,6 @@ summary: |
   Per-token costs cratered. Required reading for grounding intuition.
 publishedAt: 2024-12-31
 addedAt: 2026-05-10
+relatedSpeakers: [nirmal-jingar]
+relatedEvents: [2026-06-16-ai-as-a-teammate]
 ---

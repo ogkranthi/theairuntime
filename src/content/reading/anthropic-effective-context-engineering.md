@@ -11,6 +11,6 @@ summary: |
   and "this works in production with real users."
 publishedAt: 2025-09-29
 addedAt: 2026-05-10
-relatedEvents: [2026-05-11-agentic-architectures]
-relatedSpeakers: [ray-liao]
+relatedEvents: [2026-05-11-agentic-architectures, 2026-06-16-ai-as-a-teammate]
+relatedSpeakers: [ray-liao, ananya-shah]
 ---
