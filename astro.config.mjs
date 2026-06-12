@@ -23,4 +23,9 @@ export default defineConfig({
   ],
   prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
   build: { format: 'directory' },
+  // Field Briefs moved from /field-lab/briefs to /briefs (the Field Lab home
+  // path). Keep the old URL working for any shared links.
+  redirects: {
+    '/field-lab/briefs': '/briefs',
+  },
 });

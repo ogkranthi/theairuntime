@@ -1,8 +1,8 @@
 ---
 import { getCollection } from 'astro:content';
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import ProblemCard from '../../../components/ProblemCard.astro';
-import { RUN_LEVELS, plainRunLevel, SCOPE_ENVELOPE, intakeUrl } from '../../../lib/field-briefs';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProblemCard from '../../components/ProblemCard.astro';
+import { RUN_LEVELS, plainRunLevel, SCOPE_ENVELOPE, intakeUrl } from '../../lib/field-briefs';
 
 export async function getStaticPaths() {
   const problems = await getCollection('problems');
@@ -27,7 +27,7 @@ const familyMatched =
   <div class="fl">
     <article class="brief">
       <div class="wrap">
-        <p class="back"><a href="/field-lab/briefs">Field Briefs</a></p>
+        <p class="back"><a href="/briefs">Field Briefs</a></p>
 
         <header class="head">
           <div class="meta-row">
