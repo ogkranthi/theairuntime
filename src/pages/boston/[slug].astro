@@ -9,6 +9,7 @@ import Section from '../../components/Section.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import ReadingCard from '../../components/ReadingCard.astro';
+import RecapGallery from '../../components/RecapGallery.astro';
 import AudioOverview from '../../components/AudioOverview.astro';
 import JsonLd from '../../components/JsonLd.astro';
 import { breadcrumbList } from '../../lib/breadcrumbs';
@@ -179,11 +180,7 @@ const breadcrumbSchema = breadcrumbList(
         </ul>
       )}
       {event.data.recapPhotos.length > 0 && (
-        <ul class="photos">
-          {event.data.recapPhotos.map((p) => (
-            <li><img src={p.src} alt={p.alt} loading="lazy" /></li>
-          ))}
-        </ul>
+        <RecapGallery photos={event.data.recapPhotos} />
       )}
     </Section>
   )}
