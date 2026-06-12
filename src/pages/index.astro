@@ -3,10 +3,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
 import Blink from '../components/Blink.astro';
+import RecapGallery from '../components/RecapGallery.astro';
+import { getCollection } from 'astro:content';
 import { fetchSubstackPosts } from '../lib/substack';
 
 const posts = await fetchSubstackPosts(4);
 const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+// Most recent past Boston event that has photos, for the homepage energy band.
+const bostonEvents = await getCollection('events', (e) => e.slug.startsWith('boston/'));
+const lastRecap = bostonEvents
+  .filter((e) => e.data.status === 'past' && e.data.recapPhotos.length > 0)
+  .sort((a, b) => +b.data.date - +a.data.date)[0];
+const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
 ---
 <BaseLayout
   title="The AI Runtime"
@@ -64,6 +73,20 @@ const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric
     </p>
   </Section>
 
+  {lastRecap && (
+    <Section eyebrow="In the room" title="From the last meetup">
+      <p class="dim wide">
+        A full room in Cambridge for {lastRecap.data.title}. Two production talks, real questions,
+        people who ship. The next one is coming.
+      </p>
+      <RecapGallery photos={lastRecap.data.recapPhotos} />
+      <p class="recap-links">
+        <a class="btn btn-ghost" href={`/boston/${lastRecapSlug}#recap`}>See the full recap →</a>
+        <a class="btn" href="/boston">Come to the next one</a>
+      </p>
+    </Section>
+  )}
+
   <Section eyebrow="The Field Lab" title="Build on real problems, not demos" narrow>
     <p class="dim">
       The Field Lab is where builders and students work on real, production-shaped AI problems. A
@@ -107,6 +130,8 @@ const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric
 </BaseLayout>
 
 <style>
+  .wide { max-width: 42rem; }
+  .recap-links { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
   .hero {
     padding: 4.5rem 0 4rem;
     border-bottom: 1px solid var(--border);
