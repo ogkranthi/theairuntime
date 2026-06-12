@@ -11,7 +11,7 @@ summary: |
   premature autonomy. The starting point for any production agent conversation.
 publishedAt: 2024-12-20
 addedAt: 2026-05-10
-relatedEvents: [2026-05-11-agentic-architectures]
-relatedSpeakers: [ray-liao]
+relatedEvents: [2026-05-11-agentic-architectures, 2026-06-16-ai-as-a-teammate]
+relatedSpeakers: [ray-liao, nirmal-jingar, ananya-shah]
 highlight: true
 ---

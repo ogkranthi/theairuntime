@@ -12,7 +12,7 @@ summary: |
   look like" map.
 publishedAt: 2023-07-30
 addedAt: 2026-05-10
-relatedEvents: [2026-05-11-agentic-architectures]
-relatedSpeakers: [michael-schulte]
+relatedEvents: [2026-05-11-agentic-architectures, 2026-06-16-ai-as-a-teammate]
+relatedSpeakers: [michael-schulte, ananya-shah]
 highlight: true
 ---
