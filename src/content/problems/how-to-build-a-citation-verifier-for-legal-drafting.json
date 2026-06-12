@@ -1,0 +1,37 @@
+{
+  "id": "how-to-build-a-citation-verifier-for-legal-drafting",
+  "title": "Cite or Strike: A Citation Verifier for Legal Drafting",
+  "one_line": "Build a verifier that checks every citation in an AI-drafted legal document against a real source and flags or strikes anything it cannot ground.",
+  "vertical": "Legal",
+  "difficulty": "Intermediate",
+  "build_type": "Verifier",
+  "status": "Open",
+  "run_level": "R3",
+  "provenance": "failure-derived",
+  "draft": true,
+  "failure_family": "eval-production gap",
+  "failure_story": {
+    "what_happened": "In a Mississippi federal court, attorneys on both sides were sanctioned over AI-hallucinated citations. The adversarial check that normally catches bad citations collapsed because both sides carried the same exposure: each relied on unverified AI output, so neither caught the fabrications.",
+    "root_cause_read": "Unverified model output certified itself. The system that should have flagged fabricated citations, opposing counsel, had the same blind spot, and no step in the pipeline verified a citation against a retrievable primary source before the filing went out.",
+    "engineering_lesson": "Never let generated citations certify themselves. Verify every citation against a retrievable source before the document leaves the system, and treat an unverifiable citation as a hard failure that blocks export, not a soft warning a tired drafter can skim past."
+  },
+  "sources": [
+    "https://www.reddit.com/r/InterstellarKinetics/comments/1u1clsf/"
+  ],
+  "primary_source_note": "The court's sanctions order is the primary source; attach it in the editorial verification pass before publish. The thread above is discovery provenance only.",
+  "reliability_focus": ["citation grounding", "fabrication detection", "export gating"],
+  "why_it_matters": "AI-drafted filings have put fabricated citations in front of judges and drawn sanctions against the lawyers who filed them. The drafting model is not the failure; the missing artifact is a verifier that grounds every citation against a real source before the document is filed. A citation that cannot be retrieved is a defect, not a stylistic choice.",
+  "persona": "Litigator or legal drafter using AI to produce filings",
+  "current_workflow": "A drafter generates a brief with an AI assistant, skims the citations for plausibility, and files, trusting that anything formatted like a case is real.",
+  "ai_workflow": "The verifier extracts every citation from the draft, looks each one up against a citation database or document corpus, and classifies it as verified, altered, or not found. Verified citations pass. Altered or not-found citations are flagged with the specific defect, and the document is blocked from export until every citation resolves or is removed.",
+  "inputs": ["an AI-drafted document", "a citation database or reference corpus", "a citation extraction step"],
+  "outputs": ["a per-citation verdict (verified, altered, not found)", "a defect report naming each unverifiable citation", "a blocked or cleared export decision"],
+  "definition_of_done": "On a synthetic document set seeded with real, altered, and fabricated citations, the verifier marks every fabricated citation as not found, catches altered quotes or pin-cites as altered, passes the genuine ones, and blocks export while any citation is unresolved.",
+  "example_input": "A brief citing Smith v. Jones, 123 F.3d 456, with a quoted holding, where no such case exists in the reference corpus.",
+  "example_output": "Citation Smith v. Jones, 123 F.3d 456: not found in the corpus. Verdict: defect, export blocked. The verifier names the citation and the failed lookup rather than rewording the brief.",
+  "data_plan": "synthetic",
+  "non_goals": ["drafting the legal argument", "real client matter data", "filing or court system integration"],
+  "evaluation_ideas": ["fabrication recall (caught not-found rate)", "altered-citation detection", "false-positive rate on genuine citations", "export-gate correctness"],
+  "suggested_tools": [],
+  "thesis_questions": ["Should an unverifiable citation block export or only warn?", "What citation corpus coverage is needed before the verifier is trustworthy in a given jurisdiction?"]
+}
