@@ -1,0 +1,65 @@
+---
+/**
+ * StatBand: a compact row of real community numbers. Credibility through
+ * concrete figures, the way professional community sites lead with reach.
+ * Keep these honest and current.
+ */
+interface Stat {
+  value: string;
+  label: string;
+}
+interface Props {
+  stats?: Stat[];
+}
+const {
+  stats = [
+    { value: '1,150', label: 'on LinkedIn' },
+    { value: '505', label: 'newsletter subscribers' },
+    { value: '150+', label: 'in-person attendees' },
+  ],
+} = Astro.props;
+---
+<div class="statband">
+  <div class="container">
+    <ul role="list">
+      {stats.map((s) => (
+        <li>
+          <span class="value">{s.value}</span>
+          <span class="label">{s.label}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .statband { padding: 2.5rem 0; }
+  .statband ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    text-align: center;
+  }
+  @media (max-width: 560px) {
+    .statband ul { grid-template-columns: 1fr; gap: 1.25rem; }
+  }
+  .statband li { display: flex; flex-direction: column; gap: 0.25rem; }
+  .value {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+</style>

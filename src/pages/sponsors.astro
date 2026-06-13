@@ -8,29 +8,29 @@ import Section from '../components/Section.astro';
 // supports it.
 const platformPartners = [
   {
-    name: 'NVIDIA',
-    role: 'Food & drinks sponsor',
-    url: 'https://www.nvidia.com',
-    blurb: 'NVIDIA sponsors the food and drinks at our Boston meetups, keeping practitioners fed while they talk shop. Also the compute stack many reach for when training, evaluating, and serving models at production scale.',
+    name: 'Microsoft',
+    role: 'Space Partner',
+    url: 'https://www.microsoft.com',
+    blurb: 'Microsoft hosts our Boston meetups, the room in Kendall Square where practitioners gather, and brings the platform many of them ship on: Azure AI Foundry, Entra ID, and Agent 365.',
   },
   {
-    name: 'Microsoft',
-    role: 'Platform partner',
-    url: 'https://www.microsoft.com',
-    blurb: 'Azure AI Foundry, Entra ID, and Agent 365 underpin the operational layer for practitioners shipping agents at enterprise scale.',
+    name: 'NVIDIA',
+    role: 'Food & Drinks Partner',
+    url: 'https://www.nvidia.com',
+    blurb: 'NVIDIA covers the food and drinks at our Boston meetups, keeping practitioners fed while they talk shop. Also the compute stack many reach for when training, evaluating, and serving models at production scale.',
   },
   {
     name: 'HackerSquad',
-    role: 'Community & distribution partner',
+    role: 'Technology Partner',
     url: 'https://hackersquad.com',
-    blurb: 'Distribution and community partner for The AI Runtime.',
+    blurb: 'Technology partner for The AI Runtime, supporting the platform behind the events and the community.',
   },
 ];
 
 const tiers = [
   {
-    name: 'Venue host',
-    body: 'Host an upcoming Boston meetup. Capacity for ~40 practitioners, A/V for two talks, space to mingle. We bring the audience and the program; you bring the room (and ideally pizza).',
+    name: 'Space host',
+    body: 'Host an upcoming meetup. Capacity for ~40 practitioners, A/V for two talks, space to mingle. We bring the audience and the program; you bring the room. Microsoft currently hosts the Boston space.',
   },
   {
     name: 'Refreshments',
@@ -46,21 +46,19 @@ const tiers = [
   },
   {
     name: 'Platform partner',
-    body: 'Multi-event partnership. Co-marketing across the publication (8k+ practitioners), the events site, and on-stage acknowledgements. Limited to partners whose product or platform serves AI practitioners directly.',
+    body: 'Multi-event partnership. Co-marketing across the publication and a growing practitioner community on the newsletter and LinkedIn, the events site, and on-stage acknowledgements. Limited to partners whose product or platform serves AI practitioners directly.',
   },
 ];
 ---
 <BaseLayout
   title="Sponsors & Partners · The AI Runtime"
-  description="The companies that help us put on The AI Runtime, NVIDIA, Microsoft, HackerSquad, and our venue partners. NVIDIA sponsors the food and drinks at our Boston meetups."
+  description="The partners who help put on The AI Runtime: Microsoft hosts the space, NVIDIA covers food and drinks, and HackerSquad is the technology partner."
 >
   <Section eyebrow="Sponsors & Partners" title="The companies that help us put on better meetups">
     <p class="lead dim">
-      The AI Runtime is independent and practitioner-first. We work with a small number of
-      partners who actually serve the audience, compute and platform sponsors whose product
-      ships with practitioners, plus venue and refreshment hosts. A special thanks to NVIDIA
-      for keeping our practitioners fed and caffeinated: NVIDIA sponsors the food and drinks
-      at our meetups.
+      The AI Runtime is independent and practitioner-first. A small number of partners make the
+      meetups happen: Microsoft hosts the space in Kendall Square, NVIDIA covers the food and
+      drinks, and HackerSquad is the technology partner. A genuine thanks to all three.
     </p>
   </Section>
 

@@ -5,6 +5,7 @@ import SubstackEmbed from '../components/SubstackEmbed.astro';
 import Blink from '../components/Blink.astro';
 import RecapGallery from '../components/RecapGallery.astro';
 import CredibilityStrip from '../components/CredibilityStrip.astro';
+import StatBand from '../components/StatBand.astro';
 import { getCollection } from 'astro:content';
 import { fetchSubstackPosts } from '../lib/substack';
 
@@ -47,6 +48,8 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
   </section>
 
   <CredibilityStrip />
+
+  <StatBand />
 
   <Section eyebrow="What it is" title="A publication, a community, and a lab" flush>
     <ul class="arms">
