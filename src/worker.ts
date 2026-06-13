@@ -24,6 +24,13 @@ interface Env {
    *  returns 503 and the UI falls back to PUBLIC_COHORT_JOIN_URL. Create with
    *  `npx wrangler kv namespace create WAITLIST` and bind in wrangler.toml. */
   WAITLIST?: { put: (key: string, value: string) => Promise<void>; get: (key: string) => Promise<string | null> };
+  /** KV namespace for the Field Lab intake review queue. When unset, /api/intake
+   *  returns 503 and the intake page falls back to the per-branch env URLs. The
+   *  problem branch writes a Field Brief draft (status Draft); build and partner
+   *  branches write interest records. Nothing here is ever auto-published. */
+  INTAKE?: { put: (key: string, value: string) => Promise<void>; get: (key: string) => Promise<string | null> };
+  /** Optional webhook that mirrors every intake submission (Slack, Make). */
+  INTAKE_WEBHOOK_URL?: string;
 }
 
 interface SubscribeBody {
@@ -309,6 +316,202 @@ async function handleWaitlist(request: Request, env: Env): Promise<Response> {
   }
 }
 
+/** Split a textarea value into a clean list (one per line or comma separated). */
+function toList(raw: unknown): string[] {
+  if (typeof raw !== 'string') return [];
+  return raw
+    .split(/[\n,]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
+
+/**
+ * Field Lab intake. One endpoint, three branches.
+ *
+ *   problem -> a Field Brief draft (status "Draft", conformance "draft"). The
+ *              form fields map onto the schema; editor-only fields are left
+ *              empty with a _todo list. Never auto-published.
+ *   build   -> a builder-interest record.
+ *   partner -> a private partner-inquiry record (never published).
+ *
+ * Records land in the INTAKE review queue (KV) and optionally mirror to a
+ * webhook. When neither is configured, returns 503 so the page falls back to
+ * the per-branch env URL.
+ */
+async function handleIntake(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, { status: 405 });
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = (await request.json()) as Record<string, unknown>;
+  } catch {
+    return json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const branch = str(body.branch);
+  if (!['problem', 'build', 'partner'].includes(branch)) {
+    return json({ error: 'Unknown branch.' }, { status: 400 });
+  }
+
+  const email = str(body.email).toLowerCase();
+  if (!isValidEmail(email)) {
+    return json({ error: 'Please provide a valid email.' }, { status: 400 });
+  }
+
+  const now = new Date().toISOString();
+  let record: Record<string, unknown>;
+
+  if (branch === 'problem') {
+    // The cheapest conformance gate: a concrete example pair must be present.
+    const exampleInput = str(body.example_input);
+    const exampleOutput = str(body.example_output);
+    if (!exampleInput || !exampleOutput) {
+      return json(
+        { error: 'A concrete example input and its expected output are required.' },
+        { status: 400 },
+      );
+    }
+
+    const company = str(body.company);
+    // Provenance: a named company makes it company-submitted; an individual
+    // without a company is operator-sourced.
+    const provenance = company ? 'company-submitted' : 'operator-sourced';
+
+    // Editor-only fields, completed in review before a brief is published.
+    const editorTodo = [
+      'id',
+      'title',
+      'one_line',
+      'definition_of_done',
+      'run_level',
+      'difficulty',
+      'build_type',
+      'non_goals',
+      'evaluation_ideas',
+      'vertical',
+    ];
+
+    // A schema-shaped Field Brief draft. Mapped fields are filled from the
+    // form; editor-only fields stay empty and are tracked in _todo.
+    const draft: Record<string, unknown> = {
+      id: '',
+      title: '',
+      one_line: '',
+      persona: str(body.persona),
+      ai_workflow: str(body.ai_workflow),
+      // The editor splits the raw pain statement into why_it_matters and
+      // current_workflow during review.
+      why_it_matters: '',
+      current_workflow: '',
+      inputs: toList(body.inputs),
+      outputs: toList(body.outputs),
+      example_input: exampleInput,
+      example_output: exampleOutput,
+      reliability_focus: toList(body.reliability),
+      definition_of_done: '',
+      data_plan: str(body.data_ok) === 'no' ? '' : 'synthetic',
+      track: str(body.track),
+      failure_family:
+        str(body.failure_family) && str(body.failure_family) !== 'Not sure'
+          ? str(body.failure_family)
+          : '',
+      run_level: '',
+      difficulty: '',
+      build_type: '',
+      non_goals: [],
+      evaluation_ideas: [],
+      vertical: '',
+      provenance,
+      status: 'Draft',
+      conformance: 'draft',
+      draft: true,
+      // Raw, unedited applicant inputs the editor rewrites into the schema.
+      _raw: {
+        pain: str(body.pain),
+        definition_of_done: str(body.definition_of_done),
+        reliability: str(body.reliability),
+        data_ok: str(body.data_ok),
+      },
+      _todo: editorTodo,
+    };
+
+    record = {
+      kind: 'problem',
+      submitted_by: str(body.submitted_by),
+      company: company || null,
+      contact_email: email,
+      mention_company: str(body.mention_company) || 'no',
+      scoping_call: body.scoping_call === true,
+      submitted_at: now,
+      draft,
+    };
+  } else if (branch === 'build') {
+    record = {
+      kind: 'builder-interest',
+      name: str(body.name),
+      contact_email: email,
+      linkedin: str(body.linkedin) || null,
+      portfolio: str(body.portfolio) || null,
+      shipped: str(body.shipped) || null,
+      track: str(body.track),
+      target: str(body.target) || null,
+      solo: str(body.solo) || null,
+      writeup: str(body.writeup) || null,
+      subscribe: body.subscribe === true,
+      submitted_at: now,
+    };
+  } else {
+    record = {
+      kind: 'partner-inquiry',
+      private: true,
+      name: str(body.name),
+      company: str(body.company),
+      role: str(body.role) || null,
+      contact_email: email,
+      partner_type: str(body.partner_type),
+      contribution: str(body.contribution) || null,
+      note: str(body.note) || null,
+      submitted_at: now,
+    };
+  }
+
+  let stored = false;
+  if (env.INTAKE) {
+    try {
+      const key = `intake:${branch}:${now}:${email}`;
+      await env.INTAKE.put(key, JSON.stringify(record));
+      stored = true;
+    } catch {
+      // Fall through to webhook / 503.
+    }
+  }
+
+  if (env.INTAKE_WEBHOOK_URL) {
+    try {
+      await fetch(env.INTAKE_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(record),
+      });
+      stored = true;
+    } catch {
+      // Best-effort mirror.
+    }
+  }
+
+  // Nothing configured to receive the submission: tell the client to fall back
+  // to the per-branch env URL rather than silently dropping it.
+  if (!stored) {
+    return json({ error: 'Intake is not enabled.' }, { status: 503 });
+  }
+
+  return json({ ok: true });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -326,6 +529,10 @@ export default {
 
     if (url.pathname === '/api/waitlist') {
       return handleWaitlist(request, env);
+    }
+
+    if (url.pathname === '/api/intake') {
+      return handleIntake(request, env);
     }
 
     return env.ASSETS.fetch(request);

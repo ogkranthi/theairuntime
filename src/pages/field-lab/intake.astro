@@ -1,0 +1,286 @@
+---
+/**
+ * Field Lab intake: one on-ramp, three branches (problem / build / partner).
+ * Only the problem branch emits a Field Brief draft; build and partner emit
+ * interest records. Progressive enhancement: without JS every branch renders
+ * as a section and posts to its env-configured URL. With JS the selector
+ * reveals one branch and submits to /api/intake, which builds the draft.
+ *
+ * ?branch=problem|build|partner pre-selects a branch.
+ * ?family=<id> pre-selects the failure family in the problem branch.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const problemUrl =
+  import.meta.env.PUBLIC_PROBLEM_INTAKE_URL || 'mailto:info@theairuntime.com?subject=Field%20Lab%20problem';
+const builderUrl =
+  import.meta.env.PUBLIC_BUILDER_INTEREST_URL || 'mailto:info@theairuntime.com?subject=Field%20Lab%20builder';
+const partnerUrl =
+  import.meta.env.PUBLIC_PARTNER_INTAKE_URL || 'mailto:info@theairuntime.com?subject=Field%20Lab%20partner';
+
+const tracks = ['Vertical Agents', 'Reliability & Harness', 'Agent Security', 'Not sure'];
+const families = [
+  'Not sure',
+  'destructive auto-shipping',
+  'reward hacking',
+  'delegated identity',
+  'prompt injection',
+  'cost runaway',
+  'eval-production gap',
+  'supply chain',
+];
+const partnerTypes = ['Tooling', 'Infrastructure', 'Model or inference', 'Accelerator or program', 'Other'];
+
+const NO_PROMISE =
+  'Submitting does not guarantee review, publication, a build, mentorship, referrals, funding, or hiring outcomes.';
+---
+<BaseLayout
+  title="Field Lab Intake · The AI Runtime"
+  description="One on-ramp to the Field Lab: submit a real AI problem, join as a builder, or partner. Submissions enter a review queue and are never auto-published."
+  noSubBar
+>
+  <div class="fl">
+    <section class="intake">
+      <div class="wrap">
+        <p class="kicker">The AI Runtime Field Lab</p>
+        <h1>One on-ramp, three ways in</h1>
+        <p class="lede">
+          Submit a real AI problem, join as a builder, or partner with the Field Lab. Pick a path
+          below. Submissions enter a review queue and are checked by a human before anything is
+          public.
+        </p>
+
+        <fieldset class="branch-picker" data-branch-picker>
+          <legend class="vh">Choose a path</legend>
+          <label class="pick">
+            <input type="radio" name="branch" value="problem" checked />
+            <span class="pick-title">I have a problem to submit</span>
+            <span class="pick-sub">A real AI workflow problem, turned into a buildable brief.</span>
+          </label>
+          <label class="pick">
+            <input type="radio" name="branch" value="build" />
+            <span class="pick-title">I want to build</span>
+            <span class="pick-sub">Join the builder register and work on real problems.</span>
+          </label>
+          <label class="pick">
+            <input type="radio" name="branch" value="partner" />
+            <span class="pick-title">I represent a partner</span>
+            <span class="pick-sub">Tooling, credits, a sponsored problem, or an exit path.</span>
+          </label>
+        </fieldset>
+
+        <!-- Branch A: problem -->
+        <section class="branch" data-branch="problem">
+          <h2>Submit a problem</h2>
+          <form class="aq" data-intake="problem" action={problemUrl} method="post">
+            <label>Your name<input name="submitted_by" type="text" autocomplete="name" /></label>
+            <label>Company (optional)<input name="company" type="text" /></label>
+            <label>Email<input name="email" type="email" required autocomplete="email" /></label>
+            <label>Mention your company?
+              <select name="mention_company">
+                <option value="yes">Yes, name it</option>
+                <option value="no">No</option>
+                <option value="anonymized">Anonymized</option>
+              </select>
+            </label>
+            <label>What workflow is painful today?<textarea name="pain" rows="3" required></textarea></label>
+            <label>Who has this problem?<input name="persona" type="text" required /></label>
+            <label>What would an AI agent or copilot do?<textarea name="ai_workflow" rows="3" required></textarea></label>
+            <label>What are the inputs?<textarea name="inputs" rows="2" placeholder="One per line, or comma separated"></textarea></label>
+            <label>What are the expected outputs?<textarea name="outputs" rows="2" placeholder="One per line, or comma separated"></textarea></label>
+            <label>One concrete example input<textarea name="example_input" rows="2" required></textarea></label>
+            <label>The expected output for that example<textarea name="example_output" rows="2" required></textarea></label>
+            <label>What would make this unsafe or unreliable?<textarea name="reliability" rows="2"></textarea></label>
+            <label>What does "good enough to trust" look like?<textarea name="definition_of_done" rows="2" required></textarea></label>
+            <label>Can this run on public, sample, or synthetic data?
+              <select name="data_ok">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </label>
+            <label>Which track fits?
+              <select name="track">
+                {tracks.map((t) => <option value={t}>{t}</option>)}
+              </select>
+            </label>
+            <label>Failure family (optional)
+              <select name="failure_family" data-family>
+                {families.map((f) => <option value={f}>{f}</option>)}
+              </select>
+            </label>
+            <label class="check"><input type="checkbox" name="scoping_call" /> Open to a 20-minute scoping call?</label>
+            <p class="fine">A submission is not publication. Every problem enters a review queue, and a human completes the editorial fields and opens it before anything is public.</p>
+            <p class="fine">{NO_PROMISE}</p>
+            <button type="submit" class="btn">Submit the problem</button>
+            <p class="status" role="status" aria-live="polite" hidden></p>
+          </form>
+        </section>
+
+        <!-- Branch B: build -->
+        <section class="branch" data-branch="build" hidden>
+          <h2>Join as a builder</h2>
+          <form class="aq" data-intake="build" action={builderUrl} method="post">
+            <label>Your name<input name="name" type="text" required autocomplete="name" /></label>
+            <label>Email<input name="email" type="email" required autocomplete="email" /></label>
+            <label>LinkedIn<input name="linkedin" type="url" placeholder="https://" /></label>
+            <label>GitHub or portfolio<input name="portfolio" type="url" placeholder="https://" /></label>
+            <label>One thing you have shipped before<textarea name="shipped" rows="2"></textarea></label>
+            <label>Which track interests you most?
+              <select name="track">
+                {tracks.filter((t) => t !== 'Not sure').map((t) => <option value={t}>{t}</option>)}
+              </select>
+            </label>
+            <label>Which brief or family do you want to build? (optional)<input name="target" type="text" /></label>
+            <label>Comfortable building solo?
+              <select name="solo"><option value="yes">Yes</option><option value="no">No</option></select>
+            </label>
+            <label>Comfortable publishing a write-up?
+              <select name="writeup"><option value="yes">Yes</option><option value="no">No</option></select>
+            </label>
+            <label class="check"><input type="checkbox" name="subscribe" checked /> Subscribe to The AI Runtime newsletter</label>
+            <p class="fine">{NO_PROMISE}</p>
+            <button type="submit" class="btn">Join the builder register</button>
+            <p class="status" role="status" aria-live="polite" hidden></p>
+          </form>
+        </section>
+
+        <!-- Branch C: partner -->
+        <section class="branch" data-branch="partner" hidden>
+          <h2>Partner with the Field Lab</h2>
+          <form class="aq" data-intake="partner" action={partnerUrl} method="post">
+            <label>Your name<input name="name" type="text" required autocomplete="name" /></label>
+            <label>Company<input name="company" type="text" required /></label>
+            <label>Role<input name="role" type="text" /></label>
+            <label>Email<input name="email" type="email" required autocomplete="email" /></label>
+            <label>Partner type
+              <select name="partner_type">
+                {partnerTypes.map((t) => <option value={t}>{t}</option>)}
+              </select>
+            </label>
+            <label>What would you want to contribute?<textarea name="contribution" rows="2" placeholder="Credits, a sponsored problem, an engineer, event support, an exit path for builders"></textarea></label>
+            <label>Anything else<textarea name="note" rows="3"></textarea></label>
+            <p class="fine">Partner relationships are disclosed publicly when active, and never affect how builds are scored.</p>
+            <p class="fine">{NO_PROMISE}</p>
+            <button type="submit" class="btn">Send the partner inquiry</button>
+            <p class="status" role="status" aria-live="polite" hidden></p>
+          </form>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Branch reveal + query-param preselect + submit to /api/intake.
+    const params = new URLSearchParams(location.search);
+    const picker = document.querySelector('[data-branch-picker]');
+    const radios = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="branch"]'));
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('.branch'));
+
+    function reveal(branch: string) {
+      sections.forEach((s) => { s.hidden = s.dataset.branch !== branch; });
+    }
+    function selected(): string {
+      return radios.find((r) => r.checked)?.value || 'problem';
+    }
+
+    const wanted = params.get('branch');
+    if (wanted && radios.some((r) => r.value === wanted)) {
+      radios.forEach((r) => { r.checked = r.value === wanted; });
+    }
+    const family = params.get('family');
+    if (family) {
+      const sel = document.querySelector<HTMLSelectElement>('[data-family]');
+      if (sel) {
+        const match = Array.from(sel.options).find(
+          (o) => o.value.toLowerCase().replace(/\s+/g, '-') === family.toLowerCase(),
+        );
+        if (match) sel.value = match.value;
+      }
+    }
+    reveal(selected());
+    picker?.addEventListener('change', () => reveal(selected()));
+
+    document.querySelectorAll<HTMLFormElement>('form[data-intake]').forEach((form) => {
+      const branch = form.dataset.intake || '';
+      const status = form.querySelector<HTMLElement>('.status');
+      const fallback = form.getAttribute('action') || '';
+      form.addEventListener('submit', async (e) => {
+        if (!form.reportValidity()) return;
+        e.preventDefault();
+        const data: Record<string, unknown> = { branch };
+        new FormData(form).forEach((v, k) => {
+          const input = form.querySelector(`[name="${k}"]`) as HTMLInputElement | null;
+          data[k] = input && input.type === 'checkbox' ? input.checked : v;
+        });
+        if (status) { status.hidden = false; status.textContent = 'Sending...'; }
+        try {
+          const res = await fetch('/api/intake', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          if (res.ok) {
+            form.reset();
+            if (status) status.textContent = "Got it. This goes to the review queue, and a human takes it from here.";
+            Array.from(form.elements).forEach((el) => ((el as HTMLInputElement).disabled = true));
+            return;
+          }
+        } catch {
+          /* fall through */
+        }
+        if (status) status.textContent = 'Opening the backup form...';
+        if (fallback) window.open(fallback, '_blank', 'noopener');
+      });
+    });
+  </script>
+
+  <style is:global>
+    .fl {
+      --fl-ink: #161616; --fl-body: #3a352e; --fl-muted: #6f6a61; --fl-faint: #8a857c;
+      --fl-paper: #fdfcfa; --fl-surface: #fbfaf7; --fl-border: #e6e1d6;
+      --fl-accent: #e8852b; --fl-accent-hover: #f5a04f;
+      --fl-serif: Georgia, 'Times New Roman', serif;
+      --fl-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: var(--fl-paper); color: var(--fl-body); font-family: var(--fl-sans);
+    }
+    .fl .wrap { max-width: 44rem; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
+    .fl .kicker { font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fl-accent); font-weight: 600; margin: 0 0 0.85rem; }
+    .fl h1 { font-family: var(--fl-serif); color: var(--fl-ink); font-size: clamp(1.9rem, 5vw, 2.7rem); line-height: 1.12; margin: 0 0 1rem; }
+    .fl h2 { font-family: var(--fl-serif); color: var(--fl-ink); font-size: 1.4rem; margin: 0 0 1.25rem; }
+    .fl .lede { font-size: 1.1rem; color: var(--fl-body); line-height: 1.7; margin: 0 0 2rem; }
+
+    .branch-picker { border: 0; padding: 0; margin: 0 0 2.5rem; display: grid; gap: 0.75rem; }
+    .pick {
+      display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto;
+      column-gap: 0.75rem; align-items: center;
+      padding: 1rem 1.25rem; border: 1px solid var(--fl-border); border-radius: 12px;
+      background: var(--fl-surface); cursor: pointer;
+    }
+    .pick:has(input:checked) { border-color: var(--fl-accent); box-shadow: inset 0 0 0 1px var(--fl-accent); }
+    .pick input { grid-row: 1 / 3; width: 1.1rem; height: 1.1rem; accent-color: var(--fl-accent); }
+    .pick-title { font-weight: 700; color: var(--fl-ink); }
+    .pick-sub { font-size: 0.9rem; color: var(--fl-muted); }
+    .pick input:focus-visible { outline: 2px solid var(--fl-accent); outline-offset: 2px; }
+
+    .aq { display: flex; flex-direction: column; gap: 1rem; }
+    .aq label { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.92rem; color: var(--fl-body); font-weight: 600; }
+    .aq label.check { flex-direction: row; align-items: center; gap: 0.6rem; font-weight: 400; }
+    .aq input[type="text"], .aq input[type="email"], .aq input[type="url"], .aq textarea, .aq select {
+      padding: 0.7rem 0.85rem; border: 1px solid var(--fl-border); border-radius: 8px;
+      background: var(--fl-paper); color: var(--fl-ink); font-family: var(--fl-sans); font-size: 0.95rem; font-weight: 400;
+    }
+    .aq textarea { resize: vertical; }
+    .aq input:focus-visible, .aq textarea:focus-visible, .aq select:focus-visible { outline: 2px solid var(--fl-accent); outline-offset: 1px; border-color: var(--fl-accent); }
+    .aq .check input { width: 1.05rem; height: 1.05rem; accent-color: var(--fl-accent); }
+    .fine { font-size: 0.82rem; color: var(--fl-muted); margin: 0; line-height: 1.5; }
+    .btn {
+      align-self: flex-start; margin-top: 0.5rem; padding: 0.8rem 1.6rem; border-radius: 8px;
+      background: var(--fl-ink); color: var(--fl-paper); border: 1px solid var(--fl-ink);
+      font-family: var(--fl-sans); font-weight: 700; font-size: 0.95rem; cursor: pointer;
+    }
+    .btn:hover { background: var(--fl-accent); border-color: var(--fl-accent); color: var(--fl-ink); }
+    .btn:focus-visible { outline: 2px solid var(--fl-accent); outline-offset: 3px; }
+    .status { font-size: 0.95rem; color: var(--fl-accent); margin: 0.5rem 0 0; font-weight: 600; }
+    .vh { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  </style>
+</BaseLayout>
