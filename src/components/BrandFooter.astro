@@ -11,14 +11,13 @@ import Blink from './Blink.astro';
       </div>
 
       <div>
-        <h4>Learn</h4>
+        <h4>Read &amp; listen</h4>
         <ul>
+          <li><a href="https://theairuntime.com">Newsletter</a></li>
+          <li><a href="https://theairuntime.com/podcast">Podcast</a></li>
+          <li><a href="https://www.youtube.com/@theairuntime">YouTube</a></li>
+          <li><a href="/library">Library</a></li>
           <li><a href="/subscribe">Subscribe</a></li>
-          <li><a href="https://theairuntime.com">Newsletter archive</a></li>
-          <li><a href="/library">Reading list</a></li>
-          <li><a href="/resources">Resources</a></li>
-          <li><a href="/subscriber-only">Subscriber-only</a></li>
-          <li><a href="/about">About</a></li>
         </ul>
       </div>
 
@@ -30,6 +29,15 @@ import Blink from './Blink.astro';
           <li><a href="/field-lab">Field Lab</a></li>
           <li><a href="/speak">Speak at an event</a></li>
           <li><a href="/sponsors">Sponsor / partner</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>More</h4>
+        <ul>
+          <li><a href="/resources">Resources</a></li>
+          <li><a href="/subscriber-only">Subscriber-only</a></li>
+          <li><a href="/about">About</a></li>
           <li><a href="/faq">FAQ</a></li>
           <li><a href="mailto:info@theairuntime.com">Contact</a></li>
         </ul>
@@ -51,8 +59,12 @@ import Blink from './Blink.astro';
   }
   .grid {
     display: grid;
-    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
     gap: 2.5rem;
+  }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr 1fr 1fr; }
+    .brand { grid-column: 1 / -1; }
   }
   @media (max-width: 720px) {
     .grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
