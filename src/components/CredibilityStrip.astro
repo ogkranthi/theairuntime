@@ -1,0 +1,65 @@
+---
+/**
+ * CredibilityStrip: a "read by practitioners at" band of company wordmarks.
+ * Qualitative social proof, surfaced near the top of key pages the way
+ * professional community sites lead with a trusted-by row.
+ */
+interface Props {
+  label?: string;
+  companies?: string[];
+}
+const {
+  label = 'Read by AI practitioners at',
+  companies = ['IBM', 'Amazon', 'Meta', 'Google', 'NVIDIA', 'OpenAI', 'MIT', 'Harvard'],
+} = Astro.props;
+---
+<div class="cred">
+  <div class="container">
+    <p class="cred-label">{label}</p>
+    <ul class="cred-row" role="list">
+      {companies.map((c) => <li>{c}</li>)}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .cred {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-2);
+    padding: 1.75rem 0;
+  }
+  .cred-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-align: center;
+    margin: 0 0 1rem;
+  }
+  .cred-row {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1.1rem 2.5rem;
+  }
+  .cred-row li {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    color: var(--text-2);
+    opacity: 0.85;
+    transition: opacity 140ms ease, color 140ms ease;
+  }
+  .cred-row li:hover { opacity: 1; color: var(--text); }
+  @media (max-width: 560px) {
+    .cred-row { gap: 0.85rem 1.5rem; }
+    .cred-row li { font-size: 0.95rem; }
+  }
+</style>

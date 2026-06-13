@@ -4,6 +4,7 @@ import Section from '../components/Section.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
 import Blink from '../components/Blink.astro';
 import RecapGallery from '../components/RecapGallery.astro';
+import CredibilityStrip from '../components/CredibilityStrip.astro';
 import { getCollection } from 'astro:content';
 import { fetchSubstackPosts } from '../lib/substack';
 
@@ -44,6 +45,31 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
       </div>
     </div>
   </section>
+
+  <CredibilityStrip />
+
+  <Section eyebrow="What it is" title="A publication, a community, and a lab" flush>
+    <ul class="arms">
+      <li>
+        <span class="arm-k">Publication</span>
+        <h3>Weekly production lessons</h3>
+        <p class="dim">A free newsletter where AI practitioners share what they learned shipping to production. Evals, agents, inference, reliability, cost.</p>
+        <a class="arm-link" href="https://theairuntime.com">Read the newsletter →</a>
+      </li>
+      <li>
+        <span class="arm-k">Community</span>
+        <h3>The Boston meetup</h3>
+        <p class="dim">A monthly meetup in Cambridge. Two practitioner talks a night, real production stories, and the people who ship.</p>
+        <a class="arm-link" href="/boston">See the next event →</a>
+      </li>
+      <li>
+        <span class="arm-k">Field Lab</span>
+        <h3>Build on real problems</h3>
+        <p class="dim">A library of production-shaped AI problems and a build pilot, so serious builders work on real problems instead of demos.</p>
+        <a class="arm-link" href="/field-lab">Explore the Field Lab →</a>
+      </li>
+    </ul>
+  </Section>
 
   {posts.length > 0 && (
     <Section eyebrow="Latest issues" title="Fresh from the newsletter">
@@ -132,6 +158,40 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
 <style>
   .wide { max-width: 42rem; }
   .recap-links { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .arms {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 760px) { .arms { grid-template-columns: 1fr; } }
+  .arms li {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 140ms ease;
+  }
+  .arms li:hover { border-color: var(--accent); }
+  .arm-k {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .arms h3 { margin: 0.5rem 0 0.5rem; font-size: 1.15rem; }
+  .arms p { font-size: 0.95rem; }
+  .arm-link {
+    margin-top: auto;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
   .hero {
     padding: 4.5rem 0 4rem;
     border-bottom: 1px solid var(--border);
