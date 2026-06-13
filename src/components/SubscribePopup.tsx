@@ -31,7 +31,7 @@ export default function SubscribePopup({
   delayMs = 18000,
   scrollPercent = 40,
   headline = 'Reading this? Get the next one.',
-  subhead = 'The AI Runtime publishes weekly issues on agents, evals, and reliability, for engineers shipping AI to production.',
+  subhead = 'The AI Runtime publishes weekly issues on Vertical AI Agents, Model Reliability Engineering, and lessons from the trenches, for practitioners shipping AI to production.',
 }: Props) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');

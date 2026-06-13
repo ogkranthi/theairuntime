@@ -1,9 +1,10 @@
 # Field Lab intake setup
 
-The intake page at `/field-lab/intake` is one on-ramp with three branches:
+The intake page at `/field-lab/intake` is one on-ramp with four branches:
 
 - **problem** writes a Field Brief draft (status `Draft`, never auto-published)
 - **build** writes a builder-interest record
+- **mentor** writes a mentor-interest record
 - **partner** writes a private partner-inquiry record
 
 Submissions post to the in-Worker `POST /api/intake`. That handler writes to
@@ -69,6 +70,22 @@ The **Editor Todo** lists the fields a human completes in review: `id`, `title`,
 | Subscribe | Checkbox |
 | Submitted At | Single line text |
 
+### Table: `Mentors`
+
+| Column | Type |
+| --- | --- |
+| Name | Single line text |
+| Email | Email |
+| Role | Single line text |
+| LinkedIn | URL |
+| Expertise | Long text |
+| Help With | Single line text |
+| Track | Single line text |
+| Availability | Single line text |
+| Note | Long text |
+| Subscribe | Checkbox |
+| Submitted At | Single line text |
+
 ### Table: `Partners`
 
 | Column | Type |
@@ -106,7 +123,8 @@ Settings > Variables and Secrets. Add as **secrets**:
 
 Optional, only if you renamed the tables:
 
-- `AIRTABLE_PROBLEMS_TABLE`, `AIRTABLE_BUILDERS_TABLE`, `AIRTABLE_PARTNERS_TABLE`
+- `AIRTABLE_PROBLEMS_TABLE`, `AIRTABLE_BUILDERS_TABLE`, `AIRTABLE_MENTORS_TABLE`,
+  `AIRTABLE_PARTNERS_TABLE`
 
 Redeploy. New submissions now appear as rows you can triage.
 

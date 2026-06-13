@@ -130,57 +130,6 @@ const resources = defineCollection({
   }),
 });
 
-// Curated reading list: pointers to external posts/papers + our own Substack issues.
-// Free attribution-out content. Distinct from `resources` which is owned content
-// (lead-gated or paid).
-const reading = defineCollection({
-  type: 'content',
-  schema: z.object({
-    title: z.string(),
-    url: z.string().url(),
-    source: z.string(), // e.g. "Anthropic", "Eugene Yan", "The AI Runtime"
-    author: z.string().optional(),
-    pillar: z.enum(['evals', 'agents', 'inference', 'reliability', 'cost']),
-    tags: z.array(z.string()).default([]),
-    summary: z.string(),
-    publishedAt: z.coerce.date().optional(),
-    addedAt: z.coerce.date(),
-    relatedEvents: z.array(z.string()).default([]),
-    relatedSpeakers: z.array(reference('speakers')).default([]),
-    byKranthi: z.boolean().default(false), // surfaces on his profile + on /about
-    highlight: z.boolean().default(false), // pin to top of /library
-    audioOverviewUrl: z.string().optional(), // NotebookLM Deep Dive MP3
-  }),
-});
-
-// Tools we use and recommend, distinct from `reading` (content) and
-// `resources` (owned content we sell). Some entries are referral links;
-// `isReferral: true` flags them so the UI can disclose this transparently.
-const tools = defineCollection({
-  type: 'content',
-  schema: z.object({
-    name: z.string(),
-    url: z.string().url(),
-    category: z.enum([
-      'productivity',
-      'coding',
-      'writing',
-      'design',
-      'agents',
-      'evals',
-      'infra',
-      'observability',
-      'other',
-    ]),
-    pillar: z.enum(['evals', 'agents', 'inference', 'reliability', 'cost']).optional(),
-    tagline: z.string(),
-    why: z.string().optional(),
-    isReferral: z.boolean().default(false),
-    featured: z.boolean().default(false),
-    addedAt: z.coerce.date(),
-  }),
-});
-
 const signal = defineCollection({
   type: 'content',
   schema: z.object({
@@ -280,4 +229,4 @@ const problems = defineCollection({
     }),
 });
 
-export const collections = { cities, speakers, events, resources, reading, tools, signal, problems };
+export const collections = { cities, speakers, events, resources, signal, problems };
