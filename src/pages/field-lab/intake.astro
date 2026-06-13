@@ -15,6 +15,8 @@ const problemUrl =
   import.meta.env.PUBLIC_PROBLEM_INTAKE_URL || 'mailto:info@theairuntime.com?subject=Field%20Lab%20problem';
 const builderUrl =
   import.meta.env.PUBLIC_BUILDER_INTEREST_URL || 'mailto:info@theairuntime.com?subject=Field%20Lab%20builder';
+const mentorUrl =
+  import.meta.env.PUBLIC_MENTOR_INTAKE_URL || 'mailto:info@theairuntime.com?subject=Field%20Lab%20mentor';
 const partnerUrl =
   import.meta.env.PUBLIC_PARTNER_INTAKE_URL || 'mailto:info@theairuntime.com?subject=Field%20Lab%20partner';
 
@@ -61,6 +63,11 @@ const NO_PROMISE =
             <input type="radio" name="branch" value="build" />
             <span class="pick-title">I want to build</span>
             <span class="pick-sub">Join the builder register and work on real problems.</span>
+          </label>
+          <label class="pick">
+            <input type="radio" name="branch" value="mentor" />
+            <span class="pick-title">I want to mentor</span>
+            <span class="pick-sub">Guide builders with office hours, reviews, or feedback.</span>
           </label>
           <label class="pick">
             <input type="radio" name="branch" value="partner" />
@@ -140,6 +147,38 @@ const NO_PROMISE =
             <label class="check"><input type="checkbox" name="subscribe" checked /> Subscribe to The AI Runtime newsletter</label>
             <p class="fine">{NO_PROMISE}</p>
             <button type="submit" class="btn">Join the builder register</button>
+            <p class="status" role="status" aria-live="polite" hidden></p>
+          </form>
+        </section>
+
+        <!-- Branch: mentor -->
+        <section class="branch" data-branch="mentor" hidden>
+          <h2>Mentor builders</h2>
+          <form class="aq" data-intake="mentor" action={mentorUrl} method="post">
+            <label>Your name<input name="name" type="text" required autocomplete="name" /></label>
+            <label>Email<input name="email" type="email" required autocomplete="email" /></label>
+            <label>Company and role (optional)<input name="role" type="text" /></label>
+            <label>LinkedIn<input name="linkedin" type="url" placeholder="https://" /></label>
+            <label>Where have you shipped AI? What can you go deep on?<textarea name="expertise" rows="3" required></textarea></label>
+            <label>How would you like to help?
+              <select name="help">
+                <option value="office-hours">Office hours</option>
+                <option value="code-review">Code or design review</option>
+                <option value="career-advice">Career and switch advice</option>
+                <option value="talk-or-workshop">A talk or workshop</option>
+                <option value="open">Open to a few of these</option>
+              </select>
+            </label>
+            <label>Which track can you mentor?
+              <select name="track">
+                {tracks.filter((t) => t !== 'Not sure').map((t) => <option value={t}>{t}</option>)}
+              </select>
+            </label>
+            <label>Rough availability<input name="availability" type="text" placeholder="e.g. 2 hours a month" /></label>
+            <label>Anything else<textarea name="note" rows="2"></textarea></label>
+            <label class="check"><input type="checkbox" name="subscribe" checked /> Subscribe to The AI Runtime newsletter</label>
+            <p class="fine">{NO_PROMISE}</p>
+            <button type="submit" class="btn">Offer to mentor</button>
             <p class="status" role="status" aria-live="polite" hidden></p>
           </form>
         </section>

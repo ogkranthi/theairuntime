@@ -1,8 +1,6 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
-import ReadingCard from '../components/ReadingCard.astro';
 import QRCode from '../components/QRCode.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
 import SubscribePopup from '../components/SubscribePopup.tsx';
@@ -199,16 +197,6 @@ const TAKEAWAYS = [
     body: 'Agent 365 brings agents into Entra, Defender, and Purview, the trust fabric you already run.',
   },
 ];
-
-// Background reading auto-pulled from /library
-const allReading = await getCollection('reading');
-const relatedReading = allReading
-  .filter((r) => r.data.pillar === 'agents')
-  .sort((a, b) => {
-    if (a.data.highlight !== b.data.highlight) return a.data.highlight ? -1 : 1;
-    return +b.data.addedAt - +a.data.addedAt;
-  })
-  .slice(0, 4);
 
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 ---
@@ -425,23 +413,11 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     </ul>
   </Section>
 
-  {relatedReading.length > 0 && (
-    <Section eyebrow="From The AI Runtime" title="Background reading on agents in production">
-      <p class="dim wide">
-        Curated from <a href="/library">our library</a>. Primary sources we recommend if you want
-        to go deeper than the talk.
-      </p>
-      <div class="reading-grid">
-        {relatedReading.map((r) => <ReadingCard entry={r} />)}
-      </div>
-    </Section>
-  )}
-
   <Section id="subscribe" eyebrow="Subscribe" title="Get production lessons in your inbox">
     <SubstackEmbed
       source="agent-365"
       headline="The AI Runtime newsletter"
-      subhead="Weekly issues on evals, agents, inference, reliability, and cost. For engineers shipping AI to production."
+      subhead="Weekly issues on Vertical AI Agents, Model Reliability Engineering, and lessons from the trenches. For practitioners shipping AI to production."
     />
   </Section>
 
@@ -451,7 +427,7 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
     delayMs={18000}
     scrollPercent={45}
     headline="Liked the field guide? Get the next one."
-    subhead="The AI Runtime publishes weekly issues on agents, evals, and reliability, for engineers shipping AI to production."
+    subhead="The AI Runtime publishes weekly issues on Vertical AI Agents, Model Reliability Engineering, and lessons from the trenches, for practitioners shipping AI to production."
   />
 </BaseLayout>
 
@@ -861,12 +837,6 @@ const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
   .deeper h3 { font-size: 1rem; margin: 0 0 0.4rem; }
   .deeper p { margin: 0; }
 
-  .reading-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-  }
   .wide { max-width: 42rem; }
   .small { font-size: 0.85rem; }
 </style>

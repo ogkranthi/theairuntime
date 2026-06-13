@@ -8,7 +8,6 @@ import PartnerStrip from '../../components/PartnerStrip.astro';
 import Section from '../../components/Section.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
-import ReadingCard from '../../components/ReadingCard.astro';
 import RecapGallery from '../../components/RecapGallery.astro';
 import AudioOverview from '../../components/AudioOverview.astro';
 import JsonLd from '../../components/JsonLd.astro';
@@ -32,18 +31,7 @@ const hasRecapBody = (event.body ?? '').trim().length > 0;
 const hasRecap =
   hasRecapBody || event.data.recapTakeaways.length > 0 || event.data.recapPhotos.length > 0;
 
-// Curated reading tied to this event via reading.relatedEvents (matches either
-// the full slug or the date-only slug, the established pattern in /reading).
 const eventDateSlug = event.slug.replace(/^boston\//, '');
-const eventSlugRefs = [event.slug, eventDateSlug];
-const allReading = await getCollection('reading');
-const relatedReading = allReading
-  .filter((r) => r.data.relatedEvents.some((e) => eventSlugRefs.includes(e)))
-  .sort((a, b) => {
-    if (a.data.highlight !== b.data.highlight) return a.data.highlight ? -1 : 1;
-    return +b.data.addedAt - +a.data.addedAt;
-  })
-  .slice(0, 4);
 
 // Schema.org Event, built from frontmatter so every event page is
 // machine-readable for Google rich results and AI answer engines.
@@ -159,7 +147,7 @@ const breadcrumbSchema = breadcrumbList(
         {event.data.recordingUrl && <li><a href={event.data.recordingUrl}>Recording →</a></li>}
       </ul>
       {event.data.audioOverviewUrl && (
-        <AudioOverview src={event.data.audioOverviewUrl} label={`Listen — a Deep Dive on ${event.data.title}`} />
+        <AudioOverview src={event.data.audioOverviewUrl} label={`Listen, a Deep Dive on ${event.data.title}`} />
       )}
     </Section>
   )}
@@ -184,17 +172,6 @@ const breadcrumbSchema = breadcrumbList(
       )}
     </Section>
   )}
-
-  <Section eyebrow="Background reading" title="Curated for this event">
-    {relatedReading.length > 0 && (
-      <div class="reading-grid">
-        {relatedReading.map((r) => <ReadingCard entry={r} />)}
-      </div>
-    )}
-    <p class="reading-cta">
-      <a class="btn" href={`/boston/${eventDateSlug}/reading`}>See the full reading list →</a>
-    </p>
-  </Section>
 
   <Section eyebrow="Subscribe" title={event.data.status === 'past' ? 'Missed it? Get the next one.' : 'Get the recap'}>
     <p class="dim wide">
@@ -222,13 +199,6 @@ const breadcrumbSchema = breadcrumbList(
   .partners { margin-top: 1.5rem; }
   .cal-cta { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.5rem 0 0; }
   .materials { list-style: none; padding: 0; margin: 0; display: flex; gap: 1rem; }
-  .reading-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  .reading-cta { margin: 0; }
   .wide { max-width: 42rem; }
   .recap-body { max-width: 42rem; }
   .recap-body :global(p) { margin-bottom: 0.85rem; }

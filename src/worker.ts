@@ -37,9 +37,10 @@ interface Env {
   AIRTABLE_TOKEN?: string;
   /** Airtable base id (looks like appXXXXXXXXXXXXXX). */
   AIRTABLE_BASE_ID?: string;
-  /** Table names per branch. Default to Problems / Builders / Partners. */
+  /** Table names per branch. Default to Problems / Builders / Mentors / Partners. */
   AIRTABLE_PROBLEMS_TABLE?: string;
   AIRTABLE_BUILDERS_TABLE?: string;
+  AIRTABLE_MENTORS_TABLE?: string;
   AIRTABLE_PARTNERS_TABLE?: string;
 }
 
@@ -384,6 +385,21 @@ function airtableFields(record: Record<string, unknown>): Record<string, unknown
       'Submitted At': record.submitted_at,
     };
   }
+  if (record.kind === 'mentor-interest') {
+    return {
+      Name: record.name,
+      Email: record.contact_email,
+      Role: record.role ?? '',
+      LinkedIn: record.linkedin ?? '',
+      Expertise: record.expertise ?? '',
+      'Help With': record.help ?? '',
+      Track: record.track,
+      Availability: record.availability ?? '',
+      Note: record.note ?? '',
+      Subscribe: record.subscribe === true,
+      'Submitted At': record.submitted_at,
+    };
+  }
   return {
     Name: record.name,
     Company: record.company,
@@ -406,7 +422,9 @@ async function sendToAirtable(env: Env, branch: string, record: Record<string, u
       ? env.AIRTABLE_PROBLEMS_TABLE || 'Problems'
       : branch === 'build'
         ? env.AIRTABLE_BUILDERS_TABLE || 'Builders'
-        : env.AIRTABLE_PARTNERS_TABLE || 'Partners';
+        : branch === 'mentor'
+          ? env.AIRTABLE_MENTORS_TABLE || 'Mentors'
+          : env.AIRTABLE_PARTNERS_TABLE || 'Partners';
   const url = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${encodeURIComponent(table)}`;
   try {
     const res = await fetch(url, {
@@ -430,6 +448,7 @@ async function sendToAirtable(env: Env, branch: string, record: Record<string, u
  *              form fields map onto the schema; editor-only fields are left
  *              empty with a _todo list. Never auto-published.
  *   build   -> a builder-interest record.
+ *   mentor  -> a mentor-interest record.
  *   partner -> a private partner-inquiry record (never published).
  *
  * Records are written to Airtable (the readable review queue) and mirrored to
@@ -450,7 +469,7 @@ async function handleIntake(request: Request, env: Env): Promise<Response> {
   }
 
   const branch = str(body.branch);
-  if (!['problem', 'build', 'partner'].includes(branch)) {
+  if (!['problem', 'build', 'mentor', 'partner'].includes(branch)) {
     return json({ error: 'Unknown branch.' }, { status: 400 });
   }
 
@@ -558,6 +577,21 @@ async function handleIntake(request: Request, env: Env): Promise<Response> {
       target: str(body.target) || null,
       solo: str(body.solo) || null,
       writeup: str(body.writeup) || null,
+      subscribe: body.subscribe === true,
+      submitted_at: now,
+    };
+  } else if (branch === 'mentor') {
+    record = {
+      kind: 'mentor-interest',
+      name: str(body.name),
+      contact_email: email,
+      role: str(body.role) || null,
+      linkedin: str(body.linkedin) || null,
+      expertise: str(body.expertise) || null,
+      help: str(body.help) || null,
+      track: str(body.track),
+      availability: str(body.availability) || null,
+      note: str(body.note) || null,
       subscribe: body.subscribe === true,
       submitted_at: now,
     };

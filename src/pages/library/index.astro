@@ -1,95 +1,36 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
-import ReadingCard from '../../components/ReadingCard.astro';
-import ToolCard from '../../components/ToolCard.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
-import PillarFilter from '../../components/PillarFilter.astro';
-import AskLibrary from '../../components/AskLibrary.tsx';
 import AskQuestion from '../../components/AskQuestion.astro';
 import { fetchSubstackPosts } from '../../lib/substack';
 
-const reading = await getCollection('reading');
-const tools = await getCollection('tools');
-tools.sort((a, b) => {
-  if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
-  return +b.data.addedAt - +a.data.addedAt;
-});
-const substackPosts = await fetchSubstackPosts(6);
-
-const pillarOrder = ['evals', 'agents', 'inference', 'reliability', 'cost'] as const;
-const pillarLabels: Record<string, string> = {
-  evals: 'Evals & Observability',
-  agents: 'Agents in Production',
-  inference: 'Inference & Serving',
-  reliability: 'Reliability & Incidents',
-  cost: 'Cost & Performance',
-};
-
-const byPillar = pillarOrder.map((pillar) => ({
-  pillar,
-  label: pillarLabels[pillar],
-  entries: reading
-    .filter((r) => r.data.pillar === pillar)
-    .sort((a, b) => {
-      // highlight first, then newest first
-      if (a.data.highlight !== b.data.highlight) return a.data.highlight ? -1 : 1;
-      return +b.data.addedAt - +a.data.addedAt;
-    }),
-}));
-
-const total = reading.length;
-const highlights = reading.filter((r) => r.data.highlight).slice(0, 4);
-
-// Pillar chips for the client-side topic filter (only non-empty pillars).
-const pillarChips = byPillar
-  .filter((p) => p.entries.length > 0)
-  .map((p) => ({ key: p.pillar, label: p.label, count: p.entries.length }));
+// The library is our own newsletter. Pull the full recent feed at build time.
+const substackPosts = await fetchSubstackPosts(30);
+const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 ---
 <BaseLayout
-  title="The Production AI Reading List · The AI Runtime"
-  description="Curated by The AI Runtime, the canonical reading list for AI practitioners. Evals, agents, inference, reliability, cost."
+  title="The Library · The AI Runtime"
+  description="The AI Runtime library: every issue of the newsletter on Vertical AI Agents, Model Reliability Engineering, and lessons from the trenches of shipping AI."
 >
   <Section
     eyebrow="The library"
-    title="The Production AI Reading List"
-    lead="A living, curated reading list for AI practitioners. Organized by pillar. New entries added as we read them."
+    title="Every issue, in one place"
+    lead="The AI Runtime library is our own writing: weekly issues on Vertical AI Agents, Model Reliability Engineering, and the lessons from the trenches of shipping AI. Free, every week."
   >
-    <PillarFilter mode="filter" pillars={pillarChips} />
-
-    <p class="muted small toc-meta">{total} entries · curated by The AI Runtime · last updated {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(Math.max(...reading.map((r) => +r.data.addedAt))))}</p>
-  </Section>
-
-  <Section eyebrow="Ask the library" title="Not sure where to start?" flush>
-    <p class="dim wide">
-      Ask a question and get pointed to the right reads from the library, grounded in what we have
-      curated. Built on The AI Runtime, naturally.
+    <p>
+      <a class="btn" href="https://theairuntime.com">Read every issue at theairuntime.com →</a>
     </p>
-    <AskLibrary client:visible />
-  </Section>
-
-  <Section eyebrow="Still stuck?" title="Ask us a specific question">
-    <AskQuestion
-      eyebrow=""
-      title=""
-      lead="If the library did not cover it, ask our team directly. We read every question."
-      subjectTag="Library question"
-    />
   </Section>
 
   {substackPosts.length > 0 && (
-    <Section eyebrow="From the newsletter" title="Latest from The AI Runtime">
-      <p class="dim wide">
-        Fresh issues from our own Substack, auto-pulled from the feed.
-        <a href="https://theairuntime.com">See all issues →</a>
-      </p>
+    <Section eyebrow="From the newsletter" title="The AI Runtime, issue by issue">
       <div class="grid">
         {substackPosts.map((p) => (
           <article class="own">
             <header>
               <span class="tag">Issue</span>
-              <span class="source muted">The AI Runtime · {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(p.publishedAt)}</span>
+              <span class="source muted">The AI Runtime · {dateFmt.format(p.publishedAt)}</span>
               {p.audioOverviewUrl && <a class="audio-link" href={p.audioOverviewUrl}>🎧 Listen</a>}
             </header>
             <h3><a href={p.url} target="_blank" rel="noopener">{p.title}</a></h3>
@@ -100,89 +41,29 @@ const pillarChips = byPillar
     </Section>
   )}
 
-  {highlights.length > 0 && (
-    <div data-pillar-section="all">
-      <Section eyebrow="Start here" title="Highlights">
-        <div class="grid">
-          {highlights.map((r) => <ReadingCard entry={r} />)}
-        </div>
-      </Section>
-    </div>
-  )}
-
-  {byPillar.filter((p) => p.entries.length > 0).map((p) => (
-    <div data-pillar-section={p.pillar}>
-      <Section id={p.pillar} eyebrow={p.label}>
-        <div class="grid">
-          {p.entries.map((r) => <ReadingCard entry={r} />)}
-        </div>
-      </Section>
-    </div>
-  ))}
-
-  {tools.length > 0 && (
-    <Section id="tools" eyebrow="Tools we use" title="Tools that earn their seat in the workflow">
-      <p class="dim wide">
-        Hand-picked tools we use day-to-day for shipping AI to production. Some links are referrals (clearly labeled);
-        we only recommend what we'd recommend without one.
-      </p>
-      <div class="grid">
-        {tools.map((t) => <ToolCard tool={t} />)}
-      </div>
-    </Section>
-  )}
-
-  <Section eyebrow="Subscribe" title="Get the Reading Roundup">
-    <p class="dim wide">
-      Every few weeks, we ship a Reading Roundup issue, the best new items added to the library, with editorial notes.
-    </p>
-    <SubstackEmbed
-      source="library-roundup"
-      headline="The AI Runtime newsletter"
-      subhead="Production-grade reads, in your inbox."
+  <Section eyebrow="Questions" title="Ask us a specific question">
+    <AskQuestion
+      eyebrow=""
+      title=""
+      lead="Working on something specific? Ask our team directly. We read every question."
+      subjectTag="Library question"
     />
   </Section>
 
-  <script>
-    // Client-side topic filter. Toggles the `hidden` attribute on pillar
-    // sections so the accessibility tree stays correct. No JS = all visible.
-    const filter = document.querySelector('[data-pillar-filter]');
-    const sections = document.querySelectorAll('[data-pillar-section]');
-    filter?.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('button[data-pillar]') as HTMLElement | null;
-      if (!btn) return;
-      const want = btn.dataset.pillar;
-      filter.querySelectorAll('button').forEach((b) =>
-        b.setAttribute('aria-pressed', String(b === btn)),
-      );
-      filter.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
-      sections.forEach((s) => {
-        const sec = s as HTMLElement;
-        sec.hidden = !(want === 'all' || sec.dataset.pillarSection === want);
-      });
-    });
-  </script>
+  <Section eyebrow="Subscribe" title="Get it in your inbox">
+    <p class="dim wide">
+      One free issue a week on Vertical AI Agents, Model Reliability Engineering, and lessons from the
+      trenches of shipping AI.
+    </p>
+    <SubstackEmbed
+      source="library"
+      headline="The AI Runtime newsletter"
+      subhead="Production-grade writing, in your inbox."
+    />
+  </Section>
 </BaseLayout>
 
 <style>
-  .toc {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-  .toc a {
-    padding: 0.4rem 0.85rem;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--bg-2);
-    color: var(--text-2);
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    text-decoration: none;
-  }
-  .toc a:hover { border-color: var(--accent); color: var(--text); }
-  .toc-meta { margin-top: 1rem; }
-  .small { font-size: 0.85rem; }
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
