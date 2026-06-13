@@ -1,8 +1,7 @@
 ---
 /**
- * StatBand: a compact row of real community numbers. Credibility through
- * concrete figures, the way professional community sites lead with reach.
- * Keep these honest and current.
+ * StatBand: a tight row of headline community numbers. Two big, honest stats
+ * read stronger than several small ones. Keep these current.
  */
 interface Stat {
   value: string;
@@ -10,13 +9,14 @@ interface Stat {
 }
 interface Props {
   stats?: Stat[];
+  note?: string;
 }
 const {
   stats = [
-    { value: '1,150', label: 'on LinkedIn' },
-    { value: '505', label: 'newsletter subscribers' },
-    { value: '150+', label: 'in-person attendees' },
+    { value: '17K+', label: 'AI practitioners on LinkedIn' },
+    { value: '2,000+', label: 'newsletter subscribers' },
   ],
+  note = 'Plus 200+ practitioners who show up in person at the Boston meetup.',
 } = Astro.props;
 ---
 <div class="statband">
@@ -29,37 +29,43 @@ const {
         </li>
       ))}
     </ul>
+    {note && <p class="note">{note}</p>}
   </div>
 </div>
 
 <style>
-  .statband { padding: 2.5rem 0; }
+  .statband { padding: 2.75rem 0; }
   .statband ul {
     list-style: none;
-    margin: 0;
+    margin: 0 auto;
     padding: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem 5rem;
     text-align: center;
   }
-  @media (max-width: 560px) {
-    .statband ul { grid-template-columns: 1fr; gap: 1.25rem; }
-  }
-  .statband li { display: flex; flex-direction: column; gap: 0.25rem; }
+  .statband li { display: flex; flex-direction: column; gap: 0.3rem; }
   .value {
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: clamp(2rem, 5vw, 2.75rem);
+    font-size: clamp(2.6rem, 7vw, 4rem);
     line-height: 1;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     color: var(--accent);
   }
   .label {
     font-family: var(--font-mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-3);
+  }
+  .note {
+    text-align: center;
+    color: var(--text-3);
+    font-size: 0.92rem;
+    margin: 1.5rem auto 0;
+    max-width: 36rem;
   }
 </style>
