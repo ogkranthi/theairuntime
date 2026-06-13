@@ -1,0 +1,62 @@
+{
+  "id": "oauth-scope-guardian-for-ai-integrations",
+  "title": "Least Privilege First: An OAuth Scope Guardian for AI Tool Integrations",
+  "one_line": "Build an auditor that inventories OAuth grants your organization has issued to AI tools, flags scopes that exceed the tool's stated function, and generates minimal-privilege replacement grant templates before a supply chain breach can leverage the excess.",
+  "vertical": "Security",
+  "difficulty": "Intermediate",
+  "build_type": "Observability",
+  "status": "Open",
+  "run_level": "R3",
+  "provenance": "failure-derived",
+  "failure_family": "supply chain",
+  "month": "2026-06",
+  "draft": true,
+  "failure_story": {
+    "what_happened": "A Vercel employee granted the AI analytics tool Context.ai 'Allow All' OAuth permissions to the company's corporate Google Workspace. When Context.ai was breached by malware in February 2026, attackers used those OAuth tokens to pivot into Vercel's internal systems in April 2026, enumerate environment variables, and eventually offer Vercel's database on a breach forum for two million dollars.",
+    "root_cause_read": "The attack vector was not a vulnerability in Vercel's own systems. It was a third-party AI tool that had been granted far more organizational access than its function required. A read-only analytics tool does not need write access or access to internal configuration. The over-permissioned grant sat quietly until the tool itself was compromised.",
+    "engineering_lesson": "AI tools granted OAuth access to your organization's systems create a supply chain attack surface proportional to the scope of those grants. Auditing existing grants, flagging those that exceed the tool's minimum required function, and revoking or replacing them with minimal-privilege alternatives reduces the blast radius of any single tool compromise."
+  },
+  "sources": [
+    "https://www.reco.ai/blog/vercel-context-ai-breach"
+  ],
+  "primary_source_note": "Reco.ai security blog is the primary technical source for the attack chain reconstruction; attach additional coverage from a major news outlet before publish if available.",
+  "field_signals": [
+    "The breach path ran entirely through a legitimate OAuth token issued to a third-party AI tool, not through any direct attack on Vercel's own infrastructure.",
+    "The grant was 'Allow All' scope on Google Workspace, giving the AI analytics tool access far beyond what analytics required.",
+    "The tool had been in use quietly for months before its compromise; no ongoing review of grant scope had occurred after the initial authorization."
+  ],
+  "reliability_focus": ["scope minimization", "supply chain auditing", "breach radius containment"],
+  "why_it_matters": "Every AI tool an organization connects via OAuth becomes a link in its supply chain. A breach at the tool becomes a breach at the organization if the grant is over-permissioned. The missing artifact is an auditor that detects 'Allow All' and other excess scopes, maps them to the tool's stated function, and surfaces the gap before a tool compromise proves it.",
+  "persona": "Security engineer or platform team responsible for SaaS and AI tool integrations in a mid-to-large organization",
+  "current_workflow": "OAuth grants are issued during tool onboarding, often with broad scope chosen for convenience. After the initial grant, no systematic review of what scope each tool actually uses versus what it was granted occurs until a breach surfaces the gap.",
+  "ai_workflow": "The auditor queries the organization's identity provider for all current OAuth grants issued to third-party applications. For each grant, it classifies the tool's advertised function, maps that function to the minimum required OAuth scopes, and computes the excess: scopes granted but not required. It ranks grants by excess breadth and outputs a prioritized remediation list with a minimal-privilege replacement grant template for each flagged tool.",
+  "inputs": [
+    "a list of current OAuth grants from the organization's identity provider",
+    "a tool-function description for each connected application",
+    "a scope-to-function mapping policy"
+  ],
+  "outputs": [
+    "a per-tool excess scope report naming each granted scope and whether it is required",
+    "a prioritized remediation list sorted by excess breadth",
+    "a minimal-privilege replacement grant template for each flagged tool"
+  ],
+  "definition_of_done": "Given a synthetic grant inventory seeded with three over-permissioned AI tool grants (including one 'Allow All') and two correctly scoped grants, the auditor flags all three excess grants with the specific scopes that exceed the tool's stated function, ranks them correctly by excess breadth, and outputs a replacement template that covers only the required scopes. The two correctly scoped grants produce no alert.",
+  "example_input": "An analytics tool granted read, write, admin, calendar, contacts, and mail on Google Workspace. The tool's stated function is 'aggregate usage metrics from Google Workspace activity logs.'",
+  "example_output": "Flag: analytics-tool-name, stated function: usage metrics aggregation, minimum required scopes: read:reports, excess scopes: write, admin, calendar, contacts, mail. Replacement template: grant read:reports only. Risk rank: high (5 excess scopes including admin).",
+  "data_plan": "synthetic",
+  "non_goals": [
+    "automated revocation of live production grants",
+    "integration with specific identity providers",
+    "monitoring real-time OAuth token usage patterns"
+  ],
+  "evaluation_ideas": [
+    "flag precision and recall on a seeded grant inventory with labeled excess and correctly scoped grants",
+    "replacement template accuracy: does the proposed grant cover only the minimum required function",
+    "ranking accuracy on a set of grants with varying excess breadth"
+  ],
+  "suggested_tools": [],
+  "thesis_questions": [
+    "Should the minimum required scope be derived from the tool's documentation, from its actual API call history, or from both?",
+    "What organizational process should trigger a re-audit when a connected AI tool updates its OAuth requirements?"
+  ]
+}

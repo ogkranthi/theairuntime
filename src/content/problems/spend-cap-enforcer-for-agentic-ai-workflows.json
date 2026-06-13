@@ -1,0 +1,64 @@
+{
+  "id": "spend-cap-enforcer-for-agentic-ai-workflows",
+  "title": "Hard Stop: A Spend Cap Enforcer for Agentic AI Workflows",
+  "one_line": "Build a budget enforcement layer that tracks cumulative AI API spend by user and workflow in real time, issues tiered alerts at configurable thresholds, and halts further API calls once a hard cap is reached.",
+  "vertical": "AI Infrastructure",
+  "difficulty": "Starter",
+  "build_type": "Observability",
+  "status": "Open",
+  "run_level": "R2",
+  "provenance": "failure-derived",
+  "failure_family": "cost runaway",
+  "month": "2026-06",
+  "draft": true,
+  "failure_story": {
+    "what_happened": "An enterprise organization deployed agentic AI workflows for employees without setting per-user or per-workflow spending limits. In a single month the organization accumulated a five-hundred-million-dollar bill from a major AI API provider. The cost arose from long-context agentic calls running in parallel across many employees, with no hard stop or alerting in place.",
+    "root_cause_read": "Agentic workflows that run long-context calls in parallel can consume tokens at a rate orders of magnitude higher than single-turn chat interactions. Without per-user and per-workflow spend caps, the only signal of runaway consumption is the monthly invoice. By the time the bill arrives, the spend has already occurred.",
+    "engineering_lesson": "Provider-level monthly limits are set at the account level and fire too late for per-workflow or per-user control. An enforcement layer that tracks spend in real time, alerts at configurable percentage thresholds, and halts API calls when a hard cap is reached reduces the blast radius of a runaway agentic workflow from a multi-million-dollar invoice to a bounded incident."
+  },
+  "sources": [
+    "https://finance.yahoo.com/sectors/technology/articles/client-accidentally-burns-500-million-105400717.html"
+  ],
+  "primary_source_note": "Yahoo Finance is the discovery source; the company in the incident is unnamed. Verify the underlying reporting outlet and attach a direct primary source link before publish.",
+  "field_signals": [
+    "The organization had no per-user or per-workflow spending limits in place before deploying agentic workflows.",
+    "The cost arose from agentic workflows using long-context calls in parallel, a usage pattern that costs orders of magnitude more per session than single-turn interactions.",
+    "The first signal of the problem was the monthly invoice, not an alert or automated halt during the billing period."
+  ],
+  "reliability_focus": ["spend tracking", "threshold alerting", "hard cap enforcement"],
+  "why_it_matters": "A single agentic workflow with a long context window and parallel execution can consume more tokens in an hour than months of single-turn chat. Organizations that deploy these workflows without per-workflow spend caps are exposed to invoice surprises with no in-period signal. The missing artifact is a layer that makes the cost visible in real time and halts execution before it can accumulate unchecked.",
+  "persona": "Platform or infrastructure engineer rolling out agentic AI workflows to an internal team or product",
+  "current_workflow": "AI API calls are made directly by the workflow or application. Cost is reviewed from the provider's monthly dashboard. No per-workflow or per-user budget is enforced at the application layer; runaway consumption is discovered on the invoice.",
+  "ai_workflow": "The enforcement layer wraps each API call, estimates token cost before sending, and accumulates actual cost from the response. It tracks spend against per-user and per-workflow budgets, fires tiered alerts at configurable thresholds (50 percent, 80 percent, 100 percent), and returns a budget-exhausted error rather than forwarding the API call once the hard cap is reached. It logs every call with cost, workflow ID, user ID, and timestamp for downstream audit.",
+  "inputs": [
+    "API call parameters including model, prompt, and expected context length",
+    "per-user and per-workflow budget configurations",
+    "model pricing rates"
+  ],
+  "outputs": [
+    "a per-call cost estimate before execution and actual cost after",
+    "tiered spend alerts at configured thresholds",
+    "a budget-exhausted error when the hard cap is reached",
+    "a per-call audit log with cost, workflow ID, user ID, and timestamp"
+  ],
+  "definition_of_done": "On a synthetic call sequence that would exceed a configured hard cap, the enforcer fires a 50 percent alert, an 80 percent alert, blocks the call that would cross the cap, and returns a budget-exhausted error with the remaining budget at time of block. A call sequence that stays under the cap runs to completion with no false block.",
+  "example_input": "A per-workflow monthly budget of one thousand dollars. A sequence of twenty API calls, each estimated at sixty dollars, totaling twelve hundred dollars if all complete.",
+  "example_output": "Call 9: alert, 50 percent threshold reached (540 of 1000 dollars used). Call 14: alert, 80 percent threshold reached (840 of 1000 dollars used). Call 17: blocked, budget exhausted (1000 dollar cap), error returned: budget-exhausted with 0 dollars remaining. Calls 18 through 20 not executed.",
+  "data_plan": "synthetic",
+  "non_goals": [
+    "billing system integration or invoice generation",
+    "cross-provider cost normalization",
+    "retroactive clawback of already-executed calls"
+  ],
+  "evaluation_ideas": [
+    "block precision: does the cap fire at the correct call in the sequence",
+    "alert timing accuracy: do threshold alerts fire at the configured percentages",
+    "false-block rate on sequences that stay under budget",
+    "audit log completeness: every call logged with cost and workflow ID"
+  ],
+  "suggested_tools": [],
+  "thesis_questions": [
+    "Should per-call cost estimation use the model's published rates or a rolling average of actual costs from recent calls?",
+    "What is the right behavior when a single call would exceed the remaining budget but not the full cap: block it, allow it, or prompt for approval?"
+  ]
+}
