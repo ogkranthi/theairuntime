@@ -4,7 +4,7 @@ A reference for anyone (human or AI) working on The AI Runtime. Covers palette, 
 
 ## Quick facts
 
-- **Brand:** The AI Runtime, publication and community for engineers shipping AI to production
+- **Brand:** The AI Runtime, a community of AI practitioners shipping AI to production
 - **Tagline:** LEARN. SHIP. RUN.
 - **Domain:** theairuntime.com (Substack publication) · events.theairuntime.com (this site)
 - **Mascot:** Blink (running cursor character, orange rectangle, two eyes, smile, running legs)

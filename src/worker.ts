@@ -251,7 +251,7 @@ async function handleAsk(request: Request, env: Env): Promise<Response> {
     .map((e, i) => `[${i + 1}] ${e.title} (${e.source}, ${e.pillar})\n${e.summary}`)
     .join('\n\n');
   const system =
-    'You are the librarian for The AI Runtime, a publication for engineers shipping AI to production. ' +
+    'You are the librarian for The AI Runtime, a community of AI practitioners shipping AI to production. ' +
     'Answer the question in 2-4 sentences using ONLY the provided reading list context. ' +
     'Be specific, sourced, and anti-hype. Cite reads by their number like [1]. ' +
     'If the context does not cover it, say so plainly and suggest subscribing for new reads. ' +
