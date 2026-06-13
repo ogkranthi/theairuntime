@@ -82,6 +82,13 @@ Drop `src/content/resources/<slug>.md`. Set `status` to `coming-soon`, `lead-gat
    ("Get the next issue: events.theairuntime.com/resources") so the asset
    converts even when shared off-site.
 
+### A new Field Brief (Field Lab problem)
+Drop `src/content/problems/<id>.json`. The format is the **Field Brief Standard
+v1.0**, enforced by zod in `src/content/config.ts` and documented with a
+template and review checklist in [`FIELD_BRIEFS.md`](./FIELD_BRIEFS.md). Keep
+`draft: true` until it passes the checklist, then set `status: Open`. A
+conformant file adds a card at `/briefs` and a detail page with no code change.
+
 ## Deploy
 
 Connected to Cloudflare Pages. Build command `npm run build`, output `dist/`. Custom domain `events.theairuntime.com` bound to the Pages project. Root domain `theairuntime.com` is owned by Substack Custom Domain, do not bind the apex to Pages.

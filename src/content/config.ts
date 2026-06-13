@@ -203,63 +203,81 @@ const signal = defineCollection({
   }),
 });
 
-// Field Briefs: the Field Lab problem library. One brief format for both
-// curated and failure-derived problems. JSON data files in content/problems/.
+// Field Briefs: the Field Lab problem library. Enforces the Field Brief
+// Standard v1.0. One brief format for curated and failure-derived problems.
+// `draft` and `verified_at` are site extensions beyond the standard.
 const problems = defineCollection({
   type: 'data',
-  schema: z.object({
-    id: z.string(),
-    title: z.string(),
-    one_line: z.string(),
-    vertical: z.string(),
-    difficulty: z.enum(['Starter', 'Intermediate', 'Advanced']),
-    build_type: z.string(),
-    status: z.enum(['Open', 'Claimed', 'Shipped', 'Featured']),
-    run_level: z.enum(['R0', 'R1', 'R2', 'R3', 'R4']),
-    provenance: z.enum(['curated', 'failure-derived']).default('curated'),
-    reliability_focus: z.array(z.string()).default([]),
-    failure_family: z
-      .enum([
-        'destructive auto-shipping',
-        'reward hacking',
-        'delegated identity',
-        'prompt injection',
-        'cost runaway',
-        'eval-production gap',
-        'supply chain',
-      ])
-      .optional(),
-    why_it_matters: z.string(),
-    persona: z.string(),
-    current_workflow: z.string(),
-    ai_workflow: z.string(),
-    inputs: z.array(z.string()).default([]),
-    outputs: z.array(z.string()).default([]),
-    definition_of_done: z.string(),
-    example_input: z.string().optional(),
-    example_output: z.string().optional(),
-    data_plan: z.enum(['public', 'synthetic', 'sanitized']),
-    non_goals: z.array(z.string()).default([]),
-    evaluation_ideas: z.array(z.string()).default([]),
-    suggested_tools: z.array(z.string()).default([]),
-    thesis_questions: z.array(z.string()).default([]),
-    // Shipped briefs may carry a verification record, e.g. "R3".
-    verified_at: z.string().optional(),
-    // Drafted by Claude Code from summaries; flip to false after editorial review.
-    draft: z.boolean().default(false),
-    // Failure-derived briefs use the same record with these optional fields.
-    failure_story: z
-      .object({
-        what_happened: z.string(),
-        root_cause_read: z.string(),
-        engineering_lesson: z.string(),
-      })
-      .optional(),
-    field_signals: z.array(z.string()).default([]),
-    sources: z.array(z.string()).default([]),
-    primary_source_note: z.string().optional(),
-    month: z.string().optional(), // YYYY-MM, drives the featured slot
-  }),
+  schema: z
+    .object({
+      id: z.string().regex(/^[a-z0-9-]+$/),
+      title: z.string(),
+      one_line: z.string(),
+      vertical: z.string(),
+      difficulty: z.enum(['Starter', 'Intermediate', 'Advanced']),
+      build_type: z.string(),
+      status: z.enum(['Open', 'Claimed', 'Shipped', 'Featured']),
+      run_level: z.enum(['R0', 'R1', 'R2', 'R3', 'R4']),
+      reliability_focus: z.array(z.string()).min(2),
+      provenance: z.enum([
+        'curated',
+        'operator-sourced',
+        'failure-derived',
+        'company-submitted',
+        'partner-contributed',
+      ]),
+      failure_family: z
+        .enum([
+          'destructive auto-shipping',
+          'reward hacking',
+          'delegated identity',
+          'prompt injection',
+          'cost runaway',
+          'eval-production gap',
+          'supply chain',
+        ])
+        .optional(),
+      why_it_matters: z.string(),
+      persona: z.string(),
+      current_workflow: z.string(),
+      ai_workflow: z.string(),
+      inputs: z.array(z.string()).min(1),
+      outputs: z.array(z.string()).min(1),
+      definition_of_done: z.string(),
+      example_input: z.string(),
+      example_output: z.string(),
+      data_plan: z.enum(['synthetic', 'public', 'sanitized']),
+      non_goals: z.array(z.string()),
+      evaluation_ideas: z.array(z.string()).min(1),
+      suggested_tools: z.array(z.string()),
+      thesis_questions: z.array(z.string()).optional(),
+      month: z.string().regex(/^\d{4}-\d{2}$/).optional(),
+      failure_story: z
+        .object({
+          what_happened: z.string(),
+          root_cause_read: z.string(),
+          engineering_lesson: z.string(),
+        })
+        .optional(),
+      sources: z.array(z.string().url()).optional(),
+      primary_source_note: z.string().optional(),
+      field_signals: z.array(z.string()).optional(),
+      // Site extensions, not part of the standard.
+      verified_at: z.string().optional(), // e.g. "R3" on a Shipped brief
+      draft: z.boolean().default(false), // flip to false after editorial review
+    })
+    .superRefine((b, ctx) => {
+      if (b.provenance === 'failure-derived') {
+        for (const f of ['failure_story', 'sources', 'primary_source_note', 'failure_family'] as const) {
+          if (!b[f]) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: `failure-derived requires ${f}`, path: [f] });
+          }
+        }
+      }
+      if (b.provenance === 'operator-sourced' && !b.sources) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'operator-sourced requires sources', path: ['sources'] });
+      }
+    }),
 });
 
 export const collections = { cities, speakers, events, resources, reading, tools, signal, problems };
