@@ -5,6 +5,7 @@ import Blink from '../components/Blink.astro';
 import ContactCTA from '../components/ContactCTA.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
 import AskQuestion from '../components/AskQuestion.astro';
+import CredibilityStrip from '../components/CredibilityStrip.astro';
 
 const pillars = [
   { name: 'Evals & Observability', body: 'How practitioners know if AI works in production.' },
@@ -34,6 +35,28 @@ const pillars = [
       </div>
       <div class="art"><Blink size={140} showMotion={true} showCheeks={true} /></div>
     </div>
+  </Section>
+
+  <CredibilityStrip />
+
+  <Section eyebrow="What we do" title="Three ways practitioners show up">
+    <ul class="arms">
+      <li>
+        <span class="arm-k">Publication</span>
+        <h3>The newsletter</h3>
+        <p class="dim">A free weekly issue of production lessons from practitioners, on the operational layer where AI actually runs.</p>
+      </li>
+      <li>
+        <span class="arm-k">Community</span>
+        <h3>The Boston meetup</h3>
+        <p class="dim">A monthly gathering in Cambridge. Two practitioner talks a night, real production stories, and the people who ship.</p>
+      </li>
+      <li>
+        <span class="arm-k">Field Lab</span>
+        <h3>The problem library</h3>
+        <p class="dim">Production-shaped AI problems and a build pilot, so serious builders work on real problems instead of demos.</p>
+      </li>
+    </ul>
   </Section>
 
   <Section eyebrow="Editorial pillars" title="What we cover">
@@ -117,4 +140,29 @@ const pillars = [
   }
   .founder { max-width: 38rem; }
   .wide { max-width: 42rem; }
+  .arms {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 760px) { .arms { grid-template-columns: 1fr; } }
+  .arms li {
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .arm-k {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .arms h3 { margin: 0.5rem 0 0.4rem; font-size: 1.1rem; }
+  .arms p { margin: 0; font-size: 0.95rem; }
 </style>
