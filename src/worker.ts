@@ -31,6 +31,16 @@ interface Env {
   INTAKE?: { put: (key: string, value: string) => Promise<void>; get: (key: string) => Promise<string | null> };
   /** Optional webhook that mirrors every intake submission (Slack, Make). */
   INTAKE_WEBHOOK_URL?: string;
+  /** Airtable personal access token (scope data.records:write on the base).
+   *  When set with AIRTABLE_BASE_ID, intake submissions are written straight
+   *  to Airtable, the readable review queue. Server secret, never exposed. */
+  AIRTABLE_TOKEN?: string;
+  /** Airtable base id (looks like appXXXXXXXXXXXXXX). */
+  AIRTABLE_BASE_ID?: string;
+  /** Table names per branch. Default to Problems / Builders / Partners. */
+  AIRTABLE_PROBLEMS_TABLE?: string;
+  AIRTABLE_BUILDERS_TABLE?: string;
+  AIRTABLE_PARTNERS_TABLE?: string;
 }
 
 interface SubscribeBody {
@@ -327,6 +337,92 @@ function toList(raw: unknown): string[] {
 
 const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
 
+/** Flatten an intake record into Airtable column fields, per branch. Column
+ *  names here must match the Airtable table columns exactly (see INTAKE.md). */
+function airtableFields(record: Record<string, unknown>): Record<string, unknown> {
+  if (record.kind === 'problem') {
+    const d = record.draft as Record<string, unknown>;
+    const raw = (d._raw ?? {}) as Record<string, unknown>;
+    return {
+      Status: 'Draft',
+      Conformance: 'draft',
+      Provenance: d.provenance,
+      'Submitted By': record.submitted_by,
+      Company: record.company ?? '',
+      Email: record.contact_email,
+      'Mention Company': record.mention_company,
+      Persona: d.persona,
+      'AI Workflow': d.ai_workflow,
+      'Pain (raw)': raw.pain ?? '',
+      Inputs: (d.inputs as string[]).join('\n'),
+      Outputs: (d.outputs as string[]).join('\n'),
+      'Example Input': d.example_input,
+      'Example Output': d.example_output,
+      'Reliability Focus': (d.reliability_focus as string[]).join('\n'),
+      'Definition of Done (raw)': raw.definition_of_done ?? '',
+      'Data Plan': d.data_plan ?? '',
+      Track: d.track,
+      'Failure Family': d.failure_family ?? '',
+      'Scoping Call': record.scoping_call === true,
+      'Submitted At': record.submitted_at,
+      'Editor Todo': (d._todo as string[]).join(', '),
+      'Draft JSON': JSON.stringify(record.draft, null, 2),
+    };
+  }
+  if (record.kind === 'builder-interest') {
+    return {
+      Name: record.name,
+      Email: record.contact_email,
+      LinkedIn: record.linkedin ?? '',
+      Portfolio: record.portfolio ?? '',
+      Shipped: record.shipped ?? '',
+      Track: record.track,
+      Target: record.target ?? '',
+      'Solo OK': record.solo ?? '',
+      'Write-up OK': record.writeup ?? '',
+      Subscribe: record.subscribe === true,
+      'Submitted At': record.submitted_at,
+    };
+  }
+  return {
+    Name: record.name,
+    Company: record.company,
+    Role: record.role ?? '',
+    Email: record.contact_email,
+    'Partner Type': record.partner_type,
+    Contribution: record.contribution ?? '',
+    Note: record.note ?? '',
+    'Submitted At': record.submitted_at,
+  };
+}
+
+/** Write one intake record to Airtable. Returns true on a 2xx response. The
+ *  table is chosen by branch; typecast lets Airtable coerce single-selects and
+ *  checkboxes. No-op (false) when the token or base id is not configured. */
+async function sendToAirtable(env: Env, branch: string, record: Record<string, unknown>): Promise<boolean> {
+  if (!env.AIRTABLE_TOKEN || !env.AIRTABLE_BASE_ID) return false;
+  const table =
+    branch === 'problem'
+      ? env.AIRTABLE_PROBLEMS_TABLE || 'Problems'
+      : branch === 'build'
+        ? env.AIRTABLE_BUILDERS_TABLE || 'Builders'
+        : env.AIRTABLE_PARTNERS_TABLE || 'Partners';
+  const url = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${encodeURIComponent(table)}`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${env.AIRTABLE_TOKEN}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ records: [{ fields: airtableFields(record) }], typecast: true }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Field Lab intake. One endpoint, three branches.
  *
@@ -336,9 +432,10 @@ const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
  *   build   -> a builder-interest record.
  *   partner -> a private partner-inquiry record (never published).
  *
- * Records land in the INTAKE review queue (KV) and optionally mirror to a
- * webhook. When neither is configured, returns 503 so the page falls back to
- * the per-branch env URL.
+ * Records are written to Airtable (the readable review queue) and mirrored to
+ * the INTAKE KV namespace as a durable backup, plus an optional webhook. When
+ * none of these is configured, returns 503 so the page falls back to the
+ * per-branch env URL.
  */
 async function handleIntake(request: Request, env: Env): Promise<Response> {
   if (request.method !== 'POST') {
@@ -480,6 +577,13 @@ async function handleIntake(request: Request, env: Env): Promise<Response> {
   }
 
   let stored = false;
+
+  // Airtable is the readable review queue a human triages.
+  if (await sendToAirtable(env, branch, record)) {
+    stored = true;
+  }
+
+  // KV is a durable backup, independent of Airtable being reachable.
   if (env.INTAKE) {
     try {
       const key = `intake:${branch}:${now}:${email}`;
