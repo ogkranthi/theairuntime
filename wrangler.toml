@@ -21,3 +21,13 @@ not_found_handling = "404-page"
 # [[kv_namespaces]]
 # binding = "WAITLIST"
 # id = "<your-kv-namespace-id>"
+
+# Field Lab intake review queue. Until this is bound, /api/intake returns 503
+# and the intake page falls back to the per-branch PUBLIC_*_INTAKE_URL env
+# vars. The problem branch writes a Field Brief draft (status Draft); build and
+# partner branches write interest records. Nothing here is ever auto-published.
+#   npx wrangler kv namespace create INTAKE
+# then paste the returned id below and uncomment.
+# [[kv_namespaces]]
+# binding = "INTAKE"
+# id = "<your-kv-namespace-id>"

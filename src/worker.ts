@@ -24,6 +24,23 @@ interface Env {
    *  returns 503 and the UI falls back to PUBLIC_COHORT_JOIN_URL. Create with
    *  `npx wrangler kv namespace create WAITLIST` and bind in wrangler.toml. */
   WAITLIST?: { put: (key: string, value: string) => Promise<void>; get: (key: string) => Promise<string | null> };
+  /** KV namespace for the Field Lab intake review queue. When unset, /api/intake
+   *  returns 503 and the intake page falls back to the per-branch env URLs. The
+   *  problem branch writes a Field Brief draft (status Draft); build and partner
+   *  branches write interest records. Nothing here is ever auto-published. */
+  INTAKE?: { put: (key: string, value: string) => Promise<void>; get: (key: string) => Promise<string | null> };
+  /** Optional webhook that mirrors every intake submission (Slack, Make). */
+  INTAKE_WEBHOOK_URL?: string;
+  /** Airtable personal access token (scope data.records:write on the base).
+   *  When set with AIRTABLE_BASE_ID, intake submissions are written straight
+   *  to Airtable, the readable review queue. Server secret, never exposed. */
+  AIRTABLE_TOKEN?: string;
+  /** Airtable base id (looks like appXXXXXXXXXXXXXX). */
+  AIRTABLE_BASE_ID?: string;
+  /** Table names per branch. Default to Problems / Builders / Partners. */
+  AIRTABLE_PROBLEMS_TABLE?: string;
+  AIRTABLE_BUILDERS_TABLE?: string;
+  AIRTABLE_PARTNERS_TABLE?: string;
 }
 
 interface SubscribeBody {
@@ -309,6 +326,296 @@ async function handleWaitlist(request: Request, env: Env): Promise<Response> {
   }
 }
 
+/** Split a textarea value into a clean list (one per line or comma separated). */
+function toList(raw: unknown): string[] {
+  if (typeof raw !== 'string') return [];
+  return raw
+    .split(/[\n,]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
+
+/** Flatten an intake record into Airtable column fields, per branch. Column
+ *  names here must match the Airtable table columns exactly (see INTAKE.md). */
+function airtableFields(record: Record<string, unknown>): Record<string, unknown> {
+  if (record.kind === 'problem') {
+    const d = record.draft as Record<string, unknown>;
+    const raw = (d._raw ?? {}) as Record<string, unknown>;
+    return {
+      Status: 'Draft',
+      Conformance: 'draft',
+      Provenance: d.provenance,
+      'Submitted By': record.submitted_by,
+      Company: record.company ?? '',
+      Email: record.contact_email,
+      'Mention Company': record.mention_company,
+      Persona: d.persona,
+      'AI Workflow': d.ai_workflow,
+      'Pain (raw)': raw.pain ?? '',
+      Inputs: (d.inputs as string[]).join('\n'),
+      Outputs: (d.outputs as string[]).join('\n'),
+      'Example Input': d.example_input,
+      'Example Output': d.example_output,
+      'Reliability Focus': (d.reliability_focus as string[]).join('\n'),
+      'Definition of Done (raw)': raw.definition_of_done ?? '',
+      'Data Plan': d.data_plan ?? '',
+      Track: d.track,
+      'Failure Family': d.failure_family ?? '',
+      'Scoping Call': record.scoping_call === true,
+      'Submitted At': record.submitted_at,
+      'Editor Todo': (d._todo as string[]).join(', '),
+      'Draft JSON': JSON.stringify(record.draft, null, 2),
+    };
+  }
+  if (record.kind === 'builder-interest') {
+    return {
+      Name: record.name,
+      Email: record.contact_email,
+      LinkedIn: record.linkedin ?? '',
+      Portfolio: record.portfolio ?? '',
+      Shipped: record.shipped ?? '',
+      Track: record.track,
+      Target: record.target ?? '',
+      'Solo OK': record.solo ?? '',
+      'Write-up OK': record.writeup ?? '',
+      Subscribe: record.subscribe === true,
+      'Submitted At': record.submitted_at,
+    };
+  }
+  return {
+    Name: record.name,
+    Company: record.company,
+    Role: record.role ?? '',
+    Email: record.contact_email,
+    'Partner Type': record.partner_type,
+    Contribution: record.contribution ?? '',
+    Note: record.note ?? '',
+    'Submitted At': record.submitted_at,
+  };
+}
+
+/** Write one intake record to Airtable. Returns true on a 2xx response. The
+ *  table is chosen by branch; typecast lets Airtable coerce single-selects and
+ *  checkboxes. No-op (false) when the token or base id is not configured. */
+async function sendToAirtable(env: Env, branch: string, record: Record<string, unknown>): Promise<boolean> {
+  if (!env.AIRTABLE_TOKEN || !env.AIRTABLE_BASE_ID) return false;
+  const table =
+    branch === 'problem'
+      ? env.AIRTABLE_PROBLEMS_TABLE || 'Problems'
+      : branch === 'build'
+        ? env.AIRTABLE_BUILDERS_TABLE || 'Builders'
+        : env.AIRTABLE_PARTNERS_TABLE || 'Partners';
+  const url = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${encodeURIComponent(table)}`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${env.AIRTABLE_TOKEN}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ records: [{ fields: airtableFields(record) }], typecast: true }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Field Lab intake. One endpoint, three branches.
+ *
+ *   problem -> a Field Brief draft (status "Draft", conformance "draft"). The
+ *              form fields map onto the schema; editor-only fields are left
+ *              empty with a _todo list. Never auto-published.
+ *   build   -> a builder-interest record.
+ *   partner -> a private partner-inquiry record (never published).
+ *
+ * Records are written to Airtable (the readable review queue) and mirrored to
+ * the INTAKE KV namespace as a durable backup, plus an optional webhook. When
+ * none of these is configured, returns 503 so the page falls back to the
+ * per-branch env URL.
+ */
+async function handleIntake(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, { status: 405 });
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = (await request.json()) as Record<string, unknown>;
+  } catch {
+    return json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const branch = str(body.branch);
+  if (!['problem', 'build', 'partner'].includes(branch)) {
+    return json({ error: 'Unknown branch.' }, { status: 400 });
+  }
+
+  const email = str(body.email).toLowerCase();
+  if (!isValidEmail(email)) {
+    return json({ error: 'Please provide a valid email.' }, { status: 400 });
+  }
+
+  const now = new Date().toISOString();
+  let record: Record<string, unknown>;
+
+  if (branch === 'problem') {
+    // The cheapest conformance gate: a concrete example pair must be present.
+    const exampleInput = str(body.example_input);
+    const exampleOutput = str(body.example_output);
+    if (!exampleInput || !exampleOutput) {
+      return json(
+        { error: 'A concrete example input and its expected output are required.' },
+        { status: 400 },
+      );
+    }
+
+    const company = str(body.company);
+    // Provenance: a named company makes it company-submitted; an individual
+    // without a company is operator-sourced.
+    const provenance = company ? 'company-submitted' : 'operator-sourced';
+
+    // Editor-only fields, completed in review before a brief is published.
+    const editorTodo = [
+      'id',
+      'title',
+      'one_line',
+      'definition_of_done',
+      'run_level',
+      'difficulty',
+      'build_type',
+      'non_goals',
+      'evaluation_ideas',
+      'vertical',
+    ];
+
+    // A schema-shaped Field Brief draft. Mapped fields are filled from the
+    // form; editor-only fields stay empty and are tracked in _todo.
+    const draft: Record<string, unknown> = {
+      id: '',
+      title: '',
+      one_line: '',
+      persona: str(body.persona),
+      ai_workflow: str(body.ai_workflow),
+      // The editor splits the raw pain statement into why_it_matters and
+      // current_workflow during review.
+      why_it_matters: '',
+      current_workflow: '',
+      inputs: toList(body.inputs),
+      outputs: toList(body.outputs),
+      example_input: exampleInput,
+      example_output: exampleOutput,
+      reliability_focus: toList(body.reliability),
+      definition_of_done: '',
+      data_plan: str(body.data_ok) === 'no' ? '' : 'synthetic',
+      track: str(body.track),
+      failure_family:
+        str(body.failure_family) && str(body.failure_family) !== 'Not sure'
+          ? str(body.failure_family)
+          : '',
+      run_level: '',
+      difficulty: '',
+      build_type: '',
+      non_goals: [],
+      evaluation_ideas: [],
+      vertical: '',
+      provenance,
+      status: 'Draft',
+      conformance: 'draft',
+      draft: true,
+      // Raw, unedited applicant inputs the editor rewrites into the schema.
+      _raw: {
+        pain: str(body.pain),
+        definition_of_done: str(body.definition_of_done),
+        reliability: str(body.reliability),
+        data_ok: str(body.data_ok),
+      },
+      _todo: editorTodo,
+    };
+
+    record = {
+      kind: 'problem',
+      submitted_by: str(body.submitted_by),
+      company: company || null,
+      contact_email: email,
+      mention_company: str(body.mention_company) || 'no',
+      scoping_call: body.scoping_call === true,
+      submitted_at: now,
+      draft,
+    };
+  } else if (branch === 'build') {
+    record = {
+      kind: 'builder-interest',
+      name: str(body.name),
+      contact_email: email,
+      linkedin: str(body.linkedin) || null,
+      portfolio: str(body.portfolio) || null,
+      shipped: str(body.shipped) || null,
+      track: str(body.track),
+      target: str(body.target) || null,
+      solo: str(body.solo) || null,
+      writeup: str(body.writeup) || null,
+      subscribe: body.subscribe === true,
+      submitted_at: now,
+    };
+  } else {
+    record = {
+      kind: 'partner-inquiry',
+      private: true,
+      name: str(body.name),
+      company: str(body.company),
+      role: str(body.role) || null,
+      contact_email: email,
+      partner_type: str(body.partner_type),
+      contribution: str(body.contribution) || null,
+      note: str(body.note) || null,
+      submitted_at: now,
+    };
+  }
+
+  let stored = false;
+
+  // Airtable is the readable review queue a human triages.
+  if (await sendToAirtable(env, branch, record)) {
+    stored = true;
+  }
+
+  // KV is a durable backup, independent of Airtable being reachable.
+  if (env.INTAKE) {
+    try {
+      const key = `intake:${branch}:${now}:${email}`;
+      await env.INTAKE.put(key, JSON.stringify(record));
+      stored = true;
+    } catch {
+      // Fall through to webhook / 503.
+    }
+  }
+
+  if (env.INTAKE_WEBHOOK_URL) {
+    try {
+      await fetch(env.INTAKE_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(record),
+      });
+      stored = true;
+    } catch {
+      // Best-effort mirror.
+    }
+  }
+
+  // Nothing configured to receive the submission: tell the client to fall back
+  // to the per-branch env URL rather than silently dropping it.
+  if (!stored) {
+    return json({ error: 'Intake is not enabled.' }, { status: 503 });
+  }
+
+  return json({ ok: true });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -326,6 +633,10 @@ export default {
 
     if (url.pathname === '/api/waitlist') {
       return handleWaitlist(request, env);
+    }
+
+    if (url.pathname === '/api/intake') {
+      return handleIntake(request, env);
     }
 
     return env.ASSETS.fetch(request);

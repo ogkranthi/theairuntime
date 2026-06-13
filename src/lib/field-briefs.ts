@@ -25,16 +25,16 @@ export function familySlug(family: string): string {
   return family.trim().toLowerCase().replace(/\s+/g, '-');
 }
 
-const FALLBACK_INTAKE = 'mailto:info@theairuntime.com?subject=Field%20Briefs%20problem';
-const FALLBACK_BUILDER = 'mailto:info@theairuntime.com?subject=Field%20Briefs%20builder%20list';
+// All Field Lab CTAs route to one on-ramp: /field-lab/intake. The branch is
+// preselected via ?branch=, and the failure family via ?family=. Relative URL
+// only, so this lifts to lab.theairuntime.com later without changes.
+const INTAKE_PAGE = '/field-lab/intake';
 
 export function intakeUrl(family?: string): string {
-  const base = import.meta.env.PUBLIC_PROBLEM_INTAKE_URL || FALLBACK_INTAKE;
-  if (!family) return base;
-  const sep = base.includes('?') ? '&' : '?';
-  return `${base}${sep}family=${familySlug(family)}`;
+  const base = `${INTAKE_PAGE}?branch=problem`;
+  return family ? `${base}&family=${familySlug(family)}` : base;
 }
 
 export function builderUrl(): string {
-  return import.meta.env.PUBLIC_BUILDER_INTEREST_URL || FALLBACK_BUILDER;
+  return `${INTAKE_PAGE}?branch=build`;
 }
