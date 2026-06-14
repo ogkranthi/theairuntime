@@ -1,0 +1,70 @@
+{
+  "id": "how-to-build-an-ai-package-integrity-scanner",
+  "title": "Backdoored at Import: An AI Package Integrity Scanner",
+  "one_line": "Build a scanner that validates AI library dependencies against trusted checksums before they execute in CI/CD pipelines, and flags unexpected outbound network calls during package initialization.",
+  "vertical": "Developer Tools",
+  "difficulty": "Intermediate",
+  "build_type": "Observability",
+  "status": "Open",
+  "run_level": "R2",
+  "provenance": "failure-derived",
+  "month": "2026-03",
+  "draft": true,
+  "failure_family": "supply chain",
+  "failure_story": {
+    "what_happened": "On March 24, 2026, two malicious versions of litellm (v1.82.7 and v1.82.8) were published to PyPI as part of the TeamPCP supply chain campaign. LiteLLM serves as the language model gateway for AI agent frameworks including CrewAI, DSPy, and MCP servers, with 95 million monthly downloads. The compromised packages installed a .pth file that executed on every Python process startup, harvesting SSH keys, cloud credentials, and Kubernetes secrets, then exfiltrating them to attacker infrastructure and installing a persistent systemd service for continued access.",
+    "root_cause_read": "LiteLLM's CI/CD pipeline depended on Trivy for security scanning without pinning the version. The TeamPCP group compromised Trivy v0.69.4 on March 19, 2026 by exploiting a misconfiguration in its GitHub Actions environment. The stolen credentials cascaded into LiteLLM's release pipeline, giving attackers the ability to publish directly to PyPI under the legitimate package name.",
+    "engineering_lesson": "Unpinned CI/CD tooling created a trust chain where one compromised scanner granted publishing rights over a library serving 95 million monthly downloads. The missing check was a post-publish hash gate: a scanner that compares each installed version's wheel checksum against the PyPI trusted publishing manifest before the package runs in any pipeline, and an import monitor that flags outbound network calls made by package initialization code."
+  },
+  "sources": [
+    "https://securitylabs.datadoghq.com/articles/litellm-compromised-pypi-teampcp-supply-chain-campaign/",
+    "https://www.trendmicro.com/en_us/research/26/c/inside-litellm-supply-chain-compromise.html",
+    "https://digital.nhs.uk/cyber-alerts/2026/cc-4761"
+  ],
+  "primary_source_note": "Datadog Security Labs published the primary technical analysis with timeline and payload detail. LiteLLM's official security update is at docs.litellm.ai/blog/security-update-march-2026. Verify and attach those links before publish.",
+  "field_signals": [
+    "LiteLLM versions 1.82.7 and 1.82.8 were published to PyPI on March 24, 2026, each containing a malicious .pth file that executed on every Python process startup where litellm was installed.",
+    "The attack originated when TeamPCP compromised Trivy v0.69.4 on March 19, 2026, then used the stolen credentials to gain unauthorized publishing access to LiteLLM's PyPI release pipeline.",
+    "The malicious payload exfiltrated SSH keys, cloud credentials, Kubernetes data, and CI/CD secrets, then installed a persistent systemd service polling for additional payloads.",
+    "LiteLLM is used as the LLM gateway in AI agent frameworks including CrewAI, DSPy, and MCP servers, with 95 million monthly downloads."
+  ],
+  "reliability_focus": ["dependency integrity", "build supply chain verification", "credential exfiltration detection"],
+  "why_it_matters": "When a compromised version of an AI library gateway ships to PyPI and installs persistence on every downstream Python process, teams find out through public disclosure rather than their own tooling. The gap is not a firewall rule. It is a pre-execution gate that validates package checksums and monitors initialization-time network behavior before any pipeline job or inference worker runs the code.",
+  "persona": "Engineering team building or operating AI systems that depend on open-source LLM gateway libraries installed from PyPI",
+  "current_workflow": "Dependencies are installed via pip with no pre-execution integrity check. The first signal of compromise arrives from a vendor advisory or public CVE, often hours or days after the compromised version has already executed in CI/CD pipelines and production inference workers.",
+  "ai_workflow": "The scanner resolves each AI dependency from the requirements file, fetches the PyPI metadata for the installed version, and compares the installed wheel's sha256 against the hash in the package dist-info. In a second pass, the scanner instruments Python's import system to capture any outbound network call made during package initialization and flags calls to destinations not on a per-package network allowlist. The combined result is a pass or fail verdict per package with the specific mismatch named.",
+  "inputs": [
+    "requirements.txt or lock file listing the AI project's dependencies",
+    "a known-good hash manifest, either pip-compiled hashes or PyPI trusted publishing metadata for each dependency version",
+    "a network allowlist per package listing expected outbound destinations during import"
+  ],
+  "outputs": [
+    "a per-package verdict of clean or tampered with the specific hash mismatch named",
+    "a list of flagged outbound network calls made during package import, with destination, port, and timing",
+    "a structured alert for any package whose hash or import-time network behavior deviates from the manifest"
+  ],
+  "definition_of_done": "Against a fixture containing litellm==1.82.7 in requirements, the scanner issues a tampered verdict naming the specific wheel hash mismatch. In the network pass against the same fixture, the scanner detects the .pth backdoor's outbound call and names the destination. Against a fixture containing litellm==1.83.0 (a clean version), the scanner issues a clean verdict and no network alerts, confirming the gate discriminates rather than always blocking.",
+  "example_input": "A requirements.txt containing litellm==1.82.7, installed in a clean virtualenv on a CI runner before a model inference job starts",
+  "example_output": "Verdict: TAMPERED. Package: litellm 1.82.7. Hash mismatch: expected sha256:a3f9c1d... got sha256:9b2e4f8.... Network alert: unexpected outbound TCP connection to 34.199.71.4:443 during import of litellm_init.pth, 2.3 seconds after process start.",
+  "data_plan": "public",
+  "non_goals": [
+    "replacing a full software bill of materials pipeline for non-AI dependencies",
+    "patching or remediating compromised packages",
+    "auditing packages already installed in production before this scanner existed"
+  ],
+  "evaluation_ideas": [
+    "scanner correctly classifies a fixture of 10 clean versions plus litellm 1.82.7 as tampered, with the hash mismatch named",
+    "network monitor correctly flags a test process that makes an outbound HTTP call to an external IP during package import",
+    "false positive rate against 20 clean packages with no network surprises is zero"
+  ],
+  "suggested_tools": [
+    "pip-audit",
+    "PyPI trusted publishing metadata API",
+    "strace or ptrace for syscall-level network monitoring on Linux",
+    "Python importlib hooks for import instrumentation"
+  ],
+  "thesis_questions": [
+    "Would a hash gate on the CI pull step have caught this before any credentials were exposed?",
+    "What is the minimum trust surface: pin the lock file, pin the hash, or require SLSA provenance attestation?"
+  ]
+}
