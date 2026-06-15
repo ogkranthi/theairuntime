@@ -8,6 +8,7 @@ import CredibilityStrip from '../components/CredibilityStrip.astro';
 import StatBand from '../components/StatBand.astro';
 import { getCollection } from 'astro:content';
 import { fetchSubstackPosts } from '../lib/substack';
+import { LAB_URL } from '../lib/field-briefs';
 
 const posts = await fetchSubstackPosts(4);
 const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -31,7 +32,7 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
           <h1>Production lessons from AI practitioners</h1>
           <p class="lede dim">
             The AI Runtime is a community of AI practitioners. Read the weekly newsletter, come to
-            the Boston meetups, and become part of the <a href="/field-lab">Field Lab</a>. It starts
+            the Boston meetups, and become part of the <a href={`${LAB_URL}/field-lab`}>Field Lab</a>. It starts
             with a free weekly issue of production lessons, the kind you'd forward to your team.
           </p>
           <div class="sub">
@@ -69,7 +70,7 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
         <span class="arm-k">Build</span>
         <h3>The Field Lab</h3>
         <p class="dim">A library of production-shaped AI problems and a build pilot, so practitioners work on real problems instead of demos.</p>
-        <a class="arm-link" href="/field-lab">Explore the Field Lab →</a>
+        <a class="arm-link" href={`${LAB_URL}/field-lab`}>Explore the Field Lab →</a>
       </li>
     </ul>
   </Section>
@@ -122,8 +123,8 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
       buildable briefs, a build pilot, and the free tools to start.
     </p>
     <p>
-      <a class="btn" href="/field-lab">Explore the Field Lab →</a>
-      <a class="btn btn-ghost" href="/briefs">Field Briefs</a>
+      <a class="btn" href={`${LAB_URL}/field-lab`}>Explore the Field Lab →</a>
+      <a class="btn btn-ghost" href={`${LAB_URL}/briefs`}>Field Briefs</a>
     </p>
   </Section>
 

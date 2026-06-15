@@ -12,11 +12,15 @@ export default defineConfig({
     sitemap({
       // Keep noindex / gated routes and non-HTML feeds out of the sitemap so
       // crawlers spend budget on indexable pages and never surface the gated
-      // channel, the search page, or the .ics calendar files.
+      // channel, the search page, or the .ics calendar files. Field Lab paths
+      // are canonical on lab.theairuntime.com and 301 from events, so they are
+      // excluded here and listed in /lab-sitemap.xml instead.
       filter: (page) =>
         !page.includes('/subscriber-only') &&
         !page.includes('/404') &&
         !page.includes('/search') &&
+        !page.includes('/field-lab') &&
+        !page.includes('/briefs') &&
         !page.endsWith('.ics'),
     }),
     react(),

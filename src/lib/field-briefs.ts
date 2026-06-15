@@ -1,6 +1,11 @@
 // Shared helpers for Field Briefs. Kept portable: relative URLs only, so the
 // pages lift to lab.theairuntime.com later without breaking links.
 
+// The Field Lab now lives on its own subdomain. Pages served under lab use
+// relative links (same origin), but main-site links into the Field Lab use
+// this absolute origin to land directly on lab without a redirect hop.
+export const LAB_URL = 'https://lab.theairuntime.com';
+
 export const RUN_LEVELS: Record<string, string> = {
   R0: 'Demo',
   R1: 'Bounded',

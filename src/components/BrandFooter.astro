@@ -1,5 +1,6 @@
 ---
 import Blink from './Blink.astro';
+import { LAB_URL } from '../lib/field-briefs';
 ---
 <footer class="ftr">
   <div class="container">
@@ -26,7 +27,7 @@ import Blink from './Blink.astro';
         <ul>
           <li><a href="/boston">Boston meetup</a></li>
           <li><a href="/speakers">Speakers</a></li>
-          <li><a href="/field-lab">Field Lab</a></li>
+          <li><a href={`${LAB_URL}/field-lab`}>Field Lab</a></li>
           <li><a href="/speak">Speak at an event</a></li>
           <li><a href="/sponsors">Sponsor / partner</a></li>
         </ul>

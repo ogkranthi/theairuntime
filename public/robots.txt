@@ -54,3 +54,4 @@ Allow: /
 Disallow: /subscriber-only
 
 Sitemap: https://events.theairuntime.com/sitemap-index.xml
+Sitemap: https://lab.theairuntime.com/lab-sitemap.xml

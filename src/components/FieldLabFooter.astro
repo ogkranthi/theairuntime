@@ -1,0 +1,42 @@
+---
+// Field Lab footer chrome. Minimal, in the Field Lab palette, with a link back
+// to the main community site. Used by BaseLayout when chrome="lab".
+---
+<footer class="fl-ftr">
+  <div class="fl-wrap">
+    <p class="fl-line">
+      The AI Runtime Field Lab. Build production-grade AI on real problems, not demos.
+    </p>
+    <nav class="fl-fnav">
+      <a href="/briefs">Field Briefs</a>
+      <a href="/field-lab/intake">Submit a problem</a>
+      <a href="/field-lab/intake?branch=build">Build</a>
+      <a href="/field-lab/intake?branch=mentor">Mentor</a>
+      <a href="https://events.theairuntime.com">The AI Runtime →</a>
+    </nav>
+    <p class="fl-copy">© {new Date().getFullYear()} The AI Runtime · Built in Boston</p>
+  </div>
+</footer>
+
+<style>
+  .fl-ftr {
+    background: #fbfaf7;
+    border-top: 1px solid #e6e1d6;
+    padding: 2.75rem 0;
+    margin-top: 3rem;
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #161616;
+  }
+  .fl-wrap { max-width: 64rem; margin: 0 auto; padding: 0 1.5rem; }
+  .fl-line { margin: 0 0 1rem; font-size: 1.05rem; }
+  .fl-fnav {
+    display: flex;
+    gap: 1.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+  .fl-fnav a { color: #161616; text-decoration: none; }
+  .fl-fnav a:hover { color: #e8852b; }
+  .fl-copy { color: #6f6a61; font-size: 0.85rem; margin: 0; }
+</style>

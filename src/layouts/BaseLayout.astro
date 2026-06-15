@@ -7,6 +7,8 @@ import '@fontsource/inter/700.css';
 import '../styles/tokens.css';
 import BrandHeader from '../components/BrandHeader.astro';
 import BrandFooter from '../components/BrandFooter.astro';
+import FieldLabHeader from '../components/FieldLabHeader.astro';
+import FieldLabFooter from '../components/FieldLabFooter.astro';
 import JsonLd from '../components/JsonLd.astro';
 import StickySubscribeBar from '../components/StickySubscribeBar.tsx';
 
@@ -19,6 +21,10 @@ interface Props {
   ogType?: string;
   /** Hide the sticky subscribe bar (e.g. on /subscribe or the gated channel). */
   noSubBar?: boolean;
+  /** Which site chrome to render and which host to canonicalize against.
+   *  'lab' renders the Field Lab header/footer and points canonical/OG at
+   *  lab.theairuntime.com; 'main' (default) is the events community site. */
+  chrome?: 'main' | 'lab';
 }
 
 const {
@@ -28,10 +34,14 @@ const {
   noindex = false,
   ogType = 'website',
   noSubBar = false,
+  chrome = 'main',
 } = Astro.props;
 
 const fullTitle = title.includes('AI Runtime') ? title : `${title} · The AI Runtime`;
-const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+// Field Lab pages are canonical on lab.theairuntime.com even though the build
+// site stays events. Everything else canonicalizes against Astro.site.
+const canonicalBase = chrome === 'lab' ? new URL('https://lab.theairuntime.com') : Astro.site;
+const canonical = new URL(Astro.url.pathname, canonicalBase).toString();
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://events.theairuntime.com';
 
 // Cloudflare Web Analytics. Cookieless, privacy-friendly. The beacon only
@@ -104,7 +114,7 @@ const websiteSchema = {
     <meta property="og:type" content={ogType} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={new URL(ogImage, Astro.site).toString()} />
+    <meta property="og:image" content={new URL(ogImage, canonicalBase).toString()} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="The AI Runtime" />
     <meta property="og:locale" content="en_US" />
@@ -113,18 +123,18 @@ const websiteSchema = {
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={new URL(ogImage, Astro.site).toString()} />
+    <meta name="twitter:image" content={new URL(ogImage, canonicalBase).toString()} />
 
     <!-- Structured data: site-wide identity + optional per-page schema -->
     <JsonLd schema={[orgSchema, websiteSchema]} />
     <slot name="jsonld" />
   </head>
   <body>
-    <BrandHeader />
+    {chrome === 'lab' ? <FieldLabHeader /> : <BrandHeader />}
     <main data-pagefind-body>
       <slot />
     </main>
-    <BrandFooter />
+    {chrome === 'lab' ? <FieldLabFooter /> : <BrandFooter />}
     {/* Referral capture: store ?ref= (first-touch) so subscribe calls can attribute it. */}
     <script is:inline>
       try {
@@ -132,7 +142,7 @@ const websiteSchema = {
         if (r && !localStorage.getItem('tair_ref')) localStorage.setItem('tair_ref', r.slice(0, 64));
       } catch (e) {}
     </script>
-    {!noSubBar && <StickySubscribeBar client:idle />}
+    {!noSubBar && chrome !== 'lab' && <StickySubscribeBar client:idle />}
     {cfBeaconToken && (
       <script
         is:inline

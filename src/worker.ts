@@ -65,6 +65,52 @@ const json = (data: unknown, init: ResponseInit = {}) =>
 
 const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 
+// --- Host routing ---------------------------------------------------------
+// One Worker serves two Custom Domains. The main community site lives on
+// events.theairuntime.com; the Field Lab lives on lab.theairuntime.com. Both
+// hosts back onto the same dist/, so the Worker steers each path to its home.
+const EVENTS_HOST = 'events.theairuntime.com';
+const LAB_HOST = 'lab.theairuntime.com';
+
+// Hosts where redirects must be a no-op: local dev, preview deploys, and the
+// raw workers.dev URL all serve everything from a single origin.
+function isPassthroughHost(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '0.0.0.0' ||
+    hostname.endsWith('.localhost') ||
+    hostname.endsWith('.workers.dev')
+  );
+}
+
+// The Field Lab pages that belong on the lab host. Matches the bare path and
+// any sub-path, with or without a trailing slash.
+function isFieldLabPath(p: string): boolean {
+  return (
+    p === '/field-lab' || p.startsWith('/field-lab/') ||
+    p === '/briefs' || p.startsWith('/briefs/')
+  );
+}
+
+function isApiPath(p: string): boolean {
+  return p.startsWith('/api/');
+}
+
+// Static assets and machine files must serve on whichever host requests them,
+// so a page that 301'd keeps its CSS/JS/images and crawlers can read sitemaps
+// and robots on both hosts. Page routes use format:'directory' (no file
+// extension); every static file has a dot in its last segment.
+const ASSET_PREFIXES = [
+  '/_astro/', '/pagefind/', '/resources/', '/events/',
+  '/speakers/', '/slides/', '/audio/',
+];
+function isAssetPath(p: string): boolean {
+  if (ASSET_PREFIXES.some((pre) => p.startsWith(pre))) return true;
+  const last = p.slice(p.lastIndexOf('/') + 1);
+  return last.includes('.');
+}
+
 async function handleSubscribe(request: Request, env: Env): Promise<Response> {
   if (request.method !== 'POST') {
     return json({ error: 'Method not allowed' }, { status: 405 });
@@ -671,6 +717,29 @@ export default {
 
     if (url.pathname === '/api/intake') {
       return handleIntake(request, env);
+    }
+
+    // Host routing runs after the API handlers (so an intake POST on the lab
+    // host is handled, not 301'd, which would drop its body) and before
+    // ASSETS. No-ops on dev/preview hosts.
+    const { hostname, pathname, search } = url;
+    if (!isPassthroughHost(hostname)) {
+      // events: push Field Lab traffic to the lab host.
+      if (hostname === EVENTS_HOST && isFieldLabPath(pathname)) {
+        return Response.redirect(`https://${LAB_HOST}${pathname}${search}`, 301);
+      }
+      // lab: root opens the Field Lab; keep Field Lab, API, and assets here;
+      // send any stray main-site page back to events.
+      if (hostname === LAB_HOST) {
+        if (pathname === '/') {
+          return Response.redirect(`https://${LAB_HOST}/field-lab${search}`, 301);
+        }
+        const stayOnLab =
+          isFieldLabPath(pathname) || isApiPath(pathname) || isAssetPath(pathname);
+        if (!stayOnLab) {
+          return Response.redirect(`https://${EVENTS_HOST}${pathname}${search}`, 301);
+        }
+      }
     }
 
     return env.ASSETS.fetch(request);
