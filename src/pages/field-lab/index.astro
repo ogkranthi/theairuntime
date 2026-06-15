@@ -4,10 +4,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import CohortCTA from '../../components/CohortCTA.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
+import { HERO_BRIEF_SLUG } from '../../lib/field-briefs';
 
 const problems = await getCollection('problems');
 const briefCount = problems.length;
 const verticals = [...new Set(problems.map((p) => p.data.vertical))].sort();
+const heroBrief = problems.find((p) => p.id === HERO_BRIEF_SLUG);
 ---
 <BaseLayout
   title="Field Lab · The AI Runtime"
@@ -26,6 +28,19 @@ const verticals = [...new Set(problems.map((p) => p.data.vertical))].sort();
       <a class="btn btn-ghost" href="/students">For students</a>
     </p>
   </Section>
+
+  {heroBrief && (
+    <Section eyebrow="Featured brief" title={heroBrief.data.title}>
+      <p class="dim wide">{heroBrief.data.one_line}</p>
+      <p class="muted small meta">
+        {heroBrief.data.vertical} · {heroBrief.data.difficulty} · {heroBrief.data.build_type} · Reliability {heroBrief.data.run_level}
+      </p>
+      <p class="jump">
+        <a class="btn" href={`/briefs/${heroBrief.id}`}>Read the brief →</a>
+        <a class="btn btn-ghost" href="/briefs">All Field Briefs</a>
+      </p>
+    </Section>
+  )}
 
   <Section eyebrow="Field Briefs" title="A library of real AI problems">
     <p class="dim wide">

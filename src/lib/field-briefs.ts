@@ -6,6 +6,11 @@
 // this absolute origin to land directly on lab without a redirect hop.
 export const LAB_URL = 'https://lab.theairuntime.com';
 
+// The brief promoted to the hero slot on /briefs and the Field Lab landing.
+// One place to change which problem leads. Must match a problem id under
+// src/content/problems/.
+export const HERO_BRIEF_SLUG = 'how-to-build-an-ai-growth-agent-for-apps-with-no-users';
+
 export const RUN_LEVELS: Record<string, string> = {
   R0: 'Demo',
   R1: 'Bounded',
