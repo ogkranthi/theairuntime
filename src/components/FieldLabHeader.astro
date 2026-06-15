@@ -1,0 +1,58 @@
+---
+// Field Lab chrome. Distinct from the main BrandHeader: the paper-and-ink
+// Field Lab palette (Georgia serif, ochre accent), with a link back to the
+// main community site. Used by BaseLayout when chrome="lab".
+---
+<header class="fl-hdr">
+  <div class="fl-wrap">
+    <a class="fl-brand" href="/field-lab">The AI Runtime <span>Field Lab</span></a>
+    <nav class="fl-nav">
+      <a href="/briefs">Field Briefs</a>
+      <a href="/field-lab/intake">Submit</a>
+      <a class="fl-back" href="https://events.theairuntime.com">The AI Runtime →</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .fl-hdr {
+    background: #fdfcfa;
+    border-bottom: 1px solid #e6e1d6;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #161616;
+  }
+  .fl-wrap {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .fl-brand {
+    color: #161616;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .fl-brand span { color: #e8852b; }
+  .fl-nav {
+    display: flex;
+    gap: 1.4rem;
+    align-items: center;
+    font-size: 0.95rem;
+  }
+  .fl-nav a { color: #161616; text-decoration: none; }
+  .fl-nav a:hover { color: #e8852b; }
+  .fl-back { color: #6f6a61; }
+  @media (max-width: 600px) {
+    .fl-brand { font-size: 0.95rem; }
+    .fl-nav { gap: 1rem; font-size: 0.9rem; }
+    .fl-back { display: none; }
+  }
+</style>
