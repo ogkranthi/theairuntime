@@ -2,21 +2,27 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProblemCard from '../../components/ProblemCard.astro';
-import { intakeUrl, builderUrl } from '../../lib/field-briefs';
+import { intakeUrl, builderUrl, HERO_BRIEF_SLUG } from '../../lib/field-briefs';
 
 const all = await getCollection('problems');
 
-// Newest failure-derived brief takes the featured slot.
+// The hero brief leads the library. It is pinned by id, not by provenance, so
+// any standout brief can take the slot.
+const heroBrief = all.find((p) => p.id === HERO_BRIEF_SLUG);
+
+// Newest failure-derived brief takes the featured-failure slot below.
 const failureDerived = all
   .filter((p) => p.data.provenance === 'failure-derived')
   .sort((a, b) => (b.data.month ?? '').localeCompare(a.data.month ?? ''));
 const featured = failureDerived[0];
 
-// Open briefs that share the featured brief's failure family.
+// Open briefs that share the featured brief's failure family. The hero brief is
+// shown on its own above, so keep it out of this list.
 const familyMatched = featured?.data.failure_family
   ? all.filter(
       (p) =>
         p.id !== featured.id &&
+        p.id !== heroBrief?.id &&
         p.data.status === 'Open' &&
         p.data.failure_family === featured.data.failure_family,
     )
@@ -26,7 +32,7 @@ const familyMatched = featured?.data.failure_family
 // failure-derived briefs surface here via the provenance filter.
 const statusOrder: Record<string, number> = { Featured: 0, Open: 1, Claimed: 2, Shipped: 3 };
 const grid = all
-  .filter((p) => p.id !== featured?.id)
+  .filter((p) => p.id !== featured?.id && p.id !== heroBrief?.id)
   .sort((a, b) => {
     const s = (statusOrder[a.data.status] ?? 9) - (statusOrder[b.data.status] ?? 9);
     return s !== 0 ? s : a.data.title.localeCompare(b.data.title);
@@ -72,6 +78,28 @@ const metaDesc =
         </p>
       </div>
     </section>
+
+    {heroBrief && (
+      <section class="band featured-brief">
+        <div class="wrap">
+          <p class="eyebrow">Featured brief</p>
+          <h2>{heroBrief.data.title}</h2>
+          <p class="hb-line">{heroBrief.data.one_line}</p>
+          <p class="hb-meta">
+            {heroBrief.data.vertical} · {heroBrief.data.difficulty} · {heroBrief.data.build_type} · Reliability {heroBrief.data.run_level}
+          </p>
+          {heroBrief.data.reliability_focus?.length > 0 && (
+            <ul class="hb-focus">
+              {heroBrief.data.reliability_focus.map((f: string) => <li>{f}</li>)}
+            </ul>
+          )}
+          <div class="cta-row">
+            <a class="btn solid" href={`/briefs/${heroBrief.id}`}>Read the full brief →</a>
+            <a class="btn ghost" href={builderUrl()} target="_blank" rel="noopener">Build this brief</a>
+          </div>
+        </div>
+      </section>
+    )}
 
     <!-- What this is -->
     <section class="band">
@@ -356,6 +384,13 @@ const metaDesc =
       padding: 0.85rem 1.1rem; background: var(--fl-paper); border: 1px solid var(--fl-border);
       border-radius: 8px; font-size: 0.92rem; color: var(--fl-body);
     }
+
+    .fl .featured-brief { background: var(--fl-surface); }
+    .fl .featured-brief h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); margin: 0.5rem 0 0.75rem; max-width: 24ch; }
+    .fl .hb-line { font-family: var(--fl-serif); font-size: 1.15rem; color: var(--fl-ink); max-width: 48rem; margin: 0 0 0.75rem; }
+    .fl .hb-meta { font-size: 0.82rem; color: var(--fl-faint); margin: 0 0 1.1rem; }
+    .fl .hb-focus { list-style: none; padding: 0; margin: 0 0 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .fl .hb-focus li { font-size: 0.8rem; padding: 0.35rem 0.7rem; background: var(--fl-chip); border-radius: 999px; color: var(--fl-body); }
 
     .fl .featured-failure { background: var(--fl-surface); }
     .fl .eyebrow { font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fl-accent); font-weight: 600; margin: 0 0 0.5rem; }
