@@ -7,6 +7,7 @@ social: {}
 talks:
   - eventSlug: 2026-06-16-ai-as-a-teammate
     title: 'Beyond the Private Chatbot: Bringing AI to Collaborative Work'
+    slidesUrl: 'https://www.canva.com/d/w2BgDMyh04dJlWl'
     abstract: |
       AI has reshaped individual productivity. We write, research, code,
       and ramp up faster than ever. But collaborative workflows haven't
