@@ -1,22 +1,55 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import AskQuestion from '../../components/AskQuestion.astro';
 import { fetchSubstackPosts } from '../../lib/substack';
 
-// The library is our own newsletter. Pull the full recent feed at build time.
+// The library is the front door to everything we publish: the weekly
+// newsletter (pulled from Substack at build time), the free guides and
+// playbooks, and Signal from the room. The /resources and /signal pages stay
+// as the deeper "see all" destinations.
 const substackPosts = await fetchSubstackPosts(30);
 const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+// Guides & playbooks: show the available ones, newest first.
+const resources = (await getCollection('resources'))
+  .filter((r) => r.data.status !== 'coming-soon')
+  .sort((a, b) => {
+    const ad = a.data.publishedAt ? +a.data.publishedAt : 0;
+    const bd = b.data.publishedAt ? +b.data.publishedAt : 0;
+    if (ad !== bd) return bd - ad;
+    return a.data.title.localeCompare(b.data.title);
+  });
+const topResources = resources.slice(0, 6);
+
+// Signal from the room: the current (featured) edition leads the strip.
+const signals = (await getCollection('signal')).sort((a, b) => +b.data.publishedAt - +a.data.publishedAt);
+const currentSignal = signals.find((s) => s.data.featured) ?? signals[0];
+
+const statusLabel: Record<string, string> = {
+  'coming-soon': 'Coming soon',
+  free: 'Free',
+  'lead-gated': 'Free · email',
+  paid: 'Paid',
+};
+const pillarLabels: Record<string, string> = {
+  evals: 'Evals',
+  agents: 'Agents',
+  inference: 'Inference',
+  reliability: 'Reliability',
+  cost: 'Cost',
+};
 ---
 <BaseLayout
   title="The Library · The AI Runtime"
-  description="The AI Runtime library: every issue of the newsletter on Vertical AI Agents, Model Reliability Engineering, and lessons from the trenches of shipping AI."
+  description="The AI Runtime library: the weekly newsletter, free field guides and playbooks, and Signal from the room, the questions practitioners are working through. All in one place, all free."
 >
   <Section
     eyebrow="The library"
-    title="Every issue, in one place"
-    lead="The AI Runtime library is our own writing: weekly issues on Vertical AI Agents, Model Reliability Engineering, and the lessons from the trenches of shipping AI. Free, every week."
+    title="Everything we publish, in one place"
+    lead="The AI Runtime library brings together our weekly newsletter, the free field guides and playbooks, and Signal from the room: the questions practitioners are working through, answered. All free."
   >
     <p>
       <a class="btn" href="https://theairuntime.com">Read every issue at theairuntime.com →</a>
@@ -38,6 +71,41 @@ const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric
           </article>
         ))}
       </div>
+    </Section>
+  )}
+
+  {topResources.length > 0 && (
+    <Section eyebrow="Guides & playbooks" title="Free, field-tested resources">
+      <ul class="res-grid">
+        {topResources.map((r) => (
+          <li>
+            <a href={`/resources/${r.slug}`}>
+              <div class="row">
+                <span class="tag">{r.data.type}</span>
+                <span class="status muted">{statusLabel[r.data.status]}</span>
+              </div>
+              <h3>{r.data.title}</h3>
+              <p class="dim">{r.data.description}</p>
+              <div class="meta muted">
+                {r.data.length ?? ''}{r.data.length && r.data.pillar ? ' · ' : ''}{pillarLabels[r.data.pillar] ?? r.data.pillar}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p class="see-all"><a href="/resources">See all resources →</a></p>
+    </Section>
+  )}
+
+  {currentSignal && (
+    <Section eyebrow="Signal from the room" title="One question, one honest answer">
+      <a class="sig-card" href="/signal">
+        <span class="tag">{`Boston · ${currentSignal.data.month}`}</span>
+        <h3>{currentSignal.data.problem}</h3>
+        <blockquote class="sig-q">{currentSignal.data.question}</blockquote>
+        <span class="sig-by muted">Answered by {currentSignal.data.answeredBy} · Read &#8594;</span>
+      </a>
+      <p class="see-all"><a href="/signal">See past editions &#8594;</a></p>
     </Section>
   )}
 
@@ -86,4 +154,57 @@ const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric
   .own h3 a:hover { color: var(--accent); }
   .audio-link { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); text-decoration: none; }
   .audio-link:hover { text-decoration: underline; }
+
+  /* Guides & playbooks strip */
+  .res-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .res-grid a {
+    display: block;
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+    height: 100%;
+  }
+  .res-grid a:hover { border-color: var(--accent); }
+  .res-grid .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+  .res-grid .status { font-family: var(--font-mono); font-size: 0.75rem; }
+  .res-grid h3 { margin: 0.4rem 0 0.5rem; font-size: 1.1rem; }
+  .res-grid .meta { font-size: 0.8rem; margin-top: 0.5rem; font-family: var(--font-mono); }
+
+  /* Signal from the room card */
+  .sig-card {
+    display: block;
+    max-width: 44rem;
+    padding: 1.75rem;
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.06), var(--bg-2));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 120ms ease;
+  }
+  .sig-card:hover { border-color: var(--accent); }
+  .sig-card h3 { margin: 0.75rem 0 0.75rem; font-size: 1.3rem; line-height: 1.25; max-width: 36rem; }
+  .sig-q {
+    font-size: 1.05rem;
+    line-height: 1.55;
+    border-left: 3px solid var(--accent);
+    padding-left: 1rem;
+    margin: 0 0 0.9rem;
+    max-width: 38rem;
+    font-style: italic;
+    color: var(--text-2);
+  }
+  .sig-by { font-family: var(--font-mono); font-size: 0.82rem; }
+
+  .see-all { margin-top: 1.25rem; font-family: var(--font-mono); font-size: 0.9rem; }
 </style>
