@@ -7,6 +7,7 @@ social: {}
 talks:
   - eventSlug: 2026-06-16-ai-as-a-teammate
     title: 'AI as a Teammate: Driving Double-Digit Engineering Productivity Gains'
+    slidesUrl: /slides/nirmal-jingar-ai-teammate-operating-model.pptx
     abstract: |
       AI is no longer just a tool for automation. It is becoming an active
       teammate in the software development lifecycle. By embedding AI into
