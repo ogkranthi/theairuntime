@@ -1,0 +1,150 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import Blink from '../components/Blink.astro';
+import CredibilityStrip from '../components/CredibilityStrip.astro';
+import StatBand from '../components/StatBand.astro';
+import SubstackEmbed from '../components/SubstackEmbed.astro';
+import ContactCTA from '../components/ContactCTA.astro';
+import { LAB_URL } from '../lib/field-briefs';
+---
+<BaseLayout
+  title="Our Story · The AI Runtime"
+  description="How The AI Runtime began and where it is going: a practitioner-first community shipping AI to production, a weekly newsletter, monthly meetups in Boston, and the Field Lab."
+>
+  <Section eyebrow="Our story">
+    <div class="hero">
+      <div>
+        <h1>A home for AI practitioners shipping to production</h1>
+        <p class="lede dim">
+          The AI Runtime is the operational layer where AI actually runs, and the community building
+          it. This is how it started, what we believe, and where it is going.
+        </p>
+      </div>
+      <div class="art"><Blink size={140} showMotion={true} showCheeks={true} /></div>
+    </div>
+  </Section>
+
+  <Section eyebrow="The beginning" title="Between the model and the product">
+    <div class="prose">
+      <p>
+        The AI Runtime started with a simple frustration. Most AI writing was hype, vendor pitches,
+        and speculation about the future, while the hard part, getting AI to run reliably in
+        production, went undocumented. So it began as a free weekly newsletter for practitioners:
+        specific, sourced, and anti-hype. The kind of issue you forward to your team.
+      </p>
+      <p>
+        It grew from there. Practitioners in Boston wanted to meet the people behind the work, so the
+        newsletter became a monthly meetup in Cambridge: two practitioner talks a night, real
+        production stories, no slideware. Then builders wanted to do the work, not just read about it,
+        and the Field Lab followed, with production-shaped problems you can actually ship. The AI
+        Runtime is now a community that reads, meets, and builds together.
+      </p>
+      <p>
+        It was founded by Kranthi Manchikanti, an AI Architect at Microsoft based in Boston, and it is
+        built with the practitioners who show up.
+      </p>
+    </div>
+  </Section>
+
+  <StatBand />
+
+  <Section eyebrow="Our philosophy" title="Practitioner-first, anti-hype">
+    <div class="prose">
+      <p>
+        We believe the most valuable AI skill is shipping it reliably, not talking about it. The
+        operational layer, evals, agents, inference, reliability, and cost, is where AI systems
+        actually earn their keep, and where the real lessons live.
+      </p>
+      <p>
+        Every piece passes one test: would a senior AI engineer at Anthropic, OpenAI, or DeepMind
+        forward it to their team? If not, we do not publish it. Specific, sourced, and forward-looking,
+        or it does not go out.
+      </p>
+    </div>
+  </Section>
+
+  <Section eyebrow="Why &quot;Runtime&quot;" title="We cover where AI runs, not where it is hyped">
+    <div class="prose">
+      <p>
+        The name is the filter. A runtime is the layer where software actually executes, and that is
+        exactly where we focus: the production systems where AI meets real users, real data, and real
+        failure modes.
+      </p>
+      <p>
+        So we deliberately skip what fills most feeds: vendor pitches, frontier-model release coverage,
+        idea-stage products, and speculation about the future of AI. What is left is the part
+        practitioners actually need, the operational reality of running AI in production.
+      </p>
+      <p><a href="/about">See what we cover &#8594;</a></p>
+    </div>
+  </Section>
+
+  <Section eyebrow="In the room" title="A community of people who ship">
+    <div class="prose">
+      <p>
+        The AI Runtime Boston meets monthly in Cambridge. Two practitioner talks a night, honest
+        production stories, and the people who actually ship sitting in the same room. The newsletter
+        reaches practitioners at the companies building real AI systems.
+      </p>
+    </div>
+  </Section>
+
+  <CredibilityStrip />
+
+  <Section eyebrow="What is next" title="Where it is going">
+    <div class="prose">
+      <p>
+        The mission is a durable home for AI practitioners: a newsletter you trust, a meetup worth the
+        commute, and a Field Lab where the community ships real work. The Field Lab is growing its
+        library of production-shaped problems, the meetup is built to expand city by city, and
+        everything stays free and practitioner-first.
+      </p>
+      <p class="motto">LEARN. SHIP. RUN.</p>
+    </div>
+  </Section>
+
+  <Section eyebrow="Join us" title="Be part of it">
+    <p class="dim wide">
+      Read, meet, and build with practitioners shipping AI to production. Start with a free weekly
+      issue, come to the next Boston meetup, or dig into the Field Lab.
+    </p>
+    <p class="join-links">
+      <a class="btn btn-ghost" href="/boston">See the next event →</a>
+      <a class="btn btn-ghost" href={`${LAB_URL}/field-lab`}>Explore the Field Lab →</a>
+    </p>
+    <SubstackEmbed
+      source="story-page"
+      headline="Get The AI Runtime in your inbox"
+      subhead="Production lessons from practitioners. Evals, agents, inference, reliability, cost."
+    />
+  </Section>
+
+  <Section>
+    <ContactCTA />
+  </Section>
+</BaseLayout>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 2rem;
+    align-items: center;
+  }
+  @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+  .lede { font-size: 1.15rem; max-width: 38rem; margin-top: 1rem; }
+  .art { display: flex; justify-content: center; }
+  .prose { max-width: 42rem; }
+  .prose p { color: var(--text-2); line-height: 1.75; margin: 0 0 1.1rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .motto {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    margin-top: 1.5rem;
+  }
+  .wide { max-width: 42rem; }
+  .join-links { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 0 0 1.5rem; }
+</style>
