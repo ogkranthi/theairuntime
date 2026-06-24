@@ -10,14 +10,14 @@ const all = await getCollection('problems');
 // any standout brief can take the slot.
 const heroBrief = all.find((p) => p.id === HERO_BRIEF_SLUG);
 
-// Newest failure-derived brief takes the featured-failure slot below.
+// Newest failure-derived brief takes the failure feature below the grid.
 const failureDerived = all
   .filter((p) => p.data.provenance === 'failure-derived')
   .sort((a, b) => (b.data.month ?? '').localeCompare(a.data.month ?? ''));
 const featured = failureDerived[0];
 
-// Open briefs that share the featured brief's failure family. The hero brief is
-// shown on its own above, so keep it out of this list.
+// Open briefs that share the failure brief's family. The hero brief is shown on
+// its own above, so keep it out of this list.
 const familyMatched = featured?.data.failure_family
   ? all.filter(
       (p) =>
@@ -28,8 +28,7 @@ const familyMatched = featured?.data.failure_family
     )
   : [];
 
-// The grid shows everything except the currently featured brief. Past
-// failure-derived briefs surface here via the provenance filter.
+// The grid shows everything except the hero brief and the failure feature brief.
 const statusOrder: Record<string, number> = { Featured: 0, Open: 1, Claimed: 2, Shipped: 3 };
 const grid = all
   .filter((p) => p.id !== featured?.id && p.id !== heroBrief?.id)
@@ -66,16 +65,13 @@ const metaDesc =
         <h1>Real AI problems, scoped for serious builders.</h1>
         <p class="sub">
           A public library of sanitized AI workflow problems from startups and operators, turned into
-          buildable briefs with a stated reliability bar.
+          buildable, testable briefs with a stated reliability bar. Production-shaped problems, not
+          random demos. Not a job board, a bootcamp, or a recruiting agency.
         </p>
         <div class="cta-row">
-          <a class="btn solid" href={intakeUrl()} target="_blank" rel="noopener">Submit a Problem</a>
-          <a class="btn ghost" href="#problems">Explore Problems</a>
+          <a class="btn solid" href={intakeUrl()} target="_blank" rel="noopener">Submit a problem</a>
+          <a class="btn ghost" href="#problems">Explore problems</a>
         </div>
-        <p class="disclaimer-line">
-          Submitting or building a problem does not guarantee mentorship, review, publication,
-          referrals, funding, or hiring outcomes.
-        </p>
       </div>
     </section>
 
@@ -101,31 +97,48 @@ const metaDesc =
       </section>
     )}
 
-    <!-- What this is -->
-    <section class="band">
-      <div class="wrap narrow">
-        <h2>What this is</h2>
-        <p>
-          A library of real AI workflow problems scoped to be buildable, testable, and useful as
-          portfolio-grade artifacts. Each brief includes the pain, the workflow, the inputs and
-          outputs, evaluation ideas, the boundaries, and a reliability target. The goal is to help
-          builders work on production-shaped problems instead of random demos.
-        </p>
-      </div>
-    </section>
-
-    <!-- What this is not -->
-    <section class="band alt">
+    <!-- Problem library: the centerpiece, kept near the top -->
+    <section id="problems" class="band">
       <div class="wrap">
-        <h2>What this is not</h2>
-        <ul class="not-grid">
-          <li>Not a bootcamp</li>
-          <li>Not a job board</li>
-          <li>Not a recruiting agency</li>
-          <li>Not an accelerator</li>
-          <li>Not a free consulting marketplace</li>
-          <li>Not a promise that companies review submissions</li>
-        </ul>
+        <h2>The problem library</h2>
+        <form class="filters" aria-label="Filter problems">
+          <label>Vertical
+            <select data-filter="vertical">
+              <option value="">All</option>
+              {verticals.map((v) => <option value={v}>{v}</option>)}
+            </select>
+          </label>
+          <label>Difficulty
+            <select data-filter="difficulty">
+              <option value="">All</option>
+              {difficulties.map((d) => <option value={d}>{d}</option>)}
+            </select>
+          </label>
+          <label>Build type
+            <select data-filter="build-type">
+              <option value="">All</option>
+              {buildTypes.map((b) => <option value={b}>{b}</option>)}
+            </select>
+          </label>
+          <label>Status
+            <select data-filter="status">
+              <option value="">All</option>
+              {statuses.map((s) => <option value={s}>{s}</option>)}
+            </select>
+          </label>
+          <label>Provenance
+            <select data-filter="provenance">
+              <option value="">All</option>
+              <option value="curated">Curated</option>
+              <option value="failure-derived">Failure-derived</option>
+            </select>
+          </label>
+        </form>
+        <p class="count" data-count aria-live="polite"></p>
+        <div class="cards" data-grid>
+          {grid.map((p) => <ProblemCard id={p.id} data={p.data} />)}
+        </div>
+        <p class="empty" data-empty hidden>No briefs match those filters. Clear a filter to see more.</p>
       </div>
     </section>
 
@@ -174,116 +187,31 @@ const metaDesc =
               </div>
             </div>
           )}
-
-          <div class="company-cta">
-            <p>Seen this failure in your own stack? Submit your version.</p>
-            <a class="btn solid" href={intakeUrl(featured.data.failure_family)} target="_blank" rel="noopener">
-              Submit your version
-            </a>
-          </div>
         </div>
       </section>
     )}
 
-    <!-- Problem grid -->
-    <section id="problems" class="band">
-      <div class="wrap">
-        <h2>The problem library</h2>
-        <form class="filters" aria-label="Filter problems">
-          <label>Vertical
-            <select data-filter="vertical">
-              <option value="">All</option>
-              {verticals.map((v) => <option value={v}>{v}</option>)}
-            </select>
-          </label>
-          <label>Difficulty
-            <select data-filter="difficulty">
-              <option value="">All</option>
-              {difficulties.map((d) => <option value={d}>{d}</option>)}
-            </select>
-          </label>
-          <label>Build type
-            <select data-filter="build-type">
-              <option value="">All</option>
-              {buildTypes.map((b) => <option value={b}>{b}</option>)}
-            </select>
-          </label>
-          <label>Status
-            <select data-filter="status">
-              <option value="">All</option>
-              {statuses.map((s) => <option value={s}>{s}</option>)}
-            </select>
-          </label>
-          <label>Provenance
-            <select data-filter="provenance">
-              <option value="">All</option>
-              <option value="curated">Curated</option>
-              <option value="failure-derived">Failure-derived</option>
-            </select>
-          </label>
-        </form>
-        <p class="count" data-count aria-live="polite"></p>
-        <div class="cards" data-grid>
-          {grid.map((p) => <ProblemCard id={p.id} data={p.data} />)}
-        </div>
-        <p class="empty" data-empty hidden>No briefs match those filters. Clear a filter to see more.</p>
-      </div>
-    </section>
-
-    <!-- How problems are selected -->
-    <section class="band alt">
-      <div class="wrap narrow">
-        <h2>How problems are selected</h2>
-        <p>A problem is accepted when it passes all seven questions.</p>
-        <ol class="questions">
-          <li>Can one solo builder ship it in 20 to 30 focused hours?</li>
-          <li>Does it have a clear input and a clear output?</li>
-          <li>Is there a measurable evaluation target?</li>
-          <li>Can it run on public, synthetic, or sanitized data?</li>
-          <li>Does it map to a real buyer or operator pain?</li>
-          <li>Can its failure be meaningfully analyzed?</li>
-          <li>Can the teardown teach the community?</li>
-        </ol>
-        <p class="exclude">
-          Problems requiring confidential data, production credentials, regulated workflows, vague
-          business goals, or heavy integration work are not accepted.
-        </p>
-      </div>
-    </section>
-
-    <!-- Submit -->
+    <!-- Single submit CTA -->
     <section class="band invert">
       <div class="wrap narrow">
         <h2>Have a real AI workflow problem? Submit it.</h2>
         <p>
           A good problem is specific, painful, buildable with sample or synthetic data, and evaluable
-          without production access. Selected problems may be rewritten into public briefs, and
-          submitting creates no contractor, delivery, or hiring relationship.
+          without production access. Selected problems may be rewritten into public briefs.
         </p>
-        <a class="btn solid" href={intakeUrl()} target="_blank" rel="noopener">Submit a Problem</a>
+        <a class="btn solid" href={intakeUrl()} target="_blank" rel="noopener">Submit a problem</a>
       </div>
     </section>
 
-    <!-- Builder -->
-    <section class="band">
-      <div class="wrap narrow">
-        <h2>Want to build one of these?</h2>
-        <p>
-          Builders use Field Briefs to create portfolio-grade artifacts. Some problems may later
-          become cohort capstones or teardown candidates.
-        </p>
-        <a class="btn solid" href={builderUrl()} target="_blank" rel="noopener">Join the builder interest list</a>
-      </div>
-    </section>
-
-    <!-- Footer disclaimer -->
+    <!-- Single disclaimer -->
     <section class="band footer-disclaimer">
       <div class="wrap narrow">
         <p>
-          Field Briefs is an educational and community resource. Problem contributors do not receive
-          guaranteed prototypes. Builders do not receive guaranteed mentorship, review, publication,
-          referrals, jobs, funding, credits, or company access. Selected problems and submissions may
-          be featured at The AI Runtime's discretion.
+          Field Briefs is an educational and community resource. Submitting creates no contractor,
+          delivery, or hiring relationship. Problem contributors do not receive guaranteed prototypes,
+          and builders do not receive guaranteed mentorship, review, publication, referrals, jobs,
+          funding, credits, or company access. Selected problems and submissions may be featured at The
+          AI Runtime's discretion.
         </p>
       </div>
     </section>
@@ -352,9 +280,8 @@ const metaDesc =
     .fl .kicker a { color: inherit; text-decoration: none; }
     .fl .kicker a:hover { text-decoration: underline; }
     .fl .hero h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.12; margin: 0 0 1rem; max-width: 20ch; }
-    .fl .hero .sub { font-size: 1.15rem; color: var(--fl-body); max-width: 44rem; margin: 0 0 1.75rem; }
+    .fl .hero .sub { font-size: 1.15rem; color: var(--fl-body); max-width: 46rem; margin: 0 0 1.75rem; }
     .fl .cta-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    .fl .disclaimer-line { font-size: 0.85rem; color: var(--fl-faint); max-width: 44rem; margin: 1.25rem 0 0; }
 
     .fl .btn {
       display: inline-block; padding: 0.8rem 1.5rem; border-radius: 8px;
@@ -376,15 +303,6 @@ const metaDesc =
     .fl .band.invert .btn.solid { background: var(--fl-accent); border-color: var(--fl-accent); color: var(--fl-ink); }
     .fl .band.invert .btn.solid:hover { background: var(--fl-accent-hover); border-color: var(--fl-accent-hover); }
 
-    .fl .not-grid {
-      list-style: none; padding: 0; margin: 0;
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.6rem;
-    }
-    .fl .not-grid li {
-      padding: 0.85rem 1.1rem; background: var(--fl-paper); border: 1px solid var(--fl-border);
-      border-radius: 8px; font-size: 0.92rem; color: var(--fl-body);
-    }
-
     .fl .featured-brief { background: var(--fl-surface); }
     .fl .featured-brief h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); margin: 0.5rem 0 0.75rem; max-width: 24ch; }
     .fl .hb-line { font-family: var(--fl-serif); font-size: 1.15rem; color: var(--fl-ink); max-width: 48rem; margin: 0 0 0.75rem; }
@@ -404,12 +322,6 @@ const metaDesc =
     .fl .build-line { font-family: var(--fl-serif); font-size: 1.05rem; color: var(--fl-ink); margin: 0 0 0.75rem; }
     .fl .family-open { margin-top: 2.5rem; }
     .fl .family-open h3 { font-size: 1.2rem; margin: 0 0 1rem; }
-    .fl .company-cta {
-      margin-top: 2.5rem; padding: 1.5rem; background: var(--fl-paper);
-      border: 1px solid var(--fl-accent); border-radius: 10px;
-      display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
-    }
-    .fl .company-cta p { margin: 0; font-family: var(--fl-serif); font-size: 1.1rem; color: var(--fl-ink); }
 
     .fl .filters { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0 0 1rem; }
     .fl .filters label {
@@ -424,10 +336,6 @@ const metaDesc =
     .fl .count { font-size: 0.82rem; color: var(--fl-faint); margin: 0 0 1rem; }
     .fl .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
     .fl .empty { color: var(--fl-muted); }
-
-    .fl .questions { padding-left: 1.2rem; }
-    .fl .questions li { margin-bottom: 0.5rem; color: var(--fl-body); }
-    .fl .exclude { font-size: 0.92rem; color: var(--fl-muted); margin-top: 1rem; }
 
     .fl .footer-disclaimer { background: var(--fl-surface); border-bottom: none; }
     .fl .footer-disclaimer p { font-size: 0.85rem; color: var(--fl-faint); margin: 0; }
