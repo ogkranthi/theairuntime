@@ -4,66 +4,49 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import CohortCTA from '../../components/CohortCTA.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
-import { HERO_BRIEF_SLUG } from '../../lib/field-briefs';
+import { HERO_BRIEF_SLUG, intakeUrl } from '../../lib/field-briefs';
 
 const problems = await getCollection('problems');
 const briefCount = problems.length;
-const verticals = [...new Set(problems.map((p) => p.data.vertical))].sort();
 const heroBrief = problems.find((p) => p.id === HERO_BRIEF_SLUG);
 ---
 <BaseLayout
   title="Field Lab · The AI Runtime"
-  description="The AI Runtime Field Lab: a library of real, production-shaped AI problems, a build pilot, and the free tools to start. Build on real problems, not demos."
+  description="The AI Runtime Field Lab: a library of real, production-shaped AI problems and a build pilot. Build on real problems, not demos."
   chrome="lab"
 >
   <Section eyebrow="The AI Runtime Field Lab" title="Build production-grade AI on real problems" flush>
     <p class="lede dim">
       The Field Lab is where builders work on real, production-shaped AI problems instead of random
-      demos. Builders, career switchers, students, anyone shipping. Browse the problem library, join
-      the pilot, and find the free tools to start.
+      demos. Browse the problem library, submit a problem from your own work, or join the build pilot.
     </p>
     <p class="jump">
-      <a class="btn" href="/briefs">Field Briefs</a>
-      <a class="btn btn-ghost" href="#cohort">Join the pilot</a>
-      <a class="btn btn-ghost" href="/students">For students</a>
+      <a class="btn" href={intakeUrl()} target="_blank" rel="noopener">Submit a problem</a>
+      <a class="btn btn-ghost" href="/briefs">Browse the briefs</a>
     </p>
   </Section>
-
-  {heroBrief && (
-    <Section eyebrow="Featured brief" title={heroBrief.data.title}>
-      <p class="dim wide">{heroBrief.data.one_line}</p>
-      <p class="muted small meta">
-        {heroBrief.data.vertical} · {heroBrief.data.difficulty} · {heroBrief.data.build_type} · Reliability {heroBrief.data.run_level}
-      </p>
-      <p class="jump">
-        <a class="btn" href={`/briefs/${heroBrief.id}`}>Read the brief →</a>
-        <a class="btn btn-ghost" href="/briefs">All Field Briefs</a>
-      </p>
-    </Section>
-  )}
 
   <Section eyebrow="Field Briefs" title="A library of real AI problems">
     <p class="dim wide">
       {briefCount} sanitized, production-shaped problems scoped to be buildable and testable, each with
-      a stated reliability bar. Every brief includes the pain, the workflow, inputs and outputs,
-      evaluation ideas, the boundaries, and a reliability target.
+      a stated reliability bar: the pain, the workflow, inputs and outputs, evaluation ideas, the
+      boundaries, and a reliability target.
     </p>
-    <p class="muted small verticals">Across {verticals.join(', ')}.</p>
-    <p>
+    {heroBrief && <p class="muted small">Start with the featured brief: {heroBrief.data.one_line}</p>}
+    <p class="jump">
       <a class="btn" href="/briefs">Browse Field Briefs →</a>
+      {heroBrief && <a class="btn btn-ghost" href={`/briefs/${heroBrief.id}`}>Read the featured brief</a>}
     </p>
   </Section>
 
   <CohortCTA />
 
-  <Section eyebrow="For students" title="Free tools to start building">
-    <p class="dim wide">
-      Most of the tools practitioners use in production are free for students. Microsoft for Students,
-      NVIDIA, free compute and courses, plus the free Field Guide and meetup entry from The AI Runtime.
+  <Section eyebrow="For students" title="Free tools to start building" narrow>
+    <p class="dim">
+      Most tools practitioners use in production are free for students: Microsoft for Students, NVIDIA,
+      free compute and courses, plus the free Field Guide and meetup entry from The AI Runtime.
     </p>
-    <p>
-      <a class="btn" href="/students">See student resources →</a>
-    </p>
+    <p><a class="btn btn-ghost" href="/students">See student resources →</a></p>
   </Section>
 
   <Section eyebrow="Subscribe" title="Stay in the loop" narrow>
@@ -83,6 +66,5 @@ const heroBrief = problems.find((p) => p.id === HERO_BRIEF_SLUG);
   .lede { font-size: 1.15rem; max-width: 44rem; }
   .jump { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
   .wide { max-width: 44rem; }
-  .verticals { margin-top: 0.5rem; }
   .small { font-size: 0.9rem; }
 </style>
