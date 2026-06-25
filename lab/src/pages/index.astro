@@ -1,0 +1,70 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import InvestigationCard from "../components/InvestigationCard.astro";
+
+const investigations = (await getCollection("investigations")).sort(
+  (a, b) => b.data.started.valueOf() - a.data.started.valueOf(),
+);
+
+const title = "The AI Runtime Lab";
+const description =
+  "Public engineering investigations for production AI systems. Measured attempts to make AI workflows reliable under real constraints.";
+---
+
+<Base title={title} description={description}>
+  <section class="hero">
+    <div class="container">
+      <p class="hero__eyebrow mono-label">The AI Runtime Lab</p>
+      <p class="hero__lead">
+        Public engineering investigations for production AI systems. Not demos.
+        Not tutorials. Measured attempts to make AI workflows reliable under real
+        constraints.
+      </p>
+    </div>
+  </section>
+
+  <section class="feed">
+    <div class="container">
+      <h2 class="feed__heading mono-label">Investigations</h2>
+      <ul class="feed__list">
+        {investigations.map((entry) => (
+          <li><InvestigationCard entry={entry} /></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding: 4.5rem 0 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero__eyebrow {
+    margin: 0 0 1.2rem;
+    color: var(--accent);
+  }
+  .hero__lead {
+    max-width: 46rem;
+    font-size: clamp(1.4rem, 3.4vw, 2.1rem);
+    line-height: 1.35;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  .feed { padding: 3rem 0 1rem; }
+  .feed__heading {
+    margin: 0 0 1.5rem;
+  }
+  .feed__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+</style>
