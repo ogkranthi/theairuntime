@@ -1,5 +1,6 @@
 import { defineCollection, reference, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { LIFECYCLE } from '../lib/lifecycle';
 
 const cities = defineCollection({
   type: 'content',
@@ -247,6 +248,17 @@ const investigations = defineCollection({
     pillar: z.enum(['MRE', 'Vertical Agents', 'Lessons from the Trenches']).optional(),
     started: z.coerce.date(),
     updated: z.coerce.date(),
+    // Per-stage progress through the 7-stage lifecycle. Drives the stage
+    // timeline. Stages omitted here default to "todo"; advance one each week.
+    stages: z
+      .array(
+        z.object({
+          stage: z.enum(LIFECYCLE),
+          state: z.enum(['done', 'active', 'todo']),
+          note: z.string().optional(),
+        }),
+      )
+      .default([]),
     repo: z.string().url().optional(),
     evalUrl: z.string().url().optional(),
     datasetUrl: z.string().url().optional(),

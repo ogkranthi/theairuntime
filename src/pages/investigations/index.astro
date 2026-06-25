@@ -9,7 +9,26 @@ const investigations = (await getCollection("investigations")).sort(
 
 const title = "The AI Runtime Lab";
 const description =
-  "Public engineering investigations for production AI systems. Measured attempts to make AI workflows reliable under real constraints.";
+  "Forward-deployed engineering, in public. Each investigation takes a real customer-shaped problem, sets a reliability bar, and publishes the failures, evals, and decisions. A repeatable model, updated weekly.";
+
+const steps = [
+  {
+    k: "Real problem",
+    v: "Every investigation starts from an actual customer-shaped problem, not a demo prompt.",
+  },
+  {
+    k: "Reliability bar",
+    v: "A hard target is set up front, then frozen, so the result is pass or fail, not vibes.",
+  },
+  {
+    k: "Smallest system",
+    v: "Build the least that can test the bar, and measure it against a blind set.",
+  },
+  {
+    k: "Published record",
+    v: "Failures, evals, decision records, and the final field report ship in the open.",
+  },
+];
 ---
 
 <LabLayout title={title} description={description}>
@@ -17,9 +36,34 @@ const description =
     <div class="lab-container">
       <p class="hero__eyebrow mono-label">The AI Runtime Lab</p>
       <p class="hero__lead">
-        Public engineering investigations for production AI systems. Not demos.
-        Not tutorials. Measured attempts to make AI workflows reliable under real
-        constraints.
+        Forward-deployed engineering, in public. Each investigation takes a real
+        customer-shaped problem, sets a reliability bar, builds the smallest
+        system that can test it, and publishes the failures, evals, and
+        decisions.
+      </p>
+      <p class="hero__sub">
+        Not demos. Not tutorials. A repeatable model for shipping AI that holds
+        under real constraints, updated weekly as the work happens.
+      </p>
+    </div>
+  </section>
+
+  <section class="how">
+    <div class="lab-container">
+      <h2 class="how__heading mono-label">How the Lab works</h2>
+      <ol class="how__grid">
+        {steps.map((s, i) => (
+          <li class="how__step">
+            <span class="how__num">{String(i + 1).padStart(2, "0")}</span>
+            <h3 class="how__k">{s.k}</h3>
+            <p class="how__v">{s.v}</p>
+          </li>
+        ))}
+      </ol>
+      <p class="how__note">
+        This is the kind of work a forward-deployed engineer does inside a
+        customer. Each investigation is built to be replicated, the methods and
+        code are portable to the next problem.
       </p>
     </div>
   </section>
@@ -48,6 +92,41 @@ const description =
     font-weight: 600;
     letter-spacing: -0.02em;
     margin: 0;
+  }
+  .hero__sub {
+    max-width: 42rem;
+    margin: 1.4rem 0 0;
+    color: var(--text-2);
+    font-size: 1.05rem;
+  }
+
+  .how { padding: 3rem 0; border-bottom: 1px solid var(--border); }
+  .how__heading { margin: 0 0 1.8rem; }
+  .how__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .how__step {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.3rem 1.4rem;
+  }
+  .how__num {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+  .how__k { margin: 0.5rem 0 0.4rem; font-size: 1rem; }
+  .how__v { margin: 0; font-size: 0.95rem; color: var(--text-2); }
+  .how__note {
+    max-width: 42rem;
+    margin: 1.8rem 0 0;
+    color: var(--text-2);
   }
 
   .feed { padding: 3rem 0 1rem; }

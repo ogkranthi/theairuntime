@@ -10,6 +10,25 @@ summary: "An FDE-style investigation into reliable design-partner sourcing on Ta
 pillar: "Lessons from the Trenches"
 started: 2026-06-25
 updated: 2026-06-25
+stages:
+  - stage: "Question"
+    state: "done"
+    note: "Customer problem framed and the reliability bar set at the rubric's qualified-precision threshold."
+  - stage: "Hypothesis"
+    state: "done"
+    note: "H1 selective verification on boundary candidates; H2 widen retrieval to recover the recall it costs."
+  - stage: "Experiment"
+    state: "active"
+    note: "Smallest system wired on Tavily, Apify, and a separable verification layer. Baseline run next."
+  - stage: "Evaluation"
+    state: "todo"
+    note: "Blind golden set and frozen rubric; baseline versus selective-verification ablation."
+  - stage: "Reliability"
+    state: "todo"
+  - stage: "Production Trial"
+    state: "todo"
+  - stage: "Field Report"
+    state: "todo"
 repo: "https://github.com/ogkranthi/the-ai-runtime-lab"
 evalUrl: "https://github.com/ogkranthi/the-ai-runtime-lab/tree/main/eval-harness"
 tags: ["agents", "evaluation", "reliability", "retrieval"]
