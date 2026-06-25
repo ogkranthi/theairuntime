@@ -1,0 +1,97 @@
+---
+import LabLayout from "../../layouts/LabLayout.astro";
+
+const title = "About | The AI Runtime Lab";
+const description =
+  "What an investigation is, and the lifecycle every investigation moves through, from question to field report.";
+
+const lifecycle = [
+  "Question",
+  "Hypothesis",
+  "Experiment",
+  "Evaluation",
+  "Reliability",
+  "Production Trial",
+  "Field Report",
+];
+---
+
+<LabLayout title={title} description={description} ogType="article">
+  <article class="lab-container about reading">
+    <header class="about__head">
+      <p class="mono-label" style="color: var(--accent)">About the Lab</p>
+      <h1>An engineering notebook that became public.</h1>
+    </header>
+
+    <section aria-labelledby="what-heading">
+      <h2 id="what-heading">What an investigation is</h2>
+      <p>
+        The Lab is the engineering arm of The AI Runtime. Each investigation
+        starts with a real customer-shaped problem, defines a reliability bar,
+        builds the smallest system needed to test it, and publishes the
+        failures, evals, decisions, and final field report.
+      </p>
+      <p>
+        These are not demos and not tutorials. An investigation is a measured
+        attempt to make an AI workflow reliable under a real constraint: a fixed
+        budget, messy public data, a hard precision target. We publish the work
+        as it happens, including the parts that did not work, so the record
+        stays honest about what is and is not solved.
+      </p>
+    </section>
+
+    <section aria-labelledby="lifecycle-heading">
+      <h2 id="lifecycle-heading">The lifecycle</h2>
+      <p>Every investigation moves through the same stages, in order:</p>
+      <ol class="lifecycle">
+        {lifecycle.map((stage, i) => (
+          <li class="lifecycle__step">
+            <span class="lifecycle__num">{String(i + 1).padStart(2, "0")}</span>
+            <span class="lifecycle__label">{stage}</span>
+          </li>
+        ))}
+      </ol>
+      <p class="about__note">
+        A status label on each investigation tracks where it sits:
+        <strong>investigating</strong>, <strong>in-eval</strong>, or
+        <strong>published</strong>.
+      </p>
+    </section>
+
+    <section aria-labelledby="more-heading">
+      <h2 id="more-heading">More from The AI Runtime</h2>
+      <p>
+        The Lab is one arm of The AI Runtime, the community and publication for
+        engineers shipping AI to production.
+      </p>
+      <ul class="links">
+        <li><a href="https://theairuntime.com" rel="noopener">theairuntime.com</a>, the publication.</li>
+        <li><a href="https://theairuntime.com/subscribe" rel="noopener">Subscribe to the newsletter</a> for new field reports.</li>
+        <li><a href="/field-lab/">The Field Lab</a>, a library of production-shaped build problems.</li>
+      </ul>
+    </section>
+  </article>
+</LabLayout>
+
+<style>
+  .about { padding: 3.5rem 0 1rem; }
+  .about__head { margin-bottom: 2.5rem; }
+  .about__head h1 { margin-top: 0.8rem; }
+
+  .lifecycle { list-style: none; margin: 1.5rem 0; padding: 0; display: grid; gap: 0.4rem; }
+  .lifecycle__step {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+  }
+  .lifecycle__num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }
+  .lifecycle__label { font-family: var(--font-mono); color: var(--text); letter-spacing: -0.01em; }
+  .about__note { color: var(--text-2); }
+
+  .links { padding-left: 1.2rem; }
+  .links li { margin: 0.4em 0; }
+</style>

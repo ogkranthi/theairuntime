@@ -1,4 +1,5 @@
 import { defineCollection, reference, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
 const cities = defineCollection({
   type: 'content',
@@ -229,4 +230,29 @@ const problems = defineCollection({
     }),
 });
 
-export const collections = { cities, speakers, events, resources, signal, problems };
+// The Lab investigations (lab.theairuntime.com). Content Layer glob loader so
+// the frontmatter `slug` is a real, schema-validated field that drives the URL
+// independent of the filename. Served on the lab host under /investigations.
+const investigations = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/investigations' }),
+  schema: z.object({
+    id: z.string(),
+    slug: z.string(),
+    title: z.string(),
+    question: z.string(),
+    status: z.enum(['investigating', 'in-eval', 'published']),
+    customer: z.string(),
+    problem: z.string(),
+    summary: z.string(),
+    pillar: z.enum(['MRE', 'Vertical Agents', 'Lessons from the Trenches']).optional(),
+    started: z.coerce.date(),
+    updated: z.coerce.date(),
+    repo: z.string().url().optional(),
+    evalUrl: z.string().url().optional(),
+    datasetUrl: z.string().url().optional(),
+    reportUrl: z.string().url().optional(),
+    tags: z.array(z.string()).default([]),
+  }),
+});
+
+export const collections = { cities, speakers, events, resources, signal, problems, investigations };
