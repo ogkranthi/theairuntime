@@ -4,7 +4,9 @@ import LabLayout from "../../layouts/LabLayout.astro";
 import StatusPill from "../../components/lab/StatusPill.astro";
 import StageTimeline from "../../components/lab/StageTimeline.astro";
 import EvidenceArtifacts from "../../components/lab/EvidenceArtifacts.astro";
+import InvestigationEvidence from "../../components/lab/InvestigationEvidence.astro";
 import Prose from "../../components/lab/Prose.astro";
+import { evidenceBySlug } from "../../data/investigation-01";
 
 // URL comes from the frontmatter slug, not the filename, so renaming the
 // content file does not change the route.
@@ -22,6 +24,11 @@ const { Content } = await render(entry);
 
 const updated = d.updated.toISOString().slice(0, 10);
 
+// Investigations with a structured data file lead with evidence (results,
+// decision, failures). Everything else uses the generic methods-first layout,
+// so adding an investigation without a data file still needs no code change.
+const evidence = evidenceBySlug[d.slug] ?? null;
+
 const title = `${d.title} | The AI Runtime Lab`;
 ---
 
@@ -30,23 +37,36 @@ const title = `${d.title} | The AI Runtime Lab`;
     <header class="detail__head reading">
       <div class="detail__top">
         <span class="mono-label">Investigation {d.id}</span>
-        <StatusPill status={d.status} />
+        {!evidence && <StatusPill status={d.status} />}
       </div>
       <h1>{d.title}</h1>
-      <p class="detail__question">{d.question}</p>
-      <dl class="detail__dates">
-        <div>
-          <dt class="mono-label">Updated</dt>
-          <dd><time datetime={updated}>{updated}</time></dd>
-        </div>
-        {d.pillar && (
+      {!evidence && <p class="detail__question">{d.question}</p>}
+      {!evidence && (
+        <dl class="detail__dates">
           <div>
-            <dt class="mono-label">Pillar</dt>
-            <dd>{d.pillar}</dd>
+            <dt class="mono-label">Updated</dt>
+            <dd><time datetime={updated}>{updated}</time></dd>
           </div>
-        )}
-      </dl>
+          {d.pillar && (
+            <div>
+              <dt class="mono-label">Pillar</dt>
+              <dd>{d.pillar}</dd>
+            </div>
+          )}
+        </dl>
+      )}
     </header>
+
+    {/* Evidence first: status, results, decision, surprise, failures, build. */}
+    {evidence && <InvestigationEvidence data={evidence} />}
+
+    {/* The methods half. Strong existing prose, demoted below the evidence. */}
+    {evidence && (
+      <div class="reading methods-head">
+        <hr class="methods-rule" />
+        <p class="mono-label methods-eyebrow">Methodology</p>
+      </div>
+    )}
 
     <section class="progress-section reading" aria-labelledby="progress-heading">
       <h2 id="progress-heading" class="mono-label">Progress</h2>
@@ -104,14 +124,18 @@ const title = `${d.title} | The AI Runtime Lab`;
       )}
     </section>
 
-    <div class="reading">
-      <EvidenceArtifacts
-        repo={d.repo}
-        evalUrl={d.evalUrl}
-        datasetUrl={d.datasetUrl}
-        reportUrl={d.reportUrl}
-      />
-    </div>
+    {/* For evidence pages the code and harness links live in the build stamp,
+        so the standalone artifacts block only renders for generic pages. */}
+    {!evidence && (
+      <div class="reading">
+        <EvidenceArtifacts
+          repo={d.repo}
+          evalUrl={d.evalUrl}
+          datasetUrl={d.datasetUrl}
+          reportUrl={d.reportUrl}
+        />
+      </div>
+    )}
 
     <Prose>
       <Content />
@@ -124,6 +148,10 @@ const title = `${d.title} | The AI Runtime Lab`;
           {d.tags.map((t) => <li class="tag">{t}</li>)}
         </ul>
       </footer>
+    )}
+
+    {evidence?.nextTeaser && (
+      <p class="next-teaser reading">{evidence.nextTeaser}</p>
     )}
   </article>
 </LabLayout>
@@ -152,8 +180,23 @@ const title = `${d.title} | The AI Runtime Lab`;
     color: var(--text-2);
   }
 
+  /* Divider into the demoted methods half. */
+  .methods-head { margin: 1rem 0 2.2rem; }
+  .methods-rule { border: none; border-top: 1px solid var(--border); margin: 0 0 1.4rem; }
+  .methods-eyebrow { color: var(--text-3); margin: 0; }
+
   .progress-section { margin: 0 0 2.5rem; }
   .progress-section h2 { margin: 0 0 1.4rem; }
+
+  /* Muted forward pointer to the next investigation. */
+  .next-teaser {
+    margin: 3rem 0 0;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text-3);
+  }
 
   /* Lead-with-the-problem block, visually prominent. */
   .problem {
