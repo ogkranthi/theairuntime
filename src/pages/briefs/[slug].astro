@@ -40,6 +40,7 @@ const familyMatched =
             {d.draft && <span class="m draft">Draft, pending editorial review</span>}
           </div>
           <h1>{d.title}</h1>
+          {d.system_signature && <p class="signature">{d.system_signature}</p>}
           <p class="one-line">{d.one_line}</p>
         </header>
 
@@ -163,6 +164,11 @@ const familyMatched =
   .fl .status-shipped { border-color: #4a7c59; color: #3f6b4d; }
   .fl .m.verified { border-color: #4a7c59; color: #3f6b4d; }
   .fl .m.draft { background: #fbe8d6; border-color: #f0c79a; color: #9a5a1e; }
+  .fl .signature {
+    font-family: ui-monospace, 'IBM Plex Mono', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.95rem; line-height: 1.6; color: var(--fl-muted);
+    margin: 0 0 0.85rem; max-width: 44rem;
+  }
   .fl .one-line { font-size: 1.15rem; color: var(--fl-ink); font-family: var(--fl-serif); margin: 0; }
   .fl ul { padding-left: 1.2rem; }
   .fl li { margin-bottom: 0.35rem; color: var(--fl-body); }
