@@ -2,6 +2,7 @@
   "id": "how-to-build-an-ai-growth-agent-for-apps-with-no-users",
   "title": "Growth Runtime: An AI Growth Agent for Apps with No Users",
   "one_line": "Build an AI growth agent that helps an early-stage founder discover, reach, convert, and activate the right first users with evidence, not guessing.",
+  "system_signature": "Build a production-ready AI system that finds qualified design partners from public data while satisfying explicit reliability, cost, and throughput constraints.",
   "vertical": "Growth",
   "difficulty": "Advanced",
   "build_type": "Vertical Agent",

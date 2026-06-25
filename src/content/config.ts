@@ -212,6 +212,11 @@ const problems = defineCollection({
       primary_source_note: z.string().optional(),
       field_signals: z.array(z.string()).optional(),
       // Site extensions, not part of the standard.
+      // Fixed-frame signature line: "Build a production-ready AI system that
+      // [outcome] while satisfying explicit [constraint, constraint, and
+      // constraint] constraints." The shape is constant across briefs; the
+      // constraints individuate each one.
+      system_signature: z.string().optional(),
       verified_at: z.string().optional(), // e.g. "R3" on a Shipped brief
       draft: z.boolean().default(false), // flip to false after editorial review
     })
