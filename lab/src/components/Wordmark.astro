@@ -1,0 +1,40 @@
+---
+// Wordmark: "the AI runtime" (lowercase except AI) with a small `lab` tag.
+interface Props {
+  href?: string;
+}
+const { href = "/" } = Astro.props;
+---
+
+<a class="wordmark" href={href} aria-label="The AI Runtime Lab, home">
+  <span class="mark">the <span class="ai">AI</span> runtime</span>
+  <span class="lab">lab</span>
+</a>
+
+<style>
+  .wordmark {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  .wordmark:hover { text-decoration: none; }
+  .mark {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .ai { color: var(--text); }
+  .lab {
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 0.1rem 0.4rem;
+    transform: translateY(-1px);
+  }
+</style>

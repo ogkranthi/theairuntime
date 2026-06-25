@@ -1,0 +1,162 @@
+---
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/600.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/600.css";
+import "../styles/tokens.css";
+import Wordmark from "../components/Wordmark.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Path-only canonical, e.g. "/about". Defaults to the current pathname. */
+  ogType?: "website" | "article";
+}
+const { title, description, ogType = "website" } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL("/og-default.svg", Astro.site).href;
+const year = 2026;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="The AI Runtime Lab" />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="sitemap" href="/sitemap-index.xml" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <Wordmark />
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/">Investigations</a>
+          <a href="/about">About</a>
+          <a href="https://theairuntime.com" rel="noopener">theairuntime.com</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <div>
+          <Wordmark />
+          <p class="tagline">LEARN. SHIP. RUN.</p>
+        </div>
+        <nav class="footer-nav" aria-label="Footer">
+          <a href="/">Investigations</a>
+          <a href="/about">About</a>
+          <a href="https://theairuntime.com" rel="noopener">Publication</a>
+          <a href="https://theairuntime.com/subscribe" rel="noopener">Subscribe</a>
+        </nav>
+      </div>
+      <div class="container site-footer__legal">
+        <span>The AI Runtime Lab. Public engineering investigations.</span>
+        <span>&copy; {year} The AI Runtime</span>
+      </div>
+    </footer>
+
+    <style>
+      .skip {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        background: var(--accent);
+        color: var(--bg);
+        padding: 0.5rem 1rem;
+        font-family: var(--font-mono);
+        z-index: 10;
+      }
+      .skip:focus { left: 0.5rem; top: 0.5rem; }
+
+      .site-header {
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: blur(8px);
+        z-index: 5;
+      }
+      .site-header__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+      }
+      .site-nav {
+        display: flex;
+        gap: 1.4rem;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+      }
+      .site-nav a { color: var(--text-2); }
+      .site-nav a:hover { color: var(--accent); text-decoration: none; }
+
+      .site-footer {
+        border-top: 1px solid var(--border);
+        margin-top: 5rem;
+        padding: 3rem 0 2.5rem;
+      }
+      .site-footer__inner {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .tagline {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
+        color: var(--text-3);
+        margin: 0.6rem 0 0;
+      }
+      .footer-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.2rem;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+      }
+      .footer-nav a { color: var(--text-2); }
+      .footer-nav a:hover { color: var(--accent); text-decoration: none; }
+
+      .site-footer__legal {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.5rem 2rem;
+        margin-top: 2.5rem;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--text-3);
+      }
+    </style>
+  </body>
+</html>

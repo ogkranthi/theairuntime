@@ -7,6 +7,12 @@ compatibility_flags = ["nodejs_compat"]
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"
+# Run the Worker before static-asset serving so the host-routing redirects in
+# src/worker.ts actually fire. Without this, Cloudflare serves a matching file
+# (e.g. dist/index.html for "/") before the Worker runs, so the lab-host root
+# redirect never executes. The Worker falls through to env.ASSETS.fetch() for
+# everything it does not redirect, so normal asset serving is unchanged.
+run_worker_first = true
 
 # "Ask the Library" uses Cloudflare Workers AI. Until this binding is enabled,
 # /api/ask still returns the matched reads, just without a generated answer.

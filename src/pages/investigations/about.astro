@@ -1,0 +1,151 @@
+---
+import LabLayout from "../../layouts/LabLayout.astro";
+
+const title = "About | The AI Runtime Lab";
+const description =
+  "What a field report is, and the lifecycle every field report moves through, from question to outcome.";
+
+const lifecycle = [
+  "Question",
+  "Hypothesis",
+  "Experiment",
+  "Evaluation",
+  "Reliability",
+  "Production Trial",
+  "Outcome",
+];
+---
+
+<LabLayout title={title} description={description} ogType="article">
+  <article class="lab-container about reading">
+    <header class="about__head">
+      <p class="mono-label" style="color: var(--accent)">About the Lab</p>
+      <h1>An engineering notebook that became public.</h1>
+    </header>
+
+    <section aria-labelledby="what-heading">
+      <h2 id="what-heading">What a field report is</h2>
+      <p>
+        A forward-deployed engineer embeds with a customer to scope, build, and
+        deploy production software inside that customer's environment. The role
+        was pioneered at Palantir and is now how OpenAI, Anthropic, and others
+        ship AI into real operations. The Lab is the engineering arm of The AI
+        Runtime, and a field report runs that same method in public.
+      </p>
+      <p>
+        The work that separates it from a consultant or a demo: ship a
+        production system, not a slide deck, and stay on it until it runs
+        reliably under the real constraints. Out-of-the-box rarely survives
+        first contact with a customer's data, budget, and edge cases. A
+        field report starts from a real customer-shaped problem, scopes the
+        problem behind the stated ask, sets a reliability bar, builds the
+        smallest system that can hold it, and publishes the failures, evals,
+        decisions, and the final outcome.
+      </p>
+      <p>
+        Each one is scoped like an engagement: an industry, a customer, the ask,
+        the engineering question, the reliability bar, and an explicit line
+        between what is in scope and what is declined.
+      </p>
+    </section>
+
+    <section aria-labelledby="replicate-heading">
+      <h2 id="replicate-heading">Built to be replicated</h2>
+      <p>
+        The part of forward-deployed work that compounds is not the one-off
+        build, it is what happens after: spot the patterns that recur across
+        problems and generalize them into a repeatable method. That is the point
+        here too. The reliability bar, the eval harness, the decision records,
+        and the code are portable, so the next problem starts from a method, not
+        a blank page.
+      </p>
+    </section>
+
+    <section aria-labelledby="cadence-heading">
+      <h2 id="cadence-heading">Updated weekly</h2>
+      <p>
+        Field reports are live records, not finished essays. Each one advances
+        on a weekly cadence: a stage moves forward, a measurement lands, a
+        decision gets recorded. The progress timeline on each field report
+        shows which of the stages below is done, in progress, or still ahead,
+        and the field log captures what changed and when.
+      </p>
+    </section>
+
+    <section aria-labelledby="lifecycle-heading">
+      <h2 id="lifecycle-heading">The lifecycle</h2>
+      <p>Every field report moves through the same stages, in order:</p>
+      <ol class="lifecycle">
+        {lifecycle.map((stage, i) => (
+          <li class="lifecycle__step">
+            <span class="lifecycle__num">{String(i + 1).padStart(2, "0")}</span>
+            <span class="lifecycle__label">{stage}</span>
+          </li>
+        ))}
+      </ol>
+      <p class="about__note">
+        Each field report also carries a status label for a quick read:
+        <strong>investigating</strong>, <strong>in-eval</strong>, or
+        <strong>published</strong>.
+      </p>
+    </section>
+
+    <section aria-labelledby="reading-heading">
+      <h2 id="reading-heading">Further reading on FDE</h2>
+      <p>If the role is new to you, these explain it well:</p>
+      <ul class="links">
+        <li>
+          <a href="https://newsletter.pragmaticengineer.com/p/forward-deployed-engineers" rel="noopener">
+            The Pragmatic Engineer
+          </a>, what forward-deployed engineers are and why demand is rising.
+        </li>
+        <li>
+          <a href="https://blog.palantir.com/a-day-in-the-life-of-a-palantir-forward-deployed-software-engineer-45ef2de257b1" rel="noopener">
+            Palantir
+          </a>, a day in the life of a forward-deployed software engineer.
+        </li>
+        <li>
+          <a href="https://builtin.com/articles/forward-deployed-engineers" rel="noopener">
+            Built In
+          </a>, how FDEs turn field patterns into product.
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="more-heading">
+      <h2 id="more-heading">More from The AI Runtime</h2>
+      <p>
+        The Lab is one arm of The AI Runtime, the community and publication for
+        engineers shipping AI to production.
+      </p>
+      <ul class="links">
+        <li><a href="https://theairuntime.com" rel="noopener">theairuntime.com</a>, the publication.</li>
+        <li><a href="https://theairuntime.com/subscribe" rel="noopener">Subscribe to the newsletter</a> for new field reports.</li>
+        <li><a href="/field-lab/">The Field Lab</a>, a library of production-shaped build problems.</li>
+      </ul>
+    </section>
+  </article>
+</LabLayout>
+
+<style>
+  .about { padding: 3.5rem 0 1rem; }
+  .about__head { margin-bottom: 2.5rem; }
+  .about__head h1 { margin-top: 0.8rem; }
+
+  .lifecycle { list-style: none; margin: 1.5rem 0; padding: 0; display: grid; gap: 0.4rem; }
+  .lifecycle__step {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+  }
+  .lifecycle__num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }
+  .lifecycle__label { font-family: var(--font-mono); color: var(--text); letter-spacing: -0.01em; }
+  .about__note { color: var(--text-2); }
+
+  .links { padding-left: 1.2rem; }
+  .links li { margin: 0.4em 0; }
+</style>

@@ -1,4 +1,6 @@
 import { defineCollection, reference, z } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { LIFECYCLE } from '../lib/lifecycle';
 
 const cities = defineCollection({
   type: 'content',
@@ -234,4 +236,45 @@ const problems = defineCollection({
     }),
 });
 
-export const collections = { cities, speakers, events, resources, signal, problems };
+// The Lab investigations (lab.theairuntime.com). Content Layer glob loader so
+// the frontmatter `slug` is a real, schema-validated field that drives the URL
+// independent of the filename. Served on the lab host under /investigations.
+const investigations = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/investigations' }),
+  schema: z.object({
+    id: z.string(),
+    slug: z.string(),
+    title: z.string(),
+    question: z.string(),
+    status: z.enum(['investigating', 'in-eval', 'published']),
+    customer: z.string(),
+    problem: z.string(),
+    summary: z.string(),
+    // FDE scoping brief. The stated ask is `problem`; these sharpen the scope.
+    industry: z.string().optional(),          // the use case's industry / vertical
+    bar: z.string().optional(),               // the reliability bar, one line
+    inScope: z.array(z.string()).default([]), // what the engagement commits to
+    outScope: z.array(z.string()).default([]),// what is explicitly declined
+    pillar: z.enum(['MRE', 'Vertical Agents', 'Lessons from the Trenches']).optional(),
+    started: z.coerce.date(),
+    updated: z.coerce.date(),
+    // Per-stage progress through the 7-stage lifecycle. Drives the stage
+    // timeline. Stages omitted here default to "todo"; advance one each week.
+    stages: z
+      .array(
+        z.object({
+          stage: z.enum(LIFECYCLE),
+          state: z.enum(['done', 'active', 'todo']),
+          note: z.string().optional(),
+        }),
+      )
+      .default([]),
+    repo: z.string().url().optional(),
+    evalUrl: z.string().url().optional(),
+    datasetUrl: z.string().url().optional(),
+    reportUrl: z.string().url().optional(),
+    tags: z.array(z.string()).default([]),
+  }),
+});
+
+export const collections = { cities, speakers, events, resources, signal, problems, investigations };

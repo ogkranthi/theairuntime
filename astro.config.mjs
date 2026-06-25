@@ -21,6 +21,7 @@ export default defineConfig({
         !page.includes('/search') &&
         !page.includes('/field-lab') &&
         !page.includes('/briefs') &&
+        !page.includes('/investigations') &&
         !page.endsWith('.ics'),
     }),
     react(),

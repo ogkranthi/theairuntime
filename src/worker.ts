@@ -67,8 +67,9 @@ const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 
 // --- Host routing ---------------------------------------------------------
 // One Worker serves two Custom Domains. The main community site lives on
-// events.theairuntime.com; the Field Lab lives on lab.theairuntime.com. Both
-// hosts back onto the same dist/, so the Worker steers each path to its home.
+// events.theairuntime.com; the Lab (investigations record + the Field Lab build
+// library) lives on lab.theairuntime.com. Both hosts back onto the same dist/,
+// so the Worker steers each path to its home.
 const EVENTS_HOST = 'events.theairuntime.com';
 const LAB_HOST = 'lab.theairuntime.com';
 
@@ -91,6 +92,12 @@ function isFieldLabPath(p: string): boolean {
     p === '/field-lab' || p.startsWith('/field-lab/') ||
     p === '/briefs' || p.startsWith('/briefs/')
   );
+}
+
+// The investigations record (lab.theairuntime.com front door). Matches the bare
+// path and any sub-path, with or without a trailing slash.
+function isInvestigationsPath(p: string): boolean {
+  return p === '/investigations' || p.startsWith('/investigations/');
 }
 
 function isApiPath(p: string): boolean {
@@ -724,18 +731,27 @@ export default {
     // ASSETS. No-ops on dev/preview hosts.
     const { hostname, pathname, search } = url;
     if (!isPassthroughHost(hostname)) {
-      // events: push Field Lab traffic to the lab host.
-      if (hostname === EVENTS_HOST && isFieldLabPath(pathname)) {
+      // events: push Lab traffic (investigations + Field Lab) to the lab host.
+      if (
+        hostname === EVENTS_HOST &&
+        (isInvestigationsPath(pathname) || isFieldLabPath(pathname))
+      ) {
         return Response.redirect(`https://${LAB_HOST}${pathname}${search}`, 301);
       }
-      // lab: root opens the Field Lab; keep Field Lab, API, and assets here;
-      // send any stray main-site page back to events.
+      // lab: root opens the investigations record; keep investigations, Field
+      // Lab, API, and assets here; send any stray main-site page to events.
       if (hostname === LAB_HOST) {
         if (pathname === '/') {
-          return Response.redirect(`https://${LAB_HOST}/field-lab${search}`, 301);
+          // 302 (temporary): the root destination changed once already (was
+          // /field-lab), and browsers/edge cache 301s hard. Keep this
+          // re-evaluatable so the root is never stuck behind a cached 301.
+          return Response.redirect(`https://${LAB_HOST}/investigations/${search}`, 302);
         }
         const stayOnLab =
-          isFieldLabPath(pathname) || isApiPath(pathname) || isAssetPath(pathname);
+          isInvestigationsPath(pathname) ||
+          isFieldLabPath(pathname) ||
+          isApiPath(pathname) ||
+          isAssetPath(pathname);
         if (!stayOnLab) {
           return Response.redirect(`https://${EVENTS_HOST}${pathname}${search}`, 301);
         }

@@ -12,6 +12,13 @@ Web platform for [The AI Runtime](https://theairuntime.com), the publication and
 - `/resources`, `/resources/<slug>` → ebooks, checklists, playbooks (lead-gated / paid)
 - `/about`, `/speak`, `/404`
 
+**The Lab (`lab.theairuntime.com`):** the same Worker also serves the engineering
+arm on the lab host. `/investigations` (the root redirects here) is the public
+record of production AI engineering investigations, dark-themed via `LabLayout`
+and `lab-tokens.css`. The Field Lab build library (`/field-lab`, `/briefs`) stays
+on the lab host alongside it. Host routing lives in `src/worker.ts`; lab URLs are
+listed in `/lab-sitemap.xml` and excluded from the main sitemap.
+
 Built with Astro + content collections, deployed to Cloudflare Pages.
 
 ## Quick start
