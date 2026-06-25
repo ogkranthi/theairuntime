@@ -10,8 +10,8 @@ summary: "An FDE-style investigation into reliable design-partner sourcing on Ta
 pillar: "Lessons from the Trenches"
 started: 2026-06-25
 updated: 2026-06-25
-repo: "https://github.com/REPLACE/field-investigation-01"
-evalUrl: "https://github.com/REPLACE/field-investigation-01/tree/main/eval-harness"
+repo: "https://github.com/ogkranthi/the-ai-runtime-lab"
+evalUrl: "https://github.com/ogkranthi/the-ai-runtime-lab/tree/main/eval-harness"
 tags: ["agents", "evaluation", "reliability", "retrieval"]
 ---
 
