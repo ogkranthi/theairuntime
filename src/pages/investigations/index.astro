@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
-import Base from "../layouts/Base.astro";
-import InvestigationCard from "../components/InvestigationCard.astro";
+import LabLayout from "../../layouts/LabLayout.astro";
+import InvestigationCard from "../../components/lab/InvestigationCard.astro";
 
 const investigations = (await getCollection("investigations")).sort(
   (a, b) => b.data.started.valueOf() - a.data.started.valueOf(),
@@ -12,9 +12,9 @@ const description =
   "Public engineering investigations for production AI systems. Measured attempts to make AI workflows reliable under real constraints.";
 ---
 
-<Base title={title} description={description}>
+<LabLayout title={title} description={description}>
   <section class="hero">
-    <div class="container">
+    <div class="lab-container">
       <p class="hero__eyebrow mono-label">The AI Runtime Lab</p>
       <p class="hero__lead">
         Public engineering investigations for production AI systems. Not demos.
@@ -25,7 +25,7 @@ const description =
   </section>
 
   <section class="feed">
-    <div class="container">
+    <div class="lab-container">
       <h2 class="feed__heading mono-label">Investigations</h2>
       <ul class="feed__list">
         {investigations.map((entry) => (
@@ -34,17 +34,11 @@ const description =
       </ul>
     </div>
   </section>
-</Base>
+</LabLayout>
 
 <style>
-  .hero {
-    padding: 4.5rem 0 3rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .hero__eyebrow {
-    margin: 0 0 1.2rem;
-    color: var(--accent);
-  }
+  .hero { padding: 4.5rem 0 3rem; border-bottom: 1px solid var(--border); }
+  .hero__eyebrow { margin: 0 0 1.2rem; color: var(--accent); }
   .hero__lead {
     max-width: 46rem;
     font-size: clamp(1.4rem, 3.4vw, 2.1rem);
@@ -57,9 +51,7 @@ const description =
   }
 
   .feed { padding: 3rem 0 1rem; }
-  .feed__heading {
-    margin: 0 0 1.5rem;
-  }
+  .feed__heading { margin: 0 0 1.5rem; }
   .feed__list {
     list-style: none;
     margin: 0;

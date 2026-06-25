@@ -7,10 +7,9 @@ interface Props {
   status: "investigating" | "in-eval" | "published";
 }
 const { status } = Astro.props;
-const label = status;
 ---
 
-<span class={`pill pill--${status}`} data-status={status}>{label}</span>
+<span class={`pill pill--${status}`} data-status={status}>{status}</span>
 
 <style>
   .pill {
@@ -24,19 +23,7 @@ const label = status;
     white-space: nowrap;
     line-height: 1.4;
   }
-  .pill--investigating {
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    background: transparent;
-  }
-  .pill--in-eval {
-    color: var(--text-2);
-    border: 1px solid var(--text-2);
-    background: transparent;
-  }
-  .pill--published {
-    color: var(--bg);
-    border: 1px solid var(--accent);
-    background: var(--accent);
-  }
+  .pill--investigating { color: var(--accent); border: 1px solid var(--accent); background: transparent; }
+  .pill--in-eval { color: var(--text-2); border: 1px solid var(--text-2); background: transparent; }
+  .pill--published { color: var(--bg); border: 1px solid var(--accent); background: var(--accent); }
 </style>

@@ -8,8 +8,12 @@ const LAB = 'https://lab.theairuntime.com';
 
 export const GET: APIRoute = async () => {
   const problems = await getCollection('problems');
+  const investigations = await getCollection('investigations');
   // Trailing slashes to match the directory-format canonical URLs.
   const urls = [
+    `${LAB}/investigations/`,
+    `${LAB}/investigations/about/`,
+    ...investigations.map((i) => `${LAB}/investigations/${i.data.slug}/`),
     `${LAB}/field-lab/`,
     `${LAB}/field-lab/intake/`,
     `${LAB}/briefs/`,

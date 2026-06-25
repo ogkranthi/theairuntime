@@ -1,21 +1,23 @@
 ---
-import "@fontsource/ibm-plex-mono/400.css";
-import "@fontsource/ibm-plex-mono/600.css";
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/600.css";
-import "../styles/tokens.css";
-import Wordmark from "../components/Wordmark.astro";
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/600.css';
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/600.css';
+import '../styles/lab-tokens.css';
+import Wordmark from '../components/lab/Wordmark.astro';
 
 interface Props {
   title: string;
   description: string;
-  /** Path-only canonical, e.g. "/about". Defaults to the current pathname. */
-  ogType?: "website" | "article";
+  ogType?: 'website' | 'article';
 }
-const { title, description, ogType = "website" } = Astro.props;
+const { title, description, ogType = 'website' } = Astro.props;
 
-const canonical = new URL(Astro.url.pathname, Astro.site).href;
-const ogImage = new URL("/og-default.svg", Astro.site).href;
+// The Lab investigations live in the shared events build but are canonical on
+// lab.theairuntime.com, so canonical/OG point there regardless of build site.
+const LAB = new URL('https://lab.theairuntime.com');
+const canonical = new URL(Astro.url.pathname, LAB).toString();
+const ogImage = new URL('/lab-og.svg', LAB).toString();
 const year = 2026;
 ---
 
@@ -25,10 +27,12 @@ const year = 2026;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0A0A0B" />
 
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
 
     <meta property="og:type" content={ogType} />
     <meta property="og:title" content={title} />
@@ -41,40 +45,41 @@ const year = 2026;
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="sitemap" href="/lab-sitemap.xml" />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
 
     <header class="site-header">
-      <div class="container site-header__inner">
+      <div class="lab-container site-header__inner">
         <Wordmark />
         <nav class="site-nav" aria-label="Primary">
-          <a href="/">Investigations</a>
-          <a href="/about">About</a>
+          <a href="/investigations/">Investigations</a>
+          <a href="/investigations/about/">About</a>
           <a href="https://theairuntime.com" rel="noopener">theairuntime.com</a>
         </nav>
       </div>
     </header>
 
-    <main id="main">
+    <main id="main" data-pagefind-ignore>
       <slot />
     </main>
 
     <footer class="site-footer">
-      <div class="container site-footer__inner">
+      <div class="lab-container site-footer__inner">
         <div>
           <Wordmark />
           <p class="tagline">LEARN. SHIP. RUN.</p>
         </div>
         <nav class="footer-nav" aria-label="Footer">
-          <a href="/">Investigations</a>
-          <a href="/about">About</a>
+          <a href="/investigations/">Investigations</a>
+          <a href="/investigations/about/">About</a>
+          <a href="/field-lab/">Field Lab</a>
           <a href="https://theairuntime.com" rel="noopener">Publication</a>
           <a href="https://theairuntime.com/subscribe" rel="noopener">Subscribe</a>
         </nav>
       </div>
-      <div class="container site-footer__legal">
+      <div class="lab-container site-footer__legal">
         <span>The AI Runtime Lab. Public engineering investigations.</span>
         <span>&copy; {year} The AI Runtime</span>
       </div>
@@ -109,20 +114,11 @@ const year = 2026;
         padding-top: 1rem;
         padding-bottom: 1rem;
       }
-      .site-nav {
-        display: flex;
-        gap: 1.4rem;
-        font-family: var(--font-mono);
-        font-size: 0.85rem;
-      }
+      .site-nav { display: flex; gap: 1.4rem; font-family: var(--font-mono); font-size: 0.85rem; }
       .site-nav a { color: var(--text-2); }
       .site-nav a:hover { color: var(--accent); text-decoration: none; }
 
-      .site-footer {
-        border-top: 1px solid var(--border);
-        margin-top: 5rem;
-        padding: 3rem 0 2.5rem;
-      }
+      .site-footer { border-top: 1px solid var(--border); margin-top: 5rem; padding: 3rem 0 2.5rem; }
       .site-footer__inner {
         display: flex;
         flex-wrap: wrap;
@@ -137,16 +133,9 @@ const year = 2026;
         color: var(--text-3);
         margin: 0.6rem 0 0;
       }
-      .footer-nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.2rem;
-        font-family: var(--font-mono);
-        font-size: 0.85rem;
-      }
+      .footer-nav { display: flex; flex-wrap: wrap; gap: 1.2rem; font-family: var(--font-mono); font-size: 0.85rem; }
       .footer-nav a { color: var(--text-2); }
       .footer-nav a:hover { color: var(--accent); text-decoration: none; }
-
       .site-footer__legal {
         display: flex;
         flex-wrap: wrap;

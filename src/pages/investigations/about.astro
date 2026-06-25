@@ -1,5 +1,5 @@
 ---
-import Base from "../layouts/Base.astro";
+import LabLayout from "../../layouts/LabLayout.astro";
 
 const title = "About | The AI Runtime Lab";
 const description =
@@ -16,8 +16,8 @@ const lifecycle = [
 ];
 ---
 
-<Base title={title} description={description} ogType="article">
-  <article class="container about reading">
+<LabLayout title={title} description={description} ogType="article">
+  <article class="lab-container about reading">
     <header class="about__head">
       <p class="mono-label" style="color: var(--accent)">About the Lab</p>
       <h1>An engineering notebook that became public.</h1>
@@ -67,23 +67,18 @@ const lifecycle = [
       <ul class="links">
         <li><a href="https://theairuntime.com" rel="noopener">theairuntime.com</a>, the publication.</li>
         <li><a href="https://theairuntime.com/subscribe" rel="noopener">Subscribe to the newsletter</a> for new field reports.</li>
+        <li><a href="/field-lab/">The Field Lab</a>, a library of production-shaped build problems.</li>
       </ul>
     </section>
   </article>
-</Base>
+</LabLayout>
 
 <style>
   .about { padding: 3.5rem 0 1rem; }
   .about__head { margin-bottom: 2.5rem; }
   .about__head h1 { margin-top: 0.8rem; }
 
-  .lifecycle {
-    list-style: none;
-    margin: 1.5rem 0;
-    padding: 0;
-    display: grid;
-    gap: 0.4rem;
-  }
+  .lifecycle { list-style: none; margin: 1.5rem 0; padding: 0; display: grid; gap: 0.4rem; }
   .lifecycle__step {
     display: flex;
     align-items: center;
@@ -93,16 +88,8 @@ const lifecycle = [
     border-radius: var(--radius-sm);
     background: var(--bg-2);
   }
-  .lifecycle__num {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--accent);
-  }
-  .lifecycle__label {
-    font-family: var(--font-mono);
-    color: var(--text);
-    letter-spacing: -0.01em;
-  }
+  .lifecycle__num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }
+  .lifecycle__label { font-family: var(--font-mono); color: var(--text); letter-spacing: -0.01em; }
   .about__note { color: var(--text-2); }
 
   .links { padding-left: 1.2rem; }
