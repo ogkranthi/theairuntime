@@ -9,24 +9,24 @@ const investigations = (await getCollection("investigations")).sort(
 
 const title = "The AI Runtime Lab";
 const description =
-  "Forward-deployed engineering, in public. Each investigation takes a real customer-shaped problem, sets a reliability bar, and publishes the failures, evals, and decisions. A repeatable model, updated weekly.";
+  "The work a forward-deployed engineer does, in public. Embed in a real customer-shaped problem, scope it, ship the smallest system that holds a reliability bar in production, and publish what broke. Production systems, not slides. Updated weekly.";
 
 const steps = [
   {
-    k: "Real problem",
-    v: "Every investigation starts from an actual customer-shaped problem, not a demo prompt.",
+    k: "Scope the real problem",
+    v: "Start from a real customer-shaped problem and find the problem behind the stated ask, then size it.",
   },
   {
-    k: "Reliability bar",
-    v: "A hard target is set up front, then frozen, so the result is pass or fail, not vibes.",
+    k: "Set the reliability bar",
+    v: "Fix a hard target up front and freeze it, so the result is pass or fail, not a demo that looks good.",
   },
   {
-    k: "Smallest system",
-    v: "Build the least that can test the bar, and measure it against a blind set.",
+    k: "Ship the smallest system",
+    v: "Build the least that can hold the bar in production, with evals and observability before any rollout.",
   },
   {
-    k: "Published record",
-    v: "Failures, evals, decision records, and the final field report ship in the open.",
+    k: "Generalize",
+    v: "Spot what recurs and turn it into a repeatable method, the part of FDE work that compounds.",
   },
 ];
 ---
@@ -36,14 +36,14 @@ const steps = [
     <div class="lab-container">
       <p class="hero__eyebrow mono-label">The AI Runtime Lab</p>
       <p class="hero__lead">
-        Forward-deployed engineering, in public. Each investigation takes a real
-        customer-shaped problem, sets a reliability bar, builds the smallest
-        system that can test it, and publishes the failures, evals, and
-        decisions.
+        The work a forward-deployed engineer does, in public. Embed in a real
+        customer-shaped problem, scope it, ship the smallest system that holds a
+        reliability bar, and publish what broke.
       </p>
       <p class="hero__sub">
-        Not demos. Not tutorials. A repeatable model for shipping AI that holds
-        under real constraints, updated weekly as the work happens.
+        Production systems, not slides. Out-of-the-box rarely survives first
+        contact with a real constraint, so each investigation builds and
+        measures until the bar holds, and updates weekly as the work happens.
       </p>
     </div>
   </section>
@@ -61,9 +61,10 @@ const steps = [
         ))}
       </ol>
       <p class="how__note">
-        This is the kind of work a forward-deployed engineer does inside a
-        customer. Each investigation is built to be replicated, the methods and
-        code are portable to the next problem.
+        The same loop that forward-deployed engineers run inside one customer:
+        spot what recurs across problems and generalize it. Each investigation
+        is built to be replicated, the rubric, the eval harness, and the code
+        are portable to the next problem.
       </p>
     </div>
   </section>

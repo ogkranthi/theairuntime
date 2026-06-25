@@ -24,6 +24,12 @@ const updated = d.updated.toISOString().slice(0, 10);
   <StageTimeline stages={d.stages} compact />
 
   <dl class="card__meta">
+    {d.industry && (
+      <div>
+        <dt class="mono-label">Industry</dt>
+        <dd>{d.industry}</dd>
+      </div>
+    )}
     <div>
       <dt class="mono-label">Customer</dt>
       <dd>{d.customer}</dd>

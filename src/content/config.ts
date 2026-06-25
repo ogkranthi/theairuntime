@@ -245,6 +245,11 @@ const investigations = defineCollection({
     customer: z.string(),
     problem: z.string(),
     summary: z.string(),
+    // FDE scoping brief. The stated ask is `problem`; these sharpen the scope.
+    industry: z.string().optional(),          // the use case's industry / vertical
+    bar: z.string().optional(),               // the reliability bar, one line
+    inScope: z.array(z.string()).default([]), // what the engagement commits to
+    outScope: z.array(z.string()).default([]),// what is explicitly declined
     pillar: z.enum(['MRE', 'Vertical Agents', 'Lessons from the Trenches']).optional(),
     started: z.coerce.date(),
     updated: z.coerce.date(),

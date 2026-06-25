@@ -54,21 +54,54 @@ const title = `${d.title} | The AI Runtime Lab`;
     </section>
 
     <section class="problem reading" aria-labelledby="problem-heading">
-      <h2 id="problem-heading">The problem</h2>
+      <h2 id="problem-heading">Problem and scope</h2>
       <dl class="problem__grid">
+        {d.industry && (
+          <div>
+            <dt class="mono-label">Industry</dt>
+            <dd>{d.industry}</dd>
+          </div>
+        )}
         <div>
           <dt class="mono-label">Customer</dt>
           <dd>{d.customer}</dd>
         </div>
         <div>
-          <dt class="mono-label">Problem</dt>
+          <dt class="mono-label">The ask</dt>
           <dd>{d.problem}</dd>
         </div>
         <div>
-          <dt class="mono-label">The question</dt>
+          <dt class="mono-label">The engineering question</dt>
           <dd class="problem__question">{d.question}</dd>
         </div>
+        {d.bar && (
+          <div>
+            <dt class="mono-label">Reliability bar</dt>
+            <dd>{d.bar}</dd>
+          </div>
+        )}
       </dl>
+
+      {(d.inScope.length > 0 || d.outScope.length > 0) && (
+        <div class="scope">
+          {d.inScope.length > 0 && (
+            <div class="scope__col">
+              <p class="mono-label">In scope</p>
+              <ul class="scope__list scope__list--in">
+                {d.inScope.map((s) => <li>{s}</li>)}
+              </ul>
+            </div>
+          )}
+          {d.outScope.length > 0 && (
+            <div class="scope__col">
+              <p class="mono-label">Out of scope</p>
+              <ul class="scope__list scope__list--out">
+                {d.outScope.map((s) => <li>{s}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
     </section>
 
     <div class="reading">
@@ -136,6 +169,28 @@ const title = `${d.title} | The AI Runtime Lab`;
   .problem__grid dt { margin-bottom: 0.25rem; }
   .problem__grid dd { margin: 0; color: var(--text); }
   .problem__question { font-family: var(--font-mono); color: var(--accent) !important; }
+
+  /* In scope / out of scope, two columns under the grid. */
+  .scope {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem 2rem;
+    margin-top: 1.6rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--border);
+  }
+  .scope__col .mono-label { display: block; margin-bottom: 0.6rem; }
+  .scope__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem; }
+  .scope__list li {
+    position: relative;
+    padding-left: 1.1rem;
+    font-size: 0.95rem;
+    color: var(--text-2);
+  }
+  .scope__list li::before { position: absolute; left: 0; top: -0.02em; }
+  .scope__list--in li::before { content: "+"; color: var(--accent); font-weight: 700; }
+  .scope__list--out li::before { content: "-"; color: var(--text-3); font-weight: 700; }
+  @media (max-width: 560px) { .scope { grid-template-columns: 1fr; } }
 
   .detail__footer { margin-top: 3rem; }
   .detail__footer h2 { margin-bottom: 0.8rem; }

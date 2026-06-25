@@ -5,8 +5,21 @@ title: "Can a sourcing agent hit a hard reliability bar under a fixed budget?"
 question: "Does selective source-verification buy enough precision to justify its cost and recall hit?"
 status: "investigating"
 customer: "Two-person pre-seed dev-tools startup, no growth hire."
-problem: "50 qualified design-partner candidates per week from messy public data, under a real budget."
-summary: "An FDE-style investigation into reliable design-partner sourcing on Tavily, Apify, and a verification layer, measured against a frozen rubric and a blind golden set."
+problem: "Find 50 qualified design-partner candidates per week from messy public data, under a real budget."
+summary: "An FDE-style investigation into reliable design-partner sourcing on Tavily, Apify, and a verification layer, measured against a frozen rubric and a blind golden set. The real problem is precision under a budget, not raw lead volume."
+industry: "Developer tools (B2B SaaS)"
+bar: "50 qualified candidates per week at or above the rubric's precision floor, under the fixed monthly tool budget, with no analyst in the weekly loop."
+inScope:
+  - "Retrieval over public sources (Tavily)"
+  - "Targeted crawl and signal extraction (Apify)"
+  - "A separable verification layer on boundary candidates"
+  - "Deterministic scoring against a frozen rubric"
+  - "Measurement on a blind, hand-labeled golden set"
+outScope:
+  - "Sending or sequencing outreach"
+  - "CRM writeback and pipeline management"
+  - "Paid contact databases or private graphs"
+  - "Generalizing the rubric beyond this vertical, for now"
 pillar: "Lessons from the Trenches"
 started: 2026-06-25
 updated: 2026-06-25
