@@ -36,10 +36,12 @@ const title = `${d.title} | The AI Runtime Lab`;
   <article class="lab-container detail">
     <header class="detail__head reading">
       <div class="detail__top">
-        <span class="mono-label">Investigation {d.id}</span>
+        <span class="mono-label">FR-{d.id.padStart(3, "0")}</span>
         {!evidence && <StatusPill status={d.status} />}
       </div>
+      {evidence && <p class="detail__name">{evidence.name}</p>}
       <h1>{d.title}</h1>
+      {evidence && <p class="detail__standfirst">{evidence.orientation}</p>}
       {!evidence && <p class="detail__question">{d.question}</p>}
       {!evidence && (
         <dl class="detail__dates">
@@ -75,6 +77,7 @@ const title = `${d.title} | The AI Runtime Lab`;
 
     <section class="problem reading" aria-labelledby="problem-heading">
       <h2 id="problem-heading">Problem and scope</h2>
+      <p class="problem__lead">The customer and the limits, stated plainly, so the result is falsifiable against a real situation rather than a general claim.</p>
       <dl class="problem__grid">
         {d.industry && (
           <div>
@@ -162,6 +165,24 @@ const title = `${d.title} | The AI Runtime Lab`;
   .detail__top { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
   .detail__head h1 { margin: 0 0 0.8rem; }
 
+  /* Short field-report name, between the eyebrow and the title. */
+  .detail__name {
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    letter-spacing: -0.01em;
+    color: var(--text-3);
+    margin: 0 0 0.5rem;
+  }
+
+  /* Plain-language orientation, the first thing a new reader meets. */
+  .detail__standfirst {
+    font-family: var(--font-sans);
+    font-size: clamp(1.1rem, 2vw, 1.22rem);
+    line-height: 1.6;
+    color: var(--text-2);
+    margin: 0 0 1.8rem;
+  }
+
   /* The question is prominent beneath the title. */
   .detail__question {
     font-family: var(--font-mono);
@@ -207,7 +228,8 @@ const title = `${d.title} | The AI Runtime Lab`;
     padding: 1.6rem 1.8rem;
     margin: 0 0 0.5rem;
   }
-  .problem h2 { font-size: 1.1rem; margin: 0 0 1.2rem; }
+  .problem h2 { font-size: 1.1rem; margin: 0 0 0.7rem; }
+  .problem__lead { margin: 0 0 1.4rem; color: var(--text-2); font-size: 0.98rem; line-height: 1.55; }
   .problem__grid { display: grid; gap: 1.1rem; margin: 0; }
   .problem__grid dt { margin-bottom: 0.25rem; }
   .problem__grid dd { margin: 0; color: var(--text); }

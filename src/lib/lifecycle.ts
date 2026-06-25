@@ -8,7 +8,7 @@ export const LIFECYCLE = [
   'Evaluation',
   'Reliability',
   'Production Trial',
-  'Field Report',
+  'Outcome',
 ] as const;
 
 export type Stage = (typeof LIFECYCLE)[number];

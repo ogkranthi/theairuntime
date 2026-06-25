@@ -6,7 +6,7 @@ question: "Does selective source-verification buy enough precision to justify it
 status: "investigating"
 customer: "Two-person pre-seed dev-tools startup, no growth hire."
 problem: "Find 50 qualified design-partner candidates per week from messy public data, under a real budget."
-summary: "An FDE-style investigation into reliable design-partner sourcing on Tavily, Apify, and a verification layer, measured against a frozen rubric and a blind golden set. The real problem is precision under a budget, not raw lead volume."
+summary: "An FDE-style field report into reliable design-partner sourcing on Tavily, Apify, and a verification layer, measured against a frozen rubric and a blind golden set. The real problem is precision under a budget, not raw lead volume."
 industry: "Developer tools (B2B SaaS)"
 bar: "50 qualified candidates per week at or above the rubric's precision floor, under the fixed monthly tool budget, with no analyst in the weekly loop."
 inScope:
@@ -40,7 +40,7 @@ stages:
     state: "todo"
   - stage: "Production Trial"
     state: "todo"
-  - stage: "Field Report"
+  - stage: "Outcome"
     state: "todo"
 repo: "https://github.com/ogkranthi/the-ai-runtime-lab"
 evalUrl: "https://github.com/ogkranthi/the-ai-runtime-lab/tree/main/eval-harness"
@@ -73,8 +73,8 @@ it pointless.
 
 ## Open questions
 
-These are unresolved as of the latest log entry. They are the reason this is an
-investigation and not a tutorial.
+These are unresolved as of the latest log entry. They are the reason this is a
+field report and not a tutorial.
 
 - What is the precision floor a two-person team will actually trust enough to
   send cold outreach without a manual pass? The rubric assumes it, the field
@@ -91,7 +91,7 @@ investigation and not a tutorial.
 
 ## Constraints
 
-The investigation is scoped to one customer shape and one set of hard limits, so
+The field report is scoped to one customer shape and one set of hard limits, so
 the result is falsifiable rather than general.
 
 - **Volume:** 50 qualified candidates per week, sustained, not a one-time batch.
@@ -181,11 +181,11 @@ handle that by versioning, not by silent edits.
 Verification runs only on candidates near the qualification boundary, where a
 second source changes the verdict. Candidates that are clearly qualified or
 clearly rejected on first-pass signals skip it. This is the core bet of the
-investigation: that precision is won at the boundary, so spend belongs there. If
+field report: that precision is won at the boundary, so spend belongs there. If
 the ablation shows boundary-only verification underperforms universal
 verification on precision, this decision is wrong and gets reversed.
 
-## Investigation log
+## Field log
 
 The log is dated newest-last. It is the running record of what actually
 happened, including the parts that did not work.

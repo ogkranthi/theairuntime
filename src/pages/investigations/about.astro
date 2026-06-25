@@ -3,7 +3,7 @@ import LabLayout from "../../layouts/LabLayout.astro";
 
 const title = "About | The AI Runtime Lab";
 const description =
-  "What an investigation is, and the lifecycle every investigation moves through, from question to field report.";
+  "What a field report is, and the lifecycle every field report moves through, from question to outcome.";
 
 const lifecycle = [
   "Question",
@@ -12,7 +12,7 @@ const lifecycle = [
   "Evaluation",
   "Reliability",
   "Production Trial",
-  "Field Report",
+  "Outcome",
 ];
 ---
 
@@ -24,23 +24,23 @@ const lifecycle = [
     </header>
 
     <section aria-labelledby="what-heading">
-      <h2 id="what-heading">What an investigation is</h2>
+      <h2 id="what-heading">What a field report is</h2>
       <p>
         A forward-deployed engineer embeds with a customer to scope, build, and
         deploy production software inside that customer's environment. The role
         was pioneered at Palantir and is now how OpenAI, Anthropic, and others
         ship AI into real operations. The Lab is the engineering arm of The AI
-        Runtime, and an investigation runs that same method in public.
+        Runtime, and a field report runs that same method in public.
       </p>
       <p>
         The work that separates it from a consultant or a demo: ship a
         production system, not a slide deck, and stay on it until it runs
         reliably under the real constraints. Out-of-the-box rarely survives
-        first contact with a customer's data, budget, and edge cases. An
-        investigation starts from a real customer-shaped problem, scopes the
+        first contact with a customer's data, budget, and edge cases. A
+        field report starts from a real customer-shaped problem, scopes the
         problem behind the stated ask, sets a reliability bar, builds the
         smallest system that can hold it, and publishes the failures, evals,
-        decisions, and the final field report.
+        decisions, and the final outcome.
       </p>
       <p>
         Each one is scoped like an engagement: an industry, a customer, the ask,
@@ -64,17 +64,17 @@ const lifecycle = [
     <section aria-labelledby="cadence-heading">
       <h2 id="cadence-heading">Updated weekly</h2>
       <p>
-        Investigations are live records, not finished essays. Each one advances
+        Field reports are live records, not finished essays. Each one advances
         on a weekly cadence: a stage moves forward, a measurement lands, a
-        decision gets recorded. The progress timeline on each investigation
+        decision gets recorded. The progress timeline on each field report
         shows which of the stages below is done, in progress, or still ahead,
-        and the investigation log captures what changed and when.
+        and the field log captures what changed and when.
       </p>
     </section>
 
     <section aria-labelledby="lifecycle-heading">
       <h2 id="lifecycle-heading">The lifecycle</h2>
-      <p>Every investigation moves through the same stages, in order:</p>
+      <p>Every field report moves through the same stages, in order:</p>
       <ol class="lifecycle">
         {lifecycle.map((stage, i) => (
           <li class="lifecycle__step">
@@ -84,7 +84,7 @@ const lifecycle = [
         ))}
       </ol>
       <p class="about__note">
-        Each investigation also carries a status label for a quick read:
+        Each field report also carries a status label for a quick read:
         <strong>investigating</strong>, <strong>in-eval</strong>, or
         <strong>published</strong>.
       </p>

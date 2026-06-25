@@ -15,7 +15,7 @@ const updated = d.updated.toISOString().slice(0, 10);
 
 <a class="card" href={`/investigations/${d.slug}`}>
   <div class="card__top">
-    <span class="mono-label">Investigation {d.id}</span>
+    <span class="mono-label">FR-{d.id.padStart(3, "0")}</span>
     <StatusPill status={d.status} />
   </div>
 
