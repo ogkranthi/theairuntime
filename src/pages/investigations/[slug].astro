@@ -2,6 +2,7 @@
 import { getCollection, render } from "astro:content";
 import LabLayout from "../../layouts/LabLayout.astro";
 import StatusPill from "../../components/lab/StatusPill.astro";
+import StageTimeline from "../../components/lab/StageTimeline.astro";
 import EvidenceArtifacts from "../../components/lab/EvidenceArtifacts.astro";
 import Prose from "../../components/lab/Prose.astro";
 
@@ -19,7 +20,6 @@ const { entry } = Astro.props;
 const d = entry.data;
 const { Content } = await render(entry);
 
-const started = d.started.toISOString().slice(0, 10);
 const updated = d.updated.toISOString().slice(0, 10);
 
 const title = `${d.title} | The AI Runtime Lab`;
@@ -36,10 +36,6 @@ const title = `${d.title} | The AI Runtime Lab`;
       <p class="detail__question">{d.question}</p>
       <dl class="detail__dates">
         <div>
-          <dt class="mono-label">Started</dt>
-          <dd><time datetime={started}>{started}</time></dd>
-        </div>
-        <div>
           <dt class="mono-label">Updated</dt>
           <dd><time datetime={updated}>{updated}</time></dd>
         </div>
@@ -51,6 +47,11 @@ const title = `${d.title} | The AI Runtime Lab`;
         )}
       </dl>
     </header>
+
+    <section class="progress-section reading" aria-labelledby="progress-heading">
+      <h2 id="progress-heading" class="mono-label">Progress</h2>
+      <StageTimeline stages={d.stages} />
+    </section>
 
     <section class="problem reading" aria-labelledby="problem-heading">
       <h2 id="problem-heading">The problem</h2>
@@ -117,6 +118,9 @@ const title = `${d.title} | The AI Runtime Lab`;
     font-size: 0.92rem;
     color: var(--text-2);
   }
+
+  .progress-section { margin: 0 0 2.5rem; }
+  .progress-section h2 { margin: 0 0 1.4rem; }
 
   /* Lead-with-the-problem block, visually prominent. */
   .problem {

@@ -1,0 +1,187 @@
+---
+import { LIFECYCLE, resolveStages, type StageEntry } from "../../lib/lifecycle";
+
+interface Props {
+  stages: StageEntry[];
+  compact?: boolean;
+}
+const { stages: authored = [], compact = false } = Astro.props;
+
+const { stages, currentIndex, doneCount } = resolveStages(authored);
+const current = stages[currentIndex];
+
+// Compact progress: done stages count full, the active stage counts as half.
+const filled = doneCount + (stages.some((s) => s.state === "active") ? 0.5 : 0);
+const pct = Math.round((filled / LIFECYCLE.length) * 100);
+
+const noted = stages.filter((s) => s.note && (s.state === "done" || s.state === "active"));
+---
+
+{compact ? (
+  <div class="progress" aria-label={`Stage ${currentIndex + 1} of ${LIFECYCLE.length}, ${current.stage}`}>
+    <div class="progress__track"><span class="progress__fill" style={`width:${pct}%`}></span></div>
+    <span class="progress__label">Stage {currentIndex + 1} of {LIFECYCLE.length}: {current.stage}</span>
+  </div>
+) : (
+  <section class="timeline" aria-label="Investigation progress">
+    <ol class="stepper">
+      {stages.map((s, i) => (
+        <li class={`step step--${s.state}`} aria-current={s.state === "active" ? "step" : undefined}>
+          <span class="step__node">{String(i + 1).padStart(2, "0")}</span>
+          <span class="step__label">{s.stage}</span>
+        </li>
+      ))}
+    </ol>
+
+    {noted.length > 0 && (
+      <ul class="stage-notes">
+        {noted.map((s) => (
+          <li class={`snote snote--${s.state}`}>
+            <span class="snote__stage">{s.stage}</span>
+            <span class="snote__text">{s.note}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+)}
+
+<style>
+  /* ---- Compact bar (cards) ---- */
+  .progress {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin: 1.1rem 0 0;
+  }
+  .progress__track {
+    height: 5px;
+    border-radius: 999px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .progress__fill {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .progress__label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    color: var(--text-3);
+  }
+
+  /* ---- Full stepper (detail) ---- */
+  .timeline { margin: 0; }
+
+  .stepper {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+  }
+  .step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    min-width: 0;
+  }
+  /* Connector line from the previous node to this one. */
+  .step:not(:first-child)::before {
+    content: "";
+    position: absolute;
+    top: 0.8rem;
+    left: -50%;
+    width: 100%;
+    height: 2px;
+    background: var(--border-strong);
+    z-index: 0;
+  }
+  .step--done::before,
+  .step--active::before { background: var(--accent); }
+
+  .step__node {
+    position: relative;
+    z-index: 1;
+    width: 1.6rem;
+    height: 1.6rem;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    background: var(--bg);
+    color: var(--text-3);
+    border: 1px solid var(--border-strong);
+  }
+  .step--done .step__node {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .step--active .step__node {
+    color: var(--accent);
+    border: 2px solid var(--accent);
+    font-weight: 700;
+  }
+
+  .step__label {
+    margin-top: 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-align: center;
+    color: var(--text-3);
+  }
+  .step--done .step__label,
+  .step--active .step__label { color: var(--text); }
+  .step--active .step__label { font-weight: 700; }
+
+  /* What happened so far, only for stages with a note. */
+  .stage-notes {
+    list-style: none;
+    margin: 1.6rem 0 0;
+    padding: 1.2rem 0 0;
+    border-top: 1px solid var(--border);
+    display: grid;
+    gap: 0.7rem;
+  }
+  .snote {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 1rem;
+    align-items: baseline;
+  }
+  .snote__stage {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--text-3);
+  }
+  .snote--active .snote__stage { color: var(--accent); }
+  .snote--done .snote__stage { color: var(--text-2); }
+  .snote__text { color: var(--text-2); font-size: 0.95rem; }
+
+  /* ---- Mobile: stepper becomes a vertical timeline ---- */
+  @media (max-width: 640px) {
+    .stepper { flex-direction: column; align-items: stretch; }
+    .step {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.3rem 0;
+    }
+    .step:not(:first-child)::before {
+      top: -50%;
+      left: 0.8rem;
+      width: 2px;
+      height: 100%;
+    }
+    .step__label { margin-top: 0; text-align: left; font-size: 0.82rem; }
+    .snote { grid-template-columns: 1fr; gap: 0.2rem; }
+  }
+</style>

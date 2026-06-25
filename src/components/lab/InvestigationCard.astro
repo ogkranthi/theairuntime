@@ -1,5 +1,6 @@
 ---
 import StatusPill from "./StatusPill.astro";
+import StageTimeline from "./StageTimeline.astro";
 import type { CollectionEntry } from "astro:content";
 
 interface Props {
@@ -19,6 +20,8 @@ const updated = d.updated.toISOString().slice(0, 10);
   </div>
 
   <h2 class="card__question">{d.question}</h2>
+
+  <StageTimeline stages={d.stages} compact />
 
   <dl class="card__meta">
     <div>
@@ -64,14 +67,14 @@ const updated = d.updated.toISOString().slice(0, 10);
     font-size: clamp(1.3rem, 2.6vw, 1.7rem);
     line-height: 1.25;
     color: var(--text);
-    margin: 0 0 1.25rem;
+    margin: 0 0 0.5rem;
   }
 
   .card__meta {
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem 2.5rem;
-    margin: 0 0 1.1rem;
+    margin: 1.3rem 0 1.1rem;
   }
   .card__meta div { margin: 0; }
   .card__meta dt { margin-bottom: 0.2rem; }
