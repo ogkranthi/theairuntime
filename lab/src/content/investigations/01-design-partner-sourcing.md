@@ -159,3 +159,4 @@ The log is dated newest-last. It is the running record of what actually
 happened, including the parts that did not work.
 
 - 2026-06-25: Brief published. Rubric v1 frozen. Eval harness next.
+- 2026-06-25: Artifacts repo wired up. Code and eval-harness links now point to the dedicated the-ai-runtime-lab repo. Baseline run next.
