@@ -742,7 +742,10 @@ export default {
       // Lab, API, and assets here; send any stray main-site page to events.
       if (hostname === LAB_HOST) {
         if (pathname === '/') {
-          return Response.redirect(`https://${LAB_HOST}/investigations/${search}`, 301);
+          // 302 (temporary): the root destination changed once already (was
+          // /field-lab), and browsers/edge cache 301s hard. Keep this
+          // re-evaluatable so the root is never stuck behind a cached 301.
+          return Response.redirect(`https://${LAB_HOST}/investigations/${search}`, 302);
         }
         const stayOnLab =
           isInvestigationsPath(pathname) ||
