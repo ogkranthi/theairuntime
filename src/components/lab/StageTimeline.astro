@@ -23,7 +23,7 @@ const noted = stages.filter((s) => s.note && (s.state === "done" || s.state === 
     <span class="progress__label">Stage {currentIndex + 1} of {LIFECYCLE.length}: {current.stage}</span>
   </div>
 ) : (
-  <section class="timeline" aria-label="Investigation progress">
+  <section class="timeline" aria-label="Field report progress">
     <ol class="stepper">
       {stages.map((s, i) => (
         <li class={`step step--${s.state}`} aria-current={s.state === "active" ? "step" : undefined}>

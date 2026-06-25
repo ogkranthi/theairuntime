@@ -36,6 +36,8 @@ export interface Build {
 export interface InvestigationData {
   status: Status;
   lastRun: string | null; // ISO date of the run that produced current numbers
+  name: string; // short field-report name shown under the eyebrow
+  orientation: string; // plain-language standfirst, rendered above the status strip
   question: string;
   bar: string;
   baseline: Metrics;
@@ -50,9 +52,12 @@ export interface InvestigationData {
 export const inv01: InvestigationData = {
   status: 'planned',
   lastRun: null,
+  name: 'Reliable design-partner sourcing',
+  orientation:
+    'A two-person developer-tools startup needs fifty qualified design partners a week, pulled from public data, under a fixed budget, with no one re-checking each name by hand. A design partner here is an early customer who builds alongside the product, so a wrong name costs a wasted cold email and some trust, not just a bad row in a spreadsheet. Qualified means the company clears a written rubric: right stage, relevant stack, currently active, and a reachable contact. This field report builds the smallest system that can meet that bar, then tests one question: does verifying only the borderline candidates against a second source buy enough precision to justify its cost and the recall it gives up?',
   question:
     'Can a sourcing agent hit a hard precision bar under a fixed budget, and does selective verification pay for itself?',
-  bar: 'Precision at or above the rubric threshold on a blind golden set, sustained weekly. 50 qualified candidates per week. Per-qualified-candidate cost under the ceiling.',
+  bar: 'Precision at or above the rubric threshold on a blind golden set (a hand-labeled answer key the pipeline never sees while it is being tuned), sustained weekly. 50 qualified candidates per week. Per-qualified-candidate cost under the ceiling.',
   baseline: {
     state: 'pending',
     precision: null,
@@ -81,9 +86,9 @@ export const inv01: InvestigationData = {
     repoUrl: 'https://github.com/ogkranthi/the-ai-runtime-lab',
     harnessUrl: 'https://github.com/ogkranthi/the-ai-runtime-lab/tree/main/eval-harness',
   },
-  // Only ships because there is a real intent to run Investigation 02 next.
+  // Only ships because there is a real intent to run FR-002 next.
   nextTeaser:
-    'Next: Investigation 02, a reliability investigation in a regulated banking deployment, where the cost of a false positive is a compliance incident, not a bad cold email.',
+    'Next: FR-002, a reliability field report in a regulated banking deployment, where the cost of a false positive is a compliance incident, not a bad cold email.',
 };
 
 export const evidenceBySlug: Record<string, InvestigationData> = {
