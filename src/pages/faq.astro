@@ -1,9 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
-import SubstackEmbed from '../components/SubstackEmbed.astro';
 import AskQuestion from '../components/AskQuestion.astro';
 import JsonLd from '../components/JsonLd.astro';
+import { SLACK_INVITE_URL } from '../lib/community';
 
 const faqs = [
   {
@@ -40,7 +40,7 @@ const faqs = [
   },
   {
     q: 'Is there a Slack or Discord?',
-    a: "Not yet. We're collecting interest to gauge demand. If you'd like to be invited when the Slack opens, drop your email below.",
+    a: `Yes. We run a practitioner Slack for members, speakers, and engaged attendees to trade production lessons between events. <a href="${SLACK_INVITE_URL}">Join the Slack</a>.`,
   },
   {
     q: 'How do I speak at an event?',
@@ -78,21 +78,12 @@ const faqSchema = {
     </ul>
   </Section>
 
-  <Section eyebrow="Slack interest" title="Want to join the practitioner Slack?">
+  <Section eyebrow="Community" title="Join the practitioner Slack">
     <p class="dim wide">
-      We're collecting interest for a private Slack for AI Runtime practitioners, speakers,
-      engaged attendees, and subscribers who want a place to share production lessons between
-      events. Drop your email and we'll invite you when it opens.
+      The AI Runtime Slack is where practitioners, speakers, and engaged attendees trade production
+      lessons between events. Free to join.
     </p>
-    <SubstackEmbed
-      source="slack-interest"
-      headline="Reserve your Slack invite"
-      subhead="One-time email when the practitioner Slack opens. You'll also get the newsletter unless you unsubscribe."
-      buttonLabel="Request invite"
-      successTitle="You're on the Slack list."
-      successBody="We'll email you when the practitioner Slack opens. In the meantime, the newsletter is the best signal of what we're up to."
-      footer="slack"
-    />
+    <p><a class="btn" href={SLACK_INVITE_URL} target="_blank" rel="noopener">Join the Slack →</a></p>
   </Section>
 
   <Section eyebrow="Still curious?" title="Ask us anything we haven't answered">
