@@ -9,6 +9,7 @@ import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
 import Section from '../../components/Section.astro';
 import JsonLd from '../../components/JsonLd.astro';
+import { SLACK_INVITE_URL } from '../../lib/community';
 
 const allEvents = await getCollection('events', (e) => e.slug.startsWith('boston/'));
 allEvents.sort((a, b) => +b.data.date - +a.data.date);
@@ -121,6 +122,9 @@ const eventSchema = {
     <p class="muted small luma">
       Prefer just the calendar? <a href="https://luma.com/tair">Subscribe to the Boston meetup on Luma →</a>
       or <a href="/events.ics" download>add our events to your calendar (.ics)</a>.
+    </p>
+    <p class="muted small luma">
+      Between events, the conversation lives in our practitioner Slack. <a href={SLACK_INVITE_URL} target="_blank" rel="noopener">Join the Slack →</a>
     </p>
   </Section>
 

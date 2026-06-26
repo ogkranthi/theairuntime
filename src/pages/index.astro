@@ -9,6 +9,7 @@ import StatBand from '../components/StatBand.astro';
 import { getCollection } from 'astro:content';
 import { fetchSubstackPosts } from '../lib/substack';
 import { LAB_URL } from '../lib/field-briefs';
+import { SLACK_INVITE_URL } from '../lib/community';
 
 const posts = await fetchSubstackPosts(4);
 const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -42,6 +43,9 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
               buttonLabel="Subscribe free"
             />
           </div>
+          <p class="hero-slack dim">
+            Already in? <a href={SLACK_INVITE_URL} target="_blank" rel="noopener">Join the practitioner Slack →</a>
+          </p>
         </div>
         <div class="art"><Blink size={150} showMotion={true} showCheeks={true} /></div>
       </div>
@@ -216,6 +220,7 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
   h1 { margin: 0.7rem 0 0; }
   .lede { font-size: 1.15rem; max-width: 36rem; margin-top: 1rem; }
   .sub { margin-top: 1.75rem; max-width: 32rem; }
+  .hero-slack { font-size: 0.9rem; margin-top: 0.9rem; }
   .art { display: flex; justify-content: center; }
 
   .issues { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
