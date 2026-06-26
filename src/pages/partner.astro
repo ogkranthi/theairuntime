@@ -1,0 +1,98 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+
+// The vendor/provider intake is an embedded Airtable form. Swap this one URL to
+// point at a different form; Airtable handles storage and emails a copy of each
+// submission to the team (a setting on the form itself, no code needed).
+const FORM_URL = 'https://airtable.com/embed/appHnMPcsBu6XTApu/pagDRFOi4sD8P6V8h/form';
+---
+<BaseLayout
+  title="Partner with The AI Runtime"
+  description="For vendors and providers: reach Boston AI practitioners by running a hands-on session with your tool, sending a speaker, or sponsoring an evening."
+>
+  <Section eyebrow="For vendors & providers" title="Get in front of practitioners shipping AI to production">
+    <p class="lead dim">
+      The AI Runtime runs meetups in Boston for engineers building, shipping, and scaling with AI. The
+      room, the audience, and the program are already in place. If you are a vendor or provider, here
+      is how you reach them: run a hands-on session with your tool, send a speaker, or sponsor an
+      evening.
+    </p>
+    <ul class="split">
+      <li>
+        <span class="k">Hands-on session</span>
+        <p class="dim">Run a practical workshop with your tool in the room, the way Apify did. Practitioners try your product on a real problem, the highest-signal way to earn adoption.</p>
+      </li>
+      <li>
+        <span class="k">Speaker or demo</span>
+        <p class="dim">Send an engineer to teach a real production pattern. The bar is practitioner-grade: a specific lesson and a concrete artifact, not a sales deck. <a href="/speak">See the speaker bar</a>.</p>
+      </li>
+      <li>
+        <span class="k">Sponsor an evening</span>
+        <p class="dim">Cover food, provide API or compute credits, or set up a multi-event partnership. <a href="/sponsors">Partners and tiers</a>.</p>
+      </li>
+    </ul>
+  </Section>
+
+  <Section eyebrow="Get started" title="Tell us what you have in mind">
+    <p class="dim wide">
+      Share your company, which of these fits, and what you are thinking. We reply within a few days.
+      Reaching out is not a commitment on either side.
+    </p>
+    <div class="embed">
+      <iframe
+        class="airtable-embed"
+        src={FORM_URL}
+        title="Partner with The AI Runtime intake form"
+        loading="lazy"
+        width="100%"
+        height="720"
+      ></iframe>
+    </div>
+    <p class="dim small note">Whatever the format, it has to teach the room, not pitch it.</p>
+  </Section>
+</BaseLayout>
+
+<style>
+  .lead { max-width: 42rem; }
+  .wide { max-width: 42rem; }
+  .small { font-size: 0.9rem; }
+  .note { margin-top: 1rem; }
+
+  .split {
+    list-style: none;
+    padding: 0;
+    margin: 1.75rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .split li {
+    padding: 1.25rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .split .k {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .split p { margin: 0.5rem 0 0; }
+
+  .embed {
+    margin-top: 1.5rem;
+    max-width: 46rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .embed iframe {
+    display: block;
+    background: transparent;
+    border: 0;
+  }
+</style>

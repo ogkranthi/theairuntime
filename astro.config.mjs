@@ -32,5 +32,6 @@ export default defineConfig({
   // path). Keep the old URL working for any shared links.
   redirects: {
     '/field-lab/briefs': '/briefs',
+    '/host': '/partner',
   },
 });
