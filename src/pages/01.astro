@@ -1,0 +1,368 @@
+---
+import LabLayout from '../layouts/LabLayout.astro';
+import CardRow from '../components/lab/CardRow.astro';
+import EvalTable from '../components/lab/EvalTable.astro';
+
+// TODO: replace with the real Luma event URL and date before launch (one-line
+// swaps). LUMA_URL falls back to the Boston meetup calendar until then.
+const LUMA_URL = 'https://luma.com/tair';
+const EVENT_DATE = 'Date to be announced';
+const SUBSCRIBE_URL = 'https://theairuntime.com/subscribe';
+
+const breaks = [
+  { term: 'Stale', body: 'true once, not anymore, and the source is cached.' },
+  { term: 'Unsupported', body: 'the evidence is missing, walled, or does not actually back the claim.' },
+  { term: 'Conflicting', body: 'two sources disagree on a field that matters.' },
+  { term: 'Extraction-drift', body: 'the agent grabbed the wrong field, or the wrong company.' },
+];
+
+const trustLayer = [
+  { term: 'Guard', body: 'check each claim is fresh, supported, and the right shape before it ships.' },
+  { term: 'Degrade', body: 'hand over the records you can stand behind and name the gaps, instead of padding the list with junk.' },
+  { term: 'Observe', body: 'emit a trace per record: where it came from, what was checked, what was rejected and why.' },
+];
+
+const evalHeaders = ['Group', 'Count', 'Verdict', 'Tests'];
+const evalRows = [
+  ['Clean', 10, 'accept', 'keeps good leads'],
+  ['Stale', 5, 'reject or review', 'outdated evidence'],
+  ['Unsupported', 5, 'reject or review', 'missing or weak evidence'],
+  ['Conflicting', 5, 'review', 'source disagreement'],
+  ['Extraction-drift', 5, 'reject', 'wrong field or entity'],
+];
+
+const passBar = [
+  'bad-record recall at or above 85 percent',
+  'clean-record precision at or above 80 percent',
+  'evidence coverage 100 percent on accepted records',
+  'zero unsupported accepted claims',
+  'a reason on every rejection',
+];
+
+const runOfShow = [
+  'Customer frame',
+  'Apify source layer',
+  'Improve the trust core against the Dirty Thirty',
+  'Eval checkpoint',
+  'Add the policy filter and run live',
+  'Founder report and teardown',
+  'Show-and-tell',
+];
+---
+<LabLayout
+  title="Field Lab 01: A Reliability Layer for Web-Grounded Agents"
+  description="Build and prove a reusable trust layer for a web-grounded growth agent: a design-partner sourcing agent on Apify, graded on whether its leads are safe to act on."
+  ogImage="/og-01.png"
+>
+  <!-- 1. Hero -->
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">Field Lab 01 · Boston · with Apify</p>
+      <h1>A Reliability Layer for Web-Grounded Agents</h1>
+      <p class="sub">Build a design-partner sourcing agent on Apify, then prove which leads are safe to act on.</p>
+      <p class="promise">
+        You will not leave with a lead-gen toy. You will leave with a reusable trust layer for
+        web-grounded agents and an eval that proves whether it works.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href={LUMA_URL} target="_blank" rel="noopener">Register on Luma</a>
+        <a class="btn btn-ghost" href={SUBSCRIBE_URL} target="_blank" rel="noopener">Subscribe</a>
+      </div>
+      <ul class="chips">
+        <li>In person, Boston</li>
+        <li>Hands-on build</li>
+        <li>Bring a laptop</li>
+        <li>{EVENT_DATE}</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2. The founder problem -->
+  <section class="sec">
+    <div class="lab-container">
+      <h2>The founder problem</h2>
+      <blockquote class="story">
+        <p>
+          A founder has a product and not enough customers, so they point an agent at the web to find
+          who to sell to. The agent returns fifty clean leads. The founder emails all fifty. A third
+          bounce, several were never a fit, two of the companies shut down last year. The list looked
+          done. It was not.
+        </p>
+        <p>
+          That gap, between a list that looks done and a list you can act on, is what this Field Lab is
+          about. The web data part is easy. Knowing which of it to trust is the job.
+        </p>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- 3. What this actually is -->
+  <section class="sec">
+    <div class="lab-container">
+      <h2>What this actually is</h2>
+      <div class="col">
+        <p>
+          This is not a lead-generation session. It is about the reliability layer around a
+          web-grounded agent: where the data came from, whether the evidence holds, and what to do when
+          it does not. Lead generation is just the first use case. The trust layer is the artifact, and
+          it works for any agent that makes claims off the web.
+        </p>
+        <p>
+          Two layers, and only one is the product. The trust core is source-agnostic: it takes a claim
+          and its evidence and decides whether it is true and supported right now. The policy filter
+          sits on top and decides whether a true claim fits what the founder asked for. The core is the
+          reusable piece. The fit logic stays on top so it never contaminates it.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. The shared scenario -->
+  <section class="sec">
+    <div class="lab-container">
+      <h2>The shared scenario</h2>
+      <div class="col">
+        <p>
+          The whole room works the same problem. A seed to Series A B2B SaaS founder selling a
+          developer-facing product, no growth hire, who needs a weekly list of qualified design-partner
+          candidates.
+        </p>
+        <p>
+          The fit profile, which feeds the policy layer: US-based B2B SaaS, 50 to 300 people, a
+          developer-facing product, a contact who is an engineering leader, and a real reason to reach
+          out now.
+        </p>
+        <p>
+          You build an agent that returns a prospect list where every field traces to a source that
+          currently supports it. Plausible is not verified.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. The four ways web data breaks -->
+  <section class="sec">
+    <div class="lab-container">
+      <h2>The four ways web data breaks</h2>
+      <CardRow items={breaks} />
+    </div>
+  </section>
+
+  <!-- 6. What you build, the trust layer -->
+  <section class="sec">
+    <div class="lab-container">
+      <h2>What you build, the trust layer</h2>
+      <CardRow items={trustLayer} />
+    </div>
+  </section>
+
+  <!-- 7. The bar, the Dirty Thirty -->
+  <section class="sec">
+    <div class="lab-container">
+      <h2>The bar, the Dirty Thirty</h2>
+      <div class="col">
+        <p>
+          Thirty frozen records with known answers, ten clean and twenty each planted with a specific
+          break. Your guard is graded on two numbers, not one: did it catch the bad records, and did it
+          keep the good ones. An agent that rejects everything scores perfectly on the first and fails
+          the second, so it fails. That is the point.
+        </p>
+      </div>
+      <EvalTable headers={evalHeaders} rows={evalRows} />
+      <p class="passbar-lead">Pass bar:</p>
+      <ul class="passbar">
+        {passBar.map((p) => <li>{p}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- 8. What you leave with -->
+  <section class="sec">
+    <div class="lab-container">
+      <h2>What you leave with</h2>
+      <div class="col">
+        <p>
+          A working sourcing agent. A reusable, source-agnostic trust core. A thin growth policy filter.
+          The thirty-case eval harness. Your own measured precision and recall. A founder-facing trust
+          report. And a teardown that says, not "I built an agent," but "I built a reusable reliability
+          layer for web-grounded agents, benchmarked it against a planted trap set, and produced a
+          safe-to-act-on number." That is a portfolio artifact, not a demo.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. How it runs -->
+  <section class="sec">
+    <div class="lab-container">
+      <h2>How it runs</h2>
+      <ol class="runlist">
+        {runOfShow.map((step, i) => (
+          <li><span class="n">{String(i + 1).padStart(2, '0')}</span>{step}</li>
+        ))}
+      </ol>
+      <p class="setup">
+        Bring any coding assistant you already use. Claude Code, Copilot, Cursor, and Codex are all
+        fine. The repo is plain Python on the Apify SDK, so the tool you write with does not change the
+        build. You need a working Python runtime and a model key. A thirty-second smoke test in the
+        pre-work confirms both before you arrive.
+      </p>
+    </div>
+  </section>
+
+  <!-- 10. Run with -->
+  <section class="sec">
+    <div class="lab-container">
+      <h2>Run with</h2>
+      <div class="col">
+        <p>
+          Run with Apify, who provide the data plane: the Actors and datasets that feed the agent. The
+          AI Runtime Field Lab owns the scenario, the reliability bar, the trap set, and the published
+          write-up.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. Close -->
+  <section class="sec close">
+    <div class="lab-container">
+      <div class="cta-row">
+        <a class="btn" href={LUMA_URL} target="_blank" rel="noopener">Register on Luma</a>
+        <a class="btn btn-ghost" href={SUBSCRIBE_URL} target="_blank" rel="noopener">Subscribe</a>
+      </div>
+      <div class="newhere">
+        <p>New to The AI Runtime? Start here:</p>
+        <ul>
+          <li><a href="https://theairuntime.com">The newsletter</a>, production lessons every week.</li>
+          <li><a href="/briefs">Field Briefs</a>, the problem library.</li>
+          <li><a href="/investigations/design-partner-sourcing/">Investigation 01</a>, the field report behind this build.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    12. POST-EVENT, BUILD LATER (stub, do not remove).
+    After the event, append these as real sections. Content add, not a rebuild:
+      - Results: the eval outcomes (precision, recall, coverage) per build.
+      - Failure modes: what broke and why.
+      - What changed after hardening: before vs after the guard.
+      - The reusable pattern: the source-agnostic trust core, generalized.
+      - The teardown and repo link.
+  -->
+</LabLayout>
+
+<style>
+  /* Buttons: the lab design system has no button styles (investigations uses
+     plain links), so define them here in lab tokens. */
+  .btn {
+    display: inline-block;
+    padding: 0.7rem 1.3rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+  .btn:hover { background: #c64708; border-color: #c64708; text-decoration: none; }
+  .btn-ghost { background: transparent; color: var(--text); border-color: var(--border-strong); }
+  .btn-ghost:hover { background: transparent; color: var(--accent); border-color: var(--accent); }
+  .btn:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .hero h1 { max-width: 18ch; }
+  .sub {
+    max-width: 40rem;
+    margin: 0.9rem 0 0;
+    font-size: 1.15rem;
+    color: var(--text-2);
+  }
+  .promise {
+    max-width: 42rem;
+    margin: 1.5rem 0 0;
+    padding: 1rem 1.2rem;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-2);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--text);
+    font-size: 1.02rem;
+  }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+  .chips {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .chips li {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    color: var(--text-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+  }
+
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .sec h2 { margin: 0 0 1.25rem; }
+  .col { max-width: 42rem; }
+
+  .story {
+    max-width: 42rem;
+    margin: 0;
+    padding-left: 1.2rem;
+    border-left: 3px solid var(--border-strong);
+  }
+  .story p { color: var(--text); }
+  .story p + p { margin-top: 1rem; }
+
+  .passbar-lead {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 1.75rem 0 0.6rem;
+  }
+  .passbar { max-width: 42rem; margin: 0; padding-left: 1.2rem; }
+  .passbar li { margin: 0.3rem 0; color: var(--text-2); }
+
+  .runlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; max-width: 42rem; }
+  .runlist li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+    color: var(--text);
+  }
+  .runlist .n { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); }
+
+  .setup {
+    max-width: 42rem;
+    margin: 1.75rem 0 0;
+    padding: 1rem 1.2rem;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-2);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--text-2);
+    font-size: 0.98rem;
+  }
+
+  .close { border-bottom: 1px solid var(--border); }
+  .newhere { margin-top: 2.5rem; }
+  .newhere > p { color: var(--text-2); margin: 0 0 0.5rem; }
+  .newhere ul { padding-left: 1.2rem; margin: 0; }
+  .newhere li { margin: 0.4rem 0; color: var(--text-2); }
+</style>

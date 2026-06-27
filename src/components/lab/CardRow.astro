@@ -1,0 +1,51 @@
+---
+// A responsive row of small cards, each a term plus a one-line body. Used for
+// the failure-modes and trust-layer rows. Lab tokens inherit from LabLayout.
+interface Item {
+  term: string;
+  body: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+<ul class="card-row">
+  {items.map((it) => (
+    <li class="card">
+      <span class="term">{it.term}</span>
+      <p class="body">{it.body}</p>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .card-row {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.25rem 1.3rem;
+  }
+  .term {
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+  .body {
+    margin: 0.5rem 0 0;
+    font-size: 0.95rem;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+</style>
