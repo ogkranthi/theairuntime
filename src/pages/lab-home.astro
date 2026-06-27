@@ -1,0 +1,114 @@
+---
+import { getCollection } from 'astro:content';
+import LabLayout from '../layouts/LabLayout.astro';
+import SpineSteps from '../components/lab/SpineSteps.astro';
+import LabCard from '../components/lab/LabCard.astro';
+import ReportCard from '../components/lab/ReportCard.astro';
+import CTAButtons from '../components/lab/CTAButtons.astro';
+import { WORKSHOPS_URL, SUBMIT_URL, SUBSCRIBE_URL, PUBLICATION_URL, EVENTS_URL, CONTACT_EMAIL } from '../lib/lab-links';
+
+const labs = (await getCollection('labs'))
+  .filter((l) => l.data.status !== 'draft')
+  .sort((a, b) => b.data.number - a.data.number);
+
+const reports = (await getCollection('reports'))
+  .filter((r) => r.data.featured)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<LabLayout
+  title="The AI Runtime Field Lab"
+  description="Production-shaped problems in AI systems, scored against a public bar. Build the fix at a workshop and keep the proof as a Report you own."
+  canonicalPath="/"
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">The AI Runtime · Field Lab</p>
+      <h1>Production-shaped problems. Build the fix. Keep the proof.</h1>
+      <p class="sub">
+        The Field Lab runs builders against real reliability problems in AI systems, scored against a
+        public bar. You leave with something you own.
+      </p>
+      <CTAButtons
+        links={[
+          { label: 'Join a workshop', href: WORKSHOPS_URL, primary: true, external: true },
+          { label: 'Submit a problem', href: SUBMIT_URL },
+        ]}
+      />
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">How it works</h2>
+      <SpineSteps />
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Current and recent Labs</h2>
+      <div class="grid">
+        {labs.map((l) => (
+          <LabCard
+            number={l.data.number}
+            title={l.data.title}
+            status={l.data.status}
+            brief_summary={l.data.brief_summary}
+            partner={l.data.partner}
+            date={l.data.date}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">What builders shipped</h2>
+      {reports.length > 0 ? (
+        <div class="grid">
+          {reports.map((r) => (
+            <ReportCard
+              slug={r.id}
+              title={r.data.title}
+              builder_name={r.data.builder_name}
+              builder_link={r.data.builder_link}
+              lab_number={r.data.lab_number}
+              summary={r.data.summary}
+              result={r.data.result}
+              repo_url={r.data.repo_url}
+              writeup_url={r.data.writeup_url}
+            />
+          ))}
+        </div>
+      ) : (
+        <p class="empty">First Reports land after Field Lab 01. <a href="/reports">See the gallery</a>.</p>
+      )}
+    </div>
+  </section>
+
+  <section class="sec foot">
+    <div class="lab-container">
+      <p class="sub-line">New briefs and the next workshop, in the weekly newsletter. <a href={SUBSCRIBE_URL}>Subscribe</a>.</p>
+      <p class="links">
+        <a href={PUBLICATION_URL}>The publication</a>
+        <a href={EVENTS_URL}>Workshops and events</a>
+        <a href={`mailto:${CONTACT_EMAIL}`}>Get in touch</a>
+      </p>
+    </div>
+  </section>
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .hero h1 { max-width: 20ch; }
+  .sub { max-width: 42rem; margin: 0.9rem 0 1.5rem; font-size: 1.15rem; color: var(--text-2); }
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .sec h2 { margin: 0 0 1.5rem; }
+  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+  .empty { color: var(--text-2); }
+  .empty a, .sub-line a, .links a { color: var(--accent); }
+  .foot .sub-line { color: var(--text-2); margin: 0 0 0.75rem; }
+  .foot .links { display: flex; flex-wrap: wrap; gap: 1.4rem; margin: 0; font-size: 0.92rem; }
+</style>

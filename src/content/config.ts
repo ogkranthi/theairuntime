@@ -1,6 +1,4 @@
 import { defineCollection, reference, z } from 'astro:content';
-import { glob } from 'astro/loaders';
-import { LIFECYCLE } from '../lib/lifecycle';
 
 const cities = defineCollection({
   type: 'content',
@@ -154,127 +152,45 @@ const signal = defineCollection({
   }),
 });
 
-// Field Briefs: the Field Lab problem library. Enforces the Field Brief
-// Standard v1.0. One brief format for curated and failure-derived problems.
-// `draft` and `verified_at` are site extensions beyond the standard.
-const problems = defineCollection({
-  type: 'data',
-  schema: z
-    .object({
-      id: z.string().regex(/^[a-z0-9-]+$/),
-      title: z.string(),
-      one_line: z.string(),
-      vertical: z.string(),
-      difficulty: z.enum(['Starter', 'Intermediate', 'Advanced']),
-      build_type: z.string(),
-      status: z.enum(['Open', 'Claimed', 'Shipped', 'Featured']),
-      run_level: z.enum(['R0', 'R1', 'R2', 'R3', 'R4']),
-      reliability_focus: z.array(z.string()).min(2),
-      provenance: z.enum([
-        'curated',
-        'operator-sourced',
-        'failure-derived',
-        'company-submitted',
-        'partner-contributed',
-      ]),
-      failure_family: z
-        .enum([
-          'destructive auto-shipping',
-          'reward hacking',
-          'delegated identity',
-          'prompt injection',
-          'cost runaway',
-          'eval-production gap',
-          'supply chain',
-        ])
-        .optional(),
-      why_it_matters: z.string(),
-      persona: z.string(),
-      current_workflow: z.string(),
-      ai_workflow: z.string(),
-      inputs: z.array(z.string()).min(1),
-      outputs: z.array(z.string()).min(1),
-      definition_of_done: z.string(),
-      example_input: z.string(),
-      example_output: z.string(),
-      data_plan: z.enum(['synthetic', 'public', 'sanitized']),
-      non_goals: z.array(z.string()),
-      evaluation_ideas: z.array(z.string()).min(1),
-      suggested_tools: z.array(z.string()),
-      thesis_questions: z.array(z.string()).optional(),
-      month: z.string().regex(/^\d{4}-\d{2}$/).optional(),
-      failure_story: z
-        .object({
-          what_happened: z.string(),
-          root_cause_read: z.string(),
-          engineering_lesson: z.string(),
-        })
-        .optional(),
-      sources: z.array(z.string().url()).optional(),
-      primary_source_note: z.string().optional(),
-      field_signals: z.array(z.string()).optional(),
-      // Site extensions, not part of the standard.
-      // Fixed-frame signature line: "Build a production-ready AI system that
-      // [outcome] while satisfying explicit [constraint, constraint, and
-      // constraint] constraints." The shape is constant across briefs; the
-      // constraints individuate each one.
-      system_signature: z.string().optional(),
-      verified_at: z.string().optional(), // e.g. "R3" on a Shipped brief
-      draft: z.boolean().default(false), // flip to false after editorial review
-    })
-    .superRefine((b, ctx) => {
-      if (b.provenance === 'failure-derived') {
-        for (const f of ['failure_story', 'sources', 'primary_source_note', 'failure_family'] as const) {
-          if (!b[f]) {
-            ctx.addIssue({ code: z.ZodIssueCode.custom, message: `failure-derived requires ${f}`, path: [f] });
-          }
-        }
-      }
-      if (b.provenance === 'operator-sourced' && !b.sources) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'operator-sourced requires sources', path: ['sources'] });
-      }
-    }),
-});
-
-// The Lab investigations (lab.theairuntime.com). Content Layer glob loader so
-// the frontmatter `slug` is a real, schema-validated field that drives the URL
-// independent of the filename. Served on the lab host under /investigations.
-const investigations = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/investigations' }),
+// The converged Field Lab model. One pipeline, three nouns:
+//   Brief  = the problem (fields on a Lab, not a separate collection)
+//   Lab    = the numbered build, one page per Lab (this collection)
+//   Report = a builder's teardown, which they own (the reports collection)
+const labs = defineCollection({
+  type: 'content',
   schema: z.object({
-    id: z.string(),
-    slug: z.string(),
+    number: z.number(), // 1, 2, 3
     title: z.string(),
-    question: z.string(),
-    status: z.enum(['investigating', 'in-eval', 'published']),
-    customer: z.string(),
-    problem: z.string(),
-    summary: z.string(),
-    // FDE scoping brief. The stated ask is `problem`; these sharpen the scope.
-    industry: z.string().optional(),          // the use case's industry / vertical
-    bar: z.string().optional(),               // the reliability bar, one line
-    inScope: z.array(z.string()).default([]), // what the engagement commits to
-    outScope: z.array(z.string()).default([]),// what is explicitly declined
-    pillar: z.enum(['MRE', 'Vertical Agents', 'Lessons from the Trenches']).optional(),
-    started: z.coerce.date(),
-    updated: z.coerce.date(),
-    // Per-stage progress through the 7-stage lifecycle. Drives the stage
-    // timeline. Stages omitted here default to "todo"; advance one each week.
-    stages: z
-      .array(
-        z.object({
-          stage: z.enum(LIFECYCLE),
-          state: z.enum(['done', 'active', 'todo']),
-          note: z.string().optional(),
-        }),
-      )
-      .default([]),
-    repo: z.string().url().optional(),
-    evalUrl: z.string().url().optional(),
-    datasetUrl: z.string().url().optional(),
-    reportUrl: z.string().url().optional(),
-    tags: z.array(z.string()).default([]),
+    status: z.enum(['scheduled', 'past', 'draft']),
+    date: z.coerce.date().optional(),
+    location: z.string().optional(), // "Boston"
+    partner: z.string().optional(), // "Apify"
+    // Brief (the problem) lives on the Lab:
+    brief_summary: z.string(), // one or two sentences, used on cards
+    fit_profile: z.string().optional(),
+    the_bar: z.string().optional(), // the public reliability bar, e.g. the Dirty Thirty
+    luma_url: z.string().url().optional(),
+    subscribe_url: z.string().url(),
+    og_image: z.string().optional(),
+    report_slugs: z.array(z.string()).default([]), // links to its Reports
   }),
 });
 
-export const collections = { cities, speakers, events, resources, signal, problems, investigations };
+const reports = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    builder_name: z.string(),
+    builder_link: z.string().url().optional(), // GitHub or LinkedIn, builder owns the proof
+    lab_number: z.number(), // which Field Lab produced it
+    summary: z.string(), // one or two sentences
+    result: z.string().optional(), // e.g. "recall 0.91, precision 0.86 on the Dirty Thirty"
+    repo_url: z.string().url().optional(),
+    writeup_url: z.string().url().optional(),
+    date: z.coerce.date(),
+    featured: z.boolean().default(false),
+    og_image: z.string().optional(),
+  }),
+});
+
+export const collections = { cities, speakers, events, resources, signal, labs, reports };

@@ -1,10 +1,10 @@
 ---
 // Wordmark: "the AI runtime" (lowercase except AI) with a small `lab` tag.
-// Links to the Lab front door (the investigations landing).
+// Links to the Lab front door (the home).
 interface Props {
   href?: string;
 }
-const { href = "/investigations/" } = Astro.props;
+const { href = "/" } = Astro.props;
 ---
 
 <a class="wordmark" href={href} aria-label="The AI Runtime Lab, home">

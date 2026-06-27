@@ -1,0 +1,150 @@
+---
+import { getCollection, render } from 'astro:content';
+import LabLayout from '../layouts/LabLayout.astro';
+import CTAButtons from '../components/lab/CTAButtons.astro';
+import ReportCard from '../components/lab/ReportCard.astro';
+
+export async function getStaticPaths() {
+  const labs = await getCollection('labs');
+  return labs
+    .filter((l) => l.data.status !== 'draft')
+    .map((lab) => ({ params: { lab: String(lab.data.number).padStart(2, '0') }, props: { lab } }));
+}
+
+const { lab } = Astro.props;
+const d = lab.data;
+const { Content } = await render(lab);
+const nn = String(d.number).padStart(2, '0');
+
+const dateLabel = d.date
+  ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d.date)
+  : 'Date to be announced';
+
+const eyebrow = `Field Lab ${nn}${d.location ? ` · ${d.location}` : ''}${d.partner ? ` · with ${d.partner}` : ''}`;
+
+const reports =
+  d.status === 'past'
+    ? (await getCollection('reports'))
+        .filter((r) => r.data.lab_number === d.number)
+        .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+    : [];
+---
+<LabLayout
+  title={`Field Lab ${nn}: ${d.title}`}
+  description={d.brief_summary}
+  ogImage={d.og_image}
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">{eyebrow}</p>
+      <h1>{d.title}</h1>
+      <p class="sub">{d.brief_summary}</p>
+      {d.status === 'scheduled' && (
+        <CTAButtons
+          links={[
+            ...(d.luma_url ? [{ label: 'Register on Luma', href: d.luma_url, primary: true, external: true }] : []),
+            { label: 'Subscribe', href: d.subscribe_url, external: true },
+          ]}
+        />
+      )}
+      <ul class="chips">
+        {d.location && <li>In person, {d.location}</li>}
+        <li>Hands-on build</li>
+        <li>Bring a laptop</li>
+        <li>{dateLabel}</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="lab-container labbody">
+    <Content />
+  </div>
+
+  {d.status === 'past' && (
+    <section class="sec">
+      <div class="lab-container">
+        <h2>Reports from this Lab</h2>
+        {reports.length > 0 ? (
+          <div class="reports-grid">
+            {reports.map((r) => (
+              <ReportCard
+                slug={r.id}
+                title={r.data.title}
+                builder_name={r.data.builder_name}
+                builder_link={r.data.builder_link}
+                lab_number={r.data.lab_number}
+                summary={r.data.summary}
+                result={r.data.result}
+                repo_url={r.data.repo_url}
+                writeup_url={r.data.writeup_url}
+              />
+            ))}
+          </div>
+        ) : (
+          <p class="dim">The first Reports from this Lab land after builders extend their builds.</p>
+        )}
+      </div>
+    </section>
+  )}
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .hero h1 { max-width: 18ch; }
+  .sub { max-width: 40rem; margin: 0.9rem 0 1.5rem; font-size: 1.15rem; color: var(--text-2); }
+  .chips { list-style: none; margin: 1.5rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chips li {
+    font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.04em; color: var(--text-2);
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.25rem 0.7rem;
+  }
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .reports-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+  .dim { color: var(--text-2); }
+</style>
+
+<!-- Prose + callout styles for the Lab MDX body. Global so they reach the
+     rendered <Content/> markup. Shared by every Lab page. -->
+<style is:global>
+  .labbody .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .labbody h2 { margin: 0 0 1.25rem; }
+  .labbody .col { max-width: 42rem; }
+  .labbody .promise,
+  .labbody .setup {
+    max-width: 42rem;
+    margin: 2rem 0 0;
+    padding: 1rem 1.2rem;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-2);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--text);
+  }
+  .labbody .story {
+    max-width: 42rem; margin: 0; padding-left: 1.2rem;
+    border-left: 3px solid var(--border-strong);
+  }
+  .labbody .story p { color: var(--text); }
+  .labbody .story p + p { margin-top: 1rem; }
+  .labbody .passbar-lead {
+    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-3); margin: 1.75rem 0 0.6rem;
+  }
+  .labbody .passbar { max-width: 42rem; margin: 0; padding-left: 1.2rem; }
+  .labbody .passbar li { margin: 0.3rem 0; color: var(--text-2); }
+  .labbody .runlist {
+    counter-reset: step; list-style: none; margin: 0; padding: 0;
+    display: grid; gap: 0.5rem; max-width: 42rem;
+  }
+  .labbody .runlist li {
+    padding: 0.7rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg-2); color: var(--text);
+  }
+  .labbody .runlist li::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero) "  ";
+    font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent);
+  }
+  .labbody .newhere { margin-top: 2.5rem; }
+  .labbody .newhere > p { color: var(--text-2); margin: 0 0 0.5rem; }
+  .labbody .newhere ul { padding-left: 1.2rem; margin: 0; }
+  .labbody .newhere li { margin: 0.4rem 0; color: var(--text-2); }
+</style>

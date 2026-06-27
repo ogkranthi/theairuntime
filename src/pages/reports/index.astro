@@ -1,0 +1,67 @@
+---
+import { getCollection } from 'astro:content';
+import LabLayout from '../../layouts/LabLayout.astro';
+import ReportCard from '../../components/lab/ReportCard.astro';
+import { CONTACT_EMAIL } from '../../lib/lab-links';
+
+const reports = (await getCollection('reports')).sort((a, b) => {
+  if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+  return b.data.date.valueOf() - a.data.date.valueOf();
+});
+---
+<LabLayout
+  title="Reports · The AI Runtime Field Lab"
+  description="What builders shipped: teardowns from the Field Lab, each owned by the builder, with the result it scored against a public bar."
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">Field Lab · Reports</p>
+      <h1>What builders shipped</h1>
+      <p class="sub">
+        Each Report is a builder's teardown of what they built and what it scored. The builder owns the
+        proof; this page shows it.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      {reports.length > 0 ? (
+        <div class="grid">
+          {reports.map((r) => (
+            <ReportCard
+              slug={r.id}
+              title={r.data.title}
+              builder_name={r.data.builder_name}
+              builder_link={r.data.builder_link}
+              lab_number={r.data.lab_number}
+              summary={r.data.summary}
+              result={r.data.result}
+              repo_url={r.data.repo_url}
+              writeup_url={r.data.writeup_url}
+            />
+          ))}
+        </div>
+      ) : (
+        <p class="empty">First Reports land after Field Lab 01.</p>
+      )}
+    </div>
+  </section>
+
+  <section class="sec foot">
+    <div class="lab-container">
+      <p>Want to work with these builders? <a href={`mailto:${CONTACT_EMAIL}`}>Get in touch.</a></p>
+    </div>
+  </section>
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .sub { max-width: 42rem; margin: 0.9rem 0 0; font-size: 1.15rem; color: var(--text-2); }
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+  .empty { color: var(--text-2); }
+  .foot p { color: var(--text-2); margin: 0; }
+  .foot a { color: var(--accent); }
+</style>

@@ -7,18 +7,15 @@ import { getCollection } from 'astro:content';
 const LAB = 'https://lab.theairuntime.com';
 
 export const GET: APIRoute = async () => {
-  const problems = await getCollection('problems');
-  const investigations = await getCollection('investigations');
+  const labs = (await getCollection('labs')).filter((l) => l.data.status !== 'draft');
+  const reports = await getCollection('reports');
   // Trailing slashes to match the directory-format canonical URLs.
   const urls = [
-    `${LAB}/investigations/`,
-    `${LAB}/investigations/about/`,
-    ...investigations.map((i) => `${LAB}/investigations/${i.data.slug}/`),
-    `${LAB}/field-lab/`,
-    `${LAB}/field-lab/intake/`,
-    `${LAB}/briefs/`,
-    ...problems.map((p) => `${LAB}/briefs/${p.id}/`),
-    `${LAB}/01/`,
+    `${LAB}/`,
+    `${LAB}/reports/`,
+    `${LAB}/submit/`,
+    ...labs.map((l) => `${LAB}/${String(l.data.number).padStart(2, '0')}/`),
+    ...reports.map((r) => `${LAB}/reports/${r.id}/`),
   ];
 
   const body =
