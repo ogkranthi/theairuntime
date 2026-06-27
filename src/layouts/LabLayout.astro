@@ -10,14 +10,16 @@ interface Props {
   title: string;
   description: string;
   ogType?: 'website' | 'article';
+  /** Per-page social card. Defaults to the Lab wordmark card. */
+  ogImage?: string;
 }
-const { title, description, ogType = 'website' } = Astro.props;
+const { title, description, ogType = 'website', ogImage: ogImageProp = '/lab-og.svg' } = Astro.props;
 
 // The Lab investigations live in the shared events build but are canonical on
 // lab.theairuntime.com, so canonical/OG point there regardless of build site.
 const LAB = new URL('https://lab.theairuntime.com');
 const canonical = new URL(Astro.url.pathname, LAB).toString();
-const ogImage = new URL('/lab-og.svg', LAB).toString();
+const ogImage = new URL(ogImageProp, LAB).toString();
 const year = 2026;
 ---
 

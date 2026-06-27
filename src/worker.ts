@@ -90,7 +90,9 @@ function isPassthroughHost(hostname: string): boolean {
 function isFieldLabPath(p: string): boolean {
   return (
     p === '/field-lab' || p.startsWith('/field-lab/') ||
-    p === '/briefs' || p.startsWith('/briefs/')
+    p === '/briefs' || p.startsWith('/briefs/') ||
+    // Field Lab 01, a numbered build-brief page that lives on the lab host.
+    p === '/01' || p.startsWith('/01/')
   );
 }
 
