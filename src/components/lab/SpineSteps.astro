@@ -1,0 +1,37 @@
+---
+// The three-step pipeline explainer: Brief -> Lab -> Report. Used on the home.
+const steps = [
+  { k: 'Brief', v: 'A scoped problem from production, with a public bar for what counts as solved.' },
+  { k: 'Lab', v: 'A hands-on build against that Brief, run in person at a workshop.' },
+  { k: 'Report', v: 'Your teardown of what you built and what it scored. Yours to keep and show.' },
+];
+---
+<ol class="spine">
+  {steps.map((s, i) => (
+    <li class="step">
+      <span class="num">{String(i + 1).padStart(2, '0')}</span>
+      <h3 class="k">{s.k}</h3>
+      <p class="v">{s.v}</p>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .spine {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+  .step {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.3rem 1.4rem;
+  }
+  .num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); }
+  .k { margin: 0.5rem 0 0.4rem; font-size: 1.05rem; }
+  .v { margin: 0; font-size: 0.95rem; color: var(--text-2); line-height: 1.6; }
+</style>

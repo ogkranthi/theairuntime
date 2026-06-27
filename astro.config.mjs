@@ -22,17 +22,20 @@ export default defineConfig({
         !page.includes('/field-lab') &&
         !page.includes('/briefs') &&
         !page.includes('/investigations') &&
-        !/\/01\/?$/.test(page) &&
+        !page.includes('/reports') &&
+        !page.includes('/submit') &&
+        !page.includes('/lab-home') &&
+        !/\/\d{2}\/?$/.test(page) &&
         !page.endsWith('.ics'),
     }),
     react(),
   ],
   prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
   build: { format: 'directory' },
-  // Field Briefs moved from /field-lab/briefs to /briefs (the Field Lab home
-  // path). Keep the old URL working for any shared links.
+  // Events-site redirect. Legacy lab paths (/field-lab, /briefs, /investigations)
+  // are redirected in the Worker instead, since their open-ended sub-paths cannot
+  // be enumerated as static redirect files.
   redirects: {
-    '/field-lab/briefs': '/briefs',
     '/host': '/partner',
   },
 });

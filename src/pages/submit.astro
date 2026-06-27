@@ -1,0 +1,30 @@
+---
+import LabLayout from '../layouts/LabLayout.astro';
+import CTAButtons from '../components/lab/CTAButtons.astro';
+import { SUBMIT_URL } from '../lib/lab-links';
+---
+<LabLayout
+  title="Submit a problem · The AI Runtime Field Lab"
+  description="Have a production-shaped reliability problem in an AI system? Submit it as a candidate Field Brief."
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">Field Lab · Submit</p>
+      <h1>Submit a problem</h1>
+      <p class="sub">
+        A good Brief is a real, production-shaped reliability problem in an AI system, with a clear line
+        for what would count as solved. Send yours and it may become a Field Brief that a Lab builds
+        against.
+      </p>
+      <CTAButtons links={[{ label: 'Open the submission form', href: SUBMIT_URL, primary: true, external: true }]} />
+      <p class="fine">Submitting is not a commitment on either side, and creates no contractor or hiring relationship.</p>
+    </div>
+  </section>
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 3rem; }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .sub { max-width: 42rem; margin: 0.9rem 0 1.5rem; font-size: 1.15rem; color: var(--text-2); }
+  .fine { margin: 1.25rem 0 0; font-size: 0.9rem; color: var(--text-3); max-width: 42rem; }
+</style>

@@ -1,0 +1,11 @@
+---
+// The eval-bar table (e.g. the Dirty Thirty), reused across Labs. Thin semantic
+// wrapper over EvalTable so Lab MDX bodies can write <BarTable ... />.
+import EvalTable from './EvalTable.astro';
+interface Props {
+  headers: string[];
+  rows: (string | number)[][];
+}
+const { headers, rows } = Astro.props;
+---
+<EvalTable headers={headers} rows={rows} />

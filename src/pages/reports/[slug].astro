@@ -1,0 +1,56 @@
+---
+import { getCollection, render } from 'astro:content';
+import LabLayout from '../../layouts/LabLayout.astro';
+import { CONTACT_EMAIL } from '../../lib/lab-links';
+
+export async function getStaticPaths() {
+  const reports = await getCollection('reports');
+  return reports.map((report) => ({ params: { slug: report.id }, props: { report } }));
+}
+
+const { report } = Astro.props;
+const d = report.data;
+const { Content } = await render(report);
+const nn = String(d.lab_number).padStart(2, '0');
+const dateLabel = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d.date);
+---
+<LabLayout title={`${d.title} · The AI Runtime Field Lab`} description={d.summary} ogType="article" ogImage={d.og_image}>
+  <article class="report">
+    <div class="lab-container">
+      <p class="back"><a href="/reports">Reports</a></p>
+      <p class="mono-label from"><a href={`/${nn}`}>Field Lab {nn}</a> · {dateLabel}</p>
+      <h1>{d.title}</h1>
+      <p class="builder">
+        by {d.builder_link ? <a href={d.builder_link} target="_blank" rel="noopener">{d.builder_name}</a> : <span>{d.builder_name}</span>}
+      </p>
+      {d.result && <p class="result">{d.result}</p>}
+      <p class="links">
+        {d.repo_url && <a href={d.repo_url} target="_blank" rel="noopener">Repo</a>}
+        {d.writeup_url && <a href={d.writeup_url} target="_blank" rel="noopener">Write-up</a>}
+      </p>
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <p class="foot">Want to work with this builder? <a href={`mailto:${CONTACT_EMAIL}`}>Get in touch.</a></p>
+    </div>
+  </article>
+</LabLayout>
+
+<style>
+  .report { padding: 3rem 0 1rem; }
+  .back { margin: 0 0 1.25rem; }
+  .back a { color: var(--accent); font-size: 0.9rem; }
+  .from { margin: 0 0 0.75rem; color: var(--text-3); }
+  .from a { color: var(--accent); }
+  h1 { max-width: 24ch; }
+  .builder { margin: 0.5rem 0 0.5rem; font-size: 1.05rem; color: var(--text-2); }
+  .builder a { color: var(--accent); }
+  .result { font-family: var(--font-mono); font-size: 0.9rem; color: var(--text); margin: 0.25rem 0 0; }
+  .links { display: flex; flex-wrap: wrap; gap: 1.1rem; margin: 0.75rem 0 0; font-size: 0.9rem; }
+  .links a { color: var(--accent); }
+  .prose { max-width: 42rem; margin: 2rem 0 0; }
+  .foot { margin: 2.5rem 0 0; color: var(--text-2); }
+  .foot a { color: var(--accent); }
+</style>

@@ -1,0 +1,55 @@
+---
+// A builder's Report, the hiring proof. Builder attribution is prominent; the
+// builder owns the work and the site displays it. Used on the home and /reports.
+interface Props {
+  slug: string;
+  title: string;
+  builder_name: string;
+  builder_link?: string;
+  lab_number: number;
+  summary: string;
+  result?: string;
+  repo_url?: string;
+  writeup_url?: string;
+}
+const { slug, title, builder_name, builder_link, lab_number, summary, result, repo_url, writeup_url } = Astro.props;
+const nn = String(lab_number).padStart(2, '0');
+---
+<article class="report-card">
+  <p class="from">Field Lab {nn}</p>
+  <h3><a href={`/reports/${slug}`}>{title}</a></h3>
+  <p class="builder">
+    by {builder_link ? <a href={builder_link} target="_blank" rel="noopener">{builder_name}</a> : <span>{builder_name}</span>}
+  </p>
+  <p class="summary">{summary}</p>
+  {result && <p class="result">{result}</p>}
+  <p class="links">
+    {repo_url && <a href={repo_url} target="_blank" rel="noopener">Repo</a>}
+    {writeup_url && <a href={writeup_url} target="_blank" rel="noopener">Write-up</a>}
+    <a href={`/reports/${slug}`}>Read the Report</a>
+  </p>
+</article>
+
+<style>
+  .report-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.5rem;
+  }
+  .from { margin: 0; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  h3 { margin: 0.5rem 0 0.3rem; font-size: 1.1rem; }
+  h3 a { color: var(--text); text-decoration: none; }
+  h3 a:hover { color: var(--accent); }
+  .builder { margin: 0 0 0.6rem; font-size: 0.92rem; color: var(--text-2); }
+  .builder a { color: var(--accent); }
+  .summary { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+  .result {
+    margin: 0.7rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+  .links { display: flex; flex-wrap: wrap; gap: 1.1rem; margin: 0.9rem 0 0; font-size: 0.88rem; }
+  .links a { color: var(--accent); }
+</style>

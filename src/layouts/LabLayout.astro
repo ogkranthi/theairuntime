@@ -12,13 +12,16 @@ interface Props {
   ogType?: 'website' | 'article';
   /** Per-page social card. Defaults to the Lab wordmark card. */
   ogImage?: string;
+  /** Override the canonical path (e.g. the home is served at "/" but built at
+   *  /lab-home/). Defaults to the page's own pathname. */
+  canonicalPath?: string;
 }
-const { title, description, ogType = 'website', ogImage: ogImageProp = '/lab-og.svg' } = Astro.props;
+const { title, description, ogType = 'website', ogImage: ogImageProp = '/lab-og.svg', canonicalPath } = Astro.props;
 
-// The Lab investigations live in the shared events build but are canonical on
+// The Lab pages live in the shared events build but are canonical on
 // lab.theairuntime.com, so canonical/OG point there regardless of build site.
 const LAB = new URL('https://lab.theairuntime.com');
-const canonical = new URL(Astro.url.pathname, LAB).toString();
+const canonical = new URL(canonicalPath ?? Astro.url.pathname, LAB).toString();
 const ogImage = new URL(ogImageProp, LAB).toString();
 const year = 2026;
 ---
@@ -56,8 +59,8 @@ const year = 2026;
       <div class="lab-container site-header__inner">
         <Wordmark />
         <nav class="site-nav" aria-label="Primary">
-          <a href="/investigations/">Field Reports</a>
-          <a href="/investigations/about/">About</a>
+          <a href="/reports">Reports</a>
+          <a href="/submit">Submit</a>
           <a href="https://theairuntime.com" rel="noopener">theairuntime.com</a>
         </nav>
       </div>
@@ -74,9 +77,9 @@ const year = 2026;
           <p class="tagline">LEARN. SHIP. RUN.</p>
         </div>
         <nav class="footer-nav" aria-label="Footer">
-          <a href="/investigations/">Field Reports</a>
-          <a href="/investigations/about/">About</a>
-          <a href="/field-lab/">Field Lab</a>
+          <a href="/reports">Reports</a>
+          <a href="/submit">Submit a problem</a>
+          <a href="https://events.theairuntime.com/boston" rel="noopener">Workshops</a>
           <a href="https://theairuntime.com" rel="noopener">Publication</a>
           <a href="https://theairuntime.com/subscribe" rel="noopener">Subscribe</a>
         </nav>

@@ -1,0 +1,191 @@
+---
+number: 1
+title: A Reliability Layer for Web-Grounded Agents
+status: scheduled
+location: Boston
+partner: Apify
+brief_summary: Build a design-partner sourcing agent on Apify, then prove which leads are safe to act on.
+fit_profile: US-based B2B SaaS, 50 to 300 people, a developer-facing product, a contact who is an engineering leader, and a real reason to reach out now.
+the_bar: "The Dirty Thirty: thirty frozen records, ten clean and twenty each planted with a specific break, graded on catching the bad and keeping the good."
+luma_url: https://luma.com/lou5ylpt
+subscribe_url: https://theairuntime.com/subscribe
+og_image: /og-01.png
+report_slugs: []
+---
+import CardRow from '../../components/lab/CardRow.astro';
+import BarTable from '../../components/lab/BarTable.astro';
+import CTAButtons from '../../components/lab/CTAButtons.astro';
+
+export const breaks = [
+  { term: 'Stale', body: 'true once, not anymore, and the source is cached.' },
+  { term: 'Unsupported', body: 'the evidence is missing, walled, or does not actually back the claim.' },
+  { term: 'Conflicting', body: 'two sources disagree on a field that matters.' },
+  { term: 'Extraction-drift', body: 'the agent grabbed the wrong field, or the wrong company.' },
+];
+
+export const trustLayer = [
+  { term: 'Guard', body: 'check each claim is fresh, supported, and the right shape before it ships.' },
+  { term: 'Degrade', body: 'hand over the records you can stand behind and name the gaps, instead of padding the list with junk.' },
+  { term: 'Observe', body: 'emit a trace per record: where it came from, what was checked, what was rejected and why.' },
+];
+
+export const evalHeaders = ['Group', 'Count', 'Verdict', 'Tests'];
+export const evalRows = [
+  ['Clean', 10, 'accept', 'keeps good leads'],
+  ['Stale', 5, 'reject or review', 'outdated evidence'],
+  ['Unsupported', 5, 'reject or review', 'missing or weak evidence'],
+  ['Conflicting', 5, 'review', 'source disagreement'],
+  ['Extraction-drift', 5, 'reject', 'wrong field or entity'],
+];
+
+<p class="promise">
+  You will not leave with a lead-gen toy. You will leave with a reusable trust layer for web-grounded
+  agents and an eval that proves whether it works.
+</p>
+
+<section class="sec">
+  <h2>The founder problem</h2>
+  <blockquote class="story">
+    <p>
+      A founder has a product and not enough customers, so they point an agent at the web to find who
+      to sell to. The agent returns fifty clean leads. The founder emails all fifty. A third bounce,
+      several were never a fit, two of the companies shut down last year. The list looked done. It was
+      not.
+    </p>
+    <p>
+      That gap, between a list that looks done and a list you can act on, is what this Field Lab is
+      about. The web data part is easy. Knowing which of it to trust is the job.
+    </p>
+  </blockquote>
+</section>
+
+<section class="sec">
+  <h2>What this actually is</h2>
+  <div class="col">
+    <p>
+      This is not a lead-generation session. It is about the reliability layer around a web-grounded
+      agent: where the data came from, whether the evidence holds, and what to do when it does not.
+      Lead generation is just the first use case. The trust layer is the artifact, and it works for
+      any agent that makes claims off the web.
+    </p>
+    <p>
+      Two layers, and only one is the product. The trust core is source-agnostic: it takes a claim and
+      its evidence and decides whether it is true and supported right now. The policy filter sits on
+      top and decides whether a true claim fits what the founder asked for. The core is the reusable
+      piece. The fit logic stays on top so it never contaminates it.
+    </p>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>The shared scenario</h2>
+  <div class="col">
+    <p>
+      The whole room works the same problem. A seed to Series A B2B SaaS founder selling a
+      developer-facing product, no growth hire, who needs a weekly list of qualified design-partner
+      candidates.
+    </p>
+    <p>
+      The fit profile, which feeds the policy layer: US-based B2B SaaS, 50 to 300 people, a
+      developer-facing product, a contact who is an engineering leader, and a real reason to reach out
+      now.
+    </p>
+    <p>
+      You build an agent that returns a prospect list where every field traces to a source that
+      currently supports it. Plausible is not verified.
+    </p>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>The four ways web data breaks</h2>
+  <CardRow items={breaks} />
+</section>
+
+<section class="sec">
+  <h2>What you build, the trust layer</h2>
+  <CardRow items={trustLayer} />
+</section>
+
+<section class="sec">
+  <h2>The bar, the Dirty Thirty</h2>
+  <div class="col">
+    <p>
+      Thirty frozen records with known answers, ten clean and twenty each planted with a specific
+      break. Your guard is graded on two numbers, not one: did it catch the bad records, and did it
+      keep the good ones. An agent that rejects everything scores perfectly on the first and fails the
+      second, so it fails. That is the point.
+    </p>
+  </div>
+  <BarTable headers={evalHeaders} rows={evalRows} />
+  <p class="passbar-lead">Pass bar:</p>
+  <ul class="passbar">
+    <li>bad-record recall at or above 85 percent</li>
+    <li>clean-record precision at or above 80 percent</li>
+    <li>evidence coverage 100 percent on accepted records</li>
+    <li>zero unsupported accepted claims</li>
+    <li>a reason on every rejection</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2>What you leave with</h2>
+  <div class="col">
+    <p>
+      A working sourcing agent. A reusable, source-agnostic trust core. A thin growth policy filter.
+      The thirty-case eval harness. Your own measured precision and recall. A founder-facing trust
+      report. And a teardown that says, not "I built an agent," but "I built a reusable reliability
+      layer for web-grounded agents, benchmarked it against a planted trap set, and produced a
+      safe-to-act-on number." That is a portfolio artifact, not a demo.
+    </p>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>How it runs</h2>
+  <ol class="runlist">
+    <li>Customer frame</li>
+    <li>Apify source layer</li>
+    <li>Improve the trust core against the Dirty Thirty</li>
+    <li>Eval checkpoint</li>
+    <li>Add the policy filter and run live</li>
+    <li>Founder report and teardown</li>
+    <li>Show-and-tell</li>
+  </ol>
+  <p class="setup">
+    Bring any coding assistant you already use. Claude Code, Copilot, Cursor, and Codex are all fine.
+    The repo is plain Python on the Apify SDK, so the tool you write with does not change the build.
+    You need a working Python runtime and a model key. A thirty-second smoke test in the pre-work
+    confirms both before you arrive.
+  </p>
+</section>
+
+<section class="sec">
+  <h2>Run with</h2>
+  <div class="col">
+    <p>
+      Run with Apify, who provide the data plane: the Actors and datasets that feed the agent. The AI
+      Runtime Field Lab owns the scenario, the reliability bar, the trap set, and the published
+      write-up.
+    </p>
+  </div>
+</section>
+
+<section class="sec">
+  {frontmatter.status === 'scheduled' && (
+    <CTAButtons
+      links={[
+        { label: 'Register on Luma', href: frontmatter.luma_url, primary: true, external: true },
+        { label: 'Subscribe', href: frontmatter.subscribe_url, external: true },
+      ]}
+    />
+  )}
+  <div class="newhere">
+    <p>New to The AI Runtime? Start here:</p>
+    <ul>
+      <li><a href="https://theairuntime.com">The newsletter</a>, production lessons every week.</li>
+      <li><a href="/reports">Reports</a>, what builders shipped.</li>
+      <li><a href="/">The Field Lab</a>, the whole pipeline.</li>
+    </ul>
+  </div>
+</section>

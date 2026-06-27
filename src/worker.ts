@@ -89,10 +89,14 @@ function isPassthroughHost(hostname: string): boolean {
 // any sub-path, with or without a trailing slash.
 function isFieldLabPath(p: string): boolean {
   return (
+    // Converged Field Lab surface on the lab host.
+    p === '/reports' || p.startsWith('/reports/') ||
+    p === '/submit' || p.startsWith('/submit/') ||
+    p === '/lab-home' || p.startsWith('/lab-home/') ||
+    /^\/\d+\/?$/.test(p) || // numbered Field Lab pages, e.g. /01
+    // Legacy paths, now redirect stubs (kept on the lab host so they resolve).
     p === '/field-lab' || p.startsWith('/field-lab/') ||
-    p === '/briefs' || p.startsWith('/briefs/') ||
-    // Field Lab 01, a numbered build-brief page that lives on the lab host.
-    p === '/01' || p.startsWith('/01/')
+    p === '/briefs' || p.startsWith('/briefs/')
   );
 }
 
@@ -744,10 +748,24 @@ export default {
       // Lab, API, and assets here; send any stray main-site page to events.
       if (hostname === LAB_HOST) {
         if (pathname === '/') {
-          // 302 (temporary): the root destination changed once already (was
-          // /field-lab), and browsers/edge cache 301s hard. Keep this
-          // re-evaluatable so the root is never stuck behind a cached 301.
-          return Response.redirect(`https://${LAB_HOST}/investigations/${search}`, 302);
+          // The lab front door is the Field Lab home. Serve it at the root
+          // without changing the URL (the page is built at /lab-home/).
+          return env.ASSETS.fetch(new Request(new URL('/lab-home/', url), request));
+        }
+        if (pathname === '/lab-home' || pathname === '/lab-home/') {
+          // The home is canonical at "/", so fold its build path back to root.
+          return Response.redirect(`https://${LAB_HOST}/`, 301);
+        }
+        // Legacy lab paths fold into the converged Brief / Lab / Report model.
+        if (pathname.startsWith('/field-lab/intake')) {
+          return Response.redirect(`https://${LAB_HOST}/submit`, 301);
+        }
+        if (pathname === '/field-lab' || pathname.startsWith('/field-lab/') ||
+            pathname === '/briefs' || pathname.startsWith('/briefs/')) {
+          return Response.redirect(`https://${LAB_HOST}/`, 301);
+        }
+        if (pathname === '/investigations' || pathname.startsWith('/investigations/')) {
+          return Response.redirect(`https://${LAB_HOST}/reports`, 301);
         }
         const stayOnLab =
           isInvestigationsPath(pathname) ||
