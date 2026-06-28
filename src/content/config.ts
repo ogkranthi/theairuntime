@@ -20,6 +20,7 @@ const speakers = defineCollection({
     title: z.string(),
     company: z.string(),
     photo: z.string().optional(),
+    bio: z.string().optional(), // one or two sentences, shown on presenter cards
     social: z
       .object({
         linkedin: z.string().url().optional(),
@@ -85,6 +86,7 @@ const events = defineCollection({
       )
       .default([]),
     description: z.string().optional(),
+    cover: z.string().optional(), // hero cover image path, e.g. /events/2026-06-16/full-room.jpg
     // Recap fields, populated after the event runs.
     // `recap` is rendered from the markdown body; these are structured extras.
     recapTakeaways: z

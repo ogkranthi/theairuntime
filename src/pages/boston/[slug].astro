@@ -3,7 +3,7 @@ import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import EventHero from '../../components/EventHero.astro';
 import AgendaList from '../../components/AgendaList.astro';
-import SpeakerCard from '../../components/SpeakerCard.astro';
+import PresenterCard from '../../components/PresenterCard.astro';
 import PartnerStrip from '../../components/PartnerStrip.astro';
 import Section from '../../components/Section.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
@@ -121,9 +121,9 @@ const breadcrumbSchema = breadcrumbList(
   <JsonLd slot="jsonld" schema={[eventSchema, breadcrumbSchema]} />
   <EventHero event={event} />
 
-  <Section id="speakers" eyebrow="Speakers" title="Who shared what">
+  <Section id="speakers" eyebrow="Presenters" title="Who shared what">
     <div class="grid">
-      {speakers.map((s) => s && <SpeakerCard speaker={s} eventSlug={event.slug} />)}
+      {speakers.map((s) => s && <PresenterCard speaker={s} eventSlug={event.slug} />)}
     </div>
   </Section>
 
