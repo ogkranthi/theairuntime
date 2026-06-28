@@ -105,11 +105,13 @@ const eventSchema = {
     </Section>
   )}
 
-  <Section id="speakers" eyebrow="Presenters" title="Two practitioners. Two production stories.">
-    <div class="speakers-grid">
-      {speakers.map((s) => s && <PresenterCard speaker={s} eventSlug={upcoming.slug} />)}
-    </div>
-  </Section>
+  {speakers.some(Boolean) && (
+    <Section id="speakers" eyebrow="Presenters" title="The lineup">
+      <div class="speakers-grid">
+        {speakers.map((s) => s && <PresenterCard speaker={s} eventSlug={upcoming.slug} />)}
+      </div>
+    </Section>
+  )}
 
   <Section id="agenda" eyebrow="Agenda" title="How the night runs">
     <AgendaList agenda={upcoming.data.agenda} />
