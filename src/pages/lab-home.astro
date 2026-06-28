@@ -5,7 +5,7 @@ import SpineSteps from '../components/lab/SpineSteps.astro';
 import LabCard from '../components/lab/LabCard.astro';
 import ReportCard from '../components/lab/ReportCard.astro';
 import CTAButtons from '../components/lab/CTAButtons.astro';
-import { WORKSHOPS_URL, SUBMIT_URL, SUBSCRIBE_URL, PUBLICATION_URL, EVENTS_URL, CONTACT_EMAIL } from '../lib/lab-links';
+import { WORKSHOPS_URL, SUBSCRIBE_URL, PUBLICATION_URL, EVENTS_URL, CONTACT_EMAIL } from '../lib/lab-links';
 
 const labs = (await getCollection('labs'))
   .filter((l) => l.data.status !== 'draft')
@@ -31,7 +31,7 @@ const reports = (await getCollection('reports'))
       <CTAButtons
         links={[
           { label: 'Join a workshop', href: WORKSHOPS_URL, primary: true, external: true },
-          { label: 'Submit a problem', href: SUBMIT_URL },
+          { label: 'Submit a problem', href: '/submit' },
         ]}
       />
     </div>
