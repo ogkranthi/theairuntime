@@ -17,6 +17,7 @@ agenda:
   - { time: '8:30 PM', item: 'Close' }
 speakers:
   - kranthi-manchikanti
+  - petros-hong
 partners:
   - { name: 'Apify', url: 'https://apify.com', role: 'Workshop partner' }
   - { name: 'HackerSquad', role: 'Supported by' }
