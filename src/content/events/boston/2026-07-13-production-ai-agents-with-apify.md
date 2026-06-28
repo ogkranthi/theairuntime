@@ -15,6 +15,8 @@ agenda:
   - { time: '6:30 PM', item: 'Hands-on workshop with Apify: building agent-powered workflows with tools and web data' }
   - { time: '8:00 PM', item: 'Show and tell' }
   - { time: '8:30 PM', item: 'Close' }
+speakers:
+  - kranthi-manchikanti
 partners:
   - { name: 'Apify', url: 'https://apify.com', role: 'Workshop partner' }
   - { name: 'HackerSquad', role: 'Supported by' }
