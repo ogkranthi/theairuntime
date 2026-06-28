@@ -10,6 +10,7 @@ import { getCollection } from 'astro:content';
 import { fetchSubstackPosts } from '../lib/substack';
 import { LAB_URL } from '../lib/field-briefs';
 import { SLACK_INVITE_URL } from '../lib/community';
+import { selfImprovingAi } from '../data/featured-reads';
 
 const posts = await fetchSubstackPosts(4);
 const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -132,16 +133,30 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
     </p>
   </Section>
 
-  <Section eyebrow="Free resource" title="The AI Runtime Field Guide" narrow>
-    <p class="dim">
-      A guided reading path through The AI Runtime for AI practitioners. The essential reads on AI
-      engineering, Model Reliability Engineering, and vertical agents, in the order that builds real
-      production intuition. Free, no email required.
-    </p>
-    <p>
-      <a class="btn" href="/resources/the-ai-runtime-field-guide.pdf" download>Download the PDF →</a>
-      <a class="btn btn-ghost" href="/library">Reading library</a>
-    </p>
+  <Section eyebrow="Free resources" title="Free to read, no email required">
+    <ul class="free-grid">
+      <li>
+        <span class="arm-k">Field Guide</span>
+        <h3>The AI Runtime Field Guide</h3>
+        <p class="dim">
+          A guided reading path through The AI Runtime for AI practitioners. The essential reads on AI
+          engineering, Model Reliability Engineering, and vertical agents, in the order that builds real
+          production intuition.
+        </p>
+        <p class="free-cta">
+          <a class="btn" href="/resources/the-ai-runtime-field-guide.pdf" download>Download the PDF →</a>
+          <a class="btn btn-ghost" href="/library">Reading library</a>
+        </p>
+      </li>
+      <li>
+        <span class="arm-k">Essay</span>
+        <h3>{selfImprovingAi.title}</h3>
+        <p class="dim">{selfImprovingAi.description}</p>
+        <p class="free-cta">
+          <a class="btn" href={selfImprovingAi.url} target="_blank" rel="noopener">Read the article →</a>
+        </p>
+      </li>
+    </ul>
   </Section>
 
   <Section eyebrow="Subscribe" title="Get it in your inbox" narrow>
@@ -166,6 +181,30 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
 <style>
   .wide { max-width: 42rem; }
   .recap-links { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+
+  /* Two free reads side by side: the Field Guide PDF and the latest free essay. */
+  .free-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 760px) { .free-grid { grid-template-columns: 1fr; } }
+  .free-grid li {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 140ms ease;
+  }
+  .free-grid li:hover { border-color: var(--accent); }
+  .free-grid h3 { margin: 0.5rem 0 0.5rem; font-size: 1.15rem; }
+  .free-grid p.dim { font-size: 0.95rem; }
+  .free-cta { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: auto; padding-top: 1rem; }
   .arms {
     list-style: none;
     padding: 0;
