@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/Section.astro';
 import PillarFilter from '../../components/PillarFilter.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
+import { selfImprovingAi } from '../../data/featured-reads';
 
 const resources = await getCollection('resources');
 // Newest first, so the series reads chronologically and the latest issue leads.
@@ -73,6 +74,29 @@ const pillarChips = Object.entries(
     </section>
   )}
 
+  <section class="featured-wrap featured-wrap--essay">
+    <div class="container">
+      <div class="featured">
+        <div class="copy">
+          <span class="tag">Free essay</span>
+          <h2>{selfImprovingAi.title}</h2>
+          <p class="dim">{selfImprovingAi.description}</p>
+          <div class="cta-row">
+            <a class="btn" href={selfImprovingAi.url} target="_blank" rel="noopener">Read the article →</a>
+          </div>
+          <p class="muted small">Free to read on theairuntime.com. No email required.</p>
+        </div>
+        <a class="cover cover--essay" href={selfImprovingAi.url} target="_blank" rel="noopener" aria-label={`Read ${selfImprovingAi.title}`}>
+          <span class="doc">
+            <span class="doc-kicker">The AI Runtime</span>
+            <span class="doc-title">{selfImprovingAi.coverTitle}</span>
+            <span class="doc-foot">Essay</span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <Section
     eyebrow="The series"
     title="Every issue, in one place"
@@ -137,6 +161,12 @@ const pillarChips = Object.entries(
   .featured-wrap {
     padding: var(--space-section) 0 0;
   }
+  /* The free essay hero sits just under the Field Guide hero. */
+  .featured-wrap--essay { padding-top: 1.25rem; }
+  /* Distinguish the essay cover from the PDF cover with a reversed wash. */
+  .cover--essay {
+    background: linear-gradient(150deg, var(--accent-hover), var(--accent));
+  }
   .featured {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
@@ -149,7 +179,8 @@ const pillarChips = Object.entries(
     border-radius: var(--radius);
     padding: 2.5rem;
   }
-  .featured h1 { margin: 0.6rem 0 0.5rem; font-size: clamp(1.8rem, 3.5vw, 2.4rem); }
+  .featured h1,
+  .featured h2 { margin: 0.6rem 0 0.5rem; font-size: clamp(1.8rem, 3.5vw, 2.4rem); }
   .featured .dim { max-width: 34rem; }
   .cta-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.25rem 0 0.6rem; }
   .small { font-size: 0.85rem; }
