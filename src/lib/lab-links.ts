@@ -8,6 +8,8 @@ export const SUBSCRIBE_URL = 'https://theairuntime.com/subscribe';
 // The hiring / partner inbound. One channel, a mailto, no form.
 export const CONTACT_EMAIL = 'info@theairuntime.com';
 
-// TODO: replace with the real problem-submission form (Tally or Google Form).
-// Until then this is a mailto so the path is never broken.
-export const SUBMIT_URL = 'mailto:info@theairuntime.com?subject=Field%20Lab%20problem%20submission';
+// The problem-submission Airtable form, embedded on /submit (same pattern as the
+// /partner page). TODO: paste the real embed URL
+// (https://airtable.com/embed/app.../pag.../form). Empty until then; /submit
+// degrades to a contact line so it is never broken.
+export const SUBMIT_FORM_URL = '';

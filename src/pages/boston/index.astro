@@ -3,7 +3,8 @@ import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import EventHero from '../../components/EventHero.astro';
 import AgendaList from '../../components/AgendaList.astro';
-import SpeakerCard from '../../components/SpeakerCard.astro';
+import PresenterCard from '../../components/PresenterCard.astro';
+import PhotoMarquee from '../../components/PhotoMarquee.astro';
 import PartnerStrip from '../../components/PartnerStrip.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
@@ -19,6 +20,7 @@ if (!upcoming) {
   throw new Error('No Boston events found in src/content/events/boston/');
 }
 const past = allEvents.filter((e) => e.id !== upcoming.id);
+const pastPhotos = past.flatMap((e) => e.data.recapPhotos ?? []);
 
 const speakers = await Promise.all(
   upcoming.data.speakers.map((ref) => getEntry('speakers', (ref as any).slug ?? (ref as any).id)),
@@ -97,9 +99,15 @@ const eventSchema = {
   <JsonLd slot="jsonld" schema={eventSchema} />
   <EventHero event={upcoming} />
 
-  <Section id="speakers" eyebrow="Tonight's lineup" title="Two practitioners. Two production stories.">
+  {pastPhotos.length > 0 && (
+    <Section eyebrow="In the room" title="From recent meetups">
+      <PhotoMarquee photos={pastPhotos} />
+    </Section>
+  )}
+
+  <Section id="speakers" eyebrow="Presenters" title="Two practitioners. Two production stories.">
     <div class="speakers-grid">
-      {speakers.map((s) => s && <SpeakerCard speaker={s} eventSlug={upcoming.slug} />)}
+      {speakers.map((s) => s && <PresenterCard speaker={s} eventSlug={upcoming.slug} />)}
     </div>
   </Section>
 
