@@ -65,6 +65,17 @@ run = client.actor("apify/website-content-crawler").call(
 )
 print("apify ok:", run["status"])`;
 
+export const clone = `git clone https://github.com/ogkranthi/the-ai-runtime-lab
+cd the-ai-runtime-lab/apify
+
+# set up, then add your keys
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env        # then add your APIFY_TOKEN
+
+# confirm it runs
+python smoke.py             # prints: apify ok: SUCCEEDED`;
+
 <p class="promise">
   You will not leave with a lead-gen toy. You will leave with a reusable trust layer for web-grounded
   agents and an eval that proves whether it works.
@@ -185,6 +196,29 @@ print("apify ok:", run["status"])`;
     You need a working Python runtime and a model key. A thirty-second smoke test in the pre-work
     confirms both before you arrive.
   </p>
+</section>
+
+<section class="sec">
+  <h2>Read or run the code</h2>
+  <div class="col">
+    <p>
+      Here to review, not build? The repo runs with nothing but your keys. Clone it, drop in an Apify
+      token, and the data plane runs, no agent and no scaffolding. The build-from-scratch runbook is
+      the next section.
+    </p>
+    <p>
+      Prefer to just read? The code is at <a href="https://github.com/ogkranthi/the-ai-runtime-lab" rel="noopener">github.com/ogkranthi/the-ai-runtime-lab</a>.
+      Start with apify/source.py, the source layer that attaches evidence to every field.
+    </p>
+  </div>
+  <pre class="cmd">{clone}</pre>
+  <div class="col">
+    <p>
+      Two environment variables, and only the first is needed to run the data plane. APIFY_TOKEN runs
+      the source layer. ANTHROPIC_API_KEY is for the model steps you add at the workshop. Both live in
+      .env, never in the code.
+    </p>
+  </div>
 </section>
 
 <section class="sec">
