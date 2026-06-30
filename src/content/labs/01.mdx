@@ -38,6 +38,33 @@ export const evalRows = [
   ['Extraction-drift', 5, 'reject', 'wrong field or entity'],
 ];
 
+export const setup = `# one-time setup
+python -m venv .venv && source .venv/bin/activate
+pip install anthropic apify-client
+export ANTHROPIC_API_KEY=sk-ant-...
+export APIFY_TOKEN=apify_api_...
+
+# start the build, in an empty project folder
+claude`;
+
+export const smoke = `import os, anthropic
+from apify_client import ApifyClient
+
+# 1. model key works
+msg = anthropic.Anthropic().messages.create(
+    model="claude-sonnet-4-6",  # any current Claude model; swap to Opus for the hardest steps
+    max_tokens=16,
+    messages=[{"role": "user", "content": "ping"}],
+)
+print("model ok:", msg.content[0].text)
+
+# 2. apify token works
+client = ApifyClient(os.environ["APIFY_TOKEN"])
+run = client.actor("apify/website-content-crawler").call(
+    run_input={"startUrls": [{"url": "https://example.com"}], "maxCrawlPages": 1},
+)
+print("apify ok:", run["status"])`;
+
 <p class="promise">
   You will not leave with a lead-gen toy. You will leave with a reusable trust layer for web-grounded
   agents and an eval that proves whether it works.
@@ -158,6 +185,172 @@ export const evalRows = [
     You need a working Python runtime and a model key. A thirty-second smoke test in the pre-work
     confirms both before you arrive.
   </p>
+</section>
+
+<section class="sec">
+  <h2>Build it in Claude Code</h2>
+  <div class="col">
+    <p>
+      The runbook for the night. Each step is a short brief, a prompt you can paste into Claude Code,
+      and the one rule that keeps it honest. The prompts are written for Claude Code; they work as
+      well in Copilot, Cursor, or Codex, because the repo is plain Python on the Apify SDK.
+    </p>
+  </div>
+
+  <h3>Before you arrive</h3>
+  <div class="col">
+    <p>
+      Python 3.11 or newer, an Anthropic API key, and an Apify token. Install Claude Code, then run
+      the thirty-second smoke test below to confirm both keys. If it does not print two oks, fix that
+      now, not at minute five of the build.
+    </p>
+  </div>
+  <pre class="cmd">{setup}</pre>
+  <pre class="cmd">{smoke}</pre>
+
+  <h3>Step 1, Customer frame</h3>
+  <div class="col">
+    <p>
+      Write down what qualified means before you build anything, so the target cannot drift to match
+      whatever the agent happens to produce.
+    </p>
+  </div>
+  <div class="prompt">
+    <span class="prompt__k">Prompt to Claude Code</span>
+    <p>
+      Create rubric.md. Turn this fit profile into explicit, checkable rules, each with a clear pass
+      and fail, and put a version line at the top that reads rubric v1. Fit profile: US-based B2B
+      SaaS, 50 to 300 people, a developer-facing product, a contact who is an engineering leader, and
+      a real reason to reach out now. Do not soften any rule to make it easier to pass.
+    </p>
+  </div>
+  <p class="bp">
+    <strong>Best practice.</strong> Freeze the rubric before you tune anything. When a rule turns out
+    wrong, write rubric v2 and re-score from scratch. Never edit a rule in place to match what the
+    agent already produces, that is how you grade your own homework.
+  </p>
+
+  <h3>Step 2, Apify source layer</h3>
+  <div class="col">
+    <p>
+      Pull the public signals the rubric scores, and attach the evidence to every field as you go.
+    </p>
+  </div>
+  <div class="prompt">
+    <span class="prompt__k">Prompt to Claude Code</span>
+    <p>
+      Create source.py. Given one target company, use the Apify SDK to pull the signals rubric.md
+      scores: company size, product type, a likely engineering-leader contact, and a recent reason to
+      reach out. Return one record per company where every field carries its evidence: the source URL,
+      the exact snippet it came from, and a fetched_at timestamp. If a field has no source, leave it
+      null. Do not guess.
+    </p>
+  </div>
+  <p class="bp">
+    <strong>Best practice.</strong> Plausible is not verified. A field with no evidence is a missing
+    field, not a value. The evidence you attach here is exactly what the trust core checks next.
+  </p>
+
+  <h3>Step 3, Trust core, then the Dirty Thirty</h3>
+  <div class="col">
+    <p>
+      This is the artifact. One source-agnostic function that decides whether a single claim is true
+      and supported right now, and catches the four breaks.
+    </p>
+  </div>
+  <div class="prompt">
+    <span class="prompt__k">Prompt to Claude Code</span>
+    <p>
+      Create trust.py with one function: it takes a single claim and its evidence and returns a
+      verdict of accept or reject plus a short reason. It must catch the four breaks. Stale: true once,
+      not anymore, the source is cached. Unsupported: the evidence is missing, walled, or does not back
+      the claim. Conflicting: two sources disagree on a field that matters. Extraction-drift: the wrong
+      field or the wrong company was grabbed. The function must know nothing about the fit profile, and
+      it must emit a trace per record: where each field came from, what was checked, and what was
+      rejected and why.
+    </p>
+  </div>
+  <p class="bp">
+    <strong>Best practice.</strong> Keep the trust core independent of the fit policy. The core decides
+    if a claim is true. Whether a true claim is a good fit is a separate job, and mixing them is how
+    the layer rots.
+  </p>
+  <div class="prompt">
+    <span class="prompt__k">Prompt to Claude Code</span>
+    <p>
+      Now load the thirty Dirty Thirty records and run trust.py over each one. Print one line per
+      record: id, verdict, reason.
+    </p>
+  </div>
+
+  <h3>Step 4, Eval checkpoint</h3>
+  <div class="col">
+    <p>
+      Grade the guard against the trap set. Two numbers, against the same bar everyone in the room
+      runs to.
+    </p>
+  </div>
+  <div class="prompt">
+    <span class="prompt__k">Prompt to Claude Code</span>
+    <p>
+      Create eval.py. Score trust.py against the Dirty Thirty: bad-record recall, the share of the
+      twenty planted records it caught; clean-record precision, the share of accepted records that are
+      actually clean; evidence coverage on accepted records; and any unsupported accepted claims. Print
+      each number against the pass bar and a single pass or fail. Pass bar: recall at or above 85
+      percent, precision at or above 80 percent, coverage 100 percent, zero unsupported accepted, a
+      reason on every rejection.
+    </p>
+  </div>
+  <p class="bp">
+    <strong>Best practice.</strong> Grade two numbers, not one. An agent that rejects everything gets
+    perfect recall and fails on precision, so it fails. Catching the bad while keeping the good is the
+    whole skill.
+  </p>
+
+  <h3>Step 5, Policy filter and live run</h3>
+  <div class="col">
+    <p>
+      Only now does fit enter the picture, on top of the claims the trust core already accepted.
+    </p>
+  </div>
+  <div class="prompt">
+    <span class="prompt__k">Prompt to Claude Code</span>
+    <p>
+      Create policy.py. It runs only on claims the trust core already accepted and applies the fit
+      profile from rubric.md: US-based B2B SaaS, 50 to 300 people, developer-facing, an
+      engineering-leader contact, a reason to reach out now. It returns the records that fit, untouched.
+      Do not let it re-judge truth, that is the trust core's job. Then wire source, trust, and policy
+      into one run on a fresh batch from Apify.
+    </p>
+  </div>
+  <p class="bp">
+    <strong>Best practice.</strong> Degrade, do not pad. Hand over the records you can stand behind and
+    name the gaps. A short, honest list beats a full list with junk in it.
+  </p>
+
+  <h3>Step 6, Founder report and teardown</h3>
+  <div class="col">
+    <p>
+      Turn the run into something a founder can act on, with the provenance in plain sight.
+    </p>
+  </div>
+  <div class="prompt">
+    <span class="prompt__k">Prompt to Claude Code</span>
+    <p>
+      Generate a founder-facing trust report from the live run: the qualified list, and for each record
+      its provenance, what was checked, and what was rejected and why. End with one headline number, how
+      many of these are safe to act on, and on what basis.
+    </p>
+  </div>
+
+  <h3>Step 7, Show-and-tell</h3>
+  <div class="col">
+    <p>
+      Close with the line that makes it a portfolio artifact, not a demo: you built a reusable
+      reliability layer for web-grounded agents, benchmarked it against a planted trap set, and produced
+      a safe-to-act-on number.
+    </p>
+  </div>
 </section>
 
 <section class="sec">
