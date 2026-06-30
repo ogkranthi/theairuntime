@@ -143,6 +143,49 @@ const reports =
     counter-increment: step; content: counter(step, decimal-leading-zero) "  ";
     font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent);
   }
+  /* Runbook: step headings, copy-paste prompts, shell/code, best-practice notes. */
+  .labbody h3 { margin: 2.25rem 0 0.6rem; font-size: 1.05rem; }
+  .labbody pre.cmd {
+    max-width: 42rem;
+    margin: 1rem 0 0;
+    padding: 1rem 1.2rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: var(--text);
+    white-space: pre;
+  }
+  .labbody .prompt {
+    max-width: 42rem;
+    margin: 1.25rem 0 0;
+    padding: 1rem 1.2rem;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-2);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+  .labbody .prompt__k {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.45rem;
+  }
+  .labbody .prompt p { margin: 0; color: var(--text); }
+  .labbody .bp {
+    max-width: 42rem;
+    margin: 1rem 0 0;
+    padding: 0.85rem 1.1rem;
+    border-left: 3px solid var(--border-strong);
+    color: var(--text-2);
+    font-size: 0.95rem;
+  }
+  .labbody .bp strong { color: var(--text); }
   .labbody .newhere { margin-top: 2.5rem; }
   .labbody .newhere > p { color: var(--text-2); margin: 0 0 0.5rem; }
   .labbody .newhere ul { padding-left: 1.2rem; margin: 0; }
