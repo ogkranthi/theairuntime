@@ -66,7 +66,7 @@ run = client.actor("apify/website-content-crawler").call(
 print("apify ok:", run["status"])`;
 
 export const clone = `git clone https://github.com/ogkranthi/the-ai-runtime-lab
-cd the-ai-runtime-lab/apify
+cd the-ai-runtime-lab/web-agents-apify
 
 # set up, then add your keys
 python -m venv .venv && source .venv/bin/activate
@@ -208,7 +208,7 @@ python smoke.py             # prints: apify ok: SUCCEEDED`;
     </p>
     <p>
       Prefer to just read? The code is at <a href="https://github.com/ogkranthi/the-ai-runtime-lab" rel="noopener">github.com/ogkranthi/the-ai-runtime-lab</a>.
-      Start with apify/source.py, the source layer that attaches evidence to every field.
+      Start with web-agents-apify/source.py, the source layer that attaches evidence to every field.
     </p>
   </div>
   <pre class="cmd">{clone}</pre>
