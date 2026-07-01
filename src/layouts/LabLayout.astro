@@ -64,6 +64,7 @@ const year = 2026;
           <a href="/artifacts">Artifacts</a>
           <a href="/problem-bank">Problem Bank</a>
           <a href="/reports">Reports</a>
+          <a href="/field-council">Field Council</a>
           <a href="/submit">Submit</a>
         </nav>
       </div>
@@ -86,6 +87,7 @@ const year = 2026;
           <a href="/artifacts">Artifacts</a>
           <a href="/problem-bank">Problem Bank</a>
           <a href="/reports">Reports</a>
+          <a href="/field-council">Field Council</a>
           <a href="/submit">Submit</a>
           <a href="https://events.theairuntime.com/boston" rel="noopener">Workshops</a>
           <a href="https://theairuntime.com" rel="noopener">Publication</a>
@@ -131,12 +133,21 @@ const year = 2026;
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-end;
-        gap: 0.5rem 1.1rem;
+        gap: 0.4rem 1rem;
         font-family: var(--font-mono);
-        font-size: 0.82rem;
+        font-size: 0.78rem;
       }
       .site-nav a { color: var(--text-2); }
       .site-nav a:hover { color: var(--accent); text-decoration: none; }
+      @media (max-width: 40rem) {
+        .site-header { position: static; }
+        .site-header__inner {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.6rem;
+        }
+        .site-nav { justify-content: flex-start; }
+      }
 
       .site-footer { border-top: 1px solid var(--border); margin-top: 5rem; padding: 3rem 0 2.5rem; }
       .site-footer__inner {

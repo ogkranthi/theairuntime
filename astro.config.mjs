@@ -29,6 +29,7 @@ export default defineConfig({
         !page.includes('/field-notes') &&
         !page.includes('/artifacts') &&
         !page.includes('/problem-bank') &&
+        !page.includes('/field-council') &&
         !/\/\d{2}\/?$/.test(page) &&
         !page.endsWith('.ics'),
     }),

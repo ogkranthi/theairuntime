@@ -1,0 +1,367 @@
+---
+import LabLayout from '../layouts/LabLayout.astro';
+import CTAButtons from '../components/lab/CTAButtons.astro';
+import { CONTACT_EMAIL, SUBSCRIBE_URL } from '../lib/lab-links';
+
+const mailto = (subject: string) => `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`;
+
+const roles = [
+  {
+    id: 'field-reviewer',
+    title: 'Field Reviewer',
+    tagline: 'Review a reliability bar, artifact, or field report.',
+    intro:
+      'The lightest way to contribute. You might react to a deployment checklist, a web-agent verification rubric, an eval plan, or a builder report.',
+    time: '10-15 minutes',
+    output: 'Anonymous or attributed reviewer note',
+    bestFor: 'FDEs, applied AI architects, AI infra engineers, senior builders',
+    listLabel: 'Example asks:',
+    list: [
+      'Does this reliability bar reflect what you see in real deployments?',
+      'What failure mode is missing?',
+      'Would this artifact be useful to a field team?',
+      'What would make this safer before customer rollout?',
+    ],
+    cta: { label: 'I can review a reliability bar', href: mailto('Field Council: I can review a reliability bar') },
+  },
+  {
+    id: 'field-note-contributor',
+    title: 'Field Note Contributor',
+    tagline: 'Share one practical lesson from field AI work.',
+    intro:
+      'Written or audio, anonymous or attributed. We turn your answers into a short field note and share a draft before publishing.',
+    time: '20-30 minutes, async',
+    output: 'Published Field Note',
+    bestFor: 'FDEs, customer engineers, applied AI architects, founding engineers, solutions architects',
+    listLabel: 'Field Notes usually cover:',
+    list: [
+      'what your role actually looks like',
+      'what breaks between demo and deployment',
+      'how you scope ambiguous customer problems',
+      'what ready to ship means in practice',
+      'what skills matter most in the field',
+      'one lesson other AI builders should copy',
+    ],
+    cta: { label: 'I can contribute a field note', href: '/submit#field-note' },
+  },
+  {
+    id: 'lab-mentor',
+    title: 'Lab Mentor',
+    tagline: 'Help builders during a Field Lab.',
+    intro:
+      'Lab Mentors support a cohort working on a production-shaped AI problem. This can be a short office-hours session, async feedback, final report review, or demo-day judging.',
+    time: '45-60 minutes',
+    output: 'Builder feedback, report review, or final judging',
+    bestFor: 'Senior engineers, FDEs, startup operators, AI architects, product-minded technical leaders',
+    listLabel: 'Mentors help builders think through:',
+    list: [
+      'architecture tradeoffs',
+      'eval design',
+      'customer-readiness',
+      'failure modes',
+      'trust and safety',
+      'cost and latency constraints',
+      'what would need to change before production',
+    ],
+    cta: { label: 'I can mentor a lab', href: mailto('Field Council: I can mentor a lab') },
+  },
+  {
+    id: 'problem-scout',
+    title: 'Problem Scout',
+    tagline: 'Submit a recurring field problem.',
+    intro:
+      'If you keep seeing the same AI deployment problem across customers, teams, or startups, submit it to the Problem Bank.',
+    time: '5-10 minutes',
+    output: 'An anonymized field problem',
+    bestFor: 'Founders, operators, FDEs, customer engineers, consultants, AI platform teams',
+    listLabel: 'Good problems are specific enough to test:',
+    list: [
+      'Can a web-grounded agent qualify design-partner leads without unsupported claims?',
+      'Can an internal RAG assistant handle permissions and citations well enough for rollout?',
+      'Can an agent detect when to stop, verify, or escalate?',
+      'Can an AI workflow turn messy customer calls into CRM updates without corrupting records?',
+    ],
+    cta: { label: 'I have a field problem to submit', href: '/submit#problem' },
+  },
+  {
+    id: 'artifact-reviewer',
+    title: 'Artifact Reviewer',
+    tagline: 'Improve a checklist, rubric, eval, or runbook.',
+    intro:
+      'The Field Lab publishes reusable artifacts for production AI teams. Reviewers help make them sharper before they are widely shared.',
+    time: '10-20 minutes',
+    output: 'Improved artifact',
+    bestFor: 'People with practical deployment experience',
+    listLabel: 'Artifacts may include:',
+    list: [
+      'AI Deployment Readiness Checklist',
+      'Agent Escalation Checklist',
+      'Web-Grounded Claim Verification Rubric',
+      'RAG Reliability Bar',
+      'Demo-to-Production Risk Review',
+      'Field Report Template',
+      'Founder-Facing Trust Report Template',
+    ],
+    cta: { label: 'I can review an artifact', href: mailto('Field Council: I can review an artifact') },
+  },
+];
+
+const afterDemo = [
+  'messy customer requirements',
+  'weak or stale evidence',
+  'eval gaps',
+  'enterprise permissions',
+  'cost and latency tradeoffs',
+  'workflow ownership',
+  'escalation paths',
+  'deployment readiness',
+  'production failure modes',
+];
+
+const gets = [
+  'public credit as a Field Reviewer, Field Note Contributor, Lab Mentor, or Artifact Reviewer',
+  'a link to their profile, company, or project',
+  'early access to lab reports and artifacts',
+  'invitations to small reviewer sessions and Field Lab events',
+  'priority access to selected workshops',
+  'occasional sponsor-provided swag, credits, or prizes',
+  'a place on the Field Council thank-you page',
+];
+
+const notAsked = [
+  'confidential customer information',
+  'private company strategy',
+  'unreleased product details',
+  'speaking on behalf of your employer',
+];
+
+const bestContributions = [
+  'a failure mode you see often',
+  'a reliability bar you would improve',
+  'a pattern that works in the field',
+  'a checklist you wish more teams used',
+  'a deployment mistake builders should avoid',
+];
+
+const currentAsks = [
+  { ask: 'Field Reviewers for web-grounded agent reliability', href: '/01' },
+  { ask: 'Field Note Contributors doing FDE-shaped work', href: '/field-notes' },
+  { ask: 'Lab Mentors for upcoming production AI workshops', href: '#lab-mentor' },
+  { ask: 'Problem Scouts with real AI workflow failures or deployment gaps', href: '/problem-bank' },
+  { ask: 'Artifact Reviewers for deployment checklists and eval rubrics', href: '/artifacts' },
+];
+---
+<LabLayout
+  title="Field Council · The AI Runtime Field Lab"
+  description="Bring field judgment to production AI. Five lightweight ways for FDEs, applied AI architects, customer engineers, and operators to contribute to the Field Lab, publicly, privately, or anonymously."
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">Field Lab · Field Council</p>
+      <h1>Bring field judgment to production AI.</h1>
+      <p class="sub">
+        The Field Lab studies how AI systems move from demo to deployment. Each lab starts with a
+        real customer-shaped problem, defines a reliability bar, builds the smallest useful system,
+        measures what breaks, and publishes the field report.
+      </p>
+      <p class="sub">
+        The Field Council is for people who have seen AI systems in the field: forward deployed
+        engineers, applied AI architects, customer engineers, solutions architects, founding
+        engineers, AI infra operators, and enterprise AI builders.
+      </p>
+      <p class="sub strong">
+        You do not need to represent your company. You do not need to share confidential details.
+        You can contribute anonymously. What matters is field judgment.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Why this exists</h2>
+      <div class="col">
+        <p>Most AI content stops at the demo. The Field Lab focuses on what happens after that:</p>
+      </div>
+      <ul class="chips">
+        {afterDemo.map((t) => <li>{t}</li>)}
+      </ul>
+      <div class="col">
+        <p class="after-chips">
+          The goal is to turn field lessons into reusable artifacts: reliability bars, checklists,
+          rubrics, evals, runbooks, and reports that serious AI builders can use.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Ways to participate</h2>
+      <div class="roles">
+        {roles.map((r) => (
+          <article class="role" id={r.id}>
+            <h3>{r.title}</h3>
+            <p class="tagline">{r.tagline}</p>
+            <p class="intro">{r.intro}</p>
+            <dl class="facts">
+              <div><dt>Time</dt><dd>{r.time}</dd></div>
+              <div><dt>Output</dt><dd>{r.output}</dd></div>
+              <div><dt>Best for</dt><dd>{r.bestFor}</dd></div>
+            </dl>
+            <p class="list-label">{r.listLabel}</p>
+            <ul class="role-list">
+              {r.list.map((item) => <li>{item}</li>)}
+            </ul>
+            <p class="role-cta"><a href={r.cta.href}>{r.cta.label}</a></p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <div class="two-col">
+        <div>
+          <h2 class="mono-label">What contributors get</h2>
+          <p class="col-lead">
+            This is a lightweight contribution system, not a formal employment or advisory role.
+            When allowed, contributors receive:
+          </p>
+          <ul class="plain">
+            {gets.map((g) => <li>{g}</li>)}
+          </ul>
+          <p class="col-note">
+            Anonymous contribution is always available. If your company has policies around public
+            participation, we can keep your name, employer, customer details, and architecture
+            details private.
+          </p>
+        </div>
+        <div>
+          <h2 class="mono-label">What we do not ask for</h2>
+          <ul class="plain">
+            {notAsked.map((n) => <li>{n}</li>)}
+          </ul>
+          <p class="col-lead spaced">The best contributions are practical and generalizable:</p>
+          <ul class="plain">
+            {bestContributions.map((b) => <li>{b}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Why join</h2>
+      <div class="col">
+        <p>
+          Production AI needs more field judgment. The industry has enough demos, launch posts, and
+          abstract takes. What is missing is a public record of how AI systems actually survive
+          contact with customer workflows, enterprise constraints, messy data, and real users.
+        </p>
+        <p>
+          The Field Council helps turn that knowledge into something reusable. If you have deployed
+          AI systems in the field, your judgment can help builders avoid the same mistakes.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Current asks</h2>
+      <ul class="asks">
+        {currentAsks.map((a) => (
+          <li><a href={a.href}>{a.ask}</a></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="get-involved">
+    <div class="lab-container">
+      <h2 class="mono-label">Get involved</h2>
+      <div class="col">
+        <p>
+          Send a short note with one line: "I can review a reliability bar." "I can contribute a
+          field note." "I can mentor a lab." "I have a field problem to submit." "I can review an
+          artifact." That is enough to begin. You can contribute publicly, privately, or
+          anonymously.
+        </p>
+      </div>
+      <CTAButtons
+        links={[
+          { label: 'Join the Field Council', href: mailto('Field Council: count me in'), primary: true },
+          { label: 'Submit a problem or field note', href: '/submit' },
+        ]}
+      />
+      <p class="fine">
+        New investigations and reviewer asks land in the weekly newsletter.
+        <a href={SUBSCRIBE_URL}> Subscribe</a>.
+      </p>
+    </div>
+  </section>
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .hero h1 { max-width: 22ch; }
+  .sub { max-width: 44rem; margin: 0.9rem 0 0; font-size: 1.1rem; color: var(--text-2); }
+  .sub.strong { color: var(--text); }
+
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); scroll-margin-top: 4.5rem; }
+  .sec h2 { margin: 0 0 1.25rem; }
+  .col { max-width: 44rem; }
+  .col p { color: var(--text-2); }
+
+  .chips { list-style: none; margin: 0.5rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; max-width: 44rem; }
+  .chips li {
+    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.03em; color: var(--text-2);
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.3rem 0.75rem; background: var(--bg-2);
+  }
+  .after-chips { margin: 1.5rem 0 0; }
+
+  .roles { display: grid; gap: 1.25rem; }
+  .role {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.6rem 1.75rem;
+    scroll-margin-top: 4.5rem;
+  }
+  .role h3 { margin: 0 0 0.2rem; font-size: 1.2rem; }
+  .role .tagline { margin: 0 0 0.75rem; color: var(--text); font-weight: 600; }
+  .role .intro { margin: 0 0 1rem; color: var(--text-2); font-size: 0.97rem; }
+  .facts { margin: 0 0 1rem; display: grid; gap: 0.45rem; }
+  .facts div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 1rem; align-items: baseline; }
+  .facts dt {
+    font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .facts dd { margin: 0; color: var(--text-2); font-size: 0.93rem; }
+  @media (max-width: 34rem) {
+    .facts div { grid-template-columns: 1fr; gap: 0.1rem; }
+  }
+  .list-label { margin: 0 0 0.4rem; color: var(--text); font-size: 0.93rem; font-weight: 600; }
+  .role-list { margin: 0; padding-left: 1.2rem; max-width: 42rem; }
+  .role-list li { margin: 0.3rem 0; color: var(--text-2); font-size: 0.95rem; }
+  .role-cta { margin: 1.1rem 0 0; font-size: 0.95rem; }
+  .role-cta a { color: var(--accent); }
+
+  .two-col { display: grid; gap: 2.5rem; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); }
+  .col-lead { max-width: 40rem; margin: 0 0 0.75rem; color: var(--text-2); }
+  .col-lead.spaced { margin-top: 1.5rem; }
+  .plain { margin: 0; padding-left: 1.2rem; max-width: 40rem; }
+  .plain li { margin: 0.35rem 0; color: var(--text-2); font-size: 0.97rem; }
+  .col-note { max-width: 40rem; margin: 1rem 0 0; color: var(--text-3); font-size: 0.92rem; }
+
+  .asks { margin: 0; padding-left: 1.2rem; max-width: 44rem; }
+  .asks li { margin: 0.45rem 0; }
+  .asks a { color: var(--accent); }
+
+  #get-involved .col p { margin-bottom: 1.5rem; }
+  .fine { margin: 1.25rem 0 0; font-size: 0.9rem; color: var(--text-3); }
+  .fine a { color: var(--accent); }
+</style>
