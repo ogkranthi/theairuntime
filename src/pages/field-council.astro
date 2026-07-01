@@ -1,7 +1,7 @@
 ---
 import LabLayout from '../layouts/LabLayout.astro';
 import CTAButtons from '../components/lab/CTAButtons.astro';
-import { CONTACT_EMAIL, SUBSCRIBE_URL } from '../lib/lab-links';
+import { CONTACT_EMAIL, SUBSCRIBE_URL, MENTOR_FORM_URL } from '../lib/lab-links';
 
 const mailto = (subject: string) => `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`;
 
@@ -63,7 +63,9 @@ const roles = [
       'cost and latency constraints',
       'what would need to change before production',
     ],
-    cta: { label: 'I can mentor a lab', href: mailto('Field Council: I can mentor a lab') },
+    cta: MENTOR_FORM_URL
+      ? { label: 'I can mentor a lab', href: MENTOR_FORM_URL, external: true }
+      : { label: 'I can mentor a lab', href: mailto('Field Council: I can mentor a lab') },
   },
   {
     id: 'problem-scout',
@@ -212,7 +214,12 @@ const currentAsks = [
             <ul class="role-list">
               {r.list.map((item) => <li>{item}</li>)}
             </ul>
-            <p class="role-cta"><a href={r.cta.href}>{r.cta.label}</a></p>
+            <p class="role-cta">
+              <a
+                href={r.cta.href}
+                {...('external' in r.cta && r.cta.external ? { target: '_blank', rel: 'noopener' } : {})}
+              >{r.cta.label}</a>
+            </p>
           </article>
         ))}
       </div>

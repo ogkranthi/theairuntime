@@ -12,5 +12,10 @@ export const CONTACT_EMAIL = 'info@theairuntime.com';
 // links (Form view > Share form > Embed), never view share links: a view
 // embed exposes every submitted record, including emails, to the public.
 // Each path degrades to a mailto CTA while its URL is empty.
-export const SUBMIT_FORM_URL = '';
-export const FIELD_NOTE_FORM_URL = '';
+export const SUBMIT_FORM_URL = 'https://airtable.com/embed/appHnMPcsBu6XTApu/pagMxwk3V77tBMlhg/form';
+export const FIELD_NOTE_FORM_URL = 'https://airtable.com/embed/appHnMPcsBu6XTApu/pagusC2K764WmRxDB/form';
+
+// Builder and mentor interest forms, linked (not embedded) from /submit and
+// the Field Council. Non-embed form pages, opened on airtable.com.
+export const BUILDER_FORM_URL = 'https://airtable.com/appHnMPcsBu6XTApu/pagGE7Ne12wCGU1Bz/form';
+export const MENTOR_FORM_URL = 'https://airtable.com/appHnMPcsBu6XTApu/pagESCYXgut3AJqHK/form';
