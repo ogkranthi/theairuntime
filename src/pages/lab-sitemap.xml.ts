@@ -19,6 +19,7 @@ export const GET: APIRoute = async () => {
     `${LAB}/field-notes/`,
     `${LAB}/artifacts/`,
     `${LAB}/problem-bank/`,
+    `${LAB}/field-council/`,
     `${LAB}/reports/`,
     `${LAB}/submit/`,
     ...labs.map((l) => `${LAB}/${String(l.data.number).padStart(2, '0')}/`),

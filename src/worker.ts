@@ -97,6 +97,7 @@ function isFieldLabPath(p: string): boolean {
     p === '/field-notes' || p.startsWith('/field-notes/') ||
     p === '/artifacts' || p.startsWith('/artifacts/') ||
     p === '/problem-bank' || p.startsWith('/problem-bank/') ||
+    p === '/field-council' || p.startsWith('/field-council/') ||
     /^\/\d+\/?$/.test(p) || // numbered Field Lab pages, e.g. /01
     // Legacy paths, now redirect stubs (kept on the lab host so they resolve).
     p === '/field-lab' || p.startsWith('/field-lab/') ||
