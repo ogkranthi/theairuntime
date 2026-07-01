@@ -1,6 +1,12 @@
 ---
 import LabLayout from '../layouts/LabLayout.astro';
-import { SUBMIT_FORM_URL, FIELD_NOTE_FORM_URL, CONTACT_EMAIL } from '../lib/lab-links';
+import {
+  SUBMIT_FORM_URL,
+  FIELD_NOTE_FORM_URL,
+  BUILDER_FORM_URL,
+  MENTOR_FORM_URL,
+  CONTACT_EMAIL,
+} from '../lib/lab-links';
 
 const problemQuestions = [
   'What workflow are you trying to improve?',
@@ -125,6 +131,27 @@ const noteMailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Field 
       </p>
     </div>
   </section>
+
+  <section class="sec" id="build-or-mentor">
+    <div class="lab-container">
+      <h2>Build or mentor</h2>
+      <div class="col">
+        <p>
+          Want to build against the next Brief at a workshop, or help a cohort as a
+          <a href="/field-council#lab-mentor"> Lab Mentor</a>? Register interest and we will reach
+          out when the next Lab is scheduled.
+        </p>
+      </div>
+      <p class="cta-line">
+        {BUILDER_FORM_URL && (
+          <a class="btn ghost" href={BUILDER_FORM_URL} target="_blank" rel="noopener">Builder interest form</a>
+        )}
+        {MENTOR_FORM_URL && (
+          <a class="btn ghost" href={MENTOR_FORM_URL} target="_blank" rel="noopener">Mentor interest form</a>
+        )}
+      </p>
+    </div>
+  </section>
 </LabLayout>
 
 <style>
@@ -167,6 +194,8 @@ const noteMailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Field 
     color: #fff;
   }
   .btn:hover { background: #c64708; border-color: #c64708; text-decoration: none; }
+  .btn.ghost { background: transparent; color: var(--text); border-color: var(--border-strong); }
+  .btn.ghost:hover { background: transparent; color: var(--accent); border-color: var(--accent); }
   .addr { color: var(--text-3); font-size: 0.9rem; }
   .fine { margin: 1.25rem 0 0; font-size: 0.9rem; color: var(--text-3); max-width: 44rem; }
   .fine a { color: var(--accent); }
