@@ -1,0 +1,80 @@
+---
+import { getCollection, render } from 'astro:content';
+import LabLayout from '../../layouts/LabLayout.astro';
+
+export async function getStaticPaths() {
+  const artifacts = await getCollection('artifacts');
+  return artifacts
+    .filter((a) => a.data.status === 'available')
+    .map((artifact) => ({ params: { slug: artifact.slug }, props: { artifact } }));
+}
+
+const { artifact } = Astro.props;
+const d = artifact.data;
+const { Content } = await render(artifact);
+const nn = d.related_lab ? String(d.related_lab).padStart(2, '0') : null;
+---
+<LabLayout title={`${d.title} · The AI Runtime Field Lab`} description={d.use_case} ogType="article">
+  <article class="artifact-page">
+    <div class="lab-container">
+      <p class="back"><a href="/artifacts">Artifacts</a></p>
+      <p class="mono-label from">
+        <span class="tag">{d.artifact_type}</span>
+        {nn && <span> · from <a href={`/${nn}`}>Field Lab {nn}</a></span>}
+      </p>
+      <h1>{d.title}</h1>
+      <dl class="facts">
+        <div>
+          <dt>Use when</dt>
+          <dd>{d.use_case}</dd>
+        </div>
+        <div>
+          <dt>Prevents</dt>
+          <dd>{d.problem_solved}</dd>
+        </div>
+      </dl>
+      {d.download_url && (
+        <p class="dl"><a href={d.download_url}>Download</a></p>
+      )}
+      <div class="prose">
+        <Content />
+      </div>
+      <p class="foot">
+        Used this in the field? <a href="/submit#field-note">Tell us where it broke.</a>
+      </p>
+    </div>
+  </article>
+</LabLayout>
+
+<style>
+  .artifact-page { padding: 3rem 0 1rem; }
+  .back { margin: 0 0 1.25rem; }
+  .back a { color: var(--accent); font-size: 0.9rem; }
+  .from { margin: 0 0 0.9rem; color: var(--text-3); }
+  .from a { color: var(--accent); }
+  h1 { max-width: 24ch; }
+  .facts { margin: 1rem 0 0; display: grid; gap: 0.55rem; max-width: 42rem; }
+  .facts div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 1rem; align-items: baseline; }
+  .facts dt {
+    font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .facts dd { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+  @media (max-width: 34rem) {
+    .facts div { grid-template-columns: 1fr; gap: 0.15rem; }
+  }
+  .dl { margin: 1rem 0 0; }
+  .dl a { color: var(--accent); }
+  .prose { max-width: 42rem; margin: 2rem 0 0; }
+  .foot { margin: 2.5rem 0 0; color: var(--text-2); }
+  .foot a { color: var(--accent); }
+</style>
+
+<style is:global>
+  .artifact-page .prose h2 { margin: 2.25rem 0 0.75rem; }
+  .artifact-page .prose h3 { margin: 1.75rem 0 0.5rem; }
+  .artifact-page .prose ul, .artifact-page .prose ol { padding-left: 1.3rem; }
+  .artifact-page .prose li { margin: 0.35rem 0; color: var(--text-2); }
+  .artifact-page .prose input[type='checkbox'] { accent-color: var(--accent); margin-right: 0.4rem; }
+  .artifact-page .prose li:has(> input[type='checkbox']) { list-style: none; margin-left: -1.3rem; }
+</style>

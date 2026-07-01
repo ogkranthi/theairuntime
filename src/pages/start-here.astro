@@ -1,0 +1,152 @@
+---
+import LabLayout from '../layouts/LabLayout.astro';
+import SpineSteps from '../components/lab/SpineSteps.astro';
+import { WORKSHOPS_URL, SUBSCRIBE_URL, PUBLICATION_URL } from '../lib/lab-links';
+
+const audiences = [
+  {
+    who: 'You do FDE or applied AI work',
+    want: 'Serious field problems and sharp technical taste.',
+    path: [
+      { label: 'React to the current reliability bar', href: '/investigations' },
+      { label: 'Contribute a field note, anonymous is fine', href: '/submit#field-note' },
+      { label: 'Review or reuse an artifact', href: '/artifacts' },
+    ],
+  },
+  {
+    who: 'You are a founder or operator',
+    want: 'Help with a real AI workflow problem.',
+    path: [
+      { label: 'Submit the problem', href: '/submit#problem' },
+      { label: 'See what happens to submitted problems', href: '/problem-bank' },
+      { label: 'Read the current investigation', href: '/investigations' },
+    ],
+  },
+  {
+    who: 'You are a builder or engineer',
+    want: 'Portfolio-grade projects with a real bar.',
+    path: [
+      { label: 'Read the current Brief and runbook', href: '/investigations' },
+      { label: 'Build at the next workshop', href: WORKSHOPS_URL, external: true },
+      { label: 'Publish your Report and keep the proof', href: '/reports' },
+    ],
+  },
+  {
+    who: 'You are a hiring manager or recruiter',
+    want: 'Proof someone can do field engineering work.',
+    path: [
+      { label: 'Read the Reports and their eval scores', href: '/reports' },
+      { label: 'Check the bar they were scored against', href: '/investigations' },
+      { label: 'See how the lab thinks, in the artifacts', href: '/artifacts' },
+    ],
+  },
+];
+---
+<LabLayout
+  title="Start here · The AI Runtime Field Lab"
+  description="What the Field Lab is, how the pipeline works, and how to use it whether you do FDE work, run a company, build systems, or hire the people who do."
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">Field Lab · Start here</p>
+      <h1>What the Field Lab is</h1>
+      <p class="sub">
+        The AI Runtime Field Lab studies how AI systems move from demo to deployment, by turning
+        real field problems into scoped builds, reliability bars, evals, artifacts, and public
+        reports. It is run by <a href={PUBLICATION_URL}>The AI Runtime</a>, the publication and
+        community for engineers shipping AI to production.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">The premise</h2>
+      <div class="col">
+        <p>
+          AI systems rarely fail because the demo could not produce an answer. They fail because the
+          surrounding system cannot handle stale data, weak evidence, conflicting sources, policy
+          boundaries, permissions, cost, latency, escalation, and ownership.
+        </p>
+        <p>
+          Most writing about this is either vendor marketing or war stories with the details removed.
+          The Field Lab takes the third path: do the work in public. One real problem at a time, a
+          bar anyone can check, and every artifact published.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">The pipeline</h2>
+      <SpineSteps />
+      <p class="after-spine">
+        Problems queue in the <a href="/problem-bank">Problem Bank</a>. Builds run as
+        <a href="/investigations"> Investigations</a>. Reusable pieces land in
+        <a href="/artifacts"> Artifacts</a>. Teardowns land in <a href="/reports">Reports</a>. And
+        the people who do this work for a living talk about it in
+        <a href="/field-notes"> Field Notes</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">How to use it</h2>
+      <div class="grid">
+        {audiences.map((a) => (
+          <div class="aud">
+            <h3>{a.who}</h3>
+            <p class="want">{a.want}</p>
+            <ul>
+              {a.path.map((p) => (
+                <li>
+                  <a href={p.href} {...(p.external ? { target: '_blank', rel: 'noopener' } : {})}>{p.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec foot">
+    <div class="lab-container">
+      <p>
+        Everything new lands in the weekly newsletter first. <a href={SUBSCRIBE_URL}>Subscribe</a>,
+        or start with the <a href="/investigations">current investigation</a>.
+      </p>
+    </div>
+  </section>
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .sub { max-width: 44rem; margin: 0.9rem 0 0; font-size: 1.15rem; color: var(--text-2); }
+  .sub a { color: var(--accent); }
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .sec h2 { margin: 0 0 1.5rem; }
+  .col { max-width: 42rem; }
+  .col p { color: var(--text-2); }
+  .after-spine { margin: 1.25rem 0 0; max-width: 44rem; color: var(--text-2); font-size: 0.95rem; }
+  .after-spine a { color: var(--accent); }
+
+  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+  .aud {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.5rem;
+  }
+  .aud h3 { margin: 0 0 0.3rem; font-size: 1.05rem; }
+  .aud .want { margin: 0 0 0.75rem; color: var(--text-3); font-size: 0.9rem; }
+  .aud ul { margin: 0; padding-left: 1.2rem; }
+  .aud li { margin: 0.35rem 0; font-size: 0.95rem; }
+  .aud a { color: var(--accent); }
+
+  .foot p { max-width: 44rem; color: var(--text-2); margin: 0; }
+  .foot a { color: var(--accent); }
+</style>

@@ -1,0 +1,155 @@
+---
+import { getCollection } from 'astro:content';
+import LabLayout from '../layouts/LabLayout.astro';
+
+const STATUS_LABELS: Record<string, string> = {
+  'submitted': 'Submitted',
+  'under-review': 'Under review',
+  'selected': 'Selected',
+  'in-progress': 'In progress',
+  'report-published': 'Report published',
+  'needs-partner': 'Needs partner',
+  'needs-reviewer': 'Needs reviewer',
+};
+
+const problems = (await getCollection('problems')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+---
+<LabLayout
+  title="Problem Bank · The AI Runtime Field Lab"
+  description="A public backlog of anonymized, production-shaped AI problems from founders and operators. The best ones become Field Lab investigations."
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">Field Lab · Problem Bank</p>
+      <h1>Problem Bank</h1>
+      <p class="sub">
+        A public backlog of anonymized AI deployment problems from founders, operators, and
+        engineers. Every investigation starts here: a problem gets submitted, reviewed, scoped into a
+        Brief, and built against at a Lab. The bank shows what the field is actually struggling with.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <div class="list">
+        {problems.map((p) => {
+          const nn = p.data.selected_for ? String(p.data.selected_for).padStart(2, '0') : null;
+          return (
+            <article class="problem">
+              <div class="top">
+                <span class="mono-label src">From a {p.data.source_type}</span>
+                <span class:list={['status', p.data.status]}>
+                  {STATUS_LABELS[p.data.status]}{nn && p.data.status === 'selected' ? ` for Field Lab ${nn}` : ''}
+                </span>
+              </div>
+              <h2>{p.data.title}</h2>
+              <dl class="facts">
+                <div>
+                  <dt>Workflow</dt>
+                  <dd>{p.data.workflow}</dd>
+                </div>
+                <div>
+                  <dt>System</dt>
+                  <dd>{p.data.system_type}</dd>
+                </div>
+                {p.data.risk_types.length > 0 && (
+                  <div>
+                    <dt>Risk</dt>
+                    <dd>{p.data.risk_types.join(', ')}</dd>
+                  </div>
+                )}
+              </dl>
+              {nn && (
+                <p class="read"><a href={`/${nn}`}>See the investigation</a></p>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">How a problem moves</h2>
+      <ol class="lifecycle">
+        <li>Submitted</li>
+        <li>Under review</li>
+        <li>Selected</li>
+        <li>In progress</li>
+        <li>Report published</li>
+      </ol>
+      <p class="lifecycle-note">
+        Some problems stall as <strong>needs partner</strong> (the build needs tooling or data we do
+        not have) or <strong>needs reviewer</strong> (the bar needs a domain expert to react to it).
+        Those are open invitations.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec foot">
+    <div class="lab-container">
+      <p>
+        Have a workflow where an AI system almost works but you cannot trust it yet? That is exactly
+        the shape we want. <a href="/submit#problem">Submit a field problem.</a> Everything is
+        anonymized before it appears here.
+      </p>
+    </div>
+  </section>
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .sub { max-width: 44rem; margin: 0.9rem 0 0; font-size: 1.15rem; color: var(--text-2); }
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .sec h2 { margin: 0 0 1.25rem; }
+  .list { display: grid; gap: 1.1rem; }
+
+  .problem {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.5rem;
+  }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.4rem 1rem; }
+  .src { color: var(--text-3); }
+  .status {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--text-2);
+  }
+  .status.selected, .status.in-progress { border-color: var(--accent); color: var(--accent); }
+  .problem h2 { margin: 0.7rem 0 0.75rem; font-size: 1.15rem; }
+  .facts { margin: 0; display: grid; gap: 0.5rem; }
+  .facts div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 1rem; align-items: baseline; }
+  .facts dt {
+    font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .facts dd { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+  @media (max-width: 34rem) {
+    .facts div { grid-template-columns: 1fr; gap: 0.15rem; }
+  }
+  .read { margin: 1rem 0 0; font-size: 0.95rem; }
+  .read a { color: var(--accent); }
+
+  .lifecycle {
+    counter-reset: step; list-style: none; margin: 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: 0.5rem; max-width: 44rem;
+  }
+  .lifecycle li {
+    padding: 0.45rem 0.9rem; border: 1px solid var(--border); border-radius: 999px;
+    background: var(--bg-2); color: var(--text); font-size: 0.9rem;
+  }
+  .lifecycle li::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero) " ";
+    font-family: var(--font-mono); font-size: 0.74rem; color: var(--accent);
+  }
+  .lifecycle-note { max-width: 44rem; margin: 1.25rem 0 0; color: var(--text-2); font-size: 0.95rem; }
+
+  .foot p { max-width: 44rem; color: var(--text-2); margin: 0; }
+  .foot a { color: var(--accent); }
+</style>

@@ -1,0 +1,47 @@
+---
+import { getCollection, render } from 'astro:content';
+import LabLayout from '../../layouts/LabLayout.astro';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('field-notes');
+  return notes
+    .filter((n) => n.data.status === 'published')
+    .map((note) => ({ params: { slug: note.slug }, props: { note } }));
+}
+
+const { note } = Astro.props;
+const d = note.data;
+const { Content } = await render(note);
+const dateLabel = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d.date);
+const byline = d.anonymous ? 'Anonymous' : d.guest_name;
+---
+<LabLayout title={`${d.title} · The AI Runtime Field Lab`} description={d.excerpt} ogType="article">
+  <article class="fieldnote">
+    <div class="lab-container">
+      <p class="back"><a href="/field-notes">Field Notes</a></p>
+      <p class="mono-label from">{byline} · {d.role} · {d.company_type} · {dateLabel}</p>
+      <h1>{d.title}</h1>
+      {d.themes.length > 0 && (
+        <p class="themes">{d.themes.map((t) => <span class="tag">{t}</span>)}</p>
+      )}
+      <div class="prose">
+        <Content />
+      </div>
+      <p class="foot">
+        Do FDE-shaped work yourself? <a href="/submit#field-note">Contribute a field note.</a>
+      </p>
+    </div>
+  </article>
+</LabLayout>
+
+<style>
+  .fieldnote { padding: 3rem 0 1rem; }
+  .back { margin: 0 0 1.25rem; }
+  .back a { color: var(--accent); font-size: 0.9rem; }
+  .from { margin: 0 0 0.75rem; color: var(--text-3); }
+  h1 { max-width: 24ch; }
+  .themes { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.75rem 0 0; }
+  .prose { max-width: 42rem; margin: 2rem 0 0; }
+  .foot { margin: 2.5rem 0 0; color: var(--text-2); }
+  .foot a { color: var(--accent); }
+</style>

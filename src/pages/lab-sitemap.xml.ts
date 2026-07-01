@@ -9,13 +9,22 @@ const LAB = 'https://lab.theairuntime.com';
 export const GET: APIRoute = async () => {
   const labs = (await getCollection('labs')).filter((l) => l.data.status !== 'draft');
   const reports = await getCollection('reports');
+  const fieldNotes = (await getCollection('field-notes')).filter((n) => n.data.status === 'published');
+  const artifacts = (await getCollection('artifacts')).filter((a) => a.data.status === 'available');
   // Trailing slashes to match the directory-format canonical URLs.
   const urls = [
     `${LAB}/`,
+    `${LAB}/start-here/`,
+    `${LAB}/investigations/`,
+    `${LAB}/field-notes/`,
+    `${LAB}/artifacts/`,
+    `${LAB}/problem-bank/`,
     `${LAB}/reports/`,
     `${LAB}/submit/`,
     ...labs.map((l) => `${LAB}/${String(l.data.number).padStart(2, '0')}/`),
     ...reports.map((r) => `${LAB}/reports/${r.id}/`),
+    ...fieldNotes.map((n) => `${LAB}/field-notes/${n.slug}/`),
+    ...artifacts.map((a) => `${LAB}/artifacts/${a.slug}/`),
   ];
 
   const body =

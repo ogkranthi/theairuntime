@@ -7,6 +7,14 @@ partner: Apify
 brief_summary: Build a design-partner sourcing agent on Apify, then prove which leads are safe to act on.
 fit_profile: US-based B2B SaaS, 50 to 300 people, a developer-facing product, a contact who is an engineering leader, and a real reason to reach out now.
 the_bar: "The Dirty Thirty: thirty frozen records, ten clean and twenty each planted with a specific break, graded on catching the bad and keeping the good."
+question: Can a sourcing agent prove which web-derived leads are safe to act on?
+artifact: A source-agnostic trust core plus the Dirty Thirty eval harness.
+pass_bar:
+  - bad-record recall at or above 85 percent
+  - clean-record precision at or above 80 percent
+  - evidence coverage 100 percent on accepted records
+  - zero unsupported accepted claims
+  - a reason on every rejection
 luma_url: https://luma.com/lou5ylpt
 subscribe_url: https://theairuntime.com/subscribe
 og_image: /og-01.png
@@ -401,9 +409,10 @@ python smoke.py             # prints: apify ok: SUCCEEDED`;
   <div class="newhere">
     <p>New to The AI Runtime? Start here:</p>
     <ul>
-      <li><a href="https://theairuntime.com">The newsletter</a>, production lessons every week.</li>
+      <li><a href="/start-here">The Field Lab</a>, what it is and how to use it.</li>
+      <li><a href="/artifacts">Artifacts</a>, the reusable rubrics and checklists this Lab produced.</li>
       <li><a href="/reports">Reports</a>, what builders shipped.</li>
-      <li><a href="/">The Field Lab</a>, the whole pipeline.</li>
+      <li><a href="https://theairuntime.com">The newsletter</a>, production lessons every week.</li>
     </ul>
   </div>
 </section>

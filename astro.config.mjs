@@ -25,6 +25,10 @@ export default defineConfig({
         !page.includes('/reports') &&
         !page.includes('/submit') &&
         !page.includes('/lab-home') &&
+        !page.includes('/start-here') &&
+        !page.includes('/field-notes') &&
+        !page.includes('/artifacts') &&
+        !page.includes('/problem-bank') &&
         !/\/\d{2}\/?$/.test(page) &&
         !page.endsWith('.ics'),
     }),

@@ -93,6 +93,10 @@ function isFieldLabPath(p: string): boolean {
     p === '/reports' || p.startsWith('/reports/') ||
     p === '/submit' || p.startsWith('/submit/') ||
     p === '/lab-home' || p.startsWith('/lab-home/') ||
+    p === '/start-here' || p.startsWith('/start-here/') ||
+    p === '/field-notes' || p.startsWith('/field-notes/') ||
+    p === '/artifacts' || p.startsWith('/artifacts/') ||
+    p === '/problem-bank' || p.startsWith('/problem-bank/') ||
     /^\/\d+\/?$/.test(p) || // numbered Field Lab pages, e.g. /01
     // Legacy paths, now redirect stubs (kept on the lab host so they resolve).
     p === '/field-lab' || p.startsWith('/field-lab/') ||
@@ -744,8 +748,8 @@ export default {
       ) {
         return Response.redirect(`https://${LAB_HOST}${pathname}${search}`, 301);
       }
-      // lab: root opens the investigations record; keep investigations, Field
-      // Lab, API, and assets here; send any stray main-site page to events.
+      // lab: root opens the Field Lab home; keep investigations, Field Lab,
+      // API, and assets here; send any stray main-site page to events.
       if (hostname === LAB_HOST) {
         if (pathname === '/') {
           // The lab front door is the Field Lab home. Serve it at the root
@@ -764,8 +768,10 @@ export default {
             pathname === '/briefs' || pathname.startsWith('/briefs/')) {
           return Response.redirect(`https://${LAB_HOST}/`, 301);
         }
-        if (pathname === '/investigations' || pathname.startsWith('/investigations/')) {
-          return Response.redirect(`https://${LAB_HOST}/reports`, 301);
+        // /investigations is a real page again (the technical archive). Detail
+        // URLs from the old standalone investigations site fold into it.
+        if (pathname.startsWith('/investigations/') && pathname !== '/investigations/') {
+          return Response.redirect(`https://${LAB_HOST}/investigations`, 301);
         }
         const stayOnLab =
           isInvestigationsPath(pathname) ||

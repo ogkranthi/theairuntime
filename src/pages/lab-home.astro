@@ -2,7 +2,6 @@
 import { getCollection } from 'astro:content';
 import LabLayout from '../layouts/LabLayout.astro';
 import SpineSteps from '../components/lab/SpineSteps.astro';
-import LabCard from '../components/lab/LabCard.astro';
 import ReportCard from '../components/lab/ReportCard.astro';
 import CTAButtons from '../components/lab/CTAButtons.astro';
 import { WORKSHOPS_URL, SUBSCRIBE_URL, PUBLICATION_URL, EVENTS_URL, CONTACT_EMAIL } from '../lib/lab-links';
@@ -10,53 +9,99 @@ import { WORKSHOPS_URL, SUBSCRIBE_URL, PUBLICATION_URL, EVENTS_URL, CONTACT_EMAI
 const labs = (await getCollection('labs'))
   .filter((l) => l.data.status !== 'draft')
   .sort((a, b) => b.data.number - a.data.number);
+const current = labs[0];
+const nn = current ? String(current.data.number).padStart(2, '0') : null;
 
 const reports = (await getCollection('reports'))
   .filter((r) => r.data.featured)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const doing = [
+  {
+    title: 'Investigations',
+    href: '/investigations',
+    body: 'We test one production-shaped AI problem at a time against a public reliability bar, and publish what passed and what broke.',
+  },
+  {
+    title: 'Field Notes',
+    href: '/field-notes',
+    body: 'We interview FDEs, applied AI architects, and operators about what actually happens between the demo and the deployment.',
+  },
+  {
+    title: 'Artifacts',
+    href: '/artifacts',
+    body: 'We publish the checklists, rubrics, evals, and runbooks the investigations produce, so builders can reuse them.',
+  },
+];
+
+const proves = [
+  { k: 'Discovery', v: 'Every investigation starts with a real field problem from the Problem Bank.' },
+  { k: 'Scoping', v: 'Every Brief defines constraints and what counts as solved, before the build.' },
+  { k: 'System design', v: 'Every build has an architecture and its tradeoffs written down.' },
+  { k: 'Evaluation', v: 'Every investigation is scored against a public bar, on a frozen eval set.' },
+  { k: 'Rollout thinking', v: 'Every report says what is safe to act on, and what is not.' },
+  { k: 'Communication', v: 'Every artifact is usable by a founder, a builder, or a stakeholder.' },
+];
+
+const participate = [
+  {
+    title: 'Submit a problem',
+    who: 'Founders and operators',
+    body: 'Bring a real AI workflow problem. If it is production-shaped, it becomes a Brief the lab builds against.',
+    href: '/submit#problem',
+    cta: 'Submit a field problem',
+  },
+  {
+    title: 'Contribute a field note',
+    who: 'FDEs and applied AI people',
+    body: 'Share what the work actually looks like: what reaches you, what breaks, how you define ready to ship. Anonymous is fine.',
+    href: '/submit#field-note',
+    cta: 'Contribute a field note',
+  },
+  {
+    title: 'Build at a Lab',
+    who: 'Builders and engineers',
+    body: 'Build against the current Brief at a workshop, score against the bar, and leave with a Report you own.',
+    href: WORKSHOPS_URL,
+    cta: 'Join a workshop',
+    external: true,
+  },
+];
 ---
 <LabLayout
   title="The AI Runtime Field Lab"
-  description="Production-shaped problems in AI systems, scored against a public bar. Build the fix at a workshop and keep the proof as a Report you own."
+  description="The field lab for production AI. Real customer-shaped AI problems, turned into scoped builds, reliability bars, evals, artifacts, and public field reports."
   canonicalPath="/"
 >
   <section class="hero">
     <div class="lab-container">
       <p class="mono-label eyebrow">The AI Runtime · Field Lab</p>
-      <h1>Production-shaped problems. Build the fix. Keep the proof.</h1>
+      <h1>The field lab for production AI.</h1>
       <p class="sub">
-        The Field Lab runs builders against real reliability problems in AI systems, scored against a
-        public bar. You leave with something you own.
+        We turn real customer-shaped AI problems into scoped builds, reliability bars, evals,
+        artifacts, and public field reports. This is where the work between demo and deployment gets
+        studied, tested, and turned into proof.
       </p>
       <CTAButtons
         links={[
-          { label: 'Join a workshop', href: WORKSHOPS_URL, primary: true, external: true },
-          { label: 'Submit a problem', href: '/submit' },
+          ...(nn ? [{ label: `Read Investigation ${nn}`, href: `/${nn}`, primary: true }] : []),
+          { label: 'Submit a field problem', href: '/submit#problem' },
+          { label: 'Contribute a field note', href: '/submit#field-note' },
         ]}
       />
+      <p class="start">New here? <a href="/start-here">Start here.</a></p>
     </div>
   </section>
 
   <section class="sec">
     <div class="lab-container">
-      <h2 class="mono-label">How it works</h2>
-      <SpineSteps />
-    </div>
-  </section>
-
-  <section class="sec">
-    <div class="lab-container">
-      <h2 class="mono-label">Current and recent Labs</h2>
-      <div class="grid">
-        {labs.map((l) => (
-          <LabCard
-            number={l.data.number}
-            title={l.data.title}
-            status={l.data.status}
-            brief_summary={l.data.brief_summary}
-            partner={l.data.partner}
-            date={l.data.date}
-          />
+      <h2 class="mono-label">What the lab does</h2>
+      <div class="grid three">
+        {doing.map((d) => (
+          <a class="do-card" href={d.href}>
+            <h3>{d.title}</h3>
+            <p>{d.body}</p>
+          </a>
         ))}
       </div>
     </div>
@@ -64,9 +109,100 @@ const reports = (await getCollection('reports'))
 
   <section class="sec">
     <div class="lab-container">
+      <h2 class="mono-label">How it works</h2>
+      <SpineSteps />
+      <p class="after-spine">
+        The backlog of problems lives in the <a href="/problem-bank">Problem Bank</a>. Finished
+        teardowns land in <a href="/reports">Reports</a>.
+      </p>
+    </div>
+  </section>
+
+  {current && (
+    <section class="sec">
+      <div class="lab-container">
+        <h2 class="mono-label">Current investigation</h2>
+        <div class="feature">
+          <p class="mono-label feat-eyebrow">
+            Field Lab {nn}{current.data.partner ? ` · with ${current.data.partner}` : ''}
+          </p>
+          <h3 class="feat-title"><a href={`/${nn}`}>{current.data.title}</a></h3>
+          {current.data.question && <p class="feat-q">{current.data.question}</p>}
+          <dl class="feat-facts">
+            <div>
+              <dt>Problem</dt>
+              <dd>{current.data.brief_summary}</dd>
+            </div>
+            {current.data.artifact && (
+              <div>
+                <dt>Artifact</dt>
+                <dd>{current.data.artifact}</dd>
+              </div>
+            )}
+            {current.data.the_bar && (
+              <div>
+                <dt>Eval</dt>
+                <dd>{current.data.the_bar}</dd>
+              </div>
+            )}
+            {current.data.pass_bar.length > 0 && (
+              <div>
+                <dt>Bar</dt>
+                <dd>{current.data.pass_bar.join('; ')}.</dd>
+              </div>
+            )}
+            <div>
+              <dt>Output</dt>
+              <dd>A working repo, a build runbook, and a founder-facing trust report.</dd>
+            </div>
+          </dl>
+          <p class="feat-link"><a href={`/${nn}`}>Read Investigation {nn}</a></p>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Why this matters</h2>
+      <div class="col">
+        <p>
+          AI systems rarely fail because the demo could not produce an answer. They fail because the
+          surrounding system cannot handle stale data, weak evidence, conflicting sources, policy
+          boundaries, permissions, cost, latency, escalation, and ownership.
+        </p>
+        <p>
+          That surrounding system is the actual job of production AI, and it is where most builds
+          die. The Field Lab exists to study that gap in public: one scoped problem at a time,
+          against a bar anyone can check.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">What this proves</h2>
+      <p class="lead-line">
+        The lab makes the competencies of field engineering visible, the same ones forward deployed
+        and applied AI teams are built on.
+      </p>
+      <dl class="proves">
+        {proves.map((p) => (
+          <div class="prove">
+            <dt>{p.k}</dt>
+            <dd>{p.v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
       <h2 class="mono-label">What builders shipped</h2>
       {reports.length > 0 ? (
-        <div class="grid">
+        <div class="grid three">
           {reports.map((r) => (
             <ReportCard
               slug={r.id}
@@ -82,14 +218,32 @@ const reports = (await getCollection('reports'))
           ))}
         </div>
       ) : (
-        <p class="empty">First Reports land after Field Lab 01. <a href="/reports">See the gallery</a>.</p>
+        <p class="empty">First Reports land after Field Lab 01. <a href="/reports">See what a Report is</a>.</p>
       )}
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Ways to participate</h2>
+      <div class="grid three">
+        {participate.map((p) => (
+          <div class="part-card">
+            <p class="mono-label who">{p.who}</p>
+            <h3>{p.title}</h3>
+            <p class="body">{p.body}</p>
+            <p class="link">
+              <a href={p.href} {...(p.external ? { target: '_blank', rel: 'noopener' } : {})}>{p.cta}</a>
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 
   <section class="sec foot">
     <div class="lab-container">
-      <p class="sub-line">New briefs and the next workshop, in the weekly newsletter. <a href={SUBSCRIBE_URL}>Subscribe</a>.</p>
+      <p class="sub-line">New investigations, field notes, and the next workshop, in the weekly newsletter. <a href={SUBSCRIBE_URL}>Subscribe</a>.</p>
       <p class="links">
         <a href={PUBLICATION_URL}>The publication</a>
         <a href={EVENTS_URL}>Workshops and events</a>
@@ -103,12 +257,88 @@ const reports = (await getCollection('reports'))
   .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
   .eyebrow { margin: 0 0 1rem; color: var(--accent); }
   .hero h1 { max-width: 20ch; }
-  .sub { max-width: 42rem; margin: 0.9rem 0 1.5rem; font-size: 1.15rem; color: var(--text-2); }
+  .sub { max-width: 44rem; margin: 0.9rem 0 1.5rem; font-size: 1.15rem; color: var(--text-2); }
+  .start { margin: 1rem 0 0; font-size: 0.92rem; color: var(--text-3); }
+  .start a { color: var(--accent); }
+
   .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
   .sec h2 { margin: 0 0 1.5rem; }
-  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+  .grid { display: grid; gap: 1rem; }
+  .grid.three { grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
   .empty { color: var(--text-2); }
-  .empty a, .sub-line a, .links a { color: var(--accent); }
+  .empty a { color: var(--accent); }
+
+  .do-card {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.5rem;
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 140ms ease;
+  }
+  .do-card:hover { border-color: var(--accent); text-decoration: none; }
+  .do-card h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+  .do-card p { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+
+  .after-spine { margin: 1.25rem 0 0; color: var(--text-2); font-size: 0.95rem; }
+  .after-spine a { color: var(--accent); }
+
+  .feature {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.75rem 1.9rem;
+  }
+  .feat-eyebrow { margin: 0 0 0.6rem; color: var(--text-3); }
+  .feat-title { margin: 0 0 0.4rem; font-size: 1.35rem; }
+  .feat-title a { color: var(--text); text-decoration: none; }
+  .feat-title a:hover { color: var(--accent); }
+  .feat-q { margin: 0 0 1.25rem; font-size: 1.05rem; color: var(--text-2); }
+  .feat-facts { margin: 0; display: grid; gap: 0.7rem; }
+  .feat-facts div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 1rem; align-items: baseline; }
+  .feat-facts dt {
+    font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .feat-facts dd { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+  .feat-link { margin: 1.25rem 0 0; font-size: 0.95rem; }
+  .feat-link a { color: var(--accent); }
+  @media (max-width: 34rem) {
+    .feat-facts div { grid-template-columns: 1fr; gap: 0.15rem; }
+  }
+
+  .col { max-width: 42rem; }
+  .col p { color: var(--text-2); }
+
+  .lead-line { max-width: 42rem; margin: 0 0 1.5rem; color: var(--text-2); }
+  .proves { margin: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+  .prove {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.1rem 1.3rem;
+  }
+  .prove dt {
+    font-family: var(--font-mono); font-weight: 600; font-size: 0.9rem;
+    color: var(--text); letter-spacing: -0.01em;
+  }
+  .prove dd { margin: 0.4rem 0 0; font-size: 0.92rem; color: var(--text-2); line-height: 1.6; }
+
+  .part-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.5rem;
+  }
+  .part-card .who { margin: 0 0 0.5rem; color: var(--text-3); }
+  .part-card h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+  .part-card .body { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+  .part-card .link { margin: 0.9rem 0 0; font-size: 0.92rem; }
+  .part-card .link a { color: var(--accent); }
+
   .foot .sub-line { color: var(--text-2); margin: 0 0 0.75rem; }
+  .foot .sub-line a, .foot .links a { color: var(--accent); }
   .foot .links { display: flex; flex-wrap: wrap; gap: 1.4rem; margin: 0; font-size: 0.92rem; }
 </style>

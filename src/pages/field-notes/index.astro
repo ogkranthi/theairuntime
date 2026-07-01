@@ -1,0 +1,136 @@
+---
+import { getCollection } from 'astro:content';
+import LabLayout from '../../layouts/LabLayout.astro';
+
+const notes = (await getCollection('field-notes')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+const guestTypes = [
+  'Forward deployed engineers at model companies',
+  'Applied AI architects',
+  'Forward deployed software engineers at data platforms',
+  'Customer engineers at AI infra companies',
+  'Founding engineers shipping AI at startups',
+  'Enterprise AI and solutions architects',
+  'Customer success engineers on AI deployments',
+];
+
+const structure = [
+  'Role shape',
+  'What their week actually looks like',
+  'What kinds of problems reach them',
+  'What breaks between demo and deployment',
+  'How they define ready to ship',
+  'Artifacts they use',
+  'Skills they think matter',
+  'The field pattern',
+];
+
+const dateLabel = (d: Date) =>
+  new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(d);
+---
+<LabLayout
+  title="Field Notes · The AI Runtime Field Lab"
+  description="Async interviews with people doing FDE-shaped work: forward deployed engineers, applied AI architects, customer engineers, and operators, on what actually happens between demo and deployment."
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">Field Lab · Field Notes</p>
+      <h1>Field Notes</h1>
+      <p class="sub">
+        Async interviews with people doing FDE-shaped work: what their week actually looks like, what
+        kinds of problems reach them, what breaks between demo and deployment, and how they decide a
+        system is ready to ship. Named or anonymous, written or voice note.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Notes</h2>
+      <div class="list">
+        {notes.map((n) => (
+          <article class:list={['note', { planned: n.data.status === 'planned' }]}>
+            <div class="top">
+              <span class="mono-label meta">
+                {n.data.anonymous ? 'Anonymous' : n.data.guest_name} · {n.data.role} · {n.data.company_type}
+              </span>
+              <span class="mono-label when">
+                {n.data.status === 'planned' ? 'In progress' : dateLabel(n.data.date)}
+              </span>
+            </div>
+            <h3>
+              {n.data.status === 'published'
+                ? <a href={`/field-notes/${n.slug}`}>{n.data.title}</a>
+                : n.data.title}
+            </h3>
+            <p class="excerpt">{n.data.excerpt}</p>
+            {n.data.themes.length > 0 && (
+              <p class="themes">{n.data.themes.map((t) => <span class="tag">{t}</span>)}</p>
+            )}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <div class="cols">
+        <div>
+          <h2 class="mono-label">Who we interview</h2>
+          <ul class="plain">
+            {guestTypes.map((g) => <li>{g}</li>)}
+          </ul>
+        </div>
+        <div>
+          <h2 class="mono-label">Every note covers</h2>
+          <ol class="plain numbered">
+            {structure.map((s) => <li>{s}</li>)}
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec foot">
+    <div class="lab-container">
+      <p>
+        Do this kind of work? A field note takes about thirty minutes, async, and can run anonymous.
+        <a href="/submit#field-note"> Contribute a field note.</a>
+      </p>
+    </div>
+  </section>
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .sub { max-width: 44rem; margin: 0.9rem 0 0; font-size: 1.15rem; color: var(--text-2); }
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .sec h2 { margin: 0 0 1.25rem; }
+  .list { display: grid; gap: 1.1rem; }
+
+  .note {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.5rem;
+  }
+  .note.planned { border-style: dashed; }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.4rem 1rem; }
+  .meta, .when { color: var(--text-3); }
+  .note h3 { margin: 0.6rem 0 0.4rem; font-size: 1.15rem; }
+  .note h3 a { color: var(--text); text-decoration: none; }
+  .note h3 a:hover { color: var(--accent); }
+  .excerpt { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+  .themes { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.9rem 0 0; }
+
+  .cols { display: grid; gap: 2.5rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); max-width: 44rem; }
+  .plain { margin: 0; padding-left: 1.2rem; }
+  .plain li { margin: 0.35rem 0; color: var(--text-2); }
+
+  .foot p { max-width: 44rem; color: var(--text-2); margin: 0; }
+  .foot a { color: var(--accent); }
+</style>
