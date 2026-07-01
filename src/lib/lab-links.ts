@@ -10,6 +10,5 @@ export const CONTACT_EMAIL = 'info@theairuntime.com';
 
 // The Airtable intake forms, embedded on /submit. Each path degrades to a
 // mailto CTA while its URL is empty, so the page is never broken.
-// TODO: paste the Problems form embed URL (https://airtable.com/embed/app.../shr...).
-export const SUBMIT_FORM_URL = '';
-export const FIELD_NOTE_FORM_URL = 'https://airtable.com/embed/appHnMPcsBu6XTApu/shrvXqxNlQnh2iCy1';
+export const SUBMIT_FORM_URL = 'https://airtable.com/embed/appHnMPcsBu6XTApu/shrmA0f0XyyJWlTij?viewControls=on';
+export const FIELD_NOTE_FORM_URL = 'https://airtable.com/embed/appHnMPcsBu6XTApu/shrnGzSrZDo5x5mjw?viewControls=on';
