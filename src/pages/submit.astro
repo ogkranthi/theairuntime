@@ -1,6 +1,6 @@
 ---
 import LabLayout from '../layouts/LabLayout.astro';
-import { SUBMIT_FORM_URL, CONTACT_EMAIL } from '../lib/lab-links';
+import { SUBMIT_FORM_URL, FIELD_NOTE_FORM_URL, CONTACT_EMAIL } from '../lib/lab-links';
 
 const problemQuestions = [
   'What workflow are you trying to improve?',
@@ -99,12 +99,27 @@ const noteMailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Field 
           {noteQuestions.map((q) => <li>{q}</li>)}
         </ol>
       </div>
-      <p class="cta-line">
-        <a class="btn" href={noteMailto}>Start a field note</a>
-        <span class="addr">one email to {CONTACT_EMAIL} is enough to begin</span>
-      </p>
+      {FIELD_NOTE_FORM_URL ? (
+        <div class="embed">
+          <iframe
+            class="airtable-embed"
+            src={FIELD_NOTE_FORM_URL}
+            title="Contribute a field note"
+            loading="lazy"
+            width="100%"
+            height="720"
+          ></iframe>
+        </div>
+      ) : (
+        <p class="cta-line">
+          <a class="btn" href={noteMailto}>Start a field note</a>
+          <span class="addr">one email to {CONTACT_EMAIL} is enough to begin</span>
+        </p>
+      )}
       <p class="fine">
-        Reacting to a <a href="/investigations">reliability bar</a> or reviewing an
+        Prefer email or a voice note? Write to
+        {' '}<a href={noteMailto}>{CONTACT_EMAIL}</a> instead. Reacting to a
+        <a href="/investigations"> reliability bar</a> or reviewing an
         <a href="/artifacts"> artifact</a> also counts. A two-line reaction from someone who does
         this work is worth more to the lab than a polished essay.
       </p>

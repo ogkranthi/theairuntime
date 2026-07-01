@@ -8,8 +8,8 @@ export const SUBSCRIBE_URL = 'https://theairuntime.com/subscribe';
 // The hiring / partner inbound. One channel, a mailto, no form.
 export const CONTACT_EMAIL = 'info@theairuntime.com';
 
-// The problem-submission Airtable form, embedded on /submit (same pattern as the
-// /partner page). TODO: paste the real embed URL
-// (https://airtable.com/embed/app.../pag.../form). Empty until then; /submit
-// degrades to a contact line so it is never broken.
+// The Airtable intake forms, embedded on /submit. Each path degrades to a
+// mailto CTA while its URL is empty, so the page is never broken.
+// TODO: paste the Problems form embed URL (https://airtable.com/embed/app.../shr...).
 export const SUBMIT_FORM_URL = '';
+export const FIELD_NOTE_FORM_URL = 'https://airtable.com/embed/appHnMPcsBu6XTApu/shrvXqxNlQnh2iCy1';
