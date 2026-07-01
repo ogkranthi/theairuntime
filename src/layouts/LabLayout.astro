@@ -59,9 +59,12 @@ const year = 2026;
       <div class="lab-container site-header__inner">
         <Wordmark />
         <nav class="site-nav" aria-label="Primary">
+          <a href="/investigations">Investigations</a>
+          <a href="/field-notes">Field Notes</a>
+          <a href="/artifacts">Artifacts</a>
+          <a href="/problem-bank">Problem Bank</a>
           <a href="/reports">Reports</a>
           <a href="/submit">Submit</a>
-          <a href="https://theairuntime.com" rel="noopener">theairuntime.com</a>
         </nav>
       </div>
     </header>
@@ -77,8 +80,13 @@ const year = 2026;
           <p class="tagline">LEARN. SHIP. RUN.</p>
         </div>
         <nav class="footer-nav" aria-label="Footer">
+          <a href="/start-here">Start here</a>
+          <a href="/investigations">Investigations</a>
+          <a href="/field-notes">Field Notes</a>
+          <a href="/artifacts">Artifacts</a>
+          <a href="/problem-bank">Problem Bank</a>
           <a href="/reports">Reports</a>
-          <a href="/submit">Submit a problem</a>
+          <a href="/submit">Submit</a>
           <a href="https://events.theairuntime.com/boston" rel="noopener">Workshops</a>
           <a href="https://theairuntime.com" rel="noopener">Publication</a>
           <a href="https://theairuntime.com/subscribe" rel="noopener">Subscribe</a>
@@ -119,7 +127,14 @@ const year = 2026;
         padding-top: 1rem;
         padding-bottom: 1rem;
       }
-      .site-nav { display: flex; gap: 1.4rem; font-family: var(--font-mono); font-size: 0.85rem; }
+      .site-nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.5rem 1.1rem;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+      }
       .site-nav a { color: var(--text-2); }
       .site-nav a:hover { color: var(--accent); text-decoration: none; }
 

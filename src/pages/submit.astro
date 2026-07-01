@@ -1,26 +1,65 @@
 ---
 import LabLayout from '../layouts/LabLayout.astro';
 import { SUBMIT_FORM_URL, CONTACT_EMAIL } from '../lib/lab-links';
+
+const problemQuestions = [
+  'What workflow are you trying to improve?',
+  'Who owns that workflow?',
+  'What happens today, without the AI system or with the one that is not trusted yet?',
+  'What would count as solved?',
+  'What data and tools are involved?',
+  'What makes this hard?',
+  'Can the problem be anonymized for the public Problem Bank?',
+  'Are you open to a scoping call or a workshop around it?',
+];
+
+const noteQuestions = [
+  'Your role and title (an FDE, applied AI architect, customer engineer, or similar)',
+  'Company type (model company, AI infra, enterprise, startup)',
+  'Named or anonymous?',
+  'Written answers or a voice note?',
+  'The field lesson: what breaks between demo and deployment that people underestimate?',
+  'Any artifact you actually use (a checklist, a rubric, a review doc) you can share or describe?',
+];
+
+const problemMailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Field Lab: problem submission')}`;
+const noteMailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Field Lab: field note contribution')}`;
 ---
 <LabLayout
-  title="Submit a problem · The AI Runtime Field Lab"
-  description="Have a production-shaped reliability problem in an AI system? Submit it as a candidate Field Brief."
+  title="Submit · The AI Runtime Field Lab"
+  description="Two ways in: submit a production-shaped AI problem for the Problem Bank, or contribute a field note about doing FDE-shaped work."
 >
   <section class="hero">
     <div class="lab-container">
       <p class="mono-label eyebrow">Field Lab · Submit</p>
-      <h1>Submit a problem</h1>
+      <h1>Two ways in</h1>
       <p class="sub">
-        A good Brief is a real, production-shaped reliability problem in an AI system, with a clear line
-        for what would count as solved. Send yours and it may become a Field Brief that a Lab builds
-        against.
+        Founders and operators bring problems. People doing FDE-shaped work bring field notes. Both
+        feed the same pipeline: problems become investigations, and field notes keep the
+        investigations honest about how the work really happens.
       </p>
-      <p class="fine">Submitting is not a commitment on either side, and creates no contractor or hiring relationship.</p>
+      <nav class="jump" aria-label="Submission paths">
+        <a href="#problem">Submit a field problem</a>
+        <a href="#field-note">Contribute a field note</a>
+      </nav>
     </div>
   </section>
 
-  <section class="sec">
+  <section class="sec" id="problem">
     <div class="lab-container">
+      <h2>Submit a field problem</h2>
+      <div class="col">
+        <p>
+          A good problem is production-shaped: a real workflow, a real owner, and an AI system that
+          almost works but cannot be trusted yet. If it is a fit, it enters the
+          <a href="/problem-bank"> Problem Bank</a> anonymized, gets scoped into a Brief with a
+          public reliability bar, and a Lab builds against it.
+        </p>
+        <p class="lead-q">Cover these in your submission:</p>
+        <ol class="qs">
+          {problemQuestions.map((q) => <li>{q}</li>)}
+        </ol>
+      </div>
       {SUBMIT_FORM_URL ? (
         <div class="embed">
           <iframe
@@ -33,29 +72,87 @@ import { SUBMIT_FORM_URL, CONTACT_EMAIL } from '../lib/lab-links';
           ></iframe>
         </div>
       ) : (
-        <p class="dim">
-          The submission form is being set up. In the meantime, email
-          {' '}<a href={`mailto:${CONTACT_EMAIL}?subject=Field%20Lab%20problem%20submission`}>{CONTACT_EMAIL}</a>.
+        <p class="cta-line">
+          <a class="btn" href={problemMailto}>Email your problem</a>
+          <span class="addr">to {CONTACT_EMAIL}, answering the questions above</span>
         </p>
       )}
+      <p class="fine">
+        Submitting is not a commitment on either side, and creates no contractor or hiring
+        relationship. Everything public is anonymized first.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec" id="field-note">
+    <div class="lab-container">
+      <h2>Contribute a field note</h2>
+      <div class="col">
+        <p>
+          <a href="/field-notes">Field Notes</a> are async interviews with people doing FDE-shaped
+          work: forward deployed engineers, applied AI architects, customer engineers, founding
+          engineers, operators. About thirty minutes of your time, written or as a voice note, named
+          or anonymous. You review everything before it is published.
+        </p>
+        <p class="lead-q">What we will ask:</p>
+        <ol class="qs">
+          {noteQuestions.map((q) => <li>{q}</li>)}
+        </ol>
+      </div>
+      <p class="cta-line">
+        <a class="btn" href={noteMailto}>Start a field note</a>
+        <span class="addr">one email to {CONTACT_EMAIL} is enough to begin</span>
+      </p>
+      <p class="fine">
+        Reacting to a <a href="/investigations">reliability bar</a> or reviewing an
+        <a href="/artifacts"> artifact</a> also counts. A two-line reaction from someone who does
+        this work is worth more to the lab than a polished essay.
+      </p>
     </div>
   </section>
 </LabLayout>
 
 <style>
-  .hero { padding: 4rem 0 2rem; }
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
   .eyebrow { margin: 0 0 1rem; color: var(--accent); }
-  .sub { max-width: 42rem; margin: 0.9rem 0 1rem; font-size: 1.15rem; color: var(--text-2); }
-  .fine { margin: 0; font-size: 0.9rem; color: var(--text-3); max-width: 42rem; }
-  .sec { padding: 1rem 0 3rem; }
+  .sub { max-width: 44rem; margin: 0.9rem 0 1.25rem; font-size: 1.15rem; color: var(--text-2); }
+  .jump { display: flex; flex-wrap: wrap; gap: 1.4rem; font-family: var(--font-mono); font-size: 0.9rem; }
+  .jump a { color: var(--accent); }
+
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); scroll-margin-top: 4.5rem; }
+  .sec h2 { margin: 0 0 1rem; }
+  .col { max-width: 44rem; }
+  .col p { color: var(--text-2); }
+  .col a { color: var(--accent); }
+  .lead-q { margin: 1.25rem 0 0.5rem; color: var(--text); font-weight: 600; }
+  .qs { margin: 0; padding-left: 1.3rem; max-width: 44rem; }
+  .qs li { margin: 0.4rem 0; color: var(--text-2); }
+
   .embed {
     max-width: 46rem;
+    margin-top: 1.5rem;
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
   }
   .embed iframe { display: block; background: transparent; border: 0; }
-  .dim { color: var(--text-2); }
-  .dim a { color: var(--accent); }
+
+  .cta-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem; margin: 1.5rem 0 0; }
+  .btn {
+    display: inline-block;
+    padding: 0.7rem 1.3rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn:hover { background: #c64708; border-color: #c64708; text-decoration: none; }
+  .addr { color: var(--text-3); font-size: 0.9rem; }
+  .fine { margin: 1.25rem 0 0; font-size: 0.9rem; color: var(--text-3); max-width: 44rem; }
+  .fine a { color: var(--accent); }
 </style>

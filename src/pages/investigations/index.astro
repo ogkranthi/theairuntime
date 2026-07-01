@@ -1,0 +1,123 @@
+---
+import { getCollection } from 'astro:content';
+import LabLayout from '../../layouts/LabLayout.astro';
+
+const labs = (await getCollection('labs'))
+  .filter((l) => l.data.status !== 'draft')
+  .sort((a, b) => b.data.number - a.data.number);
+
+const reports = await getCollection('reports');
+
+const statusLabel = (s: string) => (s === 'scheduled' ? 'Active' : s === 'past' ? 'Completed' : 'Planned');
+---
+<LabLayout
+  title="Investigations · The AI Runtime Field Lab"
+  description="Deep field experiments in production AI. Each investigation takes one customer-shaped problem, defines a public reliability bar, builds the smallest system that can meet it, and reports what happened."
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">Field Lab · Investigations</p>
+      <h1>Investigations</h1>
+      <p class="sub">
+        One production-shaped problem at a time, tested against a public reliability bar. Each
+        investigation starts with a real field problem, scopes it into a Brief, builds the smallest
+        system that can meet the bar, and publishes the evals, the failures, and the artifact.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <div class="list">
+        {labs.map((l) => {
+          const nn = String(l.data.number).padStart(2, '0');
+          const reportCount = reports.filter((r) => r.data.lab_number === l.data.number).length;
+          return (
+            <article class="inv">
+              <div class="top">
+                <span class="mono-label nn">Field Lab {nn}{l.data.partner ? ` · with ${l.data.partner}` : ''}</span>
+                <span class:list={['status', l.data.status]}>{statusLabel(l.data.status)}</span>
+              </div>
+              <h2><a href={`/${nn}`}>{l.data.title}</a></h2>
+              {l.data.question && <p class="question">{l.data.question}</p>}
+              <dl class="facts">
+                {l.data.pass_bar.length > 0 && (
+                  <div>
+                    <dt>Bar</dt>
+                    <dd>{l.data.pass_bar.join('; ')}.</dd>
+                  </div>
+                )}
+                {l.data.artifact && (
+                  <div>
+                    <dt>Artifact</dt>
+                    <dd>{l.data.artifact}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt>Reports</dt>
+                  <dd>{reportCount > 0
+                    ? <a href="/reports">{reportCount} published</a>
+                    : 'First reports land after the Lab runs.'}</dd>
+                </div>
+              </dl>
+              <p class="read"><a href={`/${nn}`}>Read the investigation</a></p>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec foot">
+    <div class="lab-container">
+      <p>
+        Investigations come out of the <a href="/problem-bank">Problem Bank</a>. Have a
+        production-shaped problem worth testing? <a href="/submit#problem">Submit it</a>. Work on an
+        FDE or applied AI team and want to react to a reliability bar?
+        <a href="/submit#field-note"> Get in touch</a>.
+      </p>
+    </div>
+  </section>
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .sub { max-width: 44rem; margin: 0.9rem 0 0; font-size: 1.15rem; color: var(--text-2); }
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .list { display: grid; gap: 1.25rem; }
+
+  .inv {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.6rem 1.75rem;
+  }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .nn { color: var(--text-3); }
+  .status {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--text-2);
+  }
+  .status.scheduled { border-color: var(--accent); color: var(--accent); }
+  .inv h2 { margin: 0.7rem 0 0.3rem; font-size: 1.3rem; }
+  .inv h2 a { color: var(--text); text-decoration: none; }
+  .inv h2 a:hover { color: var(--accent); }
+  .question { margin: 0 0 1.1rem; font-size: 1.02rem; color: var(--text-2); }
+  .facts { margin: 0; display: grid; gap: 0.6rem; }
+  .facts div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 1rem; align-items: baseline; }
+  .facts dt {
+    font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .facts dd { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+  .facts dd a { color: var(--accent); }
+  @media (max-width: 34rem) {
+    .facts div { grid-template-columns: 1fr; gap: 0.15rem; }
+  }
+  .read { margin: 1.1rem 0 0; font-size: 0.95rem; }
+  .read a { color: var(--accent); }
+
+  .foot p { max-width: 44rem; color: var(--text-2); margin: 0; }
+  .foot a { color: var(--accent); }
+</style>

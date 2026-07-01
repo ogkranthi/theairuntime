@@ -1,0 +1,115 @@
+---
+import { getCollection } from 'astro:content';
+import LabLayout from '../../layouts/LabLayout.astro';
+
+const artifacts = (await getCollection('artifacts')).sort((a, b) => {
+  if (a.data.status !== b.data.status) return a.data.status === 'available' ? -1 : 1;
+  return b.data.date.valueOf() - a.data.date.valueOf();
+});
+---
+<LabLayout
+  title="Artifacts · The AI Runtime Field Lab"
+  description="Reusable checklists, rubrics, templates, evals, and runbooks from Field Lab investigations. Each one says when to use it and what failure it prevents."
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">Field Lab · Artifacts</p>
+      <h1>Artifacts</h1>
+      <p class="sub">
+        The reusable output of the investigations: checklists, rubrics, templates, evals, and
+        runbooks. Each one says when to use it, what failure it prevents, and which investigation it
+        came from. Take them, use them, tell us where they break.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <div class="list">
+        {artifacts.map((a) => {
+          const nn = a.data.related_lab ? String(a.data.related_lab).padStart(2, '0') : null;
+          return (
+            <article class:list={['artifact', { pending: a.data.status === 'in-progress' }]}>
+              <div class="top">
+                <span class="tag">{a.data.artifact_type}</span>
+                <span class="mono-label when">
+                  {a.data.status === 'in-progress' ? 'In progress' : null}
+                </span>
+              </div>
+              <h2>
+                {a.data.status === 'available'
+                  ? <a href={`/artifacts/${a.slug}`}>{a.data.title}</a>
+                  : a.data.title}
+              </h2>
+              <dl class="facts">
+                <div>
+                  <dt>Use when</dt>
+                  <dd>{a.data.use_case}</dd>
+                </div>
+                <div>
+                  <dt>Prevents</dt>
+                  <dd>{a.data.problem_solved}</dd>
+                </div>
+                {nn && (
+                  <div>
+                    <dt>From</dt>
+                    <dd><a href={`/${nn}`}>Field Lab {nn}</a></dd>
+                  </div>
+                )}
+              </dl>
+              {a.data.status === 'available' && (
+                <p class="read"><a href={`/artifacts/${a.slug}`}>Open the {a.data.artifact_type}</a></p>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec foot">
+    <div class="lab-container">
+      <p>
+        Used one of these in the field, or have a version of your own that works better?
+        <a href="/submit#field-note"> Tell us what you changed.</a>
+      </p>
+    </div>
+  </section>
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .sub { max-width: 44rem; margin: 0.9rem 0 0; font-size: 1.15rem; color: var(--text-2); }
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .list { display: grid; gap: 1.1rem; }
+
+  .artifact {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.5rem;
+  }
+  .artifact.pending { border-style: dashed; }
+  .top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .when { color: var(--text-3); }
+  .artifact h2 { margin: 0.7rem 0 0.75rem; font-size: 1.2rem; }
+  .artifact h2 a { color: var(--text); text-decoration: none; }
+  .artifact h2 a:hover { color: var(--accent); }
+  .facts { margin: 0; display: grid; gap: 0.55rem; }
+  .facts div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 1rem; align-items: baseline; }
+  .facts dt {
+    font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .facts dd { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+  .facts dd a { color: var(--accent); }
+  @media (max-width: 34rem) {
+    .facts div { grid-template-columns: 1fr; gap: 0.15rem; }
+  }
+  .read { margin: 1rem 0 0; font-size: 0.95rem; }
+  .read a { color: var(--accent); }
+
+  .foot p { max-width: 44rem; color: var(--text-2); margin: 0; }
+  .foot a { color: var(--accent); }
+</style>

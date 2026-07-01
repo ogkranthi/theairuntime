@@ -1,9 +1,10 @@
 ---
-// The three-step pipeline explainer: Brief -> Lab -> Report. Used on the home.
+// The pipeline explainer: Problem -> Brief -> Lab -> Report. Used on the home.
 const steps = [
-  { k: 'Brief', v: 'A scoped problem from production, with a public bar for what counts as solved.' },
-  { k: 'Lab', v: 'A hands-on build against that Brief, run in person at a workshop.' },
-  { k: 'Report', v: 'Your teardown of what you built and what it scored. Yours to keep and show.' },
+  { k: 'Problem', v: 'A real, production-shaped problem from a founder, operator, or engineer, logged in the Problem Bank.' },
+  { k: 'Brief', v: 'The problem, scoped: constraints, success criteria, and a public bar for what counts as solved.' },
+  { k: 'Lab', v: 'A hands-on build against that Brief, scored against the bar at a workshop.' },
+  { k: 'Report', v: 'The teardown of what was built and what it scored. The builder keeps the proof.' },
 ];
 ---
 <ol class="spine">
@@ -23,7 +24,7 @@ const steps = [
     padding: 0;
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr));
   }
   .step {
     border: 1px solid var(--border);

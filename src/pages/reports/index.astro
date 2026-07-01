@@ -43,8 +43,45 @@ const reports = (await getCollection('reports')).sort((a, b) => {
           ))}
         </div>
       ) : (
-        <p class="empty">First Reports land after Field Lab 01.</p>
+        <p class="empty">
+          First Reports land after <a href="/01">Field Lab 01</a>. Here is what will appear, so you
+          know what you are waiting for.
+        </p>
       )}
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">What a Report is</h2>
+      <div class="grid two">
+        <div class="def">
+          <h3>Builder Report</h3>
+          <p>One builder's teardown of their own build:</p>
+          <ul>
+            <li>what they built, and the architecture</li>
+            <li>what it scored against the public bar</li>
+            <li>what failed, and why</li>
+            <li>what they would change next time</li>
+            <li>the repo and a demo link</li>
+          </ul>
+        </div>
+        <div class="def">
+          <h3>Lab Report</h3>
+          <p>The aggregate view across every build in a Lab:</p>
+          <ul>
+            <li>results across the room, against the same bar</li>
+            <li>common failure modes</li>
+            <li>the patterns that won</li>
+            <li>the reusable artifact that came out of it</li>
+          </ul>
+        </div>
+      </div>
+      <p class="def-note">
+        Every Report carries the problem, the approach, the eval score, failure modes, cost and
+        latency notes, and what changed after testing. The builder owns the proof; this page shows
+        it.
+      </p>
     </div>
   </section>
 
@@ -60,8 +97,22 @@ const reports = (await getCollection('reports')).sort((a, b) => {
   .eyebrow { margin: 0 0 1rem; color: var(--accent); }
   .sub { max-width: 42rem; margin: 0.9rem 0 0; font-size: 1.15rem; color: var(--text-2); }
   .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .sec h2 { margin: 0 0 1.5rem; }
   .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+  .grid.two { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); max-width: 44rem; }
   .empty { color: var(--text-2); }
+  .empty a { color: var(--accent); }
+  .def {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.5rem;
+  }
+  .def h3 { margin: 0 0 0.5rem; font-size: 1.05rem; }
+  .def p { margin: 0 0 0.5rem; color: var(--text-2); font-size: 0.95rem; }
+  .def ul { margin: 0; padding-left: 1.2rem; }
+  .def li { margin: 0.3rem 0; color: var(--text-2); font-size: 0.95rem; }
+  .def-note { max-width: 44rem; margin: 1.25rem 0 0; color: var(--text-2); font-size: 0.95rem; }
   .foot p { color: var(--text-2); margin: 0; }
   .foot a { color: var(--accent); }
 </style>

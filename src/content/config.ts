@@ -171,6 +171,10 @@ const labs = defineCollection({
     brief_summary: z.string(), // one or two sentences, used on cards
     fit_profile: z.string().optional(),
     the_bar: z.string().optional(), // the public reliability bar, e.g. the Dirty Thirty
+    // Investigation framing, shown on /investigations and the home feature:
+    question: z.string().optional(), // the load-bearing engineering question
+    artifact: z.string().optional(), // the reusable thing the Lab produces
+    pass_bar: z.array(z.string()).default([]), // the public bar, one line per criterion
     luma_url: z.string().url().optional(),
     subscribe_url: z.string().url(),
     og_image: z.string().optional(),
@@ -195,4 +199,76 @@ const reports = defineCollection({
   }),
 });
 
-export const collections = { cities, speakers, events, resources, signal, labs, reports };
+// Field Notes: async interviews with people doing FDE-shaped work (forward
+// deployed engineers, applied AI architects, customer engineers, operators).
+// Planned notes appear on the index without a detail page; published notes get
+// a page rendered from the markdown body.
+const fieldNotes = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    guest_name: z.string().optional(), // omitted when anonymous
+    anonymous: z.boolean().default(false),
+    role: z.string(), // "Forward Deployed Engineer", "Applied AI Architect"
+    company_type: z.string(), // "model company", "AI infra", "B2B SaaS startup"
+    themes: z.array(z.string()).default([]),
+    status: z.enum(['planned', 'published']).default('published'),
+    date: z.coerce.date(),
+    excerpt: z.string(), // one or two sentences, used on cards and meta
+  }),
+});
+
+// Artifacts: reusable checklists, rubrics, templates, evals, and runbooks that
+// come out of investigations. Available artifacts get a detail page rendered
+// from the markdown body; in-progress ones are listed without a link.
+const artifacts = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    artifact_type: z.enum(['checklist', 'rubric', 'template', 'eval', 'runbook']),
+    related_lab: z.number().optional(), // Field Lab number it came from
+    use_case: z.string(), // one line: when to reach for it
+    problem_solved: z.string(), // one line: what failure it prevents
+    status: z.enum(['available', 'in-progress']).default('available'),
+    download_url: z.string().optional(),
+    date: z.coerce.date(),
+  }),
+});
+
+// The Problem Bank: anonymized production-shaped AI problems from founders,
+// operators, and engineers. Cards only, no detail pages; the body holds
+// private editor notes and is never rendered.
+const problems = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    source_type: z.enum(['founder', 'operator', 'engineer', 'partner']),
+    workflow: z.string(), // "growth/sales", "support", "research"
+    system_type: z.string(), // "web-grounded agent", "RAG pipeline"
+    risk_types: z.array(z.string()).default([]),
+    status: z.enum([
+      'submitted',
+      'under-review',
+      'selected',
+      'in-progress',
+      'report-published',
+      'needs-partner',
+      'needs-reviewer',
+    ]),
+    selected_for: z.number().optional(), // Field Lab number when selected
+    date: z.coerce.date(),
+  }),
+});
+
+export const collections = {
+  cities,
+  speakers,
+  events,
+  resources,
+  signal,
+  labs,
+  reports,
+  'field-notes': fieldNotes,
+  artifacts,
+  problems,
+};
