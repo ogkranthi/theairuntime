@@ -175,6 +175,9 @@ const labs = defineCollection({
     question: z.string().optional(), // the load-bearing engineering question
     artifact: z.string().optional(), // the reusable thing the Lab produces
     pass_bar: z.array(z.string()).default([]), // the public bar, one line per criterion
+    output: z.string().optional(), // what a participant leaves with, one line
+    chips: z.array(z.string()).default([]), // hero chips; overrides the workshop defaults
+    repo_url: z.string().url().optional(), // the challenge/build repo, primary CTA when set
     luma_url: z.string().url().optional(),
     subscribe_url: z.string().url(),
     og_image: z.string().optional(),

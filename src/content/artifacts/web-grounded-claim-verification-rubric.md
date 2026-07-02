@@ -1,7 +1,6 @@
 ---
 title: Web-Grounded Claim Verification Rubric
 artifact_type: rubric
-related_lab: 1
 use_case: Any agent that makes claims from web data, before you act on its output.
 problem_solved: Plausible-looking records that are stale, unsupported, conflicting, or extracted wrong.
 status: available
@@ -65,13 +64,14 @@ where each field came from, what was checked, what was rejected and why.
 Grade two numbers, not one. Bad-record recall (the share of planted bad
 records the guard caught) and clean-record precision (the share of accepted
 records that are actually clean). A guard that rejects everything scores
-perfectly on the first and fails the second, so it fails. Field Lab 01 sets
-the bar at 85 percent recall, 80 percent precision, 100 percent evidence
-coverage on accepted records, and zero unsupported accepted claims.
+perfectly on the first and fails the second, so it fails. A working bar for
+a sourcing use case: 85 percent recall, 80 percent precision, 100 percent
+evidence coverage on accepted records, and zero unsupported accepted claims.
 
-## Related investigation
+## Where it came from
 
-This rubric is the core of [Field Lab 01: A Reliability Layer for
-Web-Grounded Agents](/01), where it is implemented as a source-agnostic
-trust function and scored against the Dirty Thirty, a frozen set of thirty
-records with twenty planted breaks.
+This rubric came out of scoping a founder problem in the
+[Problem Bank](/problem-bank): qualifying design-partner leads from messy
+public web data. The pattern generalizes: freeze a trap set of records with
+known breaks, implement the rubric as a source-agnostic trust function, and
+grade catching the bad against keeping the good.
