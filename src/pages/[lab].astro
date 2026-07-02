@@ -42,16 +42,23 @@ const reports =
       {d.status === 'scheduled' && (
         <CTAButtons
           links={[
-            ...(d.luma_url ? [{ label: 'Register on Luma', href: d.luma_url, primary: true, external: true }] : []),
+            ...(d.repo_url ? [{ label: 'Get the challenge repo', href: d.repo_url, primary: true, external: true }] : []),
+            ...(d.luma_url ? [{ label: 'Register on Luma', href: d.luma_url, primary: !d.repo_url, external: true }] : []),
             { label: 'Subscribe', href: d.subscribe_url, external: true },
           ]}
         />
       )}
       <ul class="chips">
-        {d.location && <li>In person, {d.location}</li>}
-        <li>Hands-on build</li>
-        <li>Bring a laptop</li>
-        <li>{dateLabel}</li>
+        {d.chips.length > 0 ? (
+          d.chips.map((c) => <li>{c}</li>)
+        ) : (
+          <>
+            {d.location && <li>In person, {d.location}</li>}
+            <li>Hands-on build</li>
+            <li>Bring a laptop</li>
+            <li>{dateLabel}</li>
+          </>
+        )}
       </ul>
     </div>
   </section>

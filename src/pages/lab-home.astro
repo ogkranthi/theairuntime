@@ -4,7 +4,7 @@ import LabLayout from '../layouts/LabLayout.astro';
 import SpineSteps from '../components/lab/SpineSteps.astro';
 import ReportCard from '../components/lab/ReportCard.astro';
 import CTAButtons from '../components/lab/CTAButtons.astro';
-import { WORKSHOPS_URL, SUBSCRIBE_URL, PUBLICATION_URL, EVENTS_URL, CONTACT_EMAIL } from '../lib/lab-links';
+import { SUBSCRIBE_URL, PUBLICATION_URL, EVENTS_URL, CONTACT_EMAIL } from '../lib/lab-links';
 
 const labs = (await getCollection('labs'))
   .filter((l) => l.data.status !== 'draft')
@@ -59,12 +59,11 @@ const participate = [
     cta: 'Contribute a field note',
   },
   {
-    title: 'Build at a Lab',
+    title: 'Build the challenge',
     who: 'Builders and engineers',
-    body: 'Build against the current Brief at a workshop, score against the bar, and leave with a Report you own.',
-    href: WORKSHOPS_URL,
-    cta: 'Join a workshop',
-    external: true,
+    body: 'Run the current Field Challenge end to end, on your own or at a workshop: build, score against the public bar, and leave with a Report you own.',
+    href: nn ? `/${nn}` : '/investigations',
+    cta: nn ? `Start Field Challenge ${nn}` : 'See the investigations',
   },
 ];
 ---
@@ -151,10 +150,12 @@ const participate = [
                 <dd>{current.data.pass_bar.join('; ')}.</dd>
               </div>
             )}
-            <div>
-              <dt>Output</dt>
-              <dd>A working repo, a build runbook, and a founder-facing trust report.</dd>
-            </div>
+            {current.data.output && (
+              <div>
+                <dt>Output</dt>
+                <dd>{current.data.output}</dd>
+              </div>
+            )}
           </dl>
           <p class="feat-link"><a href={`/${nn}`}>Read Investigation {nn}</a></p>
         </div>

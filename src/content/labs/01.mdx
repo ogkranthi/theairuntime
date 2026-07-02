@@ -1,108 +1,78 @@
 ---
 number: 1
-title: A Reliability Layer for Web-Grounded Agents
+title: Financial Complaint Triage
 status: scheduled
-location: Boston
-partner: Apify
-brief_summary: Build a design-partner sourcing agent on Apify, then prove which leads are safe to act on.
-fit_profile: US-based B2B SaaS, 50 to 300 people, a developer-facing product, a contact who is an engineering leader, and a real reason to reach out now.
-the_bar: "The Dirty Thirty: thirty frozen records, ten clean and twenty each planted with a specific break, graded on catching the bad and keeping the good."
-question: Can a sourcing agent prove which web-derived leads are safe to act on?
-artifact: A source-agnostic trust core plus the Dirty Thirty eval harness.
+brief_summary: Build an AI agent that routes consumer finance complaints and flags regulatory risk from messy public complaint narratives.
+question: Can an AI agent route messy consumer complaints to the right team and flag regulatory risk, with evidence for every call?
+artifact: A complaint-triage agent, a deterministic evaluator, and an FDE-style field report.
+the_bar: "40 public labeled complaints, scored on high-risk recall, routing accuracy, and valid evidence rate."
 pass_bar:
-  - bad-record recall at or above 85 percent
-  - clean-record precision at or above 80 percent
-  - evidence coverage 100 percent on accepted records
-  - zero unsupported accepted claims
-  - a reason on every rejection
-luma_url: https://luma.com/lou5ylpt
+  - high-risk recall on the 40 labeled complaints, the primary metric
+  - routing accuracy across six subject-matter teams
+  - valid evidence rate, every quote must appear in the narrative
+output: Your own repo with committed predictions, a rerunnable eval, and a public field report.
+chips:
+  - Self-serve challenge
+  - One afternoon
+  - Real CFPB narratives
+  - Submit via GitHub issue
+repo_url: https://github.com/ogkranthi/ai-runtime-field-challenge-01
 subscribe_url: https://theairuntime.com/subscribe
-og_image: /og-01.png
 report_slugs: []
 ---
 import CardRow from '../../components/lab/CardRow.astro';
 import BarTable from '../../components/lab/BarTable.astro';
 import CTAButtons from '../../components/lab/CTAButtons.astro';
 
-export const breaks = [
-  { term: 'Stale', body: 'true once, not anymore, and the source is cached.' },
-  { term: 'Unsupported', body: 'the evidence is missing, walled, or does not actually back the claim.' },
-  { term: 'Conflicting', body: 'two sources disagree on a field that matters.' },
-  { term: 'Extraction-drift', body: 'the agent grabbed the wrong field, or the wrong company.' },
+export const teams = [
+  { term: 'account_access', body: 'login problems, lockouts, closures, identity verification, funds blocked by an account restriction.' },
+  { term: 'payments_transfers', body: 'payments, transfers, wires, ACH, deposits, withdrawals, funds missing in transit.' },
+  { term: 'fraud_disputes', body: 'unauthorized transactions, scams, fraud claims, charge disputes, reimbursement disputes.' },
+  { term: 'credit_lending', body: 'credit cards, loans, mortgages, interest, fees, debt collection, loan servicing.' },
+  { term: 'customer_service', body: 'poor support, delays, unreachable reps, unresolved requests with no clearer product route.' },
+  { term: 'other', body: 'only when none of the above fit.' },
 ];
 
-export const trustLayer = [
-  { term: 'Guard', body: 'check each claim is fresh, supported, and the right shape before it ships.' },
-  { term: 'Degrade', body: 'hand over the records you can stand behind and name the gaps, instead of padding the list with junk.' },
-  { term: 'Observe', body: 'emit a trace per record: where it came from, what was checked, what was rejected and why.' },
+export const metricHeaders = ['Metric', 'What it measures', 'Why it matters'];
+export const metricRows = [
+  ['High-risk recall', 'share of truly high-risk complaints your agent flagged', 'a missed high-risk complaint is the most serious failure'],
+  ['Routing accuracy', 'share of complaints routed to the correct team', 'wrong routes waste operations time'],
+  ['Valid evidence rate', 'share of evidence quotes that actually appear in the narrative', 'a decision without grounded evidence is a guess'],
 ];
 
-export const evalHeaders = ['Group', 'Count', 'Verdict', 'Tests'];
-export const evalRows = [
-  ['Clean', 10, 'accept', 'keeps good leads'],
-  ['Stale', 5, 'reject or review', 'outdated evidence'],
-  ['Unsupported', 5, 'reject or review', 'missing or weak evidence'],
-  ['Conflicting', 5, 'review', 'source disagreement'],
-  ['Extraction-drift', 5, 'reject', 'wrong field or entity'],
-];
+export const quickstart = `git clone https://github.com/ogkranthi/ai-runtime-field-challenge-01
+cd ai-runtime-field-challenge-01
 
-export const setup = `# one-time setup
-python -m venv .venv && source .venv/bin/activate
-pip install anthropic apify-client
-export ANTHROPIC_API_KEY=sk-ant-...
-export APIFY_TOKEN=apify_api_...
-
-# start the build, in an empty project folder
-claude`;
-
-export const smoke = `import os, anthropic
-from apify_client import ApifyClient
-
-# 1. model key works
-msg = anthropic.Anthropic().messages.create(
-    model="claude-sonnet-4-6",  # any current Claude model; swap to Opus for the hardest steps
-    max_tokens=16,
-    messages=[{"role": "user", "content": "ping"}],
-)
-print("model ok:", msg.content[0].text)
-
-# 2. apify token works
-client = ApifyClient(os.environ["APIFY_TOKEN"])
-run = client.actor("apify/website-content-crawler").call(
-    run_input={"startUrls": [{"url": "https://example.com"}], "maxCrawlPages": 1},
-)
-print("apify ok:", run["status"])`;
-
-export const clone = `git clone https://github.com/ogkranthi/the-ai-runtime-lab
-cd the-ai-runtime-lab/web-agents-apify
-
-# set up, then add your keys
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env        # then add your APIFY_TOKEN
 
-# confirm it runs
-python smoke.py             # prints: apify ok: SUCCEEDED`;
+export ANTHROPIC_API_KEY=your_key_here
 
-{/* Workshop build repo: github.com/ogkranthi/the-ai-runtime-lab (folder web-agents-apify) */}
+# run the reference agent on ten complaints, then score it
+python agent/run_agent.py --input data/complaints.jsonl --output outputs/predictions.jsonl --limit 10
+python run_eval.py --predictions outputs/predictions.jsonl
+
+# write your report and submit it as a GitHub issue on the challenge repo
+cp REPORT_TEMPLATE.md REPORT.md`;
 
 <p class="promise">
-  You will not leave with a lead-gen toy. You will leave with a reusable trust layer for web-grounded
-  agents and an eval that proves whether it works.
+  You will not leave with a demo. You will leave with a public, FDE-style case study: a triage agent,
+  a deterministic eval run against 40 public labels, and a field report that shows how you scope,
+  build, measure, and explain.
 </p>
 
 <section class="sec">
-  <h2>The founder problem</h2>
+  <h2>The customer problem</h2>
   <blockquote class="story">
     <p>
-      A founder has a product and not enough customers, so they point an agent at the web to find who
-      to sell to. The agent returns fifty clean leads. The founder emails all fifty. A third bounce,
-      several were never a fit, two of the companies shut down last year. The list looked done. It was
-      not.
+      A regional bank receives hundreds of consumer complaints every week. The operations team needs
+      to route each one to the right internal team and catch the complaints that carry regulatory,
+      legal, or customer-harm risk.
     </p>
     <p>
-      That gap, between a list that looks done and a list you can act on, is what this Field Lab is
-      about. The web data part is easy. Knowing which of it to trust is the job.
+      Today, routing is inconsistent. Some complaints go to the wrong team. Some high-risk complaints
+      get treated like routine service issues. And some complaints sound severe because of tone, but
+      the underlying issue is operationally routine. Separating those is the job.
     </p>
   </blockquote>
 </section>
@@ -111,288 +81,135 @@ python smoke.py             # prints: apify ok: SUCCEEDED`;
   <h2>What this actually is</h2>
   <div class="col">
     <p>
-      This is not a lead-generation session. It is about the reliability layer around a web-grounded
-      agent: where the data came from, whether the evidence holds, and what to do when it does not.
-      Lead generation is just the first use case. The trust layer is the artifact, and it works for
-      any agent that makes claims off the web.
+      A fixed-list triage challenge against a frozen snapshot of real consumer complaint narratives,
+      derived from the CFPB Consumer Complaint Database. You build an AI agent that makes exactly two
+      scored calls per complaint: which team it routes to, and whether it carries a risk flag. Every
+      decision must cite verbatim evidence from the narrative, and the evaluator checks that each
+      quote actually appears in the text.
     </p>
     <p>
-      Two layers, and only one is the product. The trust core is source-agnostic: it takes a claim and
-      its evidence and decides whether it is true and supported right now. The policy filter sits on
-      top and decides whether a true claim fits what the founder asked for. The core is the reusable
-      piece. The fit logic stays on top so it never contaminates it.
+      This is not live monitoring, not a hidden benchmark, and not a leaderboard. The 40 labels are
+      public by design. The point is evaluation discipline, evidence grounding, and failure analysis
+      under a customer-shaped constraint, the same skills FDE and applied AI teams run on.
     </p>
   </div>
 </section>
 
 <section class="sec">
-  <h2>The shared scenario</h2>
+  <h2>The dataset</h2>
   <div class="col">
     <p>
-      The whole room works the same problem. A seed to Series A B2B SaaS founder selling a
-      developer-facing product, no growth hire, who needs a weekly list of qualified design-partner
-      candidates.
+      200 real complaint narratives, published by the CFPB with consumer opt-in and scrubbed of
+      personal information before publication. The narratives are messy on purpose: redaction
+      markers (XXXX), typos, all-caps passages, rambling structure. The mess is the challenge, not a
+      bug to clean.
     </p>
     <p>
-      The fit profile, which feeds the policy layer: US-based B2B SaaS, 50 to 300 people, a
-      developer-facing product, a contact who is an engineering leader, and a real reason to reach out
-      now.
-    </p>
-    <p>
-      You build an agent that returns a prospect list where every field traces to a source that
-      currently supports it. Plausible is not verified.
+      Decisions come only from the cached record. If the evidence is not in the record, it does not
+      exist for this challenge. No outside knowledge about companies or regulators, no live browsing.
+      Treat redacted content as unknown.
     </p>
   </div>
 </section>
 
 <section class="sec">
-  <h2>The four ways web data breaks</h2>
-  <CardRow items={breaks} />
-</section>
-
-<section class="sec">
-  <h2>What you build, the trust layer</h2>
-  <CardRow items={trustLayer} />
-</section>
-
-<section class="sec">
-  <h2>The bar, the Dirty Thirty</h2>
-  <div class="col">
-    <p>
-      Thirty frozen records with known answers, ten clean and twenty each planted with a specific
-      break. Your guard is graded on two numbers, not one: did it catch the bad records, and did it
-      keep the good ones. An agent that rejects everything scores perfectly on the first and fails the
-      second, so it fails. That is the point.
-    </p>
-  </div>
-  <BarTable headers={evalHeaders} rows={evalRows} />
-  <p class="passbar-lead">Pass bar:</p>
+  <h2>The six routing teams</h2>
+  <CardRow items={teams} />
+  <p class="passbar-lead">Tiebreak rule:</p>
   <ul class="passbar">
-    <li>bad-record recall at or above 85 percent</li>
-    <li>clean-record precision at or above 80 percent</li>
-    <li>evidence coverage 100 percent on accepted records</li>
-    <li>zero unsupported accepted claims</li>
-    <li>a reason on every rejection</li>
+    <li>route by the primary subject matter, not by severity</li>
+    <li>severity is captured by the risk flag, not the route</li>
+    <li>a fraud complaint with regulatory exposure routes to fraud_disputes with risk_flag true</li>
   </ul>
+</section>
+
+<section class="sec">
+  <h2>The risk flag</h2>
+  <div class="col">
+    <p>
+      Flag a complaint when the record suggests serious potential harm or regulatory concern:
+      repeated failure to resolve a fraud claim, inability to access essential funds, foreclosure or
+      severe financial loss, discrimination or fair-lending concerns, privacy misuse, or a company
+      allegedly ignoring required dispute processes.
+    </p>
+  </div>
+  <p class="bp">
+    <strong>Calibration rule one.</strong> Angry tone alone is not high risk. An emotional complaint
+    can be operationally routine.
+  </p>
+  <p class="bp">
+    <strong>Calibration rule two.</strong> A short narrative is not automatically low risk. A short
+    complaint can still describe fraud, loss of funds, discrimination, or inability to access money.
+  </p>
+</section>
+
+<section class="sec">
+  <h2>The bar</h2>
+  <div class="col">
+    <p>
+      40 hand-labeled complaints with public labels, spread across all six teams and seeded with the
+      hard cases: angry-but-routine, short-but-severe, multi-issue, vague, and heavily redacted
+      narratives. A deterministic evaluator scores your committed predictions against them. Reruns
+      verify, they do not regenerate.
+    </p>
+  </div>
+  <BarTable headers={metricHeaders} rows={metricRows} />
+  <p class="passbar-lead">Grading rules:</p>
+  <ul class="passbar">
+    <li>an agent that flags everything gets perfect recall and terrible precision, so precision is reported alongside recall</li>
+    <li>every evidence quote is validated against the narrative after normalization</li>
+    <li>a flagged row with no valid evidence is called out by the evaluator</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2>How it runs</h2>
+  <div class="col">
+    <p>
+      Self-serve, in one afternoon. Clone the repo, run the reference agent, score it, then make it
+      yours: change the prompts, the decomposition, the evidence selection, or the whole approach.
+      The agent is provider-agnostic with Anthropic as the default. AI must do the core reasoning;
+      deterministic code handles orchestration, validation, and scoring.
+    </p>
+  </div>
+  <pre class="cmd">{quickstart}</pre>
+  <ol class="runlist">
+    <li>Run the reference agent and the evaluator</li>
+    <li>Read your failures against the 40 labels</li>
+    <li>Change the approach and rerun</li>
+    <li>Write the field report from the template</li>
+    <li>Submit a GitHub issue linking your fork and committed predictions</li>
+  </ol>
+</section>
+
+<section class="sec">
+  <h2>Two ways to submit</h2>
+  <div class="col">
+    <p>
+      <strong>Mini report, 30 to 60 minutes.</strong> Run the reference agent, change one thing,
+      report your score and one failure you understood.
+    </p>
+    <p>
+      <strong>Full field report, 2 to 4 hours.</strong> Your own approach, a decision log with
+      tradeoffs, a failure table with root causes, and what you would change in v2. This is the
+      portfolio artifact.
+    </p>
+    <p>
+      Anyone can rerun the evaluator against your committed predictions. That is the proof: not that
+      your agent was perfect, but that you measured it honestly and understood where it broke.
+    </p>
+  </div>
 </section>
 
 <section class="sec">
   <h2>What you leave with</h2>
   <div class="col">
     <p>
-      A working sourcing agent. A reusable, source-agnostic trust core. A thin growth policy filter.
-      The thirty-case eval harness. Your own measured precision and recall. A founder-facing trust
-      report. And a teardown that says, not "I built an agent," but "I built a reusable reliability
-      layer for web-grounded agents, benchmarked it against a planted trap set, and produced a
-      safe-to-act-on number." That is a portfolio artifact, not a demo.
-    </p>
-  </div>
-</section>
-
-<section class="sec">
-  <h2>How it runs</h2>
-  <ol class="runlist">
-    <li>Customer frame</li>
-    <li>Apify source layer</li>
-    <li>Improve the trust core against the Dirty Thirty</li>
-    <li>Eval checkpoint</li>
-    <li>Add the policy filter and run live</li>
-    <li>Founder report and teardown</li>
-    <li>Show-and-tell</li>
-  </ol>
-  <p class="setup">
-    Bring any coding assistant you already use. Claude Code, Copilot, Cursor, and Codex are all fine.
-    The repo is plain Python on the Apify SDK, so the tool you write with does not change the build.
-    You need a working Python runtime and a model key. A thirty-second smoke test in the pre-work
-    confirms both before you arrive.
-  </p>
-</section>
-
-<section class="sec">
-  <h2>Read or run the code</h2>
-  <div class="col">
-    <p>
-      Here to review, not build? The repo runs with nothing but your keys. Clone it, drop in an Apify
-      token, and the data plane runs, no agent and no scaffolding. The build-from-scratch runbook is
-      the next section.
-    </p>
-    <p>
-      Prefer to just read? The code is at <a href="https://github.com/ogkranthi/the-ai-runtime-lab" rel="noopener">github.com/ogkranthi/the-ai-runtime-lab</a>.
-      Start with web-agents-apify/source.py, the source layer that attaches evidence to every field.
-    </p>
-  </div>
-  <pre class="cmd">{clone}</pre>
-  <div class="col">
-    <p>
-      Two environment variables, and only the first is needed to run the data plane. APIFY_TOKEN runs
-      the source layer. ANTHROPIC_API_KEY is for the model steps you add at the workshop. Both live in
-      .env, never in the code.
-    </p>
-  </div>
-</section>
-
-<section class="sec">
-  <h2>Build it in Claude Code</h2>
-  <div class="col">
-    <p>
-      The runbook for the night. Each step is a short brief, a prompt you can paste into Claude Code,
-      and the one rule that keeps it honest. The prompts are written for Claude Code; they work as
-      well in Copilot, Cursor, or Codex, because the repo is plain Python on the Apify SDK.
-    </p>
-  </div>
-
-  <h3>Before you arrive</h3>
-  <div class="col">
-    <p>
-      Python 3.11 or newer, an Anthropic API key, and an Apify token. Install Claude Code, then run
-      the thirty-second smoke test below to confirm both keys. If it does not print two oks, fix that
-      now, not at minute five of the build.
-    </p>
-  </div>
-  <pre class="cmd">{setup}</pre>
-  <pre class="cmd">{smoke}</pre>
-
-  <h3>Step 1, Customer frame</h3>
-  <div class="col">
-    <p>
-      Write down what qualified means before you build anything, so the target cannot drift to match
-      whatever the agent happens to produce.
-    </p>
-  </div>
-  <div class="prompt">
-    <span class="prompt__k">Prompt to Claude Code</span>
-    <p>
-      Create rubric.md. Turn this fit profile into explicit, checkable rules, each with a clear pass
-      and fail, and put a version line at the top that reads rubric v1. Fit profile: US-based B2B
-      SaaS, 50 to 300 people, a developer-facing product, a contact who is an engineering leader, and
-      a real reason to reach out now. Do not soften any rule to make it easier to pass.
-    </p>
-  </div>
-  <p class="bp">
-    <strong>Best practice.</strong> Freeze the rubric before you tune anything. When a rule turns out
-    wrong, write rubric v2 and re-score from scratch. Never edit a rule in place to match what the
-    agent already produces, that is how you grade your own homework.
-  </p>
-
-  <h3>Step 2, Apify source layer</h3>
-  <div class="col">
-    <p>
-      Pull the public signals the rubric scores, and attach the evidence to every field as you go.
-    </p>
-  </div>
-  <div class="prompt">
-    <span class="prompt__k">Prompt to Claude Code</span>
-    <p>
-      Create source.py. Given one target company, use the Apify SDK to pull the signals rubric.md
-      scores: company size, product type, a likely engineering-leader contact, and a recent reason to
-      reach out. Return one record per company where every field carries its evidence: the source URL,
-      the exact snippet it came from, and a fetched_at timestamp. If a field has no source, leave it
-      null. Do not guess.
-    </p>
-  </div>
-  <p class="bp">
-    <strong>Best practice.</strong> Plausible is not verified. A field with no evidence is a missing
-    field, not a value. The evidence you attach here is exactly what the trust core checks next.
-  </p>
-
-  <h3>Step 3, Trust core, then the Dirty Thirty</h3>
-  <div class="col">
-    <p>
-      This is the artifact. One source-agnostic function that decides whether a single claim is true
-      and supported right now, and catches the four breaks.
-    </p>
-  </div>
-  <div class="prompt">
-    <span class="prompt__k">Prompt to Claude Code</span>
-    <p>
-      Create trust.py with one function: it takes a single claim and its evidence and returns a
-      verdict of accept or reject plus a short reason. It must catch the four breaks. Stale: true once,
-      not anymore, the source is cached. Unsupported: the evidence is missing, walled, or does not back
-      the claim. Conflicting: two sources disagree on a field that matters. Extraction-drift: the wrong
-      field or the wrong company was grabbed. The function must know nothing about the fit profile, and
-      it must emit a trace per record: where each field came from, what was checked, and what was
-      rejected and why.
-    </p>
-  </div>
-  <p class="bp">
-    <strong>Best practice.</strong> Keep the trust core independent of the fit policy. The core decides
-    if a claim is true. Whether a true claim is a good fit is a separate job, and mixing them is how
-    the layer rots.
-  </p>
-  <div class="prompt">
-    <span class="prompt__k">Prompt to Claude Code</span>
-    <p>
-      Now load the thirty Dirty Thirty records and run trust.py over each one. Print one line per
-      record: id, verdict, reason.
-    </p>
-  </div>
-
-  <h3>Step 4, Eval checkpoint</h3>
-  <div class="col">
-    <p>
-      Grade the guard against the trap set. Two numbers, against the same bar everyone in the room
-      runs to.
-    </p>
-  </div>
-  <div class="prompt">
-    <span class="prompt__k">Prompt to Claude Code</span>
-    <p>
-      Create eval.py. Score trust.py against the Dirty Thirty: bad-record recall, the share of the
-      twenty planted records it caught; clean-record precision, the share of accepted records that are
-      actually clean; evidence coverage on accepted records; and any unsupported accepted claims. Print
-      each number against the pass bar and a single pass or fail. Pass bar: recall at or above 85
-      percent, precision at or above 80 percent, coverage 100 percent, zero unsupported accepted, a
-      reason on every rejection.
-    </p>
-  </div>
-  <p class="bp">
-    <strong>Best practice.</strong> Grade two numbers, not one. An agent that rejects everything gets
-    perfect recall and fails on precision, so it fails. Catching the bad while keeping the good is the
-    whole skill.
-  </p>
-
-  <h3>Step 5, Policy filter and live run</h3>
-  <div class="col">
-    <p>
-      Only now does fit enter the picture, on top of the claims the trust core already accepted.
-    </p>
-  </div>
-  <div class="prompt">
-    <span class="prompt__k">Prompt to Claude Code</span>
-    <p>
-      Create policy.py. It runs only on claims the trust core already accepted and applies the fit
-      profile from rubric.md: US-based B2B SaaS, 50 to 300 people, developer-facing, an
-      engineering-leader contact, a reason to reach out now. It returns the records that fit, untouched.
-      Do not let it re-judge truth, that is the trust core's job. Then wire source, trust, and policy
-      into one run on a fresh batch from Apify.
-    </p>
-  </div>
-  <p class="bp">
-    <strong>Best practice.</strong> Degrade, do not pad. Hand over the records you can stand behind and
-    name the gaps. A short, honest list beats a full list with junk in it.
-  </p>
-
-  <h3>Step 6, Founder report and teardown</h3>
-  <div class="col">
-    <p>
-      Turn the run into something a founder can act on, with the provenance in plain sight.
-    </p>
-  </div>
-  <div class="prompt">
-    <span class="prompt__k">Prompt to Claude Code</span>
-    <p>
-      Generate a founder-facing trust report from the live run: the qualified list, and for each record
-      its provenance, what was checked, and what was rejected and why. End with one headline number, how
-      many of these are safe to act on, and on what basis.
-    </p>
-  </div>
-
-  <h3>Step 7, Show-and-tell</h3>
-  <div class="col">
-    <p>
-      Close with the line that makes it a portfolio artifact, not a demo: you built a reusable
-      reliability layer for web-grounded agents, benchmarked it against a planted trap set, and produced
-      a safe-to-act-on number.
+      A working triage agent. A deterministic eval harness you ran yourself. Measured high-risk
+      recall, routing accuracy, and evidence validity. A failure analysis with root causes. And a
+      teardown that says, not "I built an agent," but "I built a complaint-triage agent, scored it
+      against a frozen labeled set, and can show you exactly where it fails and why." That is a
+      portfolio artifact, not a demo.
     </p>
   </div>
 </section>
@@ -401,7 +218,7 @@ python smoke.py             # prints: apify ok: SUCCEEDED`;
   {frontmatter.status === 'scheduled' && (
     <CTAButtons
       links={[
-        { label: 'Register on Luma', href: frontmatter.luma_url, primary: true, external: true },
+        { label: 'Get the challenge repo', href: frontmatter.repo_url, primary: true, external: true },
         { label: 'Subscribe', href: frontmatter.subscribe_url, external: true },
       ]}
     />
@@ -410,7 +227,7 @@ python smoke.py             # prints: apify ok: SUCCEEDED`;
     <p>New to The AI Runtime? Start here:</p>
     <ul>
       <li><a href="/start-here">The Field Lab</a>, what it is and how to use it.</li>
-      <li><a href="/artifacts">Artifacts</a>, the reusable rubrics and checklists this Lab produced.</li>
+      <li><a href="/artifacts">Artifacts</a>, reusable rubrics and checklists from the lab.</li>
       <li><a href="/reports">Reports</a>, what builders shipped.</li>
       <li><a href="https://theairuntime.com">The newsletter</a>, production lessons every week.</li>
     </ul>
