@@ -16,7 +16,7 @@ const { slug, title, builder_name, builder_link, lab_number, summary, result, re
 const nn = String(lab_number).padStart(2, '0');
 ---
 <article class="report-card">
-  <p class="from">Field Lab {nn}</p>
+  <p class="from">Field Challenge {nn}</p>
   <h3><a href={`/reports/${slug}`}>{title}</a></h3>
   <p class="builder">
     by {builder_link ? <a href={builder_link} target="_blank" rel="noopener">{builder_name}</a> : <span>{builder_name}</span>}

@@ -5,6 +5,7 @@ import '@fontsource/inter/400.css';
 import '@fontsource/inter/600.css';
 import '../styles/lab-tokens.css';
 import Wordmark from '../components/lab/Wordmark.astro';
+import { PUBLICATION_URL, CHALLENGE_REPO_URL } from '../lib/lab-links';
 
 interface Props {
   title: string;
@@ -59,13 +60,9 @@ const year = 2026;
       <div class="lab-container site-header__inner">
         <Wordmark />
         <nav class="site-nav" aria-label="Primary">
-          <a href="/investigations">Investigations</a>
-          <a href="/field-notes">Field Notes</a>
-          <a href="/artifacts">Artifacts</a>
-          <a href="/problem-bank">Problem Bank</a>
+          <a href="/01">Challenge</a>
           <a href="/reports">Reports</a>
-          <a href="/field-council">Field Council</a>
-          <a href="/submit">Submit</a>
+          <a href="/about">About</a>
         </nav>
       </div>
     </header>
@@ -81,21 +78,13 @@ const year = 2026;
           <p class="tagline">LEARN. SHIP. RUN.</p>
         </div>
         <nav class="footer-nav" aria-label="Footer">
-          <a href="/start-here">Start here</a>
-          <a href="/investigations">Investigations</a>
-          <a href="/field-notes">Field Notes</a>
-          <a href="/artifacts">Artifacts</a>
-          <a href="/problem-bank">Problem Bank</a>
           <a href="/reports">Reports</a>
-          <a href="/field-council">Field Council</a>
-          <a href="/submit">Submit</a>
-          <a href="https://events.theairuntime.com/boston" rel="noopener">Workshops</a>
-          <a href="https://theairuntime.com" rel="noopener">Publication</a>
-          <a href="https://theairuntime.com/subscribe" rel="noopener">Subscribe</a>
+          <a href={CHALLENGE_REPO_URL} rel="noopener">GitHub</a>
+          <a href={PUBLICATION_URL} rel="noopener">theairuntime.com</a>
         </nav>
       </div>
       <div class="lab-container site-footer__legal">
-        <span>The AI Runtime Lab. Public engineering field reports.</span>
+        <span>The Field Lab is a personal project of The AI Runtime and is not affiliated with any employer.</span>
         <span>&copy; {year} The AI Runtime</span>
       </div>
     </footer>

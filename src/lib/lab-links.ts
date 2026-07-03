@@ -1,21 +1,13 @@
-// One source of truth for the Field Lab's outbound links. Workshops live on the
-// events site; subscribe is the publication; submit is an external form.
-export const EVENTS_URL = 'https://events.theairuntime.com';
-export const WORKSHOPS_URL = 'https://events.theairuntime.com/boston';
+// One source of truth for the Field Lab's outbound links. No forms anywhere:
+// submission is the GitHub issue template on the challenge repo.
 export const PUBLICATION_URL = 'https://theairuntime.com';
 export const SUBSCRIBE_URL = 'https://theairuntime.com/subscribe';
-
-// The hiring / partner inbound. One channel, a mailto, no form.
 export const CONTACT_EMAIL = 'info@theairuntime.com';
 
-// The Airtable intake FORMS, embedded on /submit. These must be form share
-// links (Form view > Share form > Embed), never view share links: a view
-// embed exposes every submitted record, including emails, to the public.
-// Each path degrades to a mailto CTA while its URL is empty.
-export const SUBMIT_FORM_URL = 'https://airtable.com/embed/appHnMPcsBu6XTApu/pagMxwk3V77tBMlhg/form';
-export const FIELD_NOTE_FORM_URL = 'https://airtable.com/embed/appHnMPcsBu6XTApu/pagusC2K764WmRxDB/form';
-
-// Builder and mentor interest forms, linked (not embedded) from /submit and
-// the Field Council. Non-embed form pages, opened on airtable.com.
-export const BUILDER_FORM_URL = 'https://airtable.com/appHnMPcsBu6XTApu/pagGE7Ne12wCGU1Bz/form';
-export const MENTOR_FORM_URL = 'https://airtable.com/appHnMPcsBu6XTApu/pagESCYXgut3AJqHK/form';
+// The challenge lives as a folder inside the-ai-runtime-lab.
+export const CHALLENGE_REPO_URL =
+  'https://github.com/ogkranthi/the-ai-runtime-lab/tree/main/ai-runtime-field-challenge-01';
+export const REFERENCE_REPORT_URL =
+  'https://github.com/ogkranthi/the-ai-runtime-lab/blob/main/ai-runtime-field-challenge-01/reports/000-reference.md';
+export const SUBMIT_ISSUE_URL =
+  'https://github.com/ogkranthi/the-ai-runtime-lab/issues/new?template=submission.yml';

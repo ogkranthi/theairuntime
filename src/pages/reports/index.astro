@@ -2,7 +2,21 @@
 import { getCollection } from 'astro:content';
 import LabLayout from '../../layouts/LabLayout.astro';
 import ReportCard from '../../components/lab/ReportCard.astro';
-import { CONTACT_EMAIL } from '../../lib/lab-links';
+import { REFERENCE_REPORT_URL } from '../../lib/lab-links';
+
+// Reference Report facts, kept in one place. Fill from the committed
+// reports/000-reference.md in the challenge repo after each regeneration.
+const reference = {
+  title: 'Reference Report 001: Financial Complaint Triage',
+  date: '', // e.g. "Jul 3, 2026"
+  model: '', // the exact model string from the run
+  recall: '', // high-risk recall, e.g. "0.75"
+  accuracy: '', // routing accuracy, e.g. "0.72"
+  evidence: '', // valid evidence rate, e.g. "0.82"
+  failure: '', // the one-line most interesting failure
+  url: REFERENCE_REPORT_URL,
+};
+const pending = 'in the report';
 
 const reports = (await getCollection('reports')).sort((a, b) => {
   if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
@@ -10,23 +24,46 @@ const reports = (await getCollection('reports')).sort((a, b) => {
 });
 ---
 <LabLayout
-  title="Reports · The AI Runtime Field Lab"
-  description="What builders shipped: teardowns from the Field Lab, each owned by the builder, with the result it scored against a public bar."
+  title="Field Reports · The AI Runtime Field Lab"
+  description="Completed studies of AI systems tested against deployment constraints: results, honest failure tables, decision logs, and the lesson."
 >
   <section class="hero">
     <div class="lab-container">
       <p class="mono-label eyebrow">Field Lab · Reports</p>
-      <h1>What builders shipped</h1>
-      <p class="sub">
-        Each Report is a builder's teardown of what they built and what it scored. The builder owns the
-        proof; this page shows it.
-      </p>
+      <h1>Field Reports</h1>
+      <p class="sub">Completed studies of AI systems tested against deployment constraints.</p>
     </div>
   </section>
 
   <section class="sec">
     <div class="lab-container">
-      {reports.length > 0 ? (
+      <div class="col">
+        <p>
+          A Field Report documents a build against a frozen rubric: results, an honest failure table,
+          a decision log, and the lesson. Reports are dated and versioned by model string. Featured
+          community reports are added here and mentioned in The AI Runtime.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <article class="ref">
+        <p class="mono-label ref-eyebrow">Reference Report</p>
+        <h2><a href={reference.url} target="_blank" rel="noopener">{reference.title}</a></h2>
+        <dl class="facts">
+          <div><dt>Date</dt><dd>{reference.date || pending}</dd></div>
+          <div><dt>Model</dt><dd>{reference.model || pending}</dd></div>
+          <div><dt>High-risk recall</dt><dd>{reference.recall || pending}</dd></div>
+          <div><dt>Routing accuracy</dt><dd>{reference.accuracy || pending}</dd></div>
+          <div><dt>Valid evidence rate</dt><dd>{reference.evidence || pending}</dd></div>
+          <div><dt>Most interesting failure</dt><dd>{reference.failure || pending}</dd></div>
+        </dl>
+        <p class="ref-link"><a href={reference.url} target="_blank" rel="noopener">Read the Reference Report</a></p>
+      </article>
+
+      {reports.length > 0 && (
         <div class="grid">
           {reports.map((r) => (
             <ReportCard
@@ -42,52 +79,7 @@ const reports = (await getCollection('reports')).sort((a, b) => {
             />
           ))}
         </div>
-      ) : (
-        <p class="empty">
-          First Reports land after <a href="/01">Field Lab 01</a>. Here is what will appear, so you
-          know what you are waiting for.
-        </p>
       )}
-    </div>
-  </section>
-
-  <section class="sec">
-    <div class="lab-container">
-      <h2 class="mono-label">What a Report is</h2>
-      <div class="grid two">
-        <div class="def">
-          <h3>Builder Report</h3>
-          <p>One builder's teardown of their own build:</p>
-          <ul>
-            <li>what they built, and the architecture</li>
-            <li>what it scored against the public bar</li>
-            <li>what failed, and why</li>
-            <li>what they would change next time</li>
-            <li>the repo and a demo link</li>
-          </ul>
-        </div>
-        <div class="def">
-          <h3>Lab Report</h3>
-          <p>The aggregate view across every build in a Lab:</p>
-          <ul>
-            <li>results across the room, against the same bar</li>
-            <li>common failure modes</li>
-            <li>the patterns that won</li>
-            <li>the reusable artifact that came out of it</li>
-          </ul>
-        </div>
-      </div>
-      <p class="def-note">
-        Every Report carries the problem, the approach, the eval score, failure modes, cost and
-        latency notes, and what changed after testing. The builder owns the proof; this page shows
-        it.
-      </p>
-    </div>
-  </section>
-
-  <section class="sec foot">
-    <div class="lab-container">
-      <p>Want to work with these builders? <a href={`mailto:${CONTACT_EMAIL}`}>Get in touch.</a></p>
     </div>
   </section>
 </LabLayout>
@@ -95,24 +87,34 @@ const reports = (await getCollection('reports')).sort((a, b) => {
 <style>
   .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
   .eyebrow { margin: 0 0 1rem; color: var(--accent); }
-  .sub { max-width: 42rem; margin: 0.9rem 0 0; font-size: 1.15rem; color: var(--text-2); }
-  .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
-  .sec h2 { margin: 0 0 1.5rem; }
-  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
-  .grid.two { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); max-width: 44rem; }
-  .empty { color: var(--text-2); }
-  .empty a { color: var(--accent); }
-  .def {
+  .sub { max-width: 44rem; margin: 0.9rem 0 0; font-size: 1.15rem; color: var(--text-2); }
+  .sec { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+  .col { max-width: 44rem; }
+  .col p { margin: 0; color: var(--text-2); }
+
+  .ref {
+    max-width: 46rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--bg-2);
-    padding: 1.4rem 1.5rem;
+    padding: 1.75rem 1.9rem;
   }
-  .def h3 { margin: 0 0 0.5rem; font-size: 1.05rem; }
-  .def p { margin: 0 0 0.5rem; color: var(--text-2); font-size: 0.95rem; }
-  .def ul { margin: 0; padding-left: 1.2rem; }
-  .def li { margin: 0.3rem 0; color: var(--text-2); font-size: 0.95rem; }
-  .def-note { max-width: 44rem; margin: 1.25rem 0 0; color: var(--text-2); font-size: 0.95rem; }
-  .foot p { color: var(--text-2); margin: 0; }
-  .foot a { color: var(--accent); }
+  .ref-eyebrow { margin: 0 0 0.6rem; color: var(--text-3); }
+  .ref h2 { margin: 0 0 1.1rem; font-size: 1.25rem; }
+  .ref h2 a { color: var(--text); text-decoration: none; }
+  .ref h2 a:hover { color: var(--accent); }
+  .facts { margin: 0; display: grid; gap: 0.55rem; }
+  .facts div { display: grid; grid-template-columns: 12rem 1fr; gap: 1rem; align-items: baseline; }
+  .facts dt {
+    font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .facts dd { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
+  @media (max-width: 34rem) {
+    .facts div { grid-template-columns: 1fr; gap: 0.15rem; }
+  }
+  .ref-link { margin: 1.25rem 0 0; font-size: 0.95rem; }
+  .ref-link a { color: var(--accent); }
+
+  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); margin-top: 1.5rem; }
 </style>

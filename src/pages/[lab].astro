@@ -20,7 +20,7 @@ const dateLabel = d.date
   ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d.date)
   : 'Date to be announced';
 
-const eyebrow = `Field Lab ${nn}${d.location ? ` · ${d.location}` : ''}${d.partner ? ` · with ${d.partner}` : ''}`;
+const eyebrow = `Field Challenge ${nn}${d.location ? ` · ${d.location}` : ''}${d.partner ? ` · with ${d.partner}` : ''}`;
 
 const reports =
   d.status === 'past'
@@ -30,7 +30,7 @@ const reports =
     : [];
 ---
 <LabLayout
-  title={`Field Lab ${nn}: ${d.title}`}
+  title={`Field Challenge ${nn}: ${d.title}`}
   description={d.brief_summary}
   ogImage={d.og_image}
 >
@@ -70,7 +70,7 @@ const reports =
   {d.status === 'past' && (
     <section class="sec">
       <div class="lab-container">
-        <h2>Reports from this Lab</h2>
+        <h2>Field Reports from this challenge</h2>
         {reports.length > 0 ? (
           <div class="reports-grid">
             {reports.map((r) => (
