@@ -13,15 +13,16 @@ Web platform for [The AI Runtime](https://theairuntime.com), the publication and
 - `/about`, `/speak`, `/404`
 
 **The Lab (`lab.theairuntime.com`):** the same Worker also serves the Field Lab
-on the lab host, styled via `LabLayout` and `lab-tokens.css`. The root is the
-lab home (built at `/lab-home/`, served at `/`). The surface: `/start-here`
-(orientation), `/investigations` (the technical archive), `/field-notes`
-(interviews with FDE-shaped practitioners), `/artifacts` (reusable checklists,
-rubrics, templates), `/problem-bank` (anonymized problem backlog), `/reports`
-(builder teardowns), `/submit` (problem and field-note intake), and numbered
-Lab pages like `/01`. Legacy paths (`/field-lab`, `/briefs`) redirect. Host
-routing lives in `src/worker.ts`; lab URLs are listed in `/lab-sitemap.xml`
-and excluded from the main sitemap.
+on the lab host, styled via `LabLayout` and `lab-tokens.css`. Four pages: the
+home (built at `/lab-home/`, served at `/`), the current Field Challenge at
+`/01`, `/reports` (Field Reports), and `/about` (built at `/lab-about/`,
+served at `/about` on the lab host only). The two content nouns are Field
+Challenge and Field Report; submission is a GitHub issue on the challenge
+repo, no forms. Retired paths (`/submit`, `/start-here`, `/investigations`,
+`/artifacts`, `/problem-bank`, `/field-council`, `/field-notes`, `/field-lab`,
+`/briefs`) redirect to the closest surviving page. Host routing lives in
+`src/worker.ts`; lab URLs are listed in `/lab-sitemap.xml` and excluded from
+the main sitemap.
 
 Built with Astro + content collections, deployed to Cloudflare Pages.
 

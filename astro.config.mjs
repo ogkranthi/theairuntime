@@ -25,6 +25,7 @@ export default defineConfig({
         !page.includes('/reports') &&
         !page.includes('/submit') &&
         !page.includes('/lab-home') &&
+        !page.includes('/lab-about') &&
         !page.includes('/start-here') &&
         !page.includes('/field-notes') &&
         !page.includes('/artifacts') &&

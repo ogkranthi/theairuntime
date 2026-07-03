@@ -1,0 +1,77 @@
+---
+import LabLayout from '../layouts/LabLayout.astro';
+import { PUBLICATION_URL, CONTACT_EMAIL } from '../lib/lab-links';
+---
+<LabLayout
+  title="About · The AI Runtime Field Lab"
+  description="Why the Field Lab exists, how it operates, and how to contribute a problem or review."
+  canonicalPath="/about"
+>
+  <section class="hero">
+    <div class="lab-container">
+      <p class="mono-label eyebrow">Field Lab · About</p>
+      <h1>About the Field Lab</h1>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Why the lab exists</h2>
+      <div class="col">
+        <p>
+          Production AI work is different from demo work. Field engineering, in the style of forward
+          deployed engineering, means scoping ambiguous customer problems, defining reliability bars,
+          building under constraints, evaluating against frozen criteria, and communicating what can
+          and cannot be trusted. The lab publishes Field Challenges and Field Reports to make that
+          work visible.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Operating model</h2>
+      <div class="col">
+        <p>
+          Challenges are self-serve. Labels are public by design. There is no leaderboard. Honest
+          failure analysis matters more than score. New challenges unlock when the previous one has
+          five completed Field Reports.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Contribute</h2>
+      <div class="col">
+        <p>
+          Have a production-shaped problem that deserves a challenge, or want to review a rubric or a
+          Field Report? Email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <div class="col">
+        <p>
+          The Field Lab is the engineering arm of <a href={PUBLICATION_URL}>The AI Runtime</a>, the
+          publication and community for engineers shipping AI to production.
+        </p>
+      </div>
+    </div>
+  </section>
+</LabLayout>
+
+<style>
+  .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
+  .eyebrow { margin: 0 0 1rem; color: var(--accent); }
+  .sec { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+  .sec h2 { margin: 0 0 1rem; }
+  .col { max-width: 44rem; }
+  .col p { margin: 0; color: var(--text-2); }
+  .col a { color: var(--accent); }
+</style>

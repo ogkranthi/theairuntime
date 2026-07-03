@@ -40,10 +40,13 @@ export const metricRows = [
   ['Valid evidence rate', 'share of evidence quotes that actually appear in the narrative', 'a decision without grounded evidence is a guess'],
 ];
 
-export const quickstart = `git clone https://github.com/ogkranthi/the-ai-runtime-lab
+export const zerokey = `git clone https://github.com/ogkranthi/the-ai-runtime-lab
 cd the-ai-runtime-lab/ai-runtime-field-challenge-01
 
-python -m venv .venv && source .venv/bin/activate
+pip install jsonschema
+python run_eval.py --predictions examples/predictions.example.jsonl`;
+
+export const quickstart = `python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 export ANTHROPIC_API_KEY=your_key_here
@@ -52,7 +55,7 @@ export ANTHROPIC_API_KEY=your_key_here
 python agent/run_agent.py --input data/complaints.jsonl --output outputs/predictions.jsonl --limit 10
 python run_eval.py --predictions outputs/predictions.jsonl
 
-# write your report and submit it as a GitHub issue on the challenge repo
+# write your report from the template
 cp REPORT_TEMPLATE.md REPORT.md`;
 
 <p class="promise">
@@ -164,12 +167,17 @@ cp REPORT_TEMPLATE.md REPORT.md`;
 
 <section class="sec">
   <h2>How it runs</h2>
+
+  <h3>Step 1: see the evaluator work, no API key, under two minutes</h3>
+  <pre class="cmd">{zerokey}</pre>
+
+  <h3>Step 2: run the reference agent, then make it yours</h3>
   <div class="col">
     <p>
-      Self-serve, in one afternoon. Clone the repo, run the reference agent, score it, then make it
-      yours: change the prompts, the decomposition, the evidence selection, or the whole approach.
-      The agent is provider-agnostic with Anthropic as the default. AI must do the core reasoning;
-      deterministic code handles orchestration, validation, and scoring.
+      Self-serve, in one afternoon. Run the reference agent, score it, then change the prompts, the
+      decomposition, the evidence selection, or the whole approach. The agent is provider-agnostic
+      with Anthropic as the default. AI must do the core reasoning; deterministic code handles
+      orchestration, validation, and scoring.
     </p>
   </div>
   <pre class="cmd">{quickstart}</pre>
@@ -177,28 +185,30 @@ cp REPORT_TEMPLATE.md REPORT.md`;
     <li>Run the reference agent and the evaluator</li>
     <li>Read your failures against the 40 labels</li>
     <li>Change the approach and rerun</li>
-    <li>Write the field report from the template</li>
-    <li>Submit a GitHub issue linking your fork and committed predictions</li>
+    <li>Write your Field Report from the template</li>
   </ol>
+  <div class="col">
+    <p>
+      A mini report takes 30 to 60 minutes: run the reference agent, change one thing, report your
+      score and one failure you understood. A full Field Report takes 2 to 4 hours: your own
+      approach, a decision log, a failure table with root causes, and what you would change in v2.
+    </p>
+  </div>
 </section>
 
 <section class="sec">
-  <h2>Two ways to submit</h2>
+  <h2>Submit your Field Report</h2>
   <div class="col">
     <p>
-      <strong>Mini report, 30 to 60 minutes.</strong> Run the reference agent, change one thing,
-      report your score and one failure you understood.
-    </p>
-    <p>
-      <strong>Full field report, 2 to 4 hours.</strong> Your own approach, a decision log with
-      tradeoffs, a failure table with root causes, and what you would change in v2. This is the
-      portfolio artifact.
-    </p>
-    <p>
-      Anyone can rerun the evaluator against your committed predictions. That is the proof: not that
-      your agent was perfect, but that you measured it honestly and understood where it broke.
+      Open a GitHub issue linking your fork, your committed predictions, and your REPORT.md; anyone
+      can rerun the evaluator against them.
     </p>
   </div>
+  <CTAButtons
+    links={[
+      { label: 'Submit via GitHub issue', href: 'https://github.com/ogkranthi/the-ai-runtime-lab/issues/new?template=submission.yml', primary: true, external: true },
+    ]}
+  />
 </section>
 
 <section class="sec">
@@ -224,12 +234,6 @@ cp REPORT_TEMPLATE.md REPORT.md`;
     />
   )}
   <div class="newhere">
-    <p>New to The AI Runtime? Start here:</p>
-    <ul>
-      <li><a href="/start-here">The Field Lab</a>, what it is and how to use it.</li>
-      <li><a href="/artifacts">Artifacts</a>, reusable rubrics and checklists from the lab.</li>
-      <li><a href="/reports">Reports</a>, what builders shipped.</li>
-      <li><a href="https://theairuntime.com">The newsletter</a>, production lessons every week.</li>
-    </ul>
+    <p><a href="/">Back to the Field Lab</a></p>
   </div>
 </section>

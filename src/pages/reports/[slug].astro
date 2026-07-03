@@ -18,7 +18,7 @@ const dateLabel = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numer
   <article class="report">
     <div class="lab-container">
       <p class="back"><a href="/reports">Reports</a></p>
-      <p class="mono-label from"><a href={`/${nn}`}>Field Lab {nn}</a> · {dateLabel}</p>
+      <p class="mono-label from"><a href={`/${nn}`}>Field Challenge {nn}</a> · {dateLabel}</p>
       <h1>{d.title}</h1>
       <p class="builder">
         by {d.builder_link ? <a href={d.builder_link} target="_blank" rel="noopener">{d.builder_name}</a> : <span>{d.builder_name}</span>}

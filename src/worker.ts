@@ -93,6 +93,7 @@ function isFieldLabPath(p: string): boolean {
     p === '/reports' || p.startsWith('/reports/') ||
     p === '/submit' || p.startsWith('/submit/') ||
     p === '/lab-home' || p.startsWith('/lab-home/') ||
+    p === '/lab-about' || p.startsWith('/lab-about/') ||
     p === '/start-here' || p.startsWith('/start-here/') ||
     p === '/field-notes' || p.startsWith('/field-notes/') ||
     p === '/artifacts' || p.startsWith('/artifacts/') ||
@@ -761,18 +762,34 @@ export default {
           // The home is canonical at "/", so fold its build path back to root.
           return Response.redirect(`https://${LAB_HOST}/`, 301);
         }
-        // Legacy lab paths fold into the converged Brief / Lab / Report model.
-        if (pathname.startsWith('/field-lab/intake')) {
-          return Response.redirect(`https://${LAB_HOST}/submit`, 301);
+        if (pathname === '/about' || pathname === '/about/') {
+          // The lab About is built at /lab-about/ (the events site owns the
+          // /about build path). Serve it here without changing the URL.
+          return env.ASSETS.fetch(new Request(new URL('/lab-about/', url), request));
         }
-        if (pathname === '/field-lab' || pathname.startsWith('/field-lab/') ||
+        if (pathname === '/lab-about' || pathname === '/lab-about/') {
+          return Response.redirect(`https://${LAB_HOST}/about`, 301);
+        }
+        // Retired lab pages redirect to the closest surviving page. The site
+        // is three pages plus the challenge: /, /01, /reports, /about.
+        if (pathname === '/submit' || pathname.startsWith('/submit/') ||
+            pathname.startsWith('/field-lab/intake') ||
+            pathname === '/artifacts' || pathname.startsWith('/artifacts/') ||
+            pathname === '/investigations' || pathname.startsWith('/investigations/')) {
+          return Response.redirect(`https://${LAB_HOST}/01`, 301);
+        }
+        if (pathname === '/problem-bank' || pathname.startsWith('/problem-bank/') ||
+            pathname === '/field-council' || pathname.startsWith('/field-council/')) {
+          return Response.redirect(`https://${LAB_HOST}/about`, 301);
+        }
+        if (pathname === '/field-notes' || pathname.startsWith('/field-notes/')) {
+          // Field notes are publication content and live on theairuntime.com.
+          return Response.redirect('https://theairuntime.com/', 301);
+        }
+        if (pathname === '/start-here' || pathname.startsWith('/start-here/') ||
+            pathname === '/field-lab' || pathname.startsWith('/field-lab/') ||
             pathname === '/briefs' || pathname.startsWith('/briefs/')) {
           return Response.redirect(`https://${LAB_HOST}/`, 301);
-        }
-        // /investigations is a real page again (the technical archive). Detail
-        // URLs from the old standalone investigations site fold into it.
-        if (pathname.startsWith('/investigations/') && pathname !== '/investigations/') {
-          return Response.redirect(`https://${LAB_HOST}/investigations`, 301);
         }
         const stayOnLab =
           isInvestigationsPath(pathname) ||
