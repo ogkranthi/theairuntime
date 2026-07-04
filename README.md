@@ -12,7 +12,7 @@ Web platform for [The AI Runtime](https://theairuntime.com), the publication and
 - `/resources`, `/resources/<slug>` → ebooks, checklists, playbooks (lead-gated / paid)
 - `/about`, `/speak`, `/404`
 
-**The Lab (`lab.theairuntime.com`):** the same Worker also serves the Field Lab
+**The Lab (`lab.theairuntime.com`):** the same Worker also serves the FDE Lab
 on the lab host, styled via `LabLayout` and `lab-tokens.css`. Four pages: the
 home (built at `/lab-home/`, served at `/`), the current Field Challenge at
 `/01`, `/reports` (Field Reports), and `/about` (built at `/lab-about/`,

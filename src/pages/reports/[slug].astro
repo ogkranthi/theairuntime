@@ -14,7 +14,7 @@ const { Content } = await render(report);
 const nn = String(d.lab_number).padStart(2, '0');
 const dateLabel = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d.date);
 ---
-<LabLayout title={`${d.title} · The AI Runtime Field Lab`} description={d.summary} ogType="article" ogImage={d.og_image}>
+<LabLayout title={`${d.title} · The AI Runtime FDE Lab`} description={d.summary} ogType="article" ogImage={d.og_image}>
   <article class="report">
     <div class="lab-container">
       <p class="back"><a href="/reports">Reports</a></p>
