@@ -4,13 +4,15 @@
  * Qualitative social proof, surfaced near the top of key pages the way
  * professional community sites lead with a trusted-by row.
  */
+import { READER_COMPANIES } from '../lib/stats';
+
 interface Props {
   label?: string;
   companies?: string[];
 }
 const {
   label = 'Read by AI practitioners at',
-  companies = ['IBM', 'Amazon', 'Meta', 'Google', 'NVIDIA', 'OpenAI', 'MIT', 'Harvard'],
+  companies = READER_COMPANIES,
 } = Astro.props;
 ---
 <div class="cred">

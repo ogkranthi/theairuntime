@@ -70,6 +70,7 @@ const events = defineCollection({
       )
       .default([]),
     status: z.enum(['upcoming', 'past']).default('upcoming'),
+    attendance: z.number().optional(), // headcount for the sponsors case-study card
     lumaUrl: z.string().url().optional(),
     recordingUrl: z.string().url().optional(),
     slidesUrl: z.string().url().optional(),

@@ -1,0 +1,41 @@
+---
+/**
+ * SponsorCTA: one line at the bottom of every event recap crediting the
+ * sponsors and inviting the next one. Pass the event's partners; the
+ * site-wide space and food sponsors are always credited.
+ */
+interface Partner {
+  name: string;
+}
+interface Props {
+  partners?: Partner[];
+}
+const { partners = [] } = Astro.props;
+
+const names = new Set(['Microsoft', 'NVIDIA']);
+partners.forEach((p) => names.add(p.name));
+const credit = [...names].join(', ');
+---
+<aside class="sponsor-cta">
+  <div class="container">
+    <p>
+      This event was made possible by {credit}.
+      <a href="/sponsors">Want your logo here next month?</a>
+    </p>
+  </div>
+</aside>
+
+<style>
+  .sponsor-cta {
+    border-top: 1px solid var(--border);
+    background: var(--bg-2);
+    padding: 1.5rem 0;
+  }
+  .sponsor-cta p {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    color: var(--text-2);
+  }
+  .sponsor-cta a { color: var(--accent); }
+</style>

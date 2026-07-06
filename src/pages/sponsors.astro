@@ -1,203 +1,560 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Section from '../components/Section.astro';
+import { SPONSOR_STATS, READER_COMPANIES } from '../lib/stats';
 
-// Partner cards lead with a styled wordmark of the name. If you later have
-// permission-cleared logo SVGs, drop them at /public/logos/<slug>.svg and
-// flip on the optional `logo` field per entry; the rendering already
-// supports it.
-const platformPartners = [
+const CONTACT = 'info@theairuntime.com';
+
+const sponsors = [
+  { name: 'Microsoft', role: 'Space Partner', url: 'https://www.microsoft.com' },
+  { name: 'NVIDIA', role: 'Food & Drinks Sponsor', url: 'https://www.nvidia.com' },
+  { name: 'HackerSquad', role: 'Technology Partner', url: 'https://hackersquad.com' },
+];
+
+const audience = [
   {
-    name: 'Microsoft',
-    role: 'Space Partner',
-    url: 'https://www.microsoft.com',
-    blurb: 'Microsoft hosts our Boston meetups, the room in Kendall Square where practitioners gather, and brings the platform many of them ship on: Azure AI Foundry, Entra ID, and Agent 365.',
+    k: 'Senior and staff engineers',
+    v: 'The people who evaluate tools hands-on and decide what their teams adopt.',
   },
   {
-    name: 'NVIDIA',
-    role: 'Food & Drinks Partner',
-    url: 'https://www.nvidia.com',
-    blurb: 'NVIDIA covers the food and drinks at our Boston meetups, keeping practitioners fed while they talk shop. Also the compute stack many reach for when training, evaluating, and serving models at production scale.',
+    k: 'AI architects and platform leads',
+    v: 'Owners of the inference, eval, and agent infrastructure at Boston companies.',
   },
   {
-    name: 'HackerSquad',
-    role: 'Technology Partner',
-    url: 'https://hackersquad.com',
-    blurb: 'Technology partner for The AI Runtime, supporting the platform behind the events and the community.',
+    k: 'Founders and founding engineers',
+    v: 'Early teams choosing their AI stack for the first time, with no procurement layer in the way.',
+  },
+  {
+    k: 'Researchers and graduate engineers',
+    v: 'MIT and Harvard people moving between the lab and production.',
   },
 ];
 
-const tiers = [
+const whySponsor = [
+  { k: 'Dev tool companies', v: 'Adoption and honest feedback from practitioners who ship.' },
+  { k: 'AI startups', v: 'Hiring senior engineers who are visibly building in this space.' },
+  { k: 'Infra and cloud providers', v: 'Influence over where real workloads land.' },
+  { k: 'VCs', v: 'Technical deal flow and a diligence network of practitioners.' },
+];
+
+// TODO(kranthi): confirm these anchor ranges before publishing.
+const formats = [
   {
-    name: 'Build nights',
-    body: 'Put your tool in the room for a hands-on build night. Practitioners ship something real with it in a few hours, the highest-signal way to earn adoption. You set a challenge or bring a use case, we bring the builders.',
+    id: 'food-drinks',
+    name: 'Food & drinks sponsor',
+    what: 'Cover food and drinks for one monthly meetup. We take one food-and-drinks sponsor per event.',
+    gets: ['logo on the event page and Luma', 'a thank-you from the stage', 'credit in the recap and newsletter mention', 'your team in the room'],
+    anchor: '$1,500 to $3,000 per event',
   },
   {
-    name: 'Sponsor food and drinks',
-    body: 'Cover food and drinks for a meetup. Logo on the event page, a mention from the stage, and your name in the recap. NVIDIA currently sponsors this in Boston.',
+    id: 'space',
+    name: 'Space partner',
+    what: 'Host the meetup at your venue. Microsoft currently hosts in Kendall Square.',
+    gets: ['recurring logo placement', 'a welcome slot at each hosted event', 'your space in every recap photo'],
+    anchor: 'in-kind',
   },
   {
-    name: 'Sponsor Build Labs',
-    body: 'Back a Field Lab, a scoped production-shaped build that runs at a workshop against a public reliability bar. Your tool is the data plane or platform builders use, and your name is on the brief and the published write-up.',
+    id: 'newsletter',
+    name: 'Newsletter sponsorship',
+    what: 'A sponsored slot in the weekly newsletter read by 2,000+ practitioners.',
+    gets: ['one clearly labeled slot per issue', 'plain-text, practitioner-grade copy', 'a link and UTM of your choice'],
+    anchor: 'per-issue rate',
   },
   {
-    name: 'Custom build nights',
-    body: 'A private build night for your team or community. We design the brief, run the session, and leave you with the builds and the lessons. Good for activations, launches, and developer relations.',
+    id: 'speaker-demo',
+    name: 'Speaker / demo slot',
+    what: 'A technical talk or live demo, paired with an event sponsorship. Talks clear the same quality bar as any speaker.',
+    gets: ['a practitioner audience in the room', 'the recording and slides in the recap', 'a speaker page on the site'],
+    anchor: 'paired with event sponsorship',
   },
   {
-    name: 'Recruiters',
-    body: 'Hiring engineers who ship AI to production? The Reports gallery is public proof of what builders made and measured. Reach out and we make a selective, high-trust intro. No resume forwarding, no spam.',
+    id: 'lab-community',
+    name: 'FDE Lab / community partnership',
+    what: 'Back a Field Challenge or a hands-on build night around your tool. Builders ship something real with it and publish what they measured.',
+    gets: ['your tool as the data plane or platform in the brief', 'your name on the published challenge and reports', 'direct feedback from builders'],
+    anchor: 'custom',
   },
 ];
+
+// Real quotes only. Populate from speakers and attendees, then the section renders.
+// <!-- QUOTE NEEDED: speaker quote (name, role, company) -->
+// <!-- QUOTE NEEDED: attendee quote (name, role, company) -->
+// <!-- QUOTE NEEDED: sponsor quote (name, role, company) -->
+const testimonials: { quote: string; name: string; role: string; company: string }[] = [];
+
+const faqs = [
+  {
+    q: 'What does a typical event look like?',
+    a: 'A weeknight in Kendall Square: doors and mingling, two practitioner talks, open discussion, and networking. See a recent recap at /boston.',
+  },
+  {
+    q: 'Do sponsors get the attendee list?',
+    a: 'No. You get the room, the mic, the recap, and the logo wall, and your team is welcome at the event to meet people directly. We do not share attendee contact data.',
+  },
+  {
+    q: 'Can we give a product pitch on stage?',
+    a: 'Partners get a short intro from the stage, not a sales deck. A full talk must clear the same quality bar as any speaker: a real production story, not a pitch.',
+  },
+  {
+    q: 'Do you sponsor outside Boston, or virtual?',
+    a: 'In-person events run in Boston today. The newsletter reaches practitioners well beyond it, and newsletter sponsorship is not geography-bound. More cities are on the roadmap.',
+  },
+];
+
+const pastEvents = (await getCollection('events', (e) => e.data.status === 'past'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const monthYear = (d: Date) =>
+  new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(d);
+
+const talkItems = (agenda: { item: string }[]) =>
+  agenda.filter((a) => /^Talk\s/i.test(a.item)).map((a) => a.item.replace(/^Talk \d+ · /i, ''));
+
+// Global sponsors apply to every Boston event; per-event partners add to them.
+const creditLine = (partners: { name: string }[]) => {
+  const names = new Set(['Microsoft (space)', 'NVIDIA (food & drinks)']);
+  partners.forEach((p) => names.add(p.name));
+  return [...names].join(', ');
+};
 ---
 <BaseLayout
-  title="Sponsors & Partners · The AI Runtime"
-  description="The partners who help put on The AI Runtime: Microsoft hosts the space, NVIDIA covers food and drinks, and HackerSquad is the technology partner."
+  title="Sponsor an event · The AI Runtime"
+  description="Put your product in front of the people who ship AI. Sponsor The AI Runtime's Boston meetups, newsletter, and FDE Lab."
 >
-  <Section eyebrow="Sponsors & Partners" title="The companies that help us put on better meetups">
-    <p class="lead dim">
-      The AI Runtime is independent and practitioner-first. A small number of partners make the
-      meetups happen: Microsoft hosts the space in Kendall Square, NVIDIA covers the food and
-      drinks, and HackerSquad is the technology partner. A genuine thanks to all three.
-    </p>
-  </Section>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Sponsors &amp; Partners</p>
+      <h1>Put your product in front of the people who ship AI.</h1>
+      <p class="sub">
+        The AI Runtime runs Boston's practitioner-first AI community: a weekly newsletter, monthly
+        meetups in Cambridge, and hands-on labs. Sponsors reach the engineers and architects who
+        decide what their teams adopt.
+      </p>
+      <p class="cta-row">
+        <a class="btn" href="#interest">Start a conversation</a>
+        <a class="see-past" href="#events">See past events</a>
+      </p>
+    </div>
+  </section>
 
-  <Section eyebrow="Current sponsors" title="Practitioner-grade partners">
-    <ul class="logos-strip">
-      {platformPartners.map((p) => (
-        <li>
-          <a href={p.url} target="_blank" rel="noopener" aria-label={p.name}>
-            <span class="wordmark">{p.name}</span>
-          </a>
+  <section class="stats" aria-label="Community numbers">
+    <div class="container">
+      <ul role="list">
+        {SPONSOR_STATS.map((s) => (
+          <li>
+            <span class="value">{s.value}</span>
+            <span class="label">{s.label}</span>
+          </li>
+        ))}
+        <li class="companies">
+          <span class="label">Readers at</span>
+          <span class="names">{READER_COMPANIES.join(' · ')}</span>
         </li>
-      ))}
-    </ul>
+      </ul>
+    </div>
+  </section>
 
-    <ul class="grid">
-      {platformPartners.map((p) => (
-        <li>
-          <a href={p.url} target="_blank" rel="noopener">
-            <span class="name">{p.name}</span>
-            <span class="role muted">{p.role}</span>
-          </a>
-          <p class="dim">{p.blurb}</p>
-        </li>
-      ))}
-      <li class="placeholder">
-        <span class="name muted">Your venue here</span>
-        <span class="role muted">Venue partner · Boston</span>
-        <p class="dim">We're looking for a recurring Boston venue host. <a href="mailto:info@theairuntime.com?subject=Venue%20partnership">Get in touch →</a></p>
-      </li>
-    </ul>
-  </Section>
+  <section class="sec" aria-label="Current sponsors">
+    <div class="container">
+      <h2 class="mono-h">Current sponsors</h2>
+      <ul class="wall" role="list">
+        {sponsors.map((s) => (
+          <li>
+            <a href={s.url} target="_blank" rel="noopener">
+              <span class="s-name">{s.name}</span>
+              <span class="s-role">{s.role}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p class="wall-note">
+        Your logo joins this wall on the events site, the Luma page, and the event recap.
+      </p>
+    </div>
+  </section>
 
-  <Section eyebrow="Ways to partner" title="What we offer">
-    <ul class="tiers">
-      {tiers.map((t) => (
-        <li>
-          <h3>{t.name}</h3>
-          <p class="dim">{t.body}</p>
-        </li>
-      ))}
-    </ul>
-  </Section>
+  <section class="sec" aria-label="Audience">
+    <div class="container">
+      <h2 class="mono-h">Who's in the room</h2>
+      <div class="two-col">
+        <div>
+          <h3>The audience</h3>
+          <dl class="pairs">
+            {audience.map((a) => (
+              <div><dt>{a.k}</dt><dd>{a.v}</dd></div>
+            ))}
+          </dl>
+        </div>
+        <div>
+          <h3>Who sponsors, and why</h3>
+          <dl class="pairs">
+            {whySponsor.map((w) => (
+              <div><dt>{w.k}</dt><dd>{w.v}</dd></div>
+            ))}
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <Section eyebrow="Interested?" title="Tell us what you have in mind">
-    <p class="dim wide">
-      Drop a line with what you're offering (venue, food, API or compute credits, a hackathon
-      challenge, or a multi-event partnership), which city, and the timeframe. We'll reply within
-      a few days.
-    </p>
-    <p>
-      <a class="btn" href="mailto:info@theairuntime.com?subject=Sponsorship%20interest">info@theairuntime.com</a>
-    </p>
-  </Section>
+  <section class="sec" id="events" aria-label="Past events">
+    <div class="container">
+      <h2 class="mono-h">Events we've run</h2>
+      <ul class="events" role="list">
+        {pastEvents.map((e) => {
+          const photo = e.data.cover || e.data.recapPhotos[0]?.src;
+          const alt = e.data.recapPhotos[0]?.alt || `${e.data.title} at The AI Runtime Boston`;
+          const talks = talkItems(e.data.agenda);
+          const slug = e.slug.replace(/^boston\//, '');
+          return (
+            <li class="event-card">
+              {photo && (
+                <a href={`/boston/${slug}`} class="photo-link">
+                  <img src={photo} alt={alt} width="640" height="427" loading="lazy" />
+                </a>
+              )}
+              <div class="event-body">
+                <p class="event-meta">
+                  {monthYear(e.data.date)}
+                  {e.data.attendance && <span> · {e.data.attendance} attendees</span>}
+                </p>
+                <h3><a href={`/boston/${slug}`}>{e.data.title}</a></h3>
+                {talks.length > 0 && (
+                  <ul class="talks">
+                    {talks.map((t) => <li>{t}</li>)}
+                  </ul>
+                )}
+                <p class="credit">Made possible by {creditLine(e.data.partners)}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" aria-label="Partnership formats">
+    <div class="container">
+      <h2 class="mono-h">Ways to partner</h2>
+      <ul class="formats" role="list">
+        {formats.map((f) => (
+          <li class="format-card">
+            <h3>{f.name}</h3>
+            <p class="what">{f.what}</p>
+            <ul class="gets">
+              {f.gets.map((g) => <li>{g}</li>)}
+            </ul>
+            <p class="anchor">{f.anchor}</p>
+          </li>
+        ))}
+      </ul>
+      <p class="one-per">We take one food-and-drinks sponsor per event.</p>
+    </div>
+  </section>
+
+  {testimonials.length > 0 && (
+    <section class="sec" aria-label="Testimonials">
+      <div class="container">
+        <h2 class="mono-h">What people say</h2>
+        <ul class="quotes" role="list">
+          {testimonials.map((t) => (
+            <li>
+              <blockquote>
+                <p>{t.quote}</p>
+                <footer>{t.name}, {t.role}, {t.company}</footer>
+              </blockquote>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <section class="sec" id="interest" aria-label="Interest form">
+    <div class="container">
+      <h2 class="mono-h">Start a conversation</h2>
+      <p class="form-lead">Tell us what you have in mind. We reply within a week.</p>
+
+      <form id="sponsor-form" class="sponsor-form" novalidate>
+        <div class="row">
+          <label>
+            <span>Name</span>
+            <input type="text" name="name" required autocomplete="name" />
+          </label>
+          <label>
+            <span>Work email</span>
+            <input type="email" name="email" required autocomplete="email" />
+          </label>
+        </div>
+        <label>
+          <span>Company</span>
+          <input type="text" name="company" required autocomplete="organization" />
+        </label>
+
+        <fieldset>
+          <legend>What are you interested in?</legend>
+          <div class="checks">
+            {formats.map((f) => (
+              <label class="check">
+                <input type="checkbox" name="interest" value={f.name} />
+                <span>{f.name}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <label>
+          <span>Budget range <em>(optional)</em></span>
+          <select name="budget">
+            <option value="">Prefer not to say yet</option>
+            <option>Under $1,500</option>
+            <option>$1,500 to $3,000</option>
+            <option>$3,000 to $10,000</option>
+            <option>$10,000+</option>
+            <option>In-kind (venue, credits, tooling)</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Anything else?</span>
+          <textarea name="message" rows="4"></textarea>
+        </label>
+
+        <button class="btn" type="submit">Send</button>
+        <p class="form-status" role="status" aria-live="polite"></p>
+      </form>
+
+      <p class="fallback">
+        Prefer email? Write to <a href={`mailto:${CONTACT}?subject=Sponsorship%20interest`}>{CONTACT}</a>.
+      </p>
+      <p class="referral">
+        Know a company that should be here? Intro us and we'll credit you publicly.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec" aria-label="FAQ">
+    <div class="container">
+      <h2 class="mono-h">FAQ</h2>
+      <dl class="faq">
+        {faqs.map((f) => (
+          <div>
+            <dt>{f.q}</dt>
+            <dd>{f.a}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
 </BaseLayout>
 
+<script>
+  const form = document.getElementById('sponsor-form') as HTMLFormElement | null;
+  if (form) {
+    const status = form.querySelector('.form-status') as HTMLElement;
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const data = new FormData(form);
+      const interests = data.getAll('interest').join(', ');
+      const name = String(data.get('name') ?? '').trim();
+      const email = String(data.get('email') ?? '').trim();
+      const company = String(data.get('company') ?? '').trim();
+      if (!name || !email || !company) {
+        status.textContent = 'Name, work email, and company are required.';
+        return;
+      }
+      status.textContent = 'Sending…';
+      try {
+        const res = await fetch('/api/intake', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            branch: 'partner',
+            name,
+            email,
+            company,
+            partner_type: interests || 'unspecified',
+            contribution: String(data.get('budget') ?? ''),
+            note: String(data.get('message') ?? ''),
+          }),
+        });
+        if (res.ok) {
+          form.querySelectorAll('input, select, textarea, button').forEach((el) => {
+            (el as HTMLInputElement).disabled = true;
+          });
+          status.textContent = 'Got it. We reply within a week.';
+        } else {
+          status.textContent = 'Could not send just now. Email info@theairuntime.com instead.';
+        }
+      } catch {
+        status.textContent = 'Could not send just now. Email info@theairuntime.com instead.';
+      }
+    });
+  }
+</script>
+
 <style>
-  .lead { max-width: 42rem; }
-
-  /* Horizontal logo strip at the top, conventional sponsors layout */
-  .logos-strip {
-    list-style: none;
-    padding: 1.25rem;
-    margin: 0 0 2rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2.5rem;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+  .hero { padding: 4rem 0 2.5rem; }
+  /* Keep the stats strip above the fold on small screens. */
+  @media (max-width: 40rem) {
+    .hero { padding: 1.75rem 0 1.5rem; }
+    .hero h1 { font-size: 1.5rem; margin-bottom: 0.6rem; }
+    .sub { font-size: 0.98rem; margin-bottom: 1.1rem; }
+    .eyebrow { margin-bottom: 0.6rem; }
   }
-  .logos-strip li { display: flex; align-items: center; }
-  .logos-strip a {
-    display: inline-flex;
-    align-items: center;
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 1rem;
+  }
+  .hero h1 { max-width: 22ch; margin: 0 0 1rem; }
+  .sub { max-width: 42rem; color: var(--text-2); font-size: 1.12rem; margin: 0 0 1.75rem; }
+  .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; margin: 0; }
+  .see-past { font-family: var(--font-mono); font-size: 0.9rem; }
+
+  .btn {
+    display: inline-block;
+    padding: 0.7rem 1.3rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 600;
     text-decoration: none;
-    color: var(--text);
-    transition: opacity 140ms ease;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
   }
-  .logos-strip a:hover { opacity: 0.7; text-decoration: none; }
-  .logos-strip .wordmark {
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 1.4rem;
-    letter-spacing: -0.01em;
-    color: var(--text);
-    padding: 0.4rem 0.85rem;
-    border-left: 3px solid var(--accent);
-  }
+  .btn:hover { filter: brightness(0.92); text-decoration: none; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .grid {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+  /* The signature element: big mono numerals, thin rules between items. */
+  .stats { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-2); padding: 2.25rem 0; }
+  .stats ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+  .stats li {
+    flex: 1 1 10rem;
+    display: flex; flex-direction: column; gap: 0.35rem;
+    padding: 0.5rem 1.5rem;
+    border-left: 1px solid var(--border);
   }
-  .grid li {
-    padding: 1.5rem;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    transition: border-color 140ms ease;
-  }
-  .grid li:hover { border-color: var(--border-strong); }
-  .grid li.placeholder { border-style: dashed; }
-  .grid a { display: flex; flex-direction: column; text-decoration: none; color: var(--text); gap: 0.4rem; }
-  .grid .name {
+  .stats li:first-child { border-left: none; padding-left: 0; }
+  .value {
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 1.4rem;
-    letter-spacing: -0.01em;
-    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--accent);
   }
-  .grid .role {
+  .label {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-3);
   }
-  .grid p { margin: 0.75rem 0 0; }
+  .companies { justify-content: flex-end; }
+  .companies .names { font-family: var(--font-mono); font-size: 0.92rem; color: var(--text); line-height: 1.7; }
+  @media (max-width: 44rem) {
+    .stats li { flex: 1 1 40%; border-left: none; padding: 0.5rem 0; }
+  }
 
-  .tiers {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1rem;
+  .sec { padding: 3rem 0; border-top: 1px solid var(--border); scroll-margin-top: 4.5rem; }
+  .mono-h {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 0 0 1.5rem;
   }
-  .tiers li {
-    padding: 1.25rem;
-    background: var(--bg-2);
+
+  .wall { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
+  .wall a {
+    display: flex; flex-direction: column; gap: 0.45rem;
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.5rem 1.6rem;
+    text-decoration: none;
+    color: var(--text);
   }
-  .tiers h3 { font-family: var(--font-mono); margin-bottom: 0.4rem; }
-  .wide { max-width: 42rem; }
+  .wall a:hover { border-color: var(--border-strong); text-decoration: none; }
+  .s-name { font-family: var(--font-mono); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.01em; }
+  .s-role {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-3);
+  }
+  .wall-note { margin: 1.25rem 0 0; color: var(--text-2); font-size: 0.95rem; }
+
+  .two-col { display: grid; gap: 2.5rem; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); }
+  .two-col h3 { font-family: var(--font-mono); font-size: 1rem; margin: 0 0 1rem; }
+  .pairs { margin: 0; display: grid; gap: 0.9rem; }
+  .pairs dt { font-weight: 600; color: var(--text); }
+  .pairs dd { margin: 0.15rem 0 0; color: var(--text-2); font-size: 0.95rem; }
+
+  .events { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); }
+  .event-card { border: 1px solid var(--border); background: var(--bg-2); display: flex; flex-direction: column; }
+  .photo-link { display: block; line-height: 0; border-bottom: 1px solid var(--border); }
+  .event-card img { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; display: block; }
+  .event-body { padding: 1.2rem 1.4rem 1.4rem; }
+  .event-meta { font-family: var(--font-mono); font-size: 0.76rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin: 0 0 0.4rem; }
+  .event-body h3 { margin: 0 0 0.6rem; font-size: 1.1rem; font-family: var(--font-mono); }
+  .event-body h3 a { color: var(--text); text-decoration: none; }
+  .event-body h3 a:hover { color: var(--accent); }
+  .talks { margin: 0; padding-left: 1.1rem; }
+  .talks li { color: var(--text-2); font-size: 0.92rem; margin: 0.25rem 0; }
+  .credit { margin: 0.9rem 0 0; font-size: 0.85rem; color: var(--text-3); }
+
+  .formats { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+  .format-card { border: 1px solid var(--border); background: var(--bg-2); padding: 1.4rem 1.5rem; display: flex; flex-direction: column; }
+  .format-card h3 { font-family: var(--font-mono); font-size: 1.02rem; margin: 0 0 0.5rem; }
+  .what { margin: 0 0 0.8rem; color: var(--text-2); font-size: 0.93rem; }
+  .gets { margin: 0 0 1rem; padding: 0; list-style: none; display: grid; gap: 0.3rem; }
+  .gets li {
+    font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-2);
+    padding-left: 1rem; position: relative;
+  }
+  .gets li::before { content: '+'; position: absolute; left: 0; color: var(--accent); }
+  .anchor { margin: auto 0 0; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; color: var(--text); }
+  .one-per { margin: 1.25rem 0 0; color: var(--text-2); font-size: 0.95rem; }
+
+  .quotes { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+  .quotes blockquote { margin: 0; border: 1px solid var(--border); background: var(--bg-2); padding: 1.3rem 1.4rem; }
+  .quotes footer { margin-top: 0.7rem; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-3); }
+
+  .form-lead { max-width: 42rem; color: var(--text-2); margin: 0 0 1.5rem; }
+  .sponsor-form { max-width: 40rem; display: grid; gap: 1.1rem; }
+  .sponsor-form .row { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+  .sponsor-form label { display: grid; gap: 0.35rem; }
+  .sponsor-form label > span { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text); }
+  .sponsor-form label em { color: var(--text-3); font-style: normal; }
+  .sponsor-form input, .sponsor-form select, .sponsor-form textarea {
+    font: inherit;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border-strong, var(--border));
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+  }
+  .sponsor-form input:focus-visible, .sponsor-form select:focus-visible,
+  .sponsor-form textarea:focus-visible, .check input:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+  }
+  fieldset { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.9rem 1rem 1rem; margin: 0; }
+  legend { font-family: var(--font-mono); font-size: 0.8rem; padding: 0 0.4rem; }
+  .checks { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  .check { display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.93rem; color: var(--text-2); }
+  .check input { accent-color: var(--accent); }
+  .sponsor-form button { justify-self: start; }
+  .form-status { margin: 0; font-family: var(--font-mono); font-size: 0.9rem; color: var(--text); min-height: 1.3em; }
+  .fallback { margin: 1.5rem 0 0; color: var(--text-2); font-size: 0.95rem; }
+  .referral { margin: 0.5rem 0 0; color: var(--text-3); font-size: 0.9rem; }
+
+  .faq { margin: 0; max-width: 44rem; display: grid; gap: 1.25rem; }
+  .faq dt { font-weight: 600; color: var(--text); }
+  .faq dd { margin: 0.3rem 0 0; color: var(--text-2); font-size: 0.97rem; }
 </style>

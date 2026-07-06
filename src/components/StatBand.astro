@@ -1,23 +1,15 @@
 ---
 /**
  * StatBand: a tight row of headline community numbers. Two big, honest stats
- * read stronger than several small ones. Keep these current.
+ * read stronger than several small ones. Numbers live in src/lib/stats.ts.
  */
-interface Stat {
-  value: string;
-  label: string;
-}
+import { COMMUNITY_STATS, type Stat } from '../lib/stats';
+
 interface Props {
   stats?: Stat[];
   note?: string;
 }
-const {
-  stats = [
-    { value: '2,000+', label: 'newsletter subscribers' },
-    { value: '200+', label: 'in-person attendees' },
-  ],
-  note = '',
-} = Astro.props;
+const { stats = COMMUNITY_STATS, note = '' } = Astro.props;
 ---
 <div class="statband">
   <div class="container">
