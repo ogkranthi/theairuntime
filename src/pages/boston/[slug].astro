@@ -9,6 +9,7 @@ import Section from '../../components/Section.astro';
 import ContactCTA from '../../components/ContactCTA.astro';
 import SubstackEmbed from '../../components/SubstackEmbed.astro';
 import RecapGallery from '../../components/RecapGallery.astro';
+import SponsorCTA from '../../components/SponsorCTA.astro';
 import AudioOverview from '../../components/AudioOverview.astro';
 import JsonLd from '../../components/JsonLd.astro';
 import { breadcrumbList } from '../../lib/breadcrumbs';
@@ -187,6 +188,8 @@ const breadcrumbSchema = breadcrumbList(
   </Section>
 
   <Section><ContactCTA /></Section>
+
+  {event.data.status === 'past' && <SponsorCTA partners={event.data.partners} />}
 </BaseLayout>
 
 <style>
