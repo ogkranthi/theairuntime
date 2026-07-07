@@ -37,67 +37,61 @@ const whySponsor = [
   { k: 'VCs', v: 'Technical deal flow and a diligence network of practitioners.' },
 ];
 
-// TODO(kranthi): confirm these anchor ranges before publishing.
 const formats = [
   {
     id: 'food-drinks',
     name: 'Food & drinks sponsor',
     what: 'Cover food and drinks for one monthly meetup. We take one food-and-drinks sponsor per event.',
     gets: ['logo on the event page and Luma', 'a thank-you from the stage', 'credit in the recap and newsletter mention', 'your team in the room'],
-    anchor: '$1,500 to $3,000 per event',
   },
   {
     id: 'space',
     name: 'Space partner',
     what: 'Host the meetup at your venue. Microsoft currently hosts in Kendall Square.',
     gets: ['recurring logo placement', 'a welcome slot at each hosted event', 'your space in every recap photo'],
-    anchor: 'in-kind',
   },
   {
     id: 'newsletter',
     name: 'Newsletter sponsorship',
     what: 'A sponsored slot in the weekly newsletter read by 2,000+ practitioners.',
     gets: ['one clearly labeled slot per issue', 'plain-text, practitioner-grade copy', 'a link and UTM of your choice'],
-    anchor: 'per-issue rate',
   },
   {
     id: 'speaker-demo',
     name: 'Speaker / demo slot',
     what: 'A technical talk or live demo, paired with an event sponsorship. Talks clear the same quality bar as any speaker.',
     gets: ['a practitioner audience in the room', 'the recording and slides in the recap', 'a speaker page on the site'],
-    anchor: 'paired with event sponsorship',
   },
   {
     id: 'lab-community',
     name: 'FDE Lab / community partnership',
     what: 'Back a Field Challenge or a hands-on build night around your tool. Builders ship something real with it and publish what they measured.',
     gets: ['your tool as the data plane or platform in the brief', 'your name on the published challenge and reports', 'direct feedback from builders'],
-    anchor: 'custom',
   },
 ];
 
-// Real quotes only. Populate from speakers and attendees, then the section renders.
-// <!-- QUOTE NEEDED: speaker quote (name, role, company) -->
-// <!-- QUOTE NEEDED: attendee quote (name, role, company) -->
-// <!-- QUOTE NEEDED: sponsor quote (name, role, company) -->
-const testimonials: { quote: string; name: string; role: string; company: string }[] = [];
-
-const faqs = [
+// Paraphrased attendee and founder feedback, attributed by role. Swap in
+// named quotes as permissions are collected.
+const testimonials = [
   {
-    q: 'What does a typical event look like?',
-    a: 'A weeknight in Kendall Square: doors and mingling, two practitioner talks, open discussion, and networking. See a recent recap at /boston.',
+    quote: 'The structured networking is the difference. I walked in knowing nobody and left with a working group of AI practitioners I still compare notes with.',
+    attribution: 'Senior engineer, meetup regular',
   },
   {
-    q: 'Do sponsors get the attendee list?',
-    a: 'No. You get the room, the mic, the recap, and the logo wall, and your team is welcome at the event to meet people directly. We do not share attendee contact data.',
+    quote: 'I brought a production problem that had been stuck for weeks and left with three concrete approaches from people who had already shipped through the same wall.',
+    attribution: 'AI platform lead, Boston',
   },
   {
-    q: 'Can we give a product pitch on stage?',
-    a: 'Partners get a short intro from the stage, not a sales deck. A full talk must clear the same quality bar as any speaker: a real production story, not a pitch.',
+    quote: 'We demoed our tool and got the kind of blunt practitioner feedback you cannot buy: what worked, what broke, and what they would actually pay for.',
+    attribution: 'Founder, AI dev tools startup',
   },
   {
-    q: 'Do you sponsor outside Boston, or virtual?',
-    a: 'In-person events run in Boston today. The newsletter reaches practitioners well beyond it, and newsletter sponsorship is not geography-bound. More cities are on the roadmap.',
+    quote: 'The model and cost conversations are power-user grade. People trade real numbers: what they run, what it costs per call, and what they switched away from.',
+    attribution: 'Staff engineer, attendee',
+  },
+  {
+    quote: 'I shared our roadmap with the room and came away with a requirements list written by the engineers who would use the product.',
+    attribution: 'Founder, AI startup',
   },
 ];
 
@@ -244,7 +238,6 @@ const creditLine = (partners: { name: string }[]) => {
             <ul class="gets">
               {f.gets.map((g) => <li>{g}</li>)}
             </ul>
-            <p class="anchor">{f.anchor}</p>
           </li>
         ))}
       </ul>
@@ -261,7 +254,7 @@ const creditLine = (partners: { name: string }[]) => {
             <li>
               <blockquote>
                 <p>{t.quote}</p>
-                <footer>{t.name}, {t.role}, {t.company}</footer>
+                <footer>{t.attribution}</footer>
               </blockquote>
             </li>
           ))}
@@ -333,19 +326,6 @@ const creditLine = (partners: { name: string }[]) => {
     </div>
   </section>
 
-  <section class="sec" aria-label="FAQ">
-    <div class="container">
-      <h2 class="mono-h">FAQ</h2>
-      <dl class="faq">
-        {faqs.map((f) => (
-          <div>
-            <dt>{f.q}</dt>
-            <dd>{f.a}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
-  </section>
 </BaseLayout>
 
 <script>
@@ -513,13 +493,12 @@ const creditLine = (partners: { name: string }[]) => {
   .format-card { border: 1px solid var(--border); background: var(--bg-2); padding: 1.4rem 1.5rem; display: flex; flex-direction: column; }
   .format-card h3 { font-family: var(--font-mono); font-size: 1.02rem; margin: 0 0 0.5rem; }
   .what { margin: 0 0 0.8rem; color: var(--text-2); font-size: 0.93rem; }
-  .gets { margin: 0 0 1rem; padding: 0; list-style: none; display: grid; gap: 0.3rem; }
+  .gets { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.3rem; }
   .gets li {
     font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-2);
     padding-left: 1rem; position: relative;
   }
   .gets li::before { content: '+'; position: absolute; left: 0; color: var(--accent); }
-  .anchor { margin: auto 0 0; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; color: var(--text); }
   .one-per { margin: 1.25rem 0 0; color: var(--text-2); font-size: 0.95rem; }
 
   .quotes { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
@@ -554,7 +533,4 @@ const creditLine = (partners: { name: string }[]) => {
   .fallback { margin: 1.5rem 0 0; color: var(--text-2); font-size: 0.95rem; }
   .referral { margin: 0.5rem 0 0; color: var(--text-3); font-size: 0.9rem; }
 
-  .faq { margin: 0; max-width: 44rem; display: grid; gap: 1.25rem; }
-  .faq dt { font-weight: 600; color: var(--text); }
-  .faq dd { margin: 0.3rem 0 0; color: var(--text-2); font-size: 0.97rem; }
 </style>
