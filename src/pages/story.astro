@@ -10,61 +10,68 @@ import { LAB_URL } from '../lib/field-briefs';
 ---
 <BaseLayout
   title="Our Story · The AI Runtime"
-  description="How The AI Runtime began and where it is going: a practitioner-first community shipping AI to production, a weekly newsletter, monthly meetups in Boston, and the Field Lab."
+  description="Why The AI Runtime exists: learning AI is a moving target, so we built a learning loop instead of a curriculum. A weekly newsletter, monthly Boston meetups, and the Field Lab."
 >
   <Section eyebrow="Our story">
     <div class="hero">
       <div>
-        <h1>A home for AI practitioners shipping to production</h1>
+        <h1>Built for a field that refuses to sit still</h1>
         <p class="lede dim">
-          The AI Runtime is the operational layer where AI actually runs, and the community building
-          it. This is how it started, what we believe, and where it is going.
+          The AI Runtime exists because learning AI is not a course you finish. It is a loop you run:
+          learn from people in production, ship something real, run it, repeat.
         </p>
       </div>
       <div class="art"><Blink size={140} showMotion={true} showCheeks={true} /></div>
     </div>
   </Section>
 
-  <Section eyebrow="The beginning" title="Between the model and the product">
+  <Section eyebrow="The problem" title="AI knowledge has a half-life">
     <div class="prose">
       <p>
-        The AI Runtime started with a simple frustration. Most AI writing was hype, vendor pitches,
-        and speculation about the future, while the hard part, getting AI to run reliably in
-        production, went undocumented. So it began as a free weekly newsletter for practitioners:
-        specific, sourced, and anti-hype. The kind of issue you forward to your team.
+        Every other engineering discipline lets you build on what you learned last year. AI does not.
+        Models change under you, best practices flip between releases, and the patterns that matter
+        show up in production months before they show up in any course. There is no curriculum to
+        finish, because the curriculum is still being discovered by whoever is shipping right now.
       </p>
       <p>
-        It grew from there. Practitioners in Boston wanted to meet the people behind the work, so the
-        newsletter became a monthly meetup in Cambridge: two practitioner talks a night, real
-        production stories, no slideware. Then builders wanted to do the work, not just read about it,
-        and the Field Lab followed, with production-shaped problems you can actually ship. The AI
-        Runtime is now a community that reads, meets, and builds together.
+        Most AI content makes this worse. Hype, vendor pitches, and speculation age even faster than
+        the tools they cover. Meanwhile the durable part, how AI actually behaves in front of real
+        users, real data, and real failure modes, goes undocumented.
+      </p>
+    </div>
+  </Section>
+
+  <Section eyebrow="Our answer" title="A learning loop, not a curriculum">
+    <div class="prose">
+      <p>
+        The only way to stay current in a field that keeps rewriting itself is to learn continuously
+        from the people running it in production, then close the loop yourself: ship something, run
+        it, and let what breaks teach you what no tutorial can. The AI Runtime is that loop, built as
+        a community.
       </p>
       <p>
-        It was founded by Kranthi Manchikanti, an AI Architect at Microsoft based in Boston, and it is
-        built with the practitioners who show up.
+        You <strong>learn</strong> from the weekly newsletter: specific, sourced production lessons on
+        evals, agents, inference, reliability, and cost. You <strong>meet</strong> the people behind
+        the work at the monthly Boston meetup: two practitioner talks a night, honest production
+        stories, no slideware. And you <strong>build</strong> in the Field Lab: production-shaped
+        problems you ship against a public reliability bar, so the lesson is yours, not borrowed.
+      </p>
+      <p>
+        The AI Runtime was founded by Kranthi Manchikanti, an AI Architect at Microsoft based in
+        Boston, and it is built with the practitioners who show up.
       </p>
     </div>
   </Section>
 
   <StatBand />
 
-  <Section eyebrow="Our philosophy" title="Practitioner-first, anti-hype">
-    <div class="prose">
-      <p>
-        We believe the most valuable AI skill is shipping it reliably, not talking about it. The
-        operational layer, evals, agents, inference, reliability, and cost, is where AI systems
-        actually earn their keep, and where the real lessons live.
-      </p>
-    </div>
-  </Section>
-
   <Section eyebrow="Why &quot;Runtime&quot;" title="We cover where AI runs, not where it is hyped">
     <div class="prose">
       <p>
         The name is the filter. A runtime is the layer where software actually executes, and that is
         exactly where we focus: the production systems where AI meets real users, real data, and real
-        failure modes.
+        failure modes. That layer is where the lessons keep their value long after the release cycle
+        moves on.
       </p>
       <p>
         So we deliberately skip what fills most feeds: vendor pitches, frontier-model release coverage,
@@ -75,25 +82,15 @@ import { LAB_URL } from '../lib/field-briefs';
     </div>
   </Section>
 
-  <Section eyebrow="In the room" title="A community of people who ship">
-    <div class="prose">
-      <p>
-        The AI Runtime Boston meets monthly in Cambridge. Two practitioner talks a night, honest
-        production stories, and the people who actually ship sitting in the same room. The newsletter
-        reaches practitioners at the companies building real AI systems.
-      </p>
-    </div>
-  </Section>
-
   <CredibilityStrip />
 
-  <Section eyebrow="What is next" title="Where it is going">
+  <Section eyebrow="The mission" title="A durable home in a field that is not">
     <div class="prose">
       <p>
-        The mission is a durable home for AI practitioners: a newsletter you trust, a meetup worth the
-        commute, and a Field Lab where the community ships real work. The Field Lab is growing its
-        library of production-shaped problems, the meetup is built to expand city by city, and
-        everything stays free and practitioner-first.
+        The tools will keep changing. The loop will not. The mission is a home where AI practitioners
+        keep learning for as long as the field keeps moving: a newsletter you trust, a meetup worth
+        the commute, a Field Lab where the community ships real work, expanding city by city, free
+        and practitioner-first.
       </p>
       <p class="motto">LEARN. SHIP. RUN.</p>
     </div>
