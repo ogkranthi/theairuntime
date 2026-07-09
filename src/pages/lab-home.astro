@@ -1,98 +1,400 @@
 ---
 import LabLayout from '../layouts/LabLayout.astro';
 import CTAButtons from '../components/lab/CTAButtons.astro';
-import { REFERENCE_REPORT_URL } from '../lib/lab-links';
+import {
+  CHALLENGE_REPO_URL,
+  REFERENCE_REPORT_URL,
+  SUBMIT_ISSUE_URL,
+  SUBSCRIBE_URL,
+} from '../lib/lab-links';
 
-const steps = [
-  'Brief and frozen rubric',
-  'Build and score against public labels',
-  'Publish a Field Report',
+const stats = [
+  { value: '6', label: 'planned engagements' },
+  { value: '1', label: 'shared client' },
+  { value: 'Public', label: 'golden labels' },
+  { value: 'None', label: 'hidden test sets' },
+];
+
+const ships = [
+  {
+    name: 'The brief.',
+    body: 'A client-shaped problem with business context, constraints, and a measurable acceptance bar.',
+  },
+  {
+    name: 'Public golden labels.',
+    body: 'The ground truth is open so every result can be audited.',
+  },
+  {
+    name: 'A deterministic evaluator.',
+    body: 'Same submission, same score, every run.',
+  },
+  {
+    name: 'The reference build.',
+    body: 'Built in the open by The AI Runtime, documented in a full debrief: architecture, failures, dead ends, and cost per unit of accuracy.',
+  },
+];
+
+const how = [
+  {
+    title: 'The brief drops.',
+    body: 'Problem, labels, evaluator, and starter repo go public. The acceptance bar is stated up front.',
+  },
+  {
+    title: 'The reference build ships in the open.',
+    body: 'The AI Runtime builds against the brief and publishes the debrief: what worked, what broke, what it cost, what changes at 10x scale. Every debrief is a newsletter long-form.',
+  },
+  {
+    title: 'Build it yourself, if you want.',
+    body: 'Fork the repo, run the evaluator, beat the reference score. File a field report as a GitHub issue: approach, score, what broke, cost. Notable builds get linked below and credited in the newsletter.',
+  },
+];
+
+const gets = [
+  {
+    name: 'A verified, public artifact.',
+    body: 'A repo with a deterministic score anyone can reproduce. The shareable proxy for expertise you usually cannot show.',
+  },
+  {
+    name: 'A field report in the record.',
+    body: 'What worked, what failed, what it cost, in a comparable format. Failures included; dead ends are the most valuable part.',
+  },
+  {
+    name: 'Credit that flows back to you.',
+    body: 'Notable builds are linked from this page and credited in The AI Runtime. The Lab makes good work legible; it does not absorb it.',
+  },
+  {
+    name: 'Six core skills under production constraints.',
+    body: 'Structured outputs, LLM-as-Judge calibration, document AI, tool use and MCP, context engineering and agent memory, agent observability.',
+  },
+];
+
+const engagements = [
+  {
+    num: '01',
+    title: 'The Regulator Is Reading Your Backlog',
+    live: true,
+    skill: 'Structured outputs and classification agents at scale',
+    body: "Meridian's consumer-complaint backlog is a regulatory exposure. Build the triage system: route CFPB complaints to product category and escalation tier, scored against public golden labels. The reference build ships with a cost report per 1,000 complaints.",
+    question: 'What did the last five points of F1 cost you?',
+  },
+  {
+    num: '02',
+    title: 'The Client Asks, "How Do We Know It’s Right?"',
+    skill: 'LLM-as-Judge and evaluation calibration',
+    body: "Meridian's risk team will not accept “the model is good.” Build an LLM-as-Judge over Engagement 01 outputs, then audit the judge itself: agreement with ground truth, position bias, verbosity bias, drift across model versions, and cases where the judge sounds confident and is wrong.",
+    question: 'When should a judge be trusted, and how do we know?',
+  },
+  {
+    num: '03',
+    title: 'Prior Authorization, With a Compliance Officer in the Room',
+    skill: 'Document AI and structured extraction',
+    body: "Meridian's health plan is drowning in prior authorization requests. Extract structured requests from fully synthetic clinical documents and route them against payer rules. No PHI. No shortcuts. Scored per field.",
+    question: 'Where does the model belong in a compliance pipeline, and where must deterministic policy own the decision?',
+  },
+  {
+    num: '04',
+    title: 'The Agent Needs to Touch Production',
+    skill: 'Tool use, MCP, and harness design',
+    body: 'Classification was the easy half. Meridian now wants the triage agent to act: pull account context, file escalations, and write back to case systems through MCP-connected tools. Build the tool layer and the harness around it, then score the same agent under two harness configurations, head to head, including across a model upgrade.',
+    question: 'How much reliability lives in the harness rather than the model?',
+  },
+  {
+    num: '05',
+    title: 'The Agent Has to Remember, and Prove It',
+    skill: 'Context engineering and agent memory',
+    body: 'A Meridian complaint lives for weeks across dozens of touches. Decide what the agent remembers, for how long, under what retention rules. Engineer the context so a long-lived case never blows the window or leaks across cases. Then instrument the agent so every run can prove it touched only authorized data and stopped when it should have.',
+    question: 'What should an auditor be able to reconstruct from an agent run?',
+  },
+  {
+    num: '06',
+    title: 'The Incident',
+    skill: 'Agent observability and LLMOps',
+    body: 'The capstone. A degraded system meets a replay of live-shaped traffic. Detect it, diagnose it, remediate it, and file the postmortem in the format regulated teams actually use.',
+    question: 'What did you detect, what did you miss, and what would have prevented it?',
+  },
+];
+
+const rules = [
+  {
+    name: 'The evaluator is the acceptance criterion.',
+    body: 'Published first, deterministic, non-negotiable.',
+  },
+  {
+    name: 'Golden labels are public.',
+    body: 'Anyone can audit any result, including the reference build.',
+  },
+  {
+    name: 'Failures are part of the record.',
+    body: 'Every debrief and field report includes the dead ends.',
+  },
+  {
+    name: 'Synthetic data where regulation demands it.',
+    body: 'The constraint is the lesson.',
+  },
+  {
+    name: 'Your build is yours.',
+    body: 'Fork the repo, beat the reference, file your report, keep the credit.',
+  },
+];
+
+const faq = [
+  {
+    q: 'How much time does a build take?',
+    a: 'The reference builds take real effort; a follow-along build runs roughly 10 to 20 hours depending on how far past the reference score you push. Everything is async. Build on your own schedule; engagements never close.',
+  },
+  {
+    q: 'Do I need to be an FDE?',
+    a: "No. The Lab is for anyone doing forward deployed work under any title: FDEs, SAs who own delivery, consultants, in-house deployment teams, applied AI engineers. The evaluator does not care about anyone's title.",
+  },
+  {
+    q: "Can I use my company's stack? Do I have to open-source my build?",
+    a: "Use any stack. A public repo is preferred, but implementation notes plus a reproducible evaluator run are accepted when your stack can't be shared. The score and the field report are the non-negotiables.",
+  },
+  {
+    q: 'Is this a leaderboard competition?',
+    a: 'No. Scores exist to make comparisons concrete, not to crown a winner. The field reports, including the failures, are the product.',
+  },
+  {
+    q: 'What does it cost?',
+    a: 'Nothing. Briefs, labels, evaluators, and reference debriefs are free and public. No signup is required to build. Subscribe to The AI Runtime only if you want briefs and debriefs delivered as they ship.',
+  },
+];
+
+const start01 = [
+  { label: 'Read the brief', href: '/01' },
+  { label: 'Clone the evaluator', href: CHALLENGE_REPO_URL, external: true },
+  { label: 'Run the reference build', href: REFERENCE_REPORT_URL, external: true },
+  { label: 'File a field report', href: SUBMIT_ISSUE_URL, external: true },
 ];
 ---
 <LabLayout
   title="The AI Runtime FDE Lab"
-  description="Field challenges and reports for AI systems tested against real deployment constraints. Not demos. Field evidence."
+  description="Field challenges for forward deployed AI practitioners: realistic briefs, open labels, deterministic evaluators, and reference builds documented failure by failure."
   canonicalPath="/"
 >
   <section class="hero">
     <div class="lab-container">
       <p class="mono-label eyebrow">The AI Runtime · FDE Lab</p>
-      <h1>Field challenges and reports for AI systems tested against real deployment constraints.</h1>
-      <p class="core">Not demos. Field evidence.</p>
+      <h1>Your best work is behind an NDA. Build the version you can show.</h1>
+      <p class="sub">
+        The AI Runtime FDE Lab is a public client for forward deployed AI work: realistic briefs,
+        open labels, deterministic evaluators, and reference builds documented failure by failure.
+      </p>
       <CTAButtons
         links={[
-          { label: 'Start Field Challenge 01', href: '/01', primary: true },
-          { label: 'Read the Reference Report', href: REFERENCE_REPORT_URL, external: true },
+          { label: 'Start Engagement 01', href: '/01', primary: true },
+          { label: 'See the engagements', href: '#engagements' },
         ]}
       />
+      <p class="chips mono-label">Free · Open labels · No signup · Reproducible scores</p>
+    </div>
+  </section>
+
+  <section class="stats-bar">
+    <div class="lab-container">
+      <ul class="stats">
+        {stats.map((s) => (
+          <li><strong>{s.value}</strong> <span>{s.label}</span></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">The problem</h2>
+      <div class="prose">
+        <h3 class="lead">Forward deployed work is invisible by design.</h3>
+        <p>
+          The best deployments happen inside client environments, behind NDAs, under production
+          pressure. The architecture is confidential. The data is protected. The postmortem is
+          privileged. The result is a field with no commons: no shared problems, no comparable
+          results, and no easy way to learn from each other's builds.
+        </p>
+        <p>
+          So the field keeps rediscovering the same lessons in private: where the model belongs,
+          where deterministic policy must own the decision, what the harness must catch, what
+          auditors will ask, what breaks when a model changes, and what the last few points of
+          quality cost.
+        </p>
+        <p>
+          Open source solved this for software libraries. It has not solved it for deployment
+          craft, because deployment craft is judgment under constraints. Judgment gets better only
+          against comparable problems. Comparable problems require a shared client.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">The shared client</h2>
+      <div class="prose">
+        <p>
+          Every engagement is a problem at <strong>Meridian</strong>, a fictional financial-services
+          and healthcare group with realistic deployment problems: auditability requirements, cost
+          ceilings, escalation paths, compliance officers, and production failure modes. Data is
+          public where possible, fully synthetic where regulation demands it.
+        </p>
+        <p>
+          Each engagement covers one core skill the field is building right now. The skill is what
+          you practice. The Meridian constraint is what makes the practice transfer.
+        </p>
+      </div>
+      <ol class="ships">
+        {ships.map((s) => (
+          <li>
+            <strong>{s.name}</strong> {s.body}
+          </li>
+        ))}
+      </ol>
+      <div class="prose">
+        <p>
+          The evaluator turns "here is my approach" into "here is my result." When two builds score
+          74 and 81 on the same labels, the conversation is about the seven points between them.
+        </p>
+      </div>
     </div>
   </section>
 
   <section class="sec">
     <div class="lab-container">
       <h2 class="mono-label">How it works</h2>
-      <ol class="steps">
-        {steps.map((s, i) => (
+      <ol class="how">
+        {how.map((h, i) => (
           <li>
             <span class="step-num">{String(i + 1).padStart(2, '0')}</span>
-            <span class="step-text">{s}</span>
-            {i < steps.length - 1 && <span class="step-arrow" aria-hidden="true">&rarr;</span>}
+            <div>
+              <strong>{h.title}</strong>
+              <p>{h.body}</p>
+            </div>
           </li>
         ))}
       </ol>
       <p class="how-note">
-        Each Field Challenge ships with a customer-shaped brief, a frozen rubric, input records, a
-        prediction schema, and a deterministic evaluator. Builders submit a Field Report, not just
-        code.
+        No registration. No cohort. No scheduled calls. The evaluator is always open, and every
+        engagement stays live after it ships.
       </p>
     </div>
   </section>
 
   <section class="sec">
     <div class="lab-container">
-      <h2 class="mono-label">Current challenge</h2>
-      <div class="challenge">
-        <h3><a href="/01">Field Challenge 01: Financial Complaint Triage</a></h3>
-        <p class="question">
-          Can an AI agent route consumer finance complaints and flag regulatory risk without missing
-          high-risk cases?
-        </p>
-        <dl class="facts">
-          <div>
-            <dt>Focus</dt>
-            <dd>high-risk recall, routing accuracy, valid evidence rate</dd>
-          </div>
-          <div>
-            <dt>Time</dt>
-            <dd>30 to 60 minutes for a mini report, 2 to 4 hours for a full Field Report</dd>
-          </div>
-          <div>
-            <dt>Note</dt>
-            <dd>the evaluator runs against example predictions with no API key in under two minutes</dd>
-          </div>
-        </dl>
-        <p class="challenge-cta"><a href="/01">View the challenge</a></p>
+      <h2 class="mono-label">What a build gets you</h2>
+      <ul class="gets">
+        {gets.map((g) => (
+          <li>
+            <span class="check" aria-hidden="true">✓</span>
+            <div><strong>{g.name}</strong> {g.body}</div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="engagements">
+    <div class="lab-container">
+      <h2 class="mono-label">The engagements</h2>
+      <p class="sec-note">
+        Engagement 01 is live. The remaining engagements show the planned arc and may change as the
+        Lab learns from each cycle.
+      </p>
+      <div class="eng-list">
+        {engagements.map((e) => (
+          <article class:list={['eng', { live: e.live }]}>
+            <header>
+              <span class="eng-num mono-label">Engagement {e.num}</span>
+              {e.live && <span class="status mono-label">Live</span>}
+            </header>
+            {e.live ? (
+              <h3><a href="/01">{e.title}</a></h3>
+            ) : (
+              <h3>{e.title}</h3>
+            )}
+            <p class="skill mono-label">Skill focus: {e.skill}</p>
+            <p class="eng-body">{e.body}</p>
+            <p class="question">
+              <span class="q-label mono-label">The debrief question</span>
+              {e.question}
+            </p>
+            {e.live && (
+              <ul class="start-links">
+                {start01.map((l) => (
+                  <li>
+                    <a href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener' : undefined}>
+                      {l.label} {l.external ? '↗' : '→'}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </article>
+        ))}
       </div>
     </div>
   </section>
 
   <section class="sec">
     <div class="lab-container">
-      <div class="public-block">
+      <h2 class="mono-label">The rules of the lab</h2>
+      <ol class="rules">
+        {rules.map((r) => (
+          <li>
+            <strong>{r.name}</strong> {r.body}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Field reports</h2>
+      <div class="prose">
         <p>
-          <strong>Everything here is public.</strong> The dataset is derived from the CFPB Consumer
-          Complaint Database, published by a US federal agency. Complaint narratives appear only when
-          the consumer opts in, and the CFPB removes personal information before publication. The
-          rubric, the 40 golden labels, the evaluator, and every Field Report are public. No
-          confidential, customer, or proprietary information is used anywhere in the lab.
+          Builds from the field, linked as they land. Beat the reference score or document an
+          instructive failure, and your report goes here.
         </p>
+        <p><a href={SUBMIT_ISSUE_URL} target="_blank" rel="noopener">File a field report ↗</a></p>
       </div>
     </div>
   </section>
 
-  <section class="sec unlock-sec">
+  <section class="sec">
     <div class="lab-container">
-      <p class="mono-label unlock">Challenge 02 unlocks after five completed Field Reports on Challenge 01.</p>
+      <h2 class="mono-label">FAQ</h2>
+      <dl class="faq">
+        {faq.map((f) => (
+          <div>
+            <dt>{f.q}</dt>
+            <dd>{f.a}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec start-sec">
+    <div class="lab-container">
+      <h2 class="mono-label">Start here</h2>
+      <ol class="start">
+        <li>
+          <strong><a href="/01">Start Engagement 01.</a></strong> Clone the repo, run the evaluator,
+          see where you stand against the reference build.
+        </li>
+        <li>
+          <strong><a href={SUBMIT_ISSUE_URL} target="_blank" rel="noopener">File a field report</a></strong>
+          when you have a score worth talking about, or a failure worth documenting.
+        </li>
+        <li>
+          <strong><a href={SUBSCRIBE_URL} target="_blank" rel="noopener">Subscribe to The AI Runtime.</a></strong>
+          Every brief and reference debrief ships there first.
+        </li>
+      </ol>
+      <p class="closer">
+        The evaluator does not care about anyone's title. Clone it, score your build, and put a
+        number next to your name.
+      </p>
     </div>
   </section>
 </LabLayout>
@@ -100,72 +402,90 @@ const steps = [
 <style>
   .hero { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); }
   .eyebrow { margin: 0 0 1rem; color: var(--accent); }
-  .hero h1 { max-width: 26ch; font-size: clamp(1.6rem, 3.6vw, 2.3rem); }
-  .core {
-    margin: 1rem 0 1.75rem;
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 1.05rem;
-    color: var(--text);
+  .hero h1 { max-width: 24ch; font-size: clamp(1.7rem, 3.8vw, 2.4rem); }
+  .sub { max-width: 44rem; margin: 1rem 0 1.75rem; color: var(--text-2); font-size: 1.05rem; line-height: 1.7; }
+  .chips { margin: 1.25rem 0 0; color: var(--text-3); }
+
+  .stats-bar { border-bottom: 1px solid var(--border); background: var(--bg-2); }
+  .stats {
+    list-style: none; margin: 0; padding: 1rem 0;
+    display: flex; flex-wrap: wrap; gap: 0.75rem 2.5rem;
   }
+  .stats li { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-2); }
+  .stats strong { color: var(--accent); font-size: 1rem; }
 
   .sec { padding: 3rem 0; border-top: 1px solid var(--border); }
   .sec h2 { margin: 0 0 1.5rem; }
+  .sec-note { max-width: 44rem; margin: -0.5rem 0 1.75rem; color: var(--text-3); font-size: 0.95rem; }
 
-  .steps {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.75rem 1rem;
-  }
-  .steps li { display: flex; align-items: baseline; gap: 1rem; }
-  .step-num { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); }
-  .step-text {
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 1.02rem;
-    color: var(--text);
-    letter-spacing: -0.01em;
-  }
-  .step-arrow { color: var(--text-3); font-size: 1.1rem; }
-  .how-note { max-width: 44rem; margin: 1.5rem 0 0; color: var(--text-2); }
+  .prose { max-width: 46rem; }
+  .prose .lead { margin: 0 0 1rem; font-size: 1.25rem; }
+  .prose p { margin: 0 0 1.1rem; color: var(--text-2); line-height: 1.75; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose strong { color: var(--text); }
+  .prose a { color: var(--accent); }
 
-  .challenge {
+  .ships {
+    max-width: 46rem; margin: 1.5rem 0; padding-left: 1.4rem;
+    display: grid; gap: 0.75rem;
+  }
+  .ships li { color: var(--text-2); line-height: 1.7; }
+  .ships strong { color: var(--text); }
+
+  .how { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.5rem; max-width: 46rem; }
+  .how li { display: flex; gap: 1.1rem; align-items: baseline; }
+  .step-num { font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent); }
+  .how strong { color: var(--text); font-family: var(--font-mono); font-size: 1rem; }
+  .how p { margin: 0.35rem 0 0; color: var(--text-2); line-height: 1.7; }
+  .how-note { max-width: 46rem; margin: 1.75rem 0 0; color: var(--text-2); }
+
+  .gets { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; max-width: 46rem; }
+  .gets li { display: flex; gap: 0.85rem; align-items: baseline; color: var(--text-2); line-height: 1.7; }
+  .gets .check { color: var(--accent); font-weight: 700; }
+  .gets strong { color: var(--text); }
+
+  .eng-list { display: grid; gap: 1.25rem; }
+  .eng {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--bg-2);
-    padding: 1.75rem 1.9rem;
+    padding: 1.6rem 1.8rem;
   }
-  .challenge h3 { margin: 0 0 0.4rem; font-size: 1.3rem; }
-  .challenge h3 a { color: var(--text); text-decoration: none; }
-  .challenge h3 a:hover { color: var(--accent); }
-  .question { margin: 0 0 1.25rem; font-size: 1.05rem; color: var(--text-2); }
-  .facts { margin: 0; display: grid; gap: 0.6rem; }
-  .facts div { display: grid; grid-template-columns: 5.5rem 1fr; gap: 1rem; align-items: baseline; }
-  .facts dt {
-    font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em;
-    text-transform: uppercase; color: var(--accent);
+  .eng.live { border-color: var(--accent); }
+  .eng header { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.5rem; }
+  .eng-num { margin: 0; color: var(--text-3); }
+  .status {
+    margin: 0; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 999px; padding: 0.1rem 0.6rem;
   }
-  .facts dd { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.6; }
-  @media (max-width: 34rem) {
-    .facts div { grid-template-columns: 1fr; gap: 0.15rem; }
+  .eng h3 { margin: 0 0 0.5rem; font-size: 1.25rem; }
+  .eng h3 a { color: var(--text); text-decoration: none; }
+  .eng h3 a:hover { color: var(--accent); }
+  .skill { margin: 0 0 0.85rem; color: var(--accent); }
+  .eng-body { margin: 0 0 1rem; color: var(--text-2); line-height: 1.7; max-width: 46rem; }
+  .question { margin: 0; max-width: 46rem; color: var(--text); line-height: 1.6; }
+  .q-label { display: block; margin-bottom: 0.2rem; color: var(--text-3); }
+  .start-links {
+    list-style: none; margin: 1.25rem 0 0; padding: 1rem 0 0;
+    border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem;
   }
-  .challenge-cta { margin: 1.25rem 0 0; font-size: 0.95rem; }
-  .challenge-cta a { color: var(--accent); }
+  .start-links a { font-family: var(--font-mono); font-size: 0.88rem; color: var(--accent); }
 
-  .public-block {
-    max-width: 46rem;
-    border-left: 3px solid var(--accent);
-    background: var(--bg-2);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    padding: 1.25rem 1.5rem;
-  }
-  .public-block p { margin: 0; color: var(--text-2); }
-  .public-block strong { color: var(--text); }
+  .rules { max-width: 46rem; margin: 0; padding-left: 1.4rem; display: grid; gap: 0.75rem; }
+  .rules li { color: var(--text-2); line-height: 1.7; }
+  .rules strong { color: var(--text); }
 
-  .unlock-sec { padding: 2rem 0 1rem; }
-  .unlock { margin: 0; }
+  .faq { margin: 0; max-width: 46rem; display: grid; gap: 1.5rem; }
+  .faq dt { font-weight: 700; color: var(--text); margin-bottom: 0.35rem; }
+  .faq dd { margin: 0; color: var(--text-2); line-height: 1.7; }
+
+  .start { max-width: 46rem; margin: 0; padding-left: 1.4rem; display: grid; gap: 0.75rem; }
+  .start li { color: var(--text-2); line-height: 1.7; }
+  .start strong { color: var(--text); }
+  .start a { color: var(--accent); }
+  .closer {
+    max-width: 46rem; margin: 1.75rem 0 0;
+    font-family: var(--font-mono); font-weight: 600; color: var(--text);
+  }
 </style>
