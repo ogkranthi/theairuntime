@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import LabLayout from '../../layouts/LabLayout.astro';
 import ReportCard from '../../components/lab/ReportCard.astro';
+import VerdictPill from '../../components/lab/VerdictPill.astro';
 import { REFERENCE_REPORT_URL } from '../../lib/lab-links';
 
 // Reference Report facts, kept in one place. Fill from the committed
@@ -18,10 +19,31 @@ const reference = {
 };
 const pending = 'in the report';
 
-const reports = (await getCollection('reports')).sort((a, b) => {
-  if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
-  return b.data.date.valueOf() - a.data.date.valueOf();
-});
+const all = await getCollection('reports');
+
+// Builder field reports (no series, or series: "field").
+const reports = all
+  .filter((r) => r.data.series !== 'readiness')
+  .sort((a, b) => {
+    const da = a.data as any;
+    const db = b.data as any;
+    if (da.featured !== db.featured) return da.featured ? -1 : 1;
+    return db.date.valueOf() - da.date.valueOf();
+  });
+
+// "Should Meridian Deploy It?" readiness reports, newest installment first.
+const readiness = all
+  .filter((r) => r.data.series === 'readiness')
+  .sort((a, b) => (b.data as any).installment - (a.data as any).installment)
+  .map((r) => {
+    const d = r.data as any;
+    return {
+      slug: r.slug,
+      installment: String(d.installment).padStart(2, '0'),
+      title: String(d.title).replace(/:\s*Should Meridian Deploy It\?$/, ''),
+      verdict: d.verdict,
+    };
+  });
 ---
 <LabLayout
   title="Field Reports · The AI Runtime FDE Lab"
@@ -65,23 +87,47 @@ const reports = (await getCollection('reports')).sort((a, b) => {
 
       {reports.length > 0 && (
         <div class="grid">
-          {reports.map((r) => (
-            <ReportCard
-              slug={r.id}
-              title={r.data.title}
-              builder_name={r.data.builder_name}
-              builder_link={r.data.builder_link}
-              lab_number={r.data.lab_number}
-              summary={r.data.summary}
-              result={r.data.result}
-              repo_url={r.data.repo_url}
-              writeup_url={r.data.writeup_url}
-            />
-          ))}
+          {reports.map((r) => {
+            const d = r.data as any;
+            return (
+              <ReportCard
+                slug={r.slug}
+                title={d.title}
+                builder_name={d.builder_name}
+                builder_link={d.builder_link}
+                lab_number={d.lab_number}
+                summary={d.summary}
+                result={d.result}
+                repo_url={d.repo_url}
+                writeup_url={d.writeup_url}
+              />
+            );
+          })}
         </div>
       )}
     </div>
   </section>
+
+  {readiness.length > 0 && (
+    <section class="sec">
+      <div class="lab-container">
+        <h2 class="mono-label">Should Meridian Deploy It?</h2>
+        <p class="col readiness-note">
+          Readiness reports for AI systems, agent runtimes, and deployment surfaces assessed through
+          an FDE lens.
+        </p>
+        <div class="readiness-list">
+          {readiness.map((r) => (
+            <a class="readiness-card" href={`/reports/${r.slug}`}>
+              <span class="mono-label r-num">Installment {r.installment}</span>
+              <span class="r-title">{r.title}</span>
+              <span class="r-verdict"><span class="mono-label r-label">Verdict</span> <VerdictPill verdict={r.verdict} /></span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 </LabLayout>
 
 <style>
@@ -117,4 +163,22 @@ const reports = (await getCollection('reports')).sort((a, b) => {
   .ref-link a { color: var(--accent); }
 
   .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); margin-top: 1.5rem; }
+
+  .readiness-note { margin: 0 0 1.5rem; color: var(--text-2); }
+  .readiness-list { display: grid; gap: 1rem; max-width: 46rem; }
+  .readiness-card {
+    display: grid;
+    gap: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.6rem;
+    text-decoration: none;
+  }
+  .readiness-card:hover { border-color: var(--accent); }
+  .r-num { margin: 0; color: var(--text-3); }
+  .r-title { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+  .readiness-card:hover .r-title { color: var(--accent); }
+  .r-verdict { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.25rem; }
+  .r-label { margin: 0; color: var(--text-3); }
 </style>

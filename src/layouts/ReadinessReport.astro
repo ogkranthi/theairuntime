@@ -1,0 +1,193 @@
+---
+import { render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import LabLayout from './LabLayout.astro';
+import VerdictPill from '../components/lab/VerdictPill.astro';
+
+interface Props {
+  report: CollectionEntry<'reports'>;
+}
+
+const { report } = Astro.props;
+const d = report.data as Extract<CollectionEntry<'reports'>['data'], { series: 'readiness' }>;
+const { Content } = await render(report);
+
+const nn = String(d.installment).padStart(2, '0');
+
+// The six rubric dimensions are fixed. Keys match the content schema.
+const DIMENSIONS = [
+  { key: 'identity_permissions', label: 'identity and permissions' },
+  { key: 'data_handling', label: 'data handling and retention' },
+  { key: 'failure_blast_radius', label: 'failure modes and blast radius' },
+  { key: 'observability', label: 'observability and debuggability' },
+  { key: 'upgrade_risk', label: 'upgrade and release risk' },
+  { key: 'operational_maturity', label: 'operational maturity' },
+] as const;
+
+// Empty ratings and notes render as dashes. No invented scores.
+const RATING_LABEL: Record<string, string> = { pass: 'PASS', gate: 'GATE', fail: 'FAIL', '': '--' };
+const rows = DIMENSIONS.map((dim) => {
+  const r = d.rubric[dim.key];
+  return { label: dim.label, rating: RATING_LABEL[r.rating] ?? '--', note: r.note || '--' };
+});
+---
+<LabLayout
+  title={`${d.title} · The AI Runtime FDE Lab`}
+  description={`An independent FDE Lab readiness assessment of ${d.subject}.`}
+  ogType="article"
+>
+  <article class="readiness">
+    <div class="lab-container">
+      <p class="back"><a href="/reports">Reports</a></p>
+
+      <p class="mono-label eyebrow">Should Meridian Deploy It? · Installment {nn}</p>
+      <h1>{d.title}</h1>
+
+      <div class="verdict-banner">
+        <VerdictPill verdict={d.verdict} />
+      </div>
+
+      <dl class="assessed mono-label">
+        <div><dt>Release or commit assessed:</dt><dd>{d.release_assessed || 'Pending'}</dd></div>
+        <div><dt>Snapshot date:</dt><dd>{d.snapshot_date || 'Pending'}</dd></div>
+      </dl>
+
+      <section class="scorecard" aria-label="Readiness rubric">
+        <h2 class="mono-label">Rubric</h2>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Dimension</th>
+              <th scope="col">Rating</th>
+              <th scope="col">Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr>
+                <td data-label="Dimension">{row.label}</td>
+                <td data-label="Rating" class="rating">{row.rating}</td>
+                <td data-label="Note">{row.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <footer class="disclaimer">
+        <p>
+          An independent AI Runtime FDE Lab assessment. Not affiliated with or endorsed by
+          {' '}{d.subject}. Security findings are reported privately through the project's
+          SECURITY.md and excluded from public reports.
+        </p>
+      </footer>
+    </div>
+  </article>
+</LabLayout>
+
+<style>
+  .readiness { padding: 3rem 0 1rem; }
+  .back { margin: 0 0 1.25rem; }
+  .back a { color: var(--accent); font-size: 0.9rem; }
+
+  .eyebrow { margin: 0 0 0.75rem; color: var(--text-3); font-variant: small-caps; }
+  h1 { max-width: 28ch; margin: 0; }
+
+  .verdict-banner { margin: 1.25rem 0 0; }
+
+  .assessed { margin: 1.25rem 0 0; display: grid; gap: 0.35rem; }
+  .assessed div { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; }
+  .assessed dt { color: var(--text-3); }
+  .assessed dd { margin: 0; color: var(--text); }
+
+  .scorecard { margin: 2.5rem 0 0; }
+  .scorecard h2 { margin: 0 0 1rem; }
+  .scorecard table { width: 100%; border-collapse: collapse; }
+  .scorecard th {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-align: left;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .scorecard td {
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    vertical-align: top;
+  }
+  .scorecard td.rating { font-family: var(--font-mono); font-weight: 700; color: var(--text); white-space: nowrap; }
+  .scorecard tbody tr:nth-child(odd) { background: var(--bg-2); }
+
+  /* At narrow widths the scorecard stacks into card-like blocks. */
+  @media (max-width: 480px) {
+    .scorecard thead { display: none; }
+    .scorecard table, .scorecard tbody, .scorecard tr, .scorecard td { display: block; width: 100%; }
+    .scorecard tr {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin: 0 0 0.75rem;
+      padding: 0.35rem 0;
+    }
+    .scorecard td { border-bottom: 0; padding: 0.35rem 0.9rem; }
+    .scorecard td::before {
+      content: attr(data-label);
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 0.15rem;
+    }
+  }
+
+  .prose { max-width: 44rem; margin: 2.5rem 0 0; }
+
+  /* Markdown tables in the body match the scorecard style and stay legible
+     at 360px by scrolling inside their own box. */
+  .prose :global(table) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+  }
+  .prose :global(th) {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-align: left;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .prose :global(td) {
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .prose :global(tbody tr:nth-child(odd)) { background: var(--bg-2); }
+
+  .disclaimer {
+    max-width: 44rem;
+    margin: 3rem 0 0;
+    border-top: 1px solid var(--border);
+    padding-top: 1.25rem;
+  }
+  .disclaimer p { margin: 0; color: var(--text-3); font-size: 0.88rem; line-height: 1.7; }
+</style>
