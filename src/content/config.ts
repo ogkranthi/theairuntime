@@ -186,9 +186,36 @@ const labs = defineCollection({
   }),
 });
 
-const reports = defineCollection({
-  type: 'content',
-  schema: z.object({
+// A rubric dimension on a readiness report. An empty rating means "not yet
+// assessed" and renders as dashes; scores are never invented.
+const ratingSchema = z.object({
+  rating: z.enum(['', 'pass', 'gate', 'fail']),
+  note: z.string().default(''),
+});
+
+// Readiness reports: the "Should Meridian Deploy It?" series. One markdown
+// file per installment; the layout, rubric shape, and verdict pill are fixed.
+const readinessReportSchema = z.object({
+  series: z.enum(['readiness']),
+  installment: z.number(),
+  subject: z.string(), // "OpenClaw"
+  title: z.string(),
+  release_assessed: z.string().default(''), // renders "Pending" when empty
+  snapshot_date: z.string().default(''), // renders "Pending" when empty
+  verdict: z.enum(['in-progress', 'go', 'no-go', 'conditional']),
+  rubric: z.object({
+    identity_permissions: ratingSchema,
+    data_handling: ratingSchema,
+    failure_blast_radius: ratingSchema,
+    observability: ratingSchema,
+    upgrade_risk: ratingSchema,
+    operational_maturity: ratingSchema,
+  }),
+});
+
+// Field reports: a builder's teardown of a Field Challenge build.
+const fieldReportSchema = z.object({
+    series: z.literal('field').optional(), // absent on existing files; narrows the union
     title: z.string(),
     builder_name: z.string(),
     builder_link: z.string().url().optional(), // GitHub or LinkedIn, builder owns the proof
@@ -200,7 +227,13 @@ const reports = defineCollection({
     date: z.coerce.date(),
     featured: z.boolean().default(false),
     og_image: z.string().optional(),
-  }),
+});
+
+// One collection, two report shapes. Readiness first: it has the required
+// `series` discriminator, so field reports (no `series`) fall through cleanly.
+const reports = defineCollection({
+  type: 'content',
+  schema: z.union([readinessReportSchema, fieldReportSchema]),
 });
 
 // Field Notes: async interviews with people doing FDE-shaped work (forward

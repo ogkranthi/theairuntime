@@ -15,7 +15,7 @@ export const GET: APIRoute = async () => {
     `${LAB}/about/`,
     `${LAB}/reports/`,
     ...labs.map((l) => `${LAB}/${String(l.data.number).padStart(2, '0')}/`),
-    ...reports.map((r) => `${LAB}/reports/${r.id}/`),
+    ...reports.map((r) => `${LAB}/reports/${r.slug}/`),
   ];
 
   const body =

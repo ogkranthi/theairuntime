@@ -1,6 +1,8 @@
 ---
+import { getCollection } from 'astro:content';
 import LabLayout from '../layouts/LabLayout.astro';
 import CTAButtons from '../components/lab/CTAButtons.astro';
+import VerdictPill from '../components/lab/VerdictPill.astro';
 import {
   CHALLENGE_REPO_URL,
   REFERENCE_REPORT_URL,
@@ -159,6 +161,21 @@ const faq = [
     a: 'Nothing. Briefs, labels, evaluators, and reference debriefs are free and public. No signup is required to build. Subscribe to The AI Runtime only if you want briefs and debriefs delivered as they ship.',
   },
 ];
+
+// "Should Meridian Deploy It?" readiness reports, newest installment first.
+// A new installment is one new markdown file; this section picks it up.
+const readiness = (await getCollection('reports'))
+  .filter((r) => r.data.series === 'readiness')
+  .sort((a, b) => (b.data as any).installment - (a.data as any).installment)
+  .map((r) => {
+    const d = r.data as any;
+    return {
+      slug: r.slug,
+      installment: String(d.installment).padStart(2, '0'),
+      title: String(d.title).replace(/:\s*Should Meridian Deploy It\?$/, ''),
+      verdict: d.verdict,
+    };
+  });
 
 const start01 = [
   { label: 'Read the brief', href: '/01' },
@@ -360,6 +377,27 @@ const start01 = [
     </div>
   </section>
 
+  {readiness.length > 0 && (
+    <section class="sec">
+      <div class="lab-container">
+        <h2 class="mono-label">Should Meridian Deploy It?</h2>
+        <p class="sec-note">
+          Readiness reports for AI systems, agent runtimes, and deployment surfaces assessed through
+          an FDE lens.
+        </p>
+        <div class="readiness-list">
+          {readiness.map((r) => (
+            <a class="readiness-card" href={`/reports/${r.slug}`}>
+              <span class="mono-label r-num">Installment {r.installment}</span>
+              <span class="r-title">{r.title}</span>
+              <span class="r-verdict"><span class="mono-label r-label">Verdict</span> <VerdictPill verdict={r.verdict} /></span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
   <section class="sec">
     <div class="lab-container">
       <h2 class="mono-label">FAQ</h2>
@@ -475,6 +513,23 @@ const start01 = [
   .rules { max-width: 46rem; margin: 0; padding-left: 1.4rem; display: grid; gap: 0.75rem; }
   .rules li { color: var(--text-2); line-height: 1.7; }
   .rules strong { color: var(--text); }
+
+  .readiness-list { display: grid; gap: 1rem; max-width: 46rem; }
+  .readiness-card {
+    display: grid;
+    gap: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.6rem;
+    text-decoration: none;
+  }
+  .readiness-card:hover { border-color: var(--accent); }
+  .r-num { margin: 0; color: var(--text-3); }
+  .r-title { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+  .readiness-card:hover .r-title { color: var(--accent); }
+  .r-verdict { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.25rem; }
+  .r-label { margin: 0; color: var(--text-3); }
 
   .faq { margin: 0; max-width: 46rem; display: grid; gap: 1.5rem; }
   .faq dt { font-weight: 700; color: var(--text); margin-bottom: 0.35rem; }

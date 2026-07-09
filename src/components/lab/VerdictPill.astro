@@ -1,0 +1,33 @@
+---
+// The verdict pill for "Should Meridian Deploy It?" readiness reports.
+// One source of truth for label and style, reused on the report page and hub cards.
+interface Props {
+  verdict: 'in-progress' | 'go' | 'no-go' | 'conditional';
+}
+const { verdict } = Astro.props;
+const VERDICTS = {
+  'in-progress': { label: 'IN THE SANDBOX', cls: 'v-progress' },
+  go: { label: 'GO', cls: 'v-go' },
+  'no-go': { label: 'NO-GO', cls: 'v-nogo' },
+  conditional: { label: 'CONDITIONAL', cls: 'v-conditional' },
+} as const;
+const v = VERDICTS[verdict];
+---
+<span class:list={['pill', v.cls]}>{v.label}</span>
+
+<style>
+  .pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .v-progress { color: var(--text-3); border: 1px solid var(--text-3); }
+  .v-go { color: var(--accent); border: 1px solid var(--accent); }
+  .v-nogo { color: var(--bg); background: var(--accent); border: 1px solid var(--accent); }
+  .v-conditional { color: var(--accent); border: 1px dashed var(--accent); }
+</style>

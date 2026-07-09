@@ -1,42 +1,55 @@
 ---
 import { getCollection, render } from 'astro:content';
 import LabLayout from '../../layouts/LabLayout.astro';
+import ReadinessReport from '../../layouts/ReadinessReport.astro';
 import { CONTACT_EMAIL } from '../../lib/lab-links';
 
 export async function getStaticPaths() {
   const reports = await getCollection('reports');
-  return reports.map((report) => ({ params: { slug: report.id }, props: { report } }));
+  return reports.map((report) => ({ params: { slug: report.slug }, props: { report } }));
 }
 
 const { report } = Astro.props;
-const d = report.data;
-const { Content } = await render(report);
-const nn = String(d.lab_number).padStart(2, '0');
-const dateLabel = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d.date);
+
+// One route, two report shapes. Readiness reports ("Should Meridian Deploy
+// It?") get their own layout; builder field reports keep the original page.
+// Future report layouts branch here the same way.
+const isReadiness = report.data.series === 'readiness';
+
+const d = report.data as any;
+const Content = isReadiness ? null : (await render(report)).Content;
+const nn = isReadiness ? '' : String(d.lab_number).padStart(2, '0');
+const dateLabel = isReadiness
+  ? ''
+  : new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d.date);
 ---
-<LabLayout title={`${d.title} · The AI Runtime FDE Lab`} description={d.summary} ogType="article" ogImage={d.og_image}>
-  <article class="report">
-    <div class="lab-container">
-      <p class="back"><a href="/reports">Reports</a></p>
-      <p class="mono-label from"><a href={`/${nn}`}>Field Challenge {nn}</a> · {dateLabel}</p>
-      <h1>{d.title}</h1>
-      <p class="builder">
-        by {d.builder_link ? <a href={d.builder_link} target="_blank" rel="noopener">{d.builder_name}</a> : <span>{d.builder_name}</span>}
-      </p>
-      {d.result && <p class="result">{d.result}</p>}
-      <p class="links">
-        {d.repo_url && <a href={d.repo_url} target="_blank" rel="noopener">Repo</a>}
-        {d.writeup_url && <a href={d.writeup_url} target="_blank" rel="noopener">Write-up</a>}
-      </p>
+{isReadiness ? (
+  <ReadinessReport report={report} />
+) : (
+  <LabLayout title={`${d.title} · The AI Runtime FDE Lab`} description={d.summary} ogType="article" ogImage={d.og_image}>
+    <article class="report">
+      <div class="lab-container">
+        <p class="back"><a href="/reports">Reports</a></p>
+        <p class="mono-label from"><a href={`/${nn}`}>Field Challenge {nn}</a> · {dateLabel}</p>
+        <h1>{d.title}</h1>
+        <p class="builder">
+          by {d.builder_link ? <a href={d.builder_link} target="_blank" rel="noopener">{d.builder_name}</a> : <span>{d.builder_name}</span>}
+        </p>
+        {d.result && <p class="result">{d.result}</p>}
+        <p class="links">
+          {d.repo_url && <a href={d.repo_url} target="_blank" rel="noopener">Repo</a>}
+          {d.writeup_url && <a href={d.writeup_url} target="_blank" rel="noopener">Write-up</a>}
+        </p>
 
-      <div class="prose">
-        <Content />
+        <div class="prose">
+          {Content && <Content />}
+        </div>
+
+        <p class="foot">Want to work with this builder? <a href={`mailto:${CONTACT_EMAIL}`}>Get in touch.</a></p>
       </div>
-
-      <p class="foot">Want to work with this builder? <a href={`mailto:${CONTACT_EMAIL}`}>Get in touch.</a></p>
-    </div>
-  </article>
-</LabLayout>
+    </article>
+  </LabLayout>
+)}
 
 <style>
   .report { padding: 3rem 0 1rem; }
