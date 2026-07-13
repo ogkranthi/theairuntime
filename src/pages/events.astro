@@ -1,0 +1,214 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import SubstackEmbed from '../components/SubstackEmbed.astro';
+import ContactCTA from '../components/ContactCTA.astro';
+
+const allEvents = await getCollection('events', (e) => e.slug.startsWith('boston/'));
+allEvents.sort((a, b) => +b.data.date - +a.data.date);
+const upcoming = allEvents.filter((e) => e.data.status === 'upcoming').sort((a, b) => +a.data.date - +b.data.date);
+const past = allEvents.filter((e) => e.data.status === 'past');
+
+const fmt = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+// Announced AI Runtime events that do not have a full event page yet.
+// Move them into src/content/events/boston/ once the date and venue are set.
+const announced = [
+  {
+    title: 'The AI Runtime meetup with ZeroClaw',
+    detail: 'Date to be announced. Subscribe to the Luma calendar to get the drop.',
+    url: 'https://luma.com/tair',
+    linkLabel: 'Follow on Luma',
+  },
+];
+
+// The Boston AI scene: events and communities around town worth your calendar.
+// Links are the official pages; entries without a public page stay unlinked.
+const around = [
+  {
+    name: 'HackerSquad / Builders Collective',
+    blurb: 'Hands-on builder events and hackathons around Boston. Frequent collaborators on The AI Runtime build nights.',
+    url: 'https://hackersquad.io',
+    linkLabel: 'hackersquad.io',
+  },
+  {
+    name: 'Boston AI Week',
+    blurb: 'The citywide AI festival, September 24 to October 2, 2026. Hundreds of events across Massachusetts, from Seaport to Kendall Square.',
+    url: 'https://aiweek.boston',
+    linkLabel: 'aiweek.boston',
+  },
+  {
+    name: 'Boston Generative AI Meetup',
+    blurb: 'A large general-audience generative AI meetup: talks, demos, and networking for practitioners and the AI-curious.',
+    url: 'https://www.meetup.com/boston-generative-ai-meetup/',
+    linkLabel: 'On Meetup',
+  },
+  {
+    name: 'Sundai Club',
+    blurb: 'The MIT and Harvard AI hacker club. Builds and ships a new AI app from scratch every Sunday.',
+    url: 'https://www.sundai.club',
+    linkLabel: 'sundai.club',
+  },
+  {
+    name: 'Founders Collegium',
+    blurb: 'A founders meetup in the Boston startup community.',
+    url: '',
+    linkLabel: '',
+  },
+];
+---
+<BaseLayout
+  title="AI Events in Boston · The AI Runtime"
+  description="Upcoming and past AI Runtime events in Boston, plus the Boston AI events and communities worth your calendar: build nights, hackathons, meetups, and Boston AI Week."
+>
+  <Section eyebrow="Events">
+    <div class="hero">
+      <h1>AI events in and around Boston</h1>
+      <p class="lede dim">
+        Everything The AI Runtime is running, and the Boston AI scene worth your calendar. One page
+        to share with anyone who asks where the builders are.
+      </p>
+    </div>
+  </Section>
+
+  <Section eyebrow="The AI Runtime" title="Our next events">
+    <ul class="list">
+      {upcoming.map((e) => (
+        <li>
+          <a class="row" href={`/boston/${e.slug.replace(/^boston\//, '')}`}>
+            <span class="date">{fmt.format(e.data.date)}</span>
+            <span class="body">
+              <span class="title">{e.data.title}</span>
+              {e.data.venue?.name && <span class="meta muted">{e.data.venue.name}</span>}
+            </span>
+            <span class="go" aria-hidden="true">→</span>
+          </a>
+        </li>
+      ))}
+      {announced.map((a) => (
+        <li>
+          <a class="row" href={a.url} target="_blank" rel="noopener">
+            <span class="date tba">TBA</span>
+            <span class="body">
+              <span class="title">{a.title}</span>
+              <span class="meta muted">{a.detail}</span>
+            </span>
+            <span class="go" aria-hidden="true">↗</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="muted small note">
+      RSVP for the next meetup on <a href="/boston">the Boston page</a>, or
+      <a href="https://luma.com/tair" target="_blank" rel="noopener">subscribe to the Luma calendar</a>
+      so you never miss a drop.
+    </p>
+  </Section>
+
+  <Section eyebrow="Around Boston" title="The Boston AI scene">
+    <p class="dim wide">
+      Events and communities we recommend around town. Not run by The AI Runtime, but you will find
+      us, and plenty of practitioners from our meetups, in these rooms.
+    </p>
+    <div class="around-grid">
+      {around.map((g) => (
+        <article class="card">
+          <h3>{g.name}</h3>
+          <p class="dim">{g.blurb}</p>
+          {g.url && (
+            <a class="card-link" href={g.url} target="_blank" rel="noopener">{g.linkLabel} ↗</a>
+          )}
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  {past.length > 0 && (
+    <Section eyebrow="Archive" title="Past AI Runtime events">
+      <ul class="list">
+        {past.map((e) => (
+          <li>
+            <a class="row" href={`/boston/${e.slug.replace(/^boston\//, '')}`}>
+              <span class="date">{fmt.format(e.data.date)}</span>
+              <span class="body">
+                <span class="title">{e.data.title}</span>
+                <span class="meta muted">Recap, photos, and slides</span>
+              </span>
+              <span class="go" aria-hidden="true">→</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )}
+
+  <Section eyebrow="Subscribe" title="Get every event before it sells out">
+    <SubstackEmbed
+      source="events-page"
+      headline="The AI Runtime newsletter"
+      subhead="Event invites, recaps, and production lessons from AI practitioners."
+    />
+  </Section>
+
+  <Section>
+    <ContactCTA />
+  </Section>
+</BaseLayout>
+
+<style>
+  .hero h1 { margin: 0; }
+  .lede { font-size: 1.15rem; max-width: 40rem; margin-top: 1rem; }
+
+  .list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .row {
+    display: grid;
+    grid-template-columns: 150px 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    text-decoration: none;
+    background: var(--bg-2);
+  }
+  .row:hover { border-color: var(--accent); }
+  .date { font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent); }
+  .date.tba { color: var(--text-3); }
+  .body { display: flex; flex-direction: column; gap: 0.15rem; }
+  .title { font-weight: 700; }
+  .meta { font-size: 0.88rem; }
+  .go { color: var(--text-3); }
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 1fr auto; }
+    .date { grid-column: 1 / -1; }
+  }
+
+  .note { margin-top: 1rem; font-size: 0.9rem; }
+
+  .wide { max-width: 42rem; }
+  .around-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .card h3 { margin: 0; font-size: 1.1rem; }
+  .card p { margin: 0; font-size: 0.95rem; line-height: 1.65; }
+  .card-link {
+    margin-top: auto;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+  }
+</style>
