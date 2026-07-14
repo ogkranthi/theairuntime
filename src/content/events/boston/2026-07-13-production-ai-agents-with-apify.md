@@ -30,6 +30,15 @@ description: |
   run real tasks end to end. Bring a laptop. Supported by HackerSquad and
   Builders Collective.
 hackerSquadUrl: https://hackersquad.io/events/cmrfksvh002x6np0k3ogpgooi
+cover: /events/2026-07-13/show-and-tell-full-room.jpg
+recapPhotos:
+  - { src: /events/2026-07-13/show-and-tell-full-room.jpg, alt: A packed room at Microsoft NERD watching the Configgo Lead Radar demo during show and tell }
+  - { src: /events/2026-07-13/petros-hong-apify-talk.jpg, alt: Petros Hong presenting Apify Power to the Builders at the podium }
+  - { src: /events/2026-07-13/kickoff-talk.jpg, alt: The kickoff talk with past hackathon wins on screen, phones up across the room }
+  - { src: /events/2026-07-13/show-and-tell-demo.jpg, alt: A builder demoing Prospect Scout, find customer signals, during show and tell }
+  - { src: /events/2026-07-13/azure-iac-demo.jpg, alt: The Azure IaC Generator demo during show and tell }
+  - { src: /events/2026-07-13/builder-terminal.jpg, alt: The HackerSquad builder terminal showing The AI Runtime Boston live }
+  - { src: /events/2026-07-13/pizza.jpg, alt: Pizza boxes stacked in the lounge at Microsoft NERD before doors }
 ---
 
 A hands-on build night at Microsoft NERD with Apify, HackerSquad, and Builders
