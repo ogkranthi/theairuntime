@@ -4,7 +4,13 @@ title: Developer Community Manager
 company: Apify
 social: {}
 bio: Developer Community Manager at Apify, working with developers who build and ship AI agents. He leads the hands-on Apify workshop.
-talks: []
+talks:
+  - eventSlug: 2026-07-13-production-ai-agents-with-apify
+    title: 'Apify: Power to the Builders'
+    abstract: |
+      The featured talk of the build night: how builders use Apify actors to
+      give agents live web data and real tools, setting up the hands-on
+      workshop that followed.
 ---
 
 Petros Hong is a Developer Community Manager at Apify, where he works with
