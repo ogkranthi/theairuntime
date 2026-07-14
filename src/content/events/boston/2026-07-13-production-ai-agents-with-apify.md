@@ -4,7 +4,7 @@ city: boston
 date: 2026-07-13
 doorsAt: '6:00 PM'
 endsAt: '8:30 PM'
-status: upcoming
+status: past
 lumaUrl: https://luma.com/lou5ylpt
 venue:
   name: Microsoft New England Research and Development Center
@@ -29,10 +29,12 @@ description: |
   agent workflows that gather data from the web, connect to external tools, and
   run real tasks end to end. Bring a laptop. Supported by HackerSquad and
   Builders Collective.
+hackerSquadUrl: https://hackersquad.io/events/cmrfksvh002x6np0k3ogpgooi
 ---
 
-A hands-on build night for practitioners shipping AI to production. Work through
-practical examples with Apify and modern AI tooling: gather data from the web,
-connect agents to external tools, and build agent workflows end to end, then
-share what you made in a short show and tell. Come build, learn, and meet others
-shipping AI to production.
+A hands-on build night at Microsoft NERD with Apify, HackerSquad, and Builders
+Collective. Petros Hong (Apify) and Kranthi Manchikanti led the room through
+building agent workflows that gather data from the web, connect to external
+tools, and run real tasks end to end, closing with a show and tell of what got
+built. The projects and build details live on the
+[HackerSquad event page](https://hackersquad.io/events/cmrfksvh002x6np0k3ogpgooi).
