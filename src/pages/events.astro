@@ -14,14 +14,7 @@ const fmt = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short',
 
 // Announced AI Runtime events that do not have a full event page yet.
 // Move them into src/content/events/boston/ once the date and venue are set.
-const announced = [
-  {
-    title: 'The AI Runtime meetup with ZeroClaw',
-    detail: 'Date to be announced. Subscribe to the Luma calendar to get the drop.',
-    url: 'https://luma.com/tair',
-    linkLabel: 'Follow on Luma',
-  },
-];
+const announced: { title: string; detail: string; url: string; linkLabel: string }[] = [];
 
 // The Boston AI scene: events and communities around town worth your calendar.
 // Links are the official pages; entries without a public page stay unlinked.
