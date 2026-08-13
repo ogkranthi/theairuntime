@@ -8,7 +8,6 @@ import CredibilityStrip from '../components/CredibilityStrip.astro';
 import StatBand from '../components/StatBand.astro';
 import { getCollection } from 'astro:content';
 import { fetchSubstackPosts } from '../lib/substack';
-import { LAB_URL } from '../lib/field-briefs';
 import { selfImprovingAi } from '../data/featured-reads';
 
 const posts = await fetchSubstackPosts(4);
@@ -33,7 +32,7 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
           <h1>Production lessons from AI practitioners</h1>
           <p class="lede dim">
             The AI Runtime is a community of AI practitioners. Read the weekly newsletter, come to
-            the Boston meetups, and become part of the <a href={`${LAB_URL}/`}>Field Lab</a>. It starts
+            the Boston meetups, and listen to the <a href="https://theairuntime.com/s/fde-talks">FDE Talks podcast</a>. It starts
             with a free weekly issue of production lessons, the kind you'd forward to your team.
           </p>
           <div class="sub">
@@ -68,10 +67,10 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
         <a class="arm-link" href="/boston">See the next event →</a>
       </li>
       <li>
-        <span class="arm-k">Build</span>
-        <h3>The Field Lab</h3>
-        <p class="dim">A library of production-shaped AI problems and a build pilot, so practitioners work on real problems instead of demos.</p>
-        <a class="arm-link" href={`${LAB_URL}/`}>Explore the Field Lab →</a>
+        <span class="arm-k">Listen</span>
+        <h3>FDE Talks</h3>
+        <p class="dim">The AI Runtime podcast on forward deployed AI engineering: conversations with the people who take AI systems from demo to deployment.</p>
+        <a class="arm-link" href="https://theairuntime.com/s/fde-talks">Listen to FDE Talks →</a>
       </li>
     </ul>
   </Section>
@@ -118,14 +117,13 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
     </Section>
   )}
 
-  <Section eyebrow="The Field Lab" title="Build on real problems, not demos" narrow>
+  <Section eyebrow="FDE Talks" title="The forward deployed engineering podcast" narrow>
     <p class="dim">
-      The Field Lab runs builders against real reliability problems in AI systems, scored against a
-      public bar. Build the fix at a workshop and keep the proof as a Report you own.
+      FDE Talks is The AI Runtime podcast on forward deployed AI engineering: conversations with
+      the people who take AI systems from demo to deployment.
     </p>
     <p>
-      <a class="btn" href={`${LAB_URL}/`}>Explore the Field Lab →</a>
-      <a class="btn btn-ghost" href={`${LAB_URL}/reports`}>What builders shipped</a>
+      <a class="btn" href="https://theairuntime.com/s/fde-talks">Listen to FDE Talks →</a>
     </p>
   </Section>
 

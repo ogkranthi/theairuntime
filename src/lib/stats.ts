@@ -7,7 +7,7 @@ export interface Stat {
 
 export const COMMUNITY_STATS: Stat[] = [
   { value: '2,000+', label: 'newsletter subscribers' },
-  { value: '500+', label: 'in-person attendees' },
+  { value: '700+', label: 'in-person attendees' },
 ];
 
 // The sponsors page adds cadence to the same strip.
