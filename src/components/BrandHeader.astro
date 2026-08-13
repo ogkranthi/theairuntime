@@ -5,6 +5,7 @@ import BlinkLogo from './BlinkLogo.astro';
   <div class="container row">
     <BlinkLogo size="sm" withTagline={false} />
     <nav>
+      <a href="https://theairuntime.com/s/fde-talks" class="podcast">FDE Talks</a>
       <a href="/boston">Events</a>
       <a href="/library">Library</a>
       <a href="/search" aria-label="Search">Search</a>
@@ -47,7 +48,18 @@ import BlinkLogo from './BlinkLogo.astro';
     font-size: 0.85rem;
   }
   nav .cta:hover { color: #FFFFFF; background: var(--accent-hover); }
+  nav .podcast {
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.4rem 0.95rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+  nav .podcast:hover { color: #FFFFFF; background: var(--accent); }
   @media (max-width: 720px) {
-    nav a:not(.cta) { display: none; }
+    nav a:not(.cta):not(.podcast) { display: none; }
+    nav { gap: 0.75rem; }
   }
 </style>

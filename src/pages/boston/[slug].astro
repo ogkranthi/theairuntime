@@ -122,11 +122,13 @@ const breadcrumbSchema = breadcrumbList(
   <JsonLd slot="jsonld" schema={[eventSchema, breadcrumbSchema]} />
   <EventHero event={event} />
 
-  <Section id="speakers" eyebrow="Presenters" title="Who shared what">
-    <div class="grid">
-      {speakers.map((s) => s && <PresenterCard speaker={s} eventSlug={event.slug} />)}
-    </div>
-  </Section>
+  {speakers.filter(Boolean).length > 0 && (
+    <Section id="speakers" eyebrow="Presenters" title="Who shared what">
+      <div class="grid">
+        {speakers.map((s) => s && <PresenterCard speaker={s} eventSlug={event.slug} />)}
+      </div>
+    </Section>
+  )}
 
   <Section id="agenda" eyebrow="Agenda">
     <AgendaList agenda={event.data.agenda} />
