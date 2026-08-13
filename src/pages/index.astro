@@ -2,7 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/Section.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
-import Blink from '../components/Blink.astro';
 import RecapGallery from '../components/RecapGallery.astro';
 import CredibilityStrip from '../components/CredibilityStrip.astro';
 import StatBand from '../components/StatBand.astro';
@@ -43,7 +42,17 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
             />
           </div>
         </div>
-        <div class="art"><Blink size={150} showMotion={true} showCheeks={true} /></div>
+        <div class="art">
+          <a class="podcast-hero" href="https://theairuntime.com/s/fde-talks" aria-label="Listen to FDE Talks, the podcast by The AI Runtime">
+            <img
+              src="/fde-talks.jpg"
+              alt="FDE Talks podcast cover: conversations from the field, by The AI Runtime"
+              width="1200"
+              height="1200"
+            />
+            <span class="podcast-cta">Listen to FDE Talks →</span>
+          </a>
+        </div>
       </div>
     </div>
   </section>
@@ -254,6 +263,28 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
   .lede { font-size: 1.15rem; max-width: 36rem; margin-top: 1rem; }
   .sub { margin-top: 1.75rem; max-width: 32rem; }
   .art { display: flex; justify-content: center; }
+  .podcast-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-width: 21rem;
+    text-decoration: none;
+  }
+  .podcast-hero img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: block;
+  }
+  .podcast-hero:hover img { border-color: var(--accent); }
+  .podcast-cta {
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-align: center;
+  }
 
   .issues { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
   .issues a {
