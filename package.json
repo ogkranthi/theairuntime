@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build && pagefind --site dist",
+    "build": "astro build && pagefind --site dist && npm run build:learn",
+    "build:learn": "npm ci --prefix learn && npm run build --prefix learn && rm -rf dist/learn-site && cp -r learn/dist dist/learn-site",
     "preview": "astro preview",
     "astro": "astro"
   },

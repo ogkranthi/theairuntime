@@ -114,11 +114,11 @@ screens, on purpose. Do not convert them to images.
 
 ## Deploy
 
-Cloudflare Pages, as its own project separate from the events site. The deploy
-runs in CI: push to `main` and `.github/workflows/deploy-learn.yml` type checks,
-builds, and ships it. Nothing to run locally, and no Cloudflare credential
-outside GitHub's secret store.
+The course site ships through the repo's existing Worker deploy. The root build
+(`npm run build` at the repo root) builds this project and copies its output to
+`dist/learn-site/`; `src/worker.ts` serves it on `learn.theairuntime.com` by
+path rewrite, the same way the Lab is served on its host. Merge to `main` and
+it deploys with everything else.
 
-One-time setup (a scoped Cloudflare token in two repo secrets), how to trigger a
-deploy by hand, verification commands and the failure table:
+One-time domain attachment, verification commands and the failure table:
 [`DEPLOY.md`](./DEPLOY.md).
