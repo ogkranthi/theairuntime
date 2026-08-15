@@ -26,11 +26,13 @@ repo, no forms. Retired paths (`/submit`, `/start-here`, `/investigations`,
 the main sitemap.
 
 **The course (`learn.theairuntime.com`):** a separate Astro project in
-[`learn/`](./learn) with its own `package.json`, deployed as its own Cloudflare
-Pages project (root directory `learn`). It hosts AIR Course 001, Engineering
-Long-Running AI Agents: 13 module pages from `learn/src/content/course/`, a
-Failure Labs index, a stack page, RSS, and per-module OpenGraph images generated
-at build. See [`learn/README.md`](./learn/README.md).
+[`learn/`](./learn) with its own `package.json`, served by the same Worker as
+the third host. The root build copies its output to `dist/learn-site/` and
+`src/worker.ts` rewrites learn-host requests into that prefix. It hosts AIR
+Course 001, Engineering Long-Running AI Agents: 13 module pages from
+`learn/src/content/course/`, a Failure Labs index, a stack page, RSS, and
+per-module OpenGraph images generated at build. See
+[`learn/README.md`](./learn/README.md) and [`learn/DEPLOY.md`](./learn/DEPLOY.md).
 
 Built with Astro + content collections, deployed to Cloudflare Pages.
 

@@ -1,134 +1,75 @@
 # Deploying learn.theairuntime.com
 
-The course site deploys itself from CI. Push to `main` and it ships. There is no
-dashboard step in the normal flow, nothing to run on a laptop, and no Cloudflare
-credential outside GitHub's secret store.
+The course site ships through the same pipeline as everything else in this
+repo. There is no separate project, no token, and no workflow to maintain.
 
-The pipeline lives in
-[`.github/workflows/deploy-learn.yml`](../.github/workflows/deploy-learn.yml)
-and is scoped to `learn/**`, so the events site, which deploys through
-Cloudflare's own git integration, is untouched by it.
+## How it works
 
-## One-time setup
+Production is **one Cloudflare Worker** (`theairuntime`) serving one `dist/`
+through its assets binding, with host routing in `src/worker.ts`:
 
-Two steps, both in a browser, about five minutes. After this, nobody touches a
-dashboard again.
+```text
+events.theairuntime.com  -> the community site (dist/ root)
+lab.theairuntime.com     -> Field Lab pages (path-mapped inside dist/)
+learn.theairuntime.com   -> the course site (dist/learn-site/, path rewrite)
+```
 
-### 1. Create a scoped Cloudflare API token
+The root build (`npm run build` at the repo root) builds the events site, runs
+pagefind, then builds `learn/` and copies its output to `dist/learn-site/`. The
+Worker rewrites every request on the learn host into that prefix, so course
+URLs stay clean and the site's own absolute asset links resolve. Requests to
+`/learn-site/*` on any host 301 to the canonical learn URL, and a missing path
+on the learn host serves the course's own 404.
 
-**My Profile → API Tokens → Create Token → Create Custom Token**, with exactly
-these permissions:
+Deploying is therefore just: merge to `main`. Whatever deploys the Worker today
+deploys the course site with it.
 
-| Scope | Permission | Access |
-|---|---|---|
-| Account | Cloudflare Pages | Edit |
-| Zone | DNS | Edit |
-| Zone | Zone | Read |
-| Account | Account Settings | Read |
+## One-time setup: attach the domain
 
-Restrict the two Zone rows to `theairuntime.com`. Do not use the Global API Key:
-it is unscoped and cannot be revoked without resetting every integration on the
-account.
+The only step outside the repo, on the panel you already know:
 
-Grab the account id too. It is in the dashboard sidebar, and in the URL of any
-page: `dash.cloudflare.com/<account_id>/...`. It is not a secret.
+**Workers & Pages → theairuntime → Domains** (the "Custom Domains and Routes"
+list that already shows `events.theairuntime.com` and `lab.theairuntime.com`) →
+**Add** → **Custom domain** → `learn.theairuntime.com`.
 
-### 2. Store both in GitHub
+Cloudflare creates the DNS record itself since the zone is on the account.
+Active within a couple of minutes. A custom domain is the right choice here,
+not a route: routes need a manually managed DNS record, custom domains manage
+their own.
 
-Repo → **Settings → Secrets and variables → Actions → New repository secret**:
+Until the domain is attached, the course site is still reachable for a sanity
+check at `https://theairuntime.ogkranthi22.workers.dev/learn-site/` (the
+workers.dev host is passthrough, so the prefix serves as-is there).
 
-| Name | Value |
-|---|---|
-| `CLOUDFLARE_API_TOKEN` | the token from step 1 |
-| `CLOUDFLARE_ACCOUNT_ID` | the account id |
-
-That is the whole setup. The token now lives in GitHub's encrypted secret store,
-where it is write-only: it can be used by a workflow and replaced, but not read
-back by anyone, including the workflow logs.
-
-### 3. First run, with the domain
-
-Trigger the workflow once with domain binding on:
-
-- **Actions → Deploy learn.theairuntime.com → Run workflow**, tick
-  **bind_domain**, run.
-- Or from a terminal: `gh workflow run deploy-learn.yml -f bind_domain=true`
-
-The run creates the Pages project, builds, deploys, attaches
-`learn.theairuntime.com`, creates the proxied CNAME, and prints the verification
-checks. DNS goes Active within a couple of minutes.
-
-Leave `bind_domain` off for ordinary deploys. It is idempotent either way, it is
-just an unnecessary pair of API calls once the domain is attached.
-
-## After setup
-
-| To do this | Do this |
-|---|---|
-| Ship a content or code change | Merge to `main`. It deploys. |
-| Redeploy without a code change | Actions → Run workflow |
-| Re-attach the domain, or repair DNS | Run workflow with `bind_domain` ticked |
-| Roll back | Revert the commit and merge, or promote an older deployment in the Pages dashboard |
-
-An agent session can trigger a deploy the same way through the GitHub API, with
-no Cloudflare credential in the session at all. That is the point of putting the
-token in GitHub rather than handing it to a tool: the credential stays in one
-place, and the deploy is a button anyone authorised can press.
-
-## What the pipeline does
-
-1. `npm ci` in `learn/`
-2. `npx astro check`, which fails the build on a type error
-3. `npm run build`
-4. `scripts/cloudflare-pages.sh ensure-project`, creates the Pages project if it
-   does not exist yet
-5. `wrangler pages deploy dist`, tagged with the commit sha
-6. `scripts/cloudflare-pages.sh ensure-domain`, only when `bind_domain` is set
-7. Verification curls against the live domain, printed in the log
-
-[`scripts/cloudflare-pages.sh`](./scripts/cloudflare-pages.sh) is idempotent
-throughout: every step checks current state before acting, which is what makes
-it safe to run on every deploy. It can also be run locally with the same two
-environment variables if you ever need to.
-
-## Why not Cloudflare's git integration
-
-It would also auto-deploy, and it needs no token. The tradeoff is that
-connecting a Pages project to a repo can only be done through the dashboard
-OAuth flow, and a project is permanently either git-connected or direct-upload.
-This setup keeps the whole deploy in the repo, reviewable in a diff, runnable on
-demand, and identical whether a human or an agent triggers it.
-
-Consequence worth knowing: because this project is direct-upload, the Pages
-dashboard will not show a "retry build from commit" button. Redeploy by running
-the workflow instead.
-
-## Verifying a live deploy
+## Verifying
 
 ```bash
 curl -sI https://learn.theairuntime.com/ | head -1                 # 200
 curl -s https://learn.theairuntime.com/course/04-idempotency/ | grep -o "<title>.*</title>"
 curl -sI https://learn.theairuntime.com/og/04-idempotency.png | grep -i content-type   # image/png
 curl -s https://learn.theairuntime.com/rss.xml | head -c 120
+curl -sI https://events.theairuntime.com/learn-site/ | grep -iE "^(HTTP|location)"     # 301 to learn
 ```
 
-The OG image check is the useful one. It proves the build ran the satori route
-rather than a stale `dist/` being served.
+The OG image check is the useful one: it proves the learn build ran inside the
+deploy rather than a stale `dist/` being served.
 
 ## When it fails
 
 | Symptom | Cause |
 |---|---|
-| `set CLOUDFLARE_API_TOKEN` | The repo secret is missing or misspelled. Names are case sensitive. |
-| `could not create project` with an auth error | Token is missing **Account → Cloudflare Pages → Edit**. |
-| `zone theairuntime.com not found` | Token is missing **Zone → Zone → Read**, or the zone rows were not scoped to this domain. |
-| `could not create dns record` | Token is missing **Zone → DNS → Edit**. |
-| Deploy succeeds, domain still 404s | DNS is still propagating, or `bind_domain` was never run. Re-run with it ticked. |
-| Build fails on `astro check` | A real type error. Fix it; the gate is doing its job. |
-| OG images missing | `@resvg/resvg-js` is a native module. It builds on `ubuntu-latest`; if that ever changes, pin the runner. |
+| learn host 404s everything | `dist/learn-site/` missing from the deploy: the root build ran without `build:learn`, or the deploy uploaded a stale `dist/`. Re-run the root `npm run build` and redeploy. |
+| Domain not resolving | The custom domain was never added on the Worker's Domains panel, or is still activating. |
+| Course pages show the events 404 page | The Worker deployed without the learn host block in `src/worker.ts`; assets and worker are out of sync. Redeploy. |
+| Events search returns course pages | `build:learn` ran before pagefind. The root build script keeps pagefind first; restore that order. |
+| OG images 404 on learn | The learn build failed partway. Check the build log for the satori step; `@resvg/resvg-js` is a native module and needs a normal Linux build environment. |
 
-## Rotating the token
+## Local check
 
-Create a replacement in Cloudflare, update the `CLOUDFLARE_API_TOKEN` repo
-secret, then delete the old token. No code change, and the next deploy picks it
-up. Do this if the token is ever pasted somewhere it should not have been.
+```bash
+npm run build          # repo root: builds events + learn, assembles dist/
+npx wrangler dev       # http://localhost:8787/learn-site/ serves the course
+```
+
+On localhost the host routing is passthrough by design, so the course is
+reached at its prefix rather than by hostname.

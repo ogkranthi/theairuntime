@@ -28,3 +28,6 @@ pnpm-debug.log*
 .astro/
 scripts/__pycache__/
 __pycache__/
+
+# wrangler dev local state
+.wrangler/

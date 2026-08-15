@@ -66,12 +66,20 @@ const json = (data: unknown, init: ResponseInit = {}) =>
 const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 
 // --- Host routing ---------------------------------------------------------
-// One Worker serves two Custom Domains. The main community site lives on
+// One Worker serves three Custom Domains. The main community site lives on
 // events.theairuntime.com; the Lab (investigations record + the Field Lab build
-// library) lives on lab.theairuntime.com. Both hosts back onto the same dist/,
-// so the Worker steers each path to its home.
+// library) lives on lab.theairuntime.com; AIR Course 001 lives on
+// learn.theairuntime.com. All hosts back onto the same dist/, so the Worker
+// steers each path to its home.
 const EVENTS_HOST = 'events.theairuntime.com';
 const LAB_HOST = 'lab.theairuntime.com';
+const LEARN_HOST = 'learn.theairuntime.com';
+
+// The course site is a standalone Astro build (learn/) copied into the main
+// dist under this prefix by the root build script. The learn host serves it by
+// path rewrite, so course URLs stay clean (/course/04-idempotency/) and its
+// own absolute asset links (/_astro/..., /og/...) resolve inside the prefix.
+const LEARN_PREFIX = '/learn-site';
 
 // Hosts where redirects must be a no-op: local dev, preview deploys, and the
 // raw workers.dev URL all serve everything from a single origin.
@@ -743,6 +751,40 @@ export default {
     // ASSETS. No-ops on dev/preview hosts.
     const { hostname, pathname, search } = url;
     if (!isPassthroughHost(hostname)) {
+      // The build prefix for the course site is internal. Anyone hitting it
+      // directly on any host is sent to the canonical learn URL.
+      if (pathname === LEARN_PREFIX || pathname.startsWith(`${LEARN_PREFIX}/`)) {
+        const stripped = pathname.slice(LEARN_PREFIX.length) || '/';
+        return Response.redirect(`https://${LEARN_HOST}${stripped}${search}`, 301);
+      }
+
+      // learn: serve the course build by path rewrite. The learn site is
+      // self-contained (own assets, own sitemap, own 404), so nothing else on
+      // this host falls through to the events pages.
+      if (hostname === LEARN_HOST) {
+        // Match the course build's format:'directory' URLs. Redirecting here
+        // keeps the prefix out of the Location header the assets layer would
+        // otherwise emit for a missing trailing slash.
+        const lastSegment = pathname.slice(pathname.lastIndexOf('/') + 1);
+        if (pathname !== '/' && !pathname.endsWith('/') && !lastSegment.includes('.')) {
+          return Response.redirect(`https://${LEARN_HOST}${pathname}/${search}`, 301);
+        }
+        const rewritten = new URL(url);
+        rewritten.pathname = `${LEARN_PREFIX}${pathname}`;
+        const res = await env.ASSETS.fetch(new Request(rewritten.toString(), request));
+        if (res.status !== 404) return res;
+        // Missing path: serve the course 404, not the events one. The clean
+        // URL, not 404.html: the assets layer 308s explicit .html URLs, and a
+        // redirect response has no body to reuse.
+        const notFound = await env.ASSETS.fetch(
+          new Request(new URL(`${LEARN_PREFIX}/404`, url).toString(), request),
+        );
+        return new Response(notFound.body, {
+          status: 404,
+          headers: notFound.headers,
+        });
+      }
+
       // events: push Lab traffic (investigations + Field Lab) to the lab host.
       if (
         hostname === EVENTS_HOST &&
