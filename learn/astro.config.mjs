@@ -23,8 +23,21 @@ export default defineConfig({
     // semantic <aside> callouts. See src/plugins/remark-callouts.mjs.
     remarkPlugins: [remarkDirective, remarkCallouts],
     rehypePlugins: [rehypeWrapTables],
-    shikiConfig: { theme: 'github-dark-default', wrap: false },
+    shikiConfig: { theme: 'github-light-default', wrap: false },
   },
   build: { format: 'directory' },
+  // v2 restructure (Aug 2026): the course grew from 13 to 16 modules and
+  // several slugs changed. Old URLs 301 via static redirect pages.
+  redirects: {
+    '/course/04-idempotency': '/course/04-side-effects',
+    '/course/05-failure-handling': '/course/06-failure-handling',
+    '/course/06-human-in-the-loop': '/course/07-human-control',
+    '/course/07-context-engineering': '/course/08-context',
+    '/course/08-observability': '/course/09-observability',
+    '/course/09-evaluation': '/course/11-evaluation',
+    '/course/10-industry-architectures': '/course/13-industry-architectures',
+    '/course/11-deploy': '/course/14-deploy',
+    '/course/12-production-gauntlet': '/course/15-production-gauntlet',
+  },
   prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
 });

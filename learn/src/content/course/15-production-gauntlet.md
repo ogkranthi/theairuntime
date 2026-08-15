@@ -1,16 +1,19 @@
 ---
-module: 12
+module: 15
 title: "Production Failure Gauntlet"
 duration: "90-120 min"
-goal: "Run every failure at once against your deployed agent, measure it, and publish a Field Report."
+goal: "Run every failure at once against your deployed agent, measure it, and publish a reliability report anyone can reproduce."
+question: "Does it survive multiple failures at once?"
+labNumber: 14
+invariant: "All twelve invariants hold at once, under combined fault load."
 lab: "All of them, at once"
-deliverable: "Public Field Report (GitHub) with scorecard, traces, and post-mortem"
+deliverable: "Public reliability report (GitHub) with scorecard, traces, and post-mortem"
 status: published
 ---
 
 Everything before this was one failure at a time with a hint about what to fix. The gauntlet is the exam: reality does not schedule its failures.
 
-## Lesson 12.1: The gauntlet profile
+## Lesson 15.1: The gauntlet profile
 
 Fixture profile `gauntlet` combines:
 
@@ -26,9 +29,9 @@ Budget          MAX_PAGES set to 60% of what the run needs
 
 Provided as `gauntlet.yaml` plus `chaos.py`, which drives the kills and duplicate requests against your public URL.
 
-## Lesson 12.2: Scorecard
+## Lesson 15.2: Scorecard
 
-Your run is graded by the Module 09 evaluators (deterministic first, judge second) plus gauntlet-specific checks:
+Your run is graded by the Module 11 evaluators (deterministic first, judge second) plus gauntlet-specific checks:
 
 ```text
 survived_all_kills          resumed after every scripted kill, no restart from step 0
@@ -46,7 +49,7 @@ review_payload_complete     coverage, unknowns, evidence counts present
 
 Pass = all deterministic checks true and judge ≥ threshold. There is no partial credit for a duplicate report.
 
-## Lesson 12.3: Post-mortem
+## Lesson 15.3: Post-mortem
 
 Write it like an incident review, not a homework reflection:
 
@@ -58,12 +61,12 @@ What would you change before real users?
 What did the traces show that the dashboard didn't?
 ```
 
-## Lesson 12.4: Field Report
+## Lesson 15.4: Publish the evidence
 
-Publish to a public repo:
+Commit the results to your own public repo:
 
 ```text
-field-report/
+reliability-report/
   README.md            summary, public URL, scorecard table
   scorecard.json
   traces/              the gauntlet run(s), exported
@@ -71,11 +74,11 @@ field-report/
   changes.md           diff summary of what you fixed to pass
 ```
 
-Open a submission issue on the course repo with the link. Field Reports are public proof of work. Reviewed submissions are listed on the course site; strong ones are invited to the FDE Talks Podcast.
+This is the artifact an FDE walks into a customer conversation with: not a certificate, a reproducible reliability claim. Strong reports are invited to the FDE Talks Podcast.
 
 <div class="callout failure-lab">
 
-**FAILURE LAB 12: All of them, at once**
+**FAILURE LAB 14: All of them, at once**
 
 `python chaos.py --target https://your-app.onrender.com --profile gauntlet`
 
@@ -85,7 +88,7 @@ Do not read the profile before the first run. Fix, rerun, submit.
 
 <div class="callout deliverable">
 
-**Deliverable:** the public Field Report and the submission issue.
+**Deliverable:** the public reliability report, with the scorecard, traces, post-mortem and changes.
 
 </div>
 

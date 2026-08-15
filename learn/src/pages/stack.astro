@@ -3,55 +3,46 @@ import Base from "../layouts/Base.astro";
 import CtaBlock from "../components/CtaBlock.astro";
 import { CHANNELS } from "../lib/course";
 
-const why = [
-  ["Python", "Plain Python for Modules 00 to 02. You build the loop by hand and lose a run twice before any runtime is handed to you."],
-  ["LangGraph", "Enters at Module 03, not before, and only because it gives graph execution, state, persistence and interrupts as first-class concepts. Deterministic control where requirements are known, agentic reasoning where decisions are genuinely ambiguous."],
-  ["FastAPI", "The run API, the review endpoints and the dashboard. The graph never runs inside the HTTP request: enqueue, return a run id, execute in the background, poll."],
-  ["PostgreSQL", "Checkpoints, the append-only event log, and the published-reports table that proves exactly-once publishing. Anything on disk is gone at redeploy, so nothing durable lives there."],
-  ["Neon", "Free managed Postgres, used from Module 03 onward so that deploying in Module 11 changes env vars and nothing else."],
-  ["Render", "Free web service with git deploy, which is what makes the redeploy lab an honest test rather than a thought experiment."],
-  ["HTMX", "The run dashboard and the approval screen. No build step, no client framework, and the review payload stays server-rendered evidence."],
-  ["LangSmith or Langfuse", "Traces. An engineer has to be able to answer why the agent chose that page and what the model saw."],
+const core = [
+  ["Python", "Modules 00 to 02 stay close to ordinary Python so you can see the agent loop and state transitions directly."],
+  ["LangGraph", "Graph execution, persistence, checkpoints, and interrupts, adopted after the failure modes are understood, not before."],
+  ["Deep Agents", "Introduced late as a higher-level harness for planning, filesystem-backed work, subagents, and context management. You compare it against your explicit implementation instead of treating it as magic."],
+  ["FastAPI", "Run creation, run status, review endpoints, dashboard, health and readiness."],
+  ["PostgreSQL / Neon", "Application-owned run state, leases, event log, side-effect records, artifacts, and LangGraph checkpoint persistence. The course keeps application tables explicitly separate from framework-owned checkpoint tables."],
+  ["HTMX", "A deliberately small server-rendered operator and reviewer UI. No frontend framework is required to learn runtime engineering."],
+  ["LangSmith or Langfuse", "Traces. The course contract is tool-independent: exact model input and output, tool spans, tokens, cost, latency, and run correlation must be inspectable."],
 ];
 
-const matrix = [
-  ["Render free + Neon", "Full app with public URL, dashboard, DB (this course)", "Spin-down, hours limits"],
-  ["Hugging Face Spaces (Gradio/Streamlit)", "Demo UI, permanent link, easiest", "Compute limits, cold starts, not for background workers"],
-  ["Fly.io / Railway free allowance", "Small always-on services", "Allowance changes; check current terms"],
-  ["Oracle Cloud / GCP free tier VM", "Self-managed always-on", "You operate everything"],
-  ["Cloudflare Tunnel / ngrok", "Show a local run publicly for an hour", "Temporary; not a deployment"],
-  ["Modal free tier", "Bursty background compute", "Pair with a separate frontend"],
-];
-
-const realities = [
-  ["Cold starts and spin-down", "Free web services sleep after idle, so the first request is slow and long runs must not depend on one warm process."],
-  ["Request timeouts", "Never run the graph inside the HTTP request. Enqueue, return the run id, execute in a background task, poll the run."],
-  ["Ephemeral disk", "Anything written to disk is gone on redeploy, so raw pages go to Postgres or an object store."],
-  ["Connection limits", "The Neon free tier caps connections. Use a pool and close cleanly."],
-  ["No secrets in the repo", "Ship a .env.example only. Real values live in the host's environment."],
+const substitutions = [
+  ["stronger durable workflow semantics", "Temporal"],
+  ["different trace backend", "Langfuse / OpenTelemetry stack"],
+  ["managed agent deployment", "LangSmith deployment"],
+  ["container hosting", "Cloud Run / paid Render / Kubernetes"],
+  ["durable queue", "cloud queue, Redis/Celery, Postgres queue"],
+  ["object store", "S3-compatible storage"],
 ];
 ---
 
 <Base
-  title="Stack and free hosting | AIR Course 001"
-  description="Why Course 001 uses Python, LangGraph, FastAPI, Postgres on Neon and Render, the free hosting matrix, and when to leave the free tier."
+  title="Stack and Architecture | AIR Course 001"
+  description="The Course 001 stack, boring on purpose: Python, LangGraph, Deep Agents, FastAPI, Postgres on Neon, HTMX, and a pinned, reproducible environment."
   pageSlug="stack"
 >
   <div class="shell">
     <section class="section">
       <p class="eyebrow">STACK</p>
-      <h1>Why this stack</h1>
+      <h1>Boring on purpose</h1>
       <div class="measure">
         <p>
-          Nothing here is chosen for novelty. Every piece is either free, boring, or the thing
-          that makes a specific failure lab reproducible. You can complete the entire course,
-          including a public deployment, without paying for infrastructure.
+          The stack is selected to expose production primitives, not to maximize framework
+          count. Every piece is either free, boring, or the thing that makes a specific
+          Failure Lab reproducible.
         </p>
       </div>
 
       <dl class="why">
         {
-          why.map(([name, reason]) => (
+          core.map(([name, reason]) => (
             <div class="why__row">
               <dt>{name}</dt>
               <dd>{reason}</dd>
@@ -62,67 +53,87 @@ const realities = [
     </section>
 
     <section class="section">
-      <h2>Free-tier realities you must design for</h2>
-      <dl class="why">
-        {
-          realities.map(([name, reason]) => (
-            <div class="why__row">
-              <dt>{name}</dt>
-              <dd>{reason}</dd>
-            </div>
-          ))
-        }
-      </dl>
-      <p class="muted measure">
-        These constraints are the reason the course front-loads durability. An agent that
-        survives a free tier's spin-down, connection caps and redeploys is an agent that
-        already has the properties a paid tier would otherwise let you skip.
-      </p>
+      <h2>Why not a message queue from day one?</h2>
+      <div class="measure">
+        <p>
+          Because you should first build one small PostgreSQL-backed lease scheduler and
+          understand, in your own code:
+        </p>
+      </div>
+      <pre>{`claim
+lease
+heartbeat
+retry timer
+orphan recovery
+cancellation`}</pre>
+      <div class="measure">
+        <p class="muted">
+          After that, you can replace it with a managed queue or a durable workflow engine and
+          know exactly which guarantees moved. The course teaches what to demand from the
+          replacement, not brand loyalty.
+        </p>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Free hosting matrix</h2>
+      <h2>Free public deployment</h2>
+      <div class="measure">
+        <p>
+          The reference deployment uses a free web service (Render) plus serverless Postgres
+          (Neon). One caveat matters enough to state as a rule:
+        </p>
+        <blockquote>
+          Free infrastructure is a teaching and portfolio target, not a production-SLA claim.
+        </blockquote>
+        <p class="muted">
+          Idle spin-down and restarts are useful failure injectors. The application must
+          recover from durable state, which is the whole point of Modules 03 to 07, and
+          Module 14 proves it with a redeploy mid-run.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Pin the environment</h2>
+      <div class="measure">
+        <p>A production course should be reproducible six months later. The repo contains:</p>
+      </div>
+      <pre>{`pyproject.toml
+uv.lock (or equivalent lockfile)
+.env.example
+Makefile
+docker-compose.yml for local dependencies where useful`}</pre>
+      <div class="measure">
+        <p class="muted">
+          And every gauntlet result records the course repo commit, Python version, package
+          lock hash, model identifier, fixture profile version, and database migration
+          version, so a reliability claim can be re-run against the exact system that made it.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Optional advanced substitutions</h2>
       <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Option</th>
-            <th scope="col">Best for</th>
-            <th scope="col">Watch out</th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            matrix.map(([option, best, watch]) => (
-              <tr>
-                <th scope="row">{option}</th>
-                <td>{best}</td>
-                <td>{watch}</td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
+        <table>
+          <thead>
+            <tr><th scope="col">Need</th><th scope="col">Alternative</th></tr>
+          </thead>
+          <tbody>
+            {
+              substitutions.map(([need, alt]) => (
+                <tr>
+                  <td>{need}</td>
+                  <td class="mono-cell">{alt}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
       </div>
-    </section>
-
-    <section class="section">
-      <h2>When to leave the free tier</h2>
-      <div class="measure">
-        <p>
-          Free tiers are for learning and sharing. Once you have users and SLAs, move to a
-          managed LangGraph deployment, a real durable-execution engine such as Temporal, or
-          your own workers on a paid tier.
-        </p>
-        <p>
-          Nothing you built changes. Where it runs does. That is the whole payoff of putting
-          state in Postgres, keying every external effect, and treating waiting as state rather
-          than as a held process.
-        </p>
-        <p>
-          <a href={CHANNELS.repo} rel="noopener">Course repo: fixtures, starter code and artifacts &rarr;</a>
-        </p>
-      </div>
+      <p>
+        <a href={CHANNELS.repo} rel="noopener">Course repo: fixtures, starter code and artifacts &rarr;</a>
+      </p>
     </section>
   </div>
 
@@ -149,6 +160,7 @@ const realities = [
     color: var(--fg-muted);
     max-width: 68ch;
   }
+  .mono-cell { font-family: var(--font-mono); font-size: var(--t-meta); }
   @media (min-width: 800px) {
     .why__row { grid-template-columns: 14rem minmax(0, 1fr); gap: 2rem; }
   }

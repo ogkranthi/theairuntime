@@ -1,8 +1,11 @@
 ---
-module: 9
+module: 11
 title: "Evaluating Long-Running Agents"
 duration: "75-90 min"
 goal: "Make evals the development loop: error analysis on real traces, binary criteria, a validated judge, and a regression gate that proves version B beats version A."
+question: "How do we prove B is better than A?"
+labNumber: 11
+invariant: "I10: a quality claim is backed by an evaluator validated against humans."
 lab: "The Judge That Agreed With Everyone"
 deliverable: "evals/ (labeled traces, rubric, deterministic evaluator, judge, agreement report)"
 status: published
@@ -10,7 +13,7 @@ status: published
 
 This is the module the whole course has been building toward. If you only internalise one module, make it this one. The process here follows Hamel Husain's published eval methodology; the adaptations are for multi-hour trajectories rather than single responses.
 
-## Lesson 09.1: What "good" means for a long-running agent
+## Lesson 11.1: What "good" means for a long-running agent
 
 Single-shot evals ask: *is the answer right?*
 Long-running evals ask, in order:
@@ -25,7 +28,7 @@ Long-running evals ask, in order:
 
 You are grading the **trajectory and the artifact**, not a chat turn.
 
-## Lesson 09.2: Error analysis first (look at the data)
+## Lesson 11.2: Error analysis first (look at the data)
 
 Before writing any rubric:
 
@@ -47,7 +50,7 @@ Clean                                                  12
 
 Write **binary** pass/fail criteria from these clusters. Binary labels beat 1-5 scales: humans agree on them, judges can be validated against them, and trends are readable.
 
-## Lesson 09.3: Deterministic evaluators (free, fast, exact)
+## Lesson 11.3: Deterministic evaluators (free, fast, exact)
 
 Most of your criteria need no LLM. Build these as pure functions over state + `run_events` + `published_reports`:
 
@@ -63,7 +66,7 @@ def contradiction_free(findings) -> bool    # same requirement, opposing claims 
 
 Run them on every run. Report a scorecard per run and an aggregate per code version.
 
-## Lesson 09.4: LLM-as-judge, validated
+## Lesson 11.4: LLM-as-judge, validated
 
 Some criteria are semantic: *does the finding actually answer the question? Is the unknown genuinely unknown?* For these you build a judge, and then you **validate it against humans**.
 
@@ -77,7 +80,7 @@ Process:
 
 Never let the model that produced the finding be its own judge in the eval. Separate roles.
 
-## Lesson 09.5: Golden set and regression gate
+## Lesson 11.5: Golden set and regression gate
 
 Freeze:
 
@@ -91,19 +94,19 @@ evals/golden/
 
 CI gate: every change runs the fixture vendors, computes the deterministic scorecard and the judge scorecard, and fails the build if any aggregate metric drops below the previous version. That is how you *prove* B is better than A, not by reading two outputs and preferring one.
 
-## Lesson 09.6: Production monitoring
+## Lesson 11.6: Production monitoring
 
 Sample real runs weekly. Re-run the deterministic evaluators (free). Run the judge on the sample. Human-review 10. Update the golden set when you find a new failure class. This is the loop; it never ends.
 
 <div class="callout failure-lab">
 
-**FAILURE LAB 09: The Judge That Agreed With Everyone**
+**FAILURE LAB 11: The Judge That Agreed With Everyone**
 
 Ship a deliberately weak judge prompt ("Is this finding good? Answer pass or fail."). Run it on the 50 labelled findings.
 
 Observe: high accuracy, near-100% "pass", ~30% true negative rate. It agrees with everyone.
 
-Fix the prompt with the explicit criterion and negative examples. Recompute TPR/TNR. Then swap in one *contradictory* finding from Lab 07 and confirm the judge now catches it.
+Fix the prompt with the explicit criterion and negative examples. Recompute TPR/TNR. Then swap in one *contradictory* finding from Lab 08 and confirm the judge now catches it.
 
 </div>
 
@@ -118,3 +121,8 @@ Fix the prompt with the explicit criterion and negative examples. Recompute TPR/
 **Production takeaway:** evals are not a plug-in library. Look at the data, write binary criteria, validate your judge, gate on the golden set. Everything else is vibes.
 
 </div>
+
+## Primary sources
+
+- [Hamel Husain, LLM-as-a-judge](https://hamel.dev/blog/posts/llm-judge/): the methodology this module follows, including judge validation against human labels. If you read one thing this course links, read this.
+- [Hamel Husain and Shreya Shankar, evals FAQ](https://hamel.dev/blog/posts/evals-faq/): short answers to the exact objections your team will raise when you propose error analysis before metrics.

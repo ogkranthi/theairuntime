@@ -1,9 +1,10 @@
 # learn.theairuntime.com
 
-Home of **AIR Course 001: Engineering Long-Running AI Agents**, from a simple
-agent loop to a durable production system. Thirteen modules, eleven Failure
-Labs, one deliberately boring application (a Vendor Review Agent), and every
-failure reproducible against a deterministic fixture server.
+Home of **AIR Course 001: Engineering Long-Running AI Agents**, the FDE-track
+course from a simple agent loop to a durable production system. Sixteen
+modules, fourteen Failure Labs numbered independently of the modules, one
+deliberately boring application (a Vendor Review Agent), and every failure
+reproducible against a deterministic fixture server. Light theme per BRAND.md.
 
 Standalone Astro site on its own subdomain, separate from the events platform on
 `events.theairuntime.com` and the Field Lab on `lab.theairuntime.com`. Static
@@ -17,10 +18,11 @@ in the public course repo and are linked from here. Nothing is gated.
 ## Routes
 
 ```
-/                          Course home: thesis, what we build, stack, 13-module syllabus
-/course/00-mental-model     ... /course/12-production-gauntlet
-/labs                      Failure Labs index + fixture server snippet
-/stack                     Why this stack, free hosting matrix, when to leave the free tier
+/                          Course home: promise, FDE framing, application contract, 16-module syllabus
+/course/00-mental-model     ... /course/15-production-gauntlet
+/labs                      14-lab catalog, the standard lab shape, fixture server snippet
+/stack                     Boring on purpose: core stack, lease-scheduler rationale, substitutions
+/sources                   Annotated primary sources (1-3 are also linked in place per module)
 /about                     Who is behind this, contact
 /rss.xml                   Module feed
 /og/<slug>.png             Generated OpenGraph image per page and per module
@@ -45,7 +47,10 @@ in `src/content/config.ts` (Zod):
 
 | Field | Required | Notes |
 |---|---|---|
-| `module` | yes | 0 to 12, drives order, ledger and prev/next |
+| `module` | yes | 0 to 15, drives order, ledger and prev/next |
+| `question` | yes | the production question, shown in the module hero and syllabus |
+| `labNumber` | no | sequential Failure Lab number 1 to 14, independent of module number |
+| `invariant` | no | the invariant badge text |
 | `title` | yes | H1 and OG image title |
 | `duration` | yes | e.g. `50-60 min` |
 | `goal` | yes | one sentence, also the meta description |

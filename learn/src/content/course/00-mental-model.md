@@ -3,6 +3,7 @@ module: 0
 title: "Long-Running Agents: The Mental Model"
 duration: "30-40 min"
 goal: "Understand what makes long-running agent execution fundamentally different from an ordinary LLM request."
+question: "When is a long-running agent justified?"
 deliverable: "exercise_00_classification.md"
 status: published
 ---
@@ -104,7 +105,7 @@ For each, choose `LLM CALL` · `WORKFLOW` · `AGENT` · `LONG-RUNNING AGENT`, an
 
 <div class="callout deliverable">
 
-**Deliverable:** `exercise_00_classification.md`, your twelve answers. Keep it. In Module 10 you will re-classify them and see what changed.
+**Deliverable:** `exercise_00_classification.md`, your twelve answers. Keep it. In Module 13 you will re-classify them and see what changed.
 
 </div>
 
@@ -136,4 +137,4 @@ End Module 00 with the diagram you will reuse for the entire course:
                   EVALUATION
 ```
 
-State, Execution, Context, Control, Observability, Evaluation. Modules 02-09 take these one at a time.
+State, Execution, Context, Control, Observability, Evaluation. Modules 02 to 11 take these one at a time.
