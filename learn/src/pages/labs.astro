@@ -1,0 +1,125 @@
+---
+import Base from "../layouts/Base.astro";
+import CtaBlock from "../components/CtaBlock.astro";
+import { CHANNELS, getModules, moduleHref, pad, utm } from "../lib/course";
+
+const modules = await getModules();
+const labs = modules.filter((m) => m.data.lab);
+const exercises = modules.filter((m) => !m.data.lab);
+---
+
+<Base
+  title="The Failure Labs | AIR Course 001"
+  description="Every Failure Lab in Course 001. Each one breaks the vendor agent in a specific, reproducible way against the deterministic fixture server, then makes you fix it."
+  pageSlug="labs"
+>
+  <div class="shell">
+    <section class="section">
+      <p class="eyebrow">FAILURE LABS</p>
+      <h1>Break it on purpose, then fix it</h1>
+      <div class="measure">
+        <p>
+          The labs are the spine of this course. Every one of them is reproducible against the
+          deterministic fixture server, so the failure you hit is the same failure everyone else
+          hits, on the same page, at the same step. Watch the lab first if the video has shipped,
+          then read the module and do it yourself.
+        </p>
+      </div>
+
+      <h2>Run the fixture server</h2>
+      <pre>{`git clone https://github.com/theairuntime/course-001
+cd course-001 && make fixtures   # serves deterministic vendor sites on :8001`}</pre>
+      <p class="muted measure">
+        Failure behaviour is configured per URL and per attempt in a <code>profile.yaml</code>,
+        so "pricing returns 503 twice then 200" is one line rather than a code change. Later
+        modules add profiles; the server itself does not change.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>The labs</h2>
+      <ol class="labs">
+        {
+          labs.map((m) => (
+            <li class="labs__row">
+              <span class="labs__tag">LAB {pad(m.data.module)}</span>
+              <span class="labs__title">{m.data.lab}</span>
+              <span class="labs__links">
+                <a href={moduleHref(m)}>Module {pad(m.data.module)}</a>
+                {m.data.youtube ? (
+                  <a href={utm(m.data.youtube, m.id, "watch")} rel="noopener">
+                    <span aria-hidden="true">&#9654;</span> Watch
+                  </a>
+                ) : (
+                  <span class="is-pending">Watch (coming)</span>
+                )}
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="muted measure">
+        {exercises.map((m) => `Module ${pad(m.data.module)}`).join(" and ")} carry written
+        exercises instead of a lab: the twelve-scenario classification and the case-study
+        extraction. Both are graded by you, and Module 10 makes you re-do the first one.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>The gauntlet</h2>
+      <div class="measure">
+        <p>
+          Module 12 runs every failure at once against your deployed agent: page-level faults,
+          content sprawl, contradictions, an injected instruction, plus a redeploy mid-run. It
+          is the exam, because reality does not schedule its failures.
+        </p>
+        <p>
+          Results go into a public Field Report on GitHub with a scorecard, traces, and a
+          post-mortem. The best submissions become <a href={utm(CHANNELS.podcast, "labs", "listen")} rel="noopener">FDE Talks</a> episodes.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="labs" />
+</Base>
+
+<style>
+  .labs {
+    list-style: none;
+    margin: 1.5rem 0 1.5rem;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .labs__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1.25rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--line);
+    margin: 0;
+  }
+  .labs__tag {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    width: 5rem;
+    flex: none;
+  }
+  .labs__title {
+    font-family: var(--font-mono);
+    font-size: var(--t-body);
+    color: var(--fg);
+    flex: 1 1 18rem;
+  }
+  .labs__links {
+    display: flex;
+    gap: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    margin-left: auto;
+  }
+  .is-pending { color: var(--fg-muted); opacity: 0.55; }
+</style>

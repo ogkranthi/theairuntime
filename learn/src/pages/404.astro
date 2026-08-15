@@ -1,0 +1,23 @@
+---
+import Base from "../layouts/Base.astro";
+import StateLedger from "../components/StateLedger.astro";
+---
+
+<Base
+  title="Not found | AIR Course 001"
+  description="That page does not exist. The thirteen modules of Course 001 are listed here."
+  pageSlug="404"
+>
+  <div class="shell">
+    <section class="section measure">
+      <p class="eyebrow">404</p>
+      <h1>No checkpoint at that step</h1>
+      <p class="muted">
+        That page does not exist. The course is thirteen modules; pick one, or start at the
+        beginning.
+      </p>
+      <p><a href="/">Course home</a> · <a href="/labs/">Failure Labs</a></p>
+      <StateLedger current={-1} status="not-found" />
+    </section>
+  </div>
+</Base>

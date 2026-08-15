@@ -1,0 +1,69 @@
+---
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+// Only h2 and h3. Deeper levels turn the rail into a second document.
+const items = Astro.props.headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{
+  items.length > 0 && (
+    <nav class="toc" aria-labelledby="toc-heading">
+      <p class="toc__title" id="toc-heading">
+        ON THIS PAGE
+      </p>
+      <ul class="toc__list">
+        {items.map((h) => (
+          <li class:list={["toc__item", `toc__item--h${h.depth}`]}>
+            <a href={`#${h.slug}`} data-toc-link={h.slug}>
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .toc {
+    position: sticky;
+    top: 5rem;
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    line-height: 1.5;
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+  }
+  .toc__title {
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    margin: 0 0 0.75rem;
+  }
+  .toc__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--line);
+  }
+  .toc__item { margin: 0; }
+  .toc__item a {
+    display: block;
+    padding: 0.3rem 0 0.3rem 0.75rem;
+    margin-left: -1px;
+    border-left: 1px solid transparent;
+    color: var(--fg-muted);
+    opacity: 0.85;
+    transition: opacity 120ms linear;
+  }
+  .toc__item a:hover { color: var(--fg); text-decoration: none; opacity: 1; }
+  .toc__item--h3 a { padding-left: 1.5rem; }
+  .toc__item a[aria-current="true"] {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    opacity: 1;
+  }
+</style>

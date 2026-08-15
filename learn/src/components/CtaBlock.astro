@@ -1,0 +1,100 @@
+---
+import { CHANNELS, REACH_OUT, subscribeCopy, utm } from "../lib/course";
+
+interface Props {
+  /** Used to build utm_content=<page-slug>-<cta>. */
+  pageSlug: string;
+  /** Module number, selects the first-column copy. Omit on non-module pages. */
+  moduleNumber?: number;
+  /** Module-specific video, when it has shipped. */
+  youtube?: string;
+  /** The reach-out line renders exactly once per page. */
+  reachOut?: boolean;
+}
+
+const { pageSlug, moduleNumber, youtube, reachOut = false } = Astro.props;
+
+const columns = [
+  {
+    key: "subscribe",
+    eyebrow: "SUBSCRIBE",
+    copy: subscribeCopy(moduleNumber),
+    label: "theairuntime.com",
+    href: utm(CHANNELS.substack, pageSlug, "subscribe"),
+  },
+  {
+    key: "watch",
+    eyebrow: "WATCH",
+    copy: youtube
+      ? "This module's Failure Lab, on video. Watch the agent break, then fix it."
+      : "Every Failure Lab, on video. Watch the agent break, then fix it.",
+    label: youtube ? "Watch this lab" : "youtube.com/@theairuntime",
+    href: utm(youtube ?? CHANNELS.youtube, pageSlug, "watch"),
+  },
+  {
+    key: "listen",
+    eyebrow: "LISTEN",
+    copy: "FDE Talks: practitioners on long-running agents in production.",
+    label: "FDE Talks",
+    href: utm(CHANNELS.podcast, pageSlug, "listen"),
+  },
+];
+---
+
+<section class="cta" aria-label="Next steps">
+  <div class="cta__grid">
+    {
+      columns.map((c) => (
+        <div class="cta__col">
+          <p class="cta__eyebrow">{c.eyebrow}</p>
+          <p class="cta__copy">{c.copy}</p>
+          <a class="cta__link" href={c.href} rel="noopener">
+            <span aria-hidden="true">&rarr;</span> {c.label}
+          </a>
+        </div>
+      ))
+    }
+  </div>
+  {reachOut && <p class="cta__reach">{REACH_OUT}</p>}
+</section>
+
+<style>
+  .cta {
+    border-top: 1px solid var(--line);
+    padding-top: 2rem;
+    margin-top: 3rem;
+  }
+  .cta__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+  }
+  .cta__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+  .cta__copy {
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    margin: 0 0 0.75rem;
+    max-width: 34ch;
+  }
+  .cta__link {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+  }
+  .cta__reach {
+    margin: 2rem 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    max-width: var(--measure);
+  }
+  @media (max-width: 760px) {
+    .cta__grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  }
+</style>

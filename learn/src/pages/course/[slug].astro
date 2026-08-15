@@ -1,0 +1,197 @@
+---
+import { render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import StateLedger from "../../components/StateLedger.astro";
+import CtaBlock from "../../components/CtaBlock.astro";
+import Toc from "../../components/Toc.astro";
+import { REACH_OUT, getModules, moduleHref, neighbors, pad, utm } from "../../lib/course";
+
+export async function getStaticPaths() {
+  const modules = await getModules();
+  return modules.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const modules = await getModules();
+const { prev, next } = neighbors(modules, entry);
+const { Content, headings } = await render(entry);
+
+const n = entry.data.module;
+const metaLine = [
+  entry.data.duration,
+  entry.data.lab ? `Failure Lab ${pad(n)}: ${entry.data.lab}` : null,
+]
+  .filter(Boolean)
+  .join(" · ");
+
+// The reach-out line renders exactly once per page. Module 12 already carries
+// it in its closing prose, so the CTA block stands down there.
+const bodyHasReachOut = entry.body?.includes(REACH_OUT.slice(0, 40)) ?? false;
+---
+
+<Base
+  title={`Module ${pad(n)}: ${entry.data.title} | AIR Course 001`}
+  description={entry.data.goal}
+  pageSlug={entry.id}
+  ogType="article"
+>
+  <div class="shell module">
+    <div class="module__main">
+      <header class="module__header">
+        <p class="eyebrow">MODULE {pad(n)}</p>
+        <h1>{entry.data.title}</h1>
+        {entry.data.subtitle && <p class="module__subtitle">{entry.data.subtitle}</p>}
+        <p class="meta">{metaLine}</p>
+        <p class="module__goal"><strong>Goal:</strong> {entry.data.goal}</p>
+
+        <div class="module__links">
+          {
+            entry.data.youtube && (
+              <a class="btn" href={utm(entry.data.youtube, entry.id, "watch")} rel="noopener">
+                <span aria-hidden="true">&#9654;</span> Watch Failure Lab {pad(n)}
+              </a>
+            )
+          }
+          {
+            entry.data.substack && (
+              <a class="btn" href={utm(entry.data.substack, entry.id, "longform")} rel="noopener">
+                Longform on Substack
+              </a>
+            )
+          }
+        </div>
+
+        <StateLedger current={n} status="running" progress={true} />
+      </header>
+
+      <article class="prose">
+        <Content />
+      </article>
+
+      <nav class="module__nav" aria-label="Module navigation">
+        <div class="module__nav-prev">
+          {
+            prev ? (
+              <a href={moduleHref(prev)}>
+                <span class="meta">Prev</span>
+                <span class="module__nav-title">
+                  &larr; {pad(prev.data.module)} {prev.data.title}
+                </span>
+              </a>
+            ) : (
+              <a href="/">
+                <span class="meta">Prev</span>
+                <span class="module__nav-title">&larr; Course home</span>
+              </a>
+            )
+          }
+        </div>
+        <div class="module__nav-next">
+          {
+            next ? (
+              <a href={moduleHref(next)}>
+                <span class="meta">Next</span>
+                <span class="module__nav-title">
+                  {pad(next.data.module)} {next.data.title} &rarr;
+                </span>
+              </a>
+            ) : (
+              <a href="/labs/">
+                <span class="meta">Next</span>
+                <span class="module__nav-title">All Failure Labs &rarr;</span>
+              </a>
+            )
+          }
+        </div>
+      </nav>
+    </div>
+
+    <aside class="module__rail">
+      <Toc headings={headings} />
+    </aside>
+  </div>
+
+  <CtaBlock
+    slot="footer-cta"
+    pageSlug={entry.id}
+    moduleNumber={n}
+    youtube={entry.data.youtube}
+    reachOut={!bodyHasReachOut}
+  />
+</Base>
+
+<style>
+  .module {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3rem;
+    padding-top: 3rem;
+  }
+  .module__main { min-width: 0; max-width: var(--measure); }
+
+  .module__header { margin-bottom: 2.5rem; }
+  .module__header h1 { margin-bottom: 0.5rem; }
+  .module__subtitle {
+    font-size: var(--t-h3);
+    color: var(--fg-muted);
+    margin: 0 0 0.75rem;
+  }
+  .module__goal {
+    color: var(--fg-muted);
+    margin: 0.75rem 0 1.5rem;
+    font-size: var(--t-meta);
+  }
+  .module__goal strong { color: var(--fg); }
+  .module__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .module__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .module__nav a { display: block; }
+  .module__nav a:hover { text-decoration: none; }
+  .module__nav-next { text-align: right; margin-left: auto; }
+  .module__nav .meta { display: block; margin-bottom: 0.25rem; }
+  .module__nav-title {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--accent);
+  }
+
+  .module__rail { display: none; }
+
+  @media (min-width: 1024px) {
+    .module {
+      grid-template-columns: minmax(0, var(--measure)) minmax(0, 17rem);
+      justify-content: start;
+      gap: 4rem;
+    }
+    .module__rail { display: block; }
+  }
+</style>
+
+<style is:global>
+  /* Prose rhythm for rendered curriculum markdown. */
+  .prose h2 {
+    margin-top: 2.75rem;
+    padding-top: 0.5rem;
+    scroll-margin-top: 5rem;
+  }
+  .prose h3 { margin-top: 2rem; scroll-margin-top: 5rem; }
+  .prose > pre { margin: 1.5rem 0; }
+  .prose blockquote {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--fg);
+  }
+</style>
