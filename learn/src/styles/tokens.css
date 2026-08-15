@@ -1,0 +1,338 @@
+/* learn.theairuntime.com design tokens. Locked brand, do not deviate.
+   Black and warm orange only. No gradients, no third color, no shadows. */
+:root {
+  --bg:        #0A0A0B;   /* page background */
+  --bg-raise:  #111113;   /* cards, code blocks */
+  --bg-inset:  #060607;   /* pre backgrounds */
+  --line:      #232326;   /* hairlines */
+  --fg:        #ECECEC;   /* body text */
+  --fg-muted:  #9A9AA0;   /* captions, meta */
+  --accent:    #FB923C;   /* Blink orange, links, eyebrows, active states, lab markers */
+  --accent-dim:#7C4A21;   /* accent at rest / borders */
+  --danger:    #FB923C;   /* failure labs use accent, not red. The brand is two-color. */
+
+  --font-mono: "IBM Plex Mono", "Plex Mono Fallback", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-body: "Inter", "Inter Fallback", system-ui, -apple-system, Segoe UI, sans-serif;
+
+  --measure: 68ch;        /* max text width for prose */
+  --radius: 4px;          /* nearly square. This is an engineering doc. */
+
+  --shell: 1180px;        /* outer page width */
+  --pad: 1.5rem;
+
+  /* Type scale, rem */
+  --t-meta:  0.8125rem;
+  --t-code:  0.9375rem;
+  --t-body:  1.0625rem;
+  --t-h3:    1.375rem;
+  --t-h2:    1.75rem;
+  --t-h1:    2.5rem;
+  --t-hero:  3.5rem;
+}
+
+/* Metric-matched fallbacks so the swap from system font to the webfont does not
+   shift layout. Overrides are measured against Inter and IBM Plex Mono. */
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial"), local("Helvetica"), local("Liberation Sans");
+  size-adjust: 107%;
+  ascent-override: 90%;
+  descent-override: 22.4%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Plex Mono Fallback";
+  src: local("Courier New"), local("Liberation Mono"), local("DejaVu Sans Mono");
+  size-adjust: 96%;
+  ascent-override: 108%;
+  descent-override: 29%;
+  line-gap-override: 0%;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--bg);
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--fg);
+  margin: 0 0 0.6em;
+  text-wrap: balance;
+}
+h1 { font-size: var(--t-h1); }
+h2 { font-size: var(--t-h2); }
+h3 { font-size: var(--t-h3); }
+h4 { font-size: var(--t-body); }
+
+p { margin: 0 0 1.15em; }
+strong { font-weight: 600; color: var(--fg); }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+
+ul, ol { margin: 0 0 1.15em; padding-left: 1.25rem; }
+li { margin: 0 0 0.4em; }
+li::marker { color: var(--accent-dim); }
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 3rem 0;
+}
+
+blockquote {
+  margin: 0 0 1.15em;
+  padding-left: 1rem;
+  border-left: 2px solid var(--accent-dim);
+  color: var(--fg-muted);
+}
+
+code, pre, kbd, samp { font-family: var(--font-mono); }
+
+code {
+  font-size: var(--t-code);
+  background: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.08em 0.32em;
+}
+
+pre {
+  background: var(--bg-inset) !important;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  font-size: var(--t-code);
+  line-height: 1.55;
+  /* ASCII diagrams must not wrap. Horizontal scroll is the correct answer. */
+  white-space: pre;
+  tab-size: 2;
+}
+pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+  white-space: pre;
+}
+
+/* Wide content scrolls inside its own box. The page body never scrolls sideways. */
+.table-scroll {
+  overflow-x: auto;
+  margin: 0 0 1.5em;
+}
+.table-scroll > table { margin-bottom: 0; }
+
+table {
+  width: 100%;
+  min-width: 30rem;
+  border-collapse: collapse;
+  margin: 0 0 1.5em;
+  font-size: var(--t-meta);
+}
+th, td {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+th {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+::selection { background: var(--accent); color: var(--bg); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ---------- layout helpers ---------- */
+.shell {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+}
+.measure { max-width: var(--measure); }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.9rem;
+}
+.eyebrow--muted { color: var(--fg-muted); }
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  color: var(--fg-muted);
+}
+
+.muted { color: var(--fg-muted); }
+
+.section {
+  padding: 3.5rem 0;
+  border-top: 1px solid var(--line);
+}
+.section:first-of-type { border-top: 0; }
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  padding: 0.5rem 1rem;
+  z-index: 20;
+}
+.skip:focus { left: 0.5rem; top: 0.5rem; }
+
+/* ---------- state ledger, the signature element ---------- */
+.ledger {
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  line-height: 1.75;
+  background: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--fg-muted);
+  margin: 0;
+}
+.ledger a { color: var(--fg-muted); text-decoration: none; }
+.ledger a:hover { color: var(--fg); text-decoration: underline; }
+.ledger__head { color: var(--fg); }
+.ledger__key { color: var(--accent); }
+.ledger__row--current,
+.ledger__row--current a { color: var(--accent); }
+.ledger__row--done { color: var(--fg); }
+.ledger__row--done a { color: var(--fg); }
+
+/* ---------- callouts ---------- */
+.callout {
+  margin: 2rem 0;
+  padding: 1rem 1.15rem;
+  background: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.callout > :last-child { margin-bottom: 0; }
+.callout__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin: 0 0 0.35rem;
+}
+.callout__title {
+  font-family: var(--font-mono);
+  font-size: var(--t-body);
+  font-weight: 500;
+  color: var(--fg);
+  margin: 0 0 0.6rem;
+}
+/* Curriculum markdown ships callouts as <div class="callout failure-lab">.
+   The `:::name` directive form compiles to `callout--name`. Both are styled. */
+.callout.failure-lab,
+.callout--failure-lab {
+  border-left: 2px solid var(--accent);
+}
+.callout.failure-lab > p:first-child strong,
+.callout--failure-lab .callout__eyebrow { color: var(--accent); }
+.callout.deliverable code,
+.callout--deliverable code { background: var(--bg-inset); }
+.callout.takeaway > p,
+.callout--takeaway { font-style: italic; }
+.callout.takeaway > p strong { font-style: normal; }
+.callout.note,
+.callout--note { background: transparent; }
+
+/* The first bolded run in a curriculum callout acts as its eyebrow. */
+.callout > p:first-child strong {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.callout pre { background: var(--bg-inset) !important; }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--t-meta);
+  letter-spacing: 0.04em;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius);
+  color: var(--accent);
+}
+.btn:hover { border-color: var(--accent); text-decoration: none; }
+.btn--solid { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.btn--solid:hover { text-decoration: none; }
+
+/* ---------- code copy button ---------- */
+.code-wrap { position: relative; }
+.code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  background: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms linear;
+}
+.code-wrap:hover .code-copy,
+.code-copy:focus-visible { opacity: 1; }
+.code-copy:hover { color: var(--accent); border-color: var(--accent-dim); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+@media (max-width: 640px) {
+  :root { --t-h1: 2rem; --t-hero: 2.25rem; --t-h2: 1.5rem; }
+}

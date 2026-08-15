@@ -1,0 +1,155 @@
+---
+import Base from "../layouts/Base.astro";
+import CtaBlock from "../components/CtaBlock.astro";
+import { CHANNELS } from "../lib/course";
+
+const why = [
+  ["Python", "Plain Python for Modules 00 to 02. You build the loop by hand and lose a run twice before any runtime is handed to you."],
+  ["LangGraph", "Enters at Module 03, not before, and only because it gives graph execution, state, persistence and interrupts as first-class concepts. Deterministic control where requirements are known, agentic reasoning where decisions are genuinely ambiguous."],
+  ["FastAPI", "The run API, the review endpoints and the dashboard. The graph never runs inside the HTTP request: enqueue, return a run id, execute in the background, poll."],
+  ["PostgreSQL", "Checkpoints, the append-only event log, and the published-reports table that proves exactly-once publishing. Anything on disk is gone at redeploy, so nothing durable lives there."],
+  ["Neon", "Free managed Postgres, used from Module 03 onward so that deploying in Module 11 changes env vars and nothing else."],
+  ["Render", "Free web service with git deploy, which is what makes the redeploy lab an honest test rather than a thought experiment."],
+  ["HTMX", "The run dashboard and the approval screen. No build step, no client framework, and the review payload stays server-rendered evidence."],
+  ["LangSmith or Langfuse", "Traces. An engineer has to be able to answer why the agent chose that page and what the model saw."],
+];
+
+const matrix = [
+  ["Render free + Neon", "Full app with public URL, dashboard, DB (this course)", "Spin-down, hours limits"],
+  ["Hugging Face Spaces (Gradio/Streamlit)", "Demo UI, permanent link, easiest", "Compute limits, cold starts, not for background workers"],
+  ["Fly.io / Railway free allowance", "Small always-on services", "Allowance changes; check current terms"],
+  ["Oracle Cloud / GCP free tier VM", "Self-managed always-on", "You operate everything"],
+  ["Cloudflare Tunnel / ngrok", "Show a local run publicly for an hour", "Temporary; not a deployment"],
+  ["Modal free tier", "Bursty background compute", "Pair with a separate frontend"],
+];
+
+const realities = [
+  ["Cold starts and spin-down", "Free web services sleep after idle, so the first request is slow and long runs must not depend on one warm process."],
+  ["Request timeouts", "Never run the graph inside the HTTP request. Enqueue, return the run id, execute in a background task, poll the run."],
+  ["Ephemeral disk", "Anything written to disk is gone on redeploy, so raw pages go to Postgres or an object store."],
+  ["Connection limits", "The Neon free tier caps connections. Use a pool and close cleanly."],
+  ["No secrets in the repo", "Ship a .env.example only. Real values live in the host's environment."],
+];
+---
+
+<Base
+  title="Stack and free hosting | AIR Course 001"
+  description="Why Course 001 uses Python, LangGraph, FastAPI, Postgres on Neon and Render, the free hosting matrix, and when to leave the free tier."
+  pageSlug="stack"
+>
+  <div class="shell">
+    <section class="section">
+      <p class="eyebrow">STACK</p>
+      <h1>Why this stack</h1>
+      <div class="measure">
+        <p>
+          Nothing here is chosen for novelty. Every piece is either free, boring, or the thing
+          that makes a specific failure lab reproducible. You can complete the entire course,
+          including a public deployment, without paying for infrastructure.
+        </p>
+      </div>
+
+      <dl class="why">
+        {
+          why.map(([name, reason]) => (
+            <div class="why__row">
+              <dt>{name}</dt>
+              <dd>{reason}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section class="section">
+      <h2>Free-tier realities you must design for</h2>
+      <dl class="why">
+        {
+          realities.map(([name, reason]) => (
+            <div class="why__row">
+              <dt>{name}</dt>
+              <dd>{reason}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="muted measure">
+        These constraints are the reason the course front-loads durability. An agent that
+        survives a free tier's spin-down, connection caps and redeploys is an agent that
+        already has the properties a paid tier would otherwise let you skip.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Free hosting matrix</h2>
+      <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Option</th>
+            <th scope="col">Best for</th>
+            <th scope="col">Watch out</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            matrix.map(([option, best, watch]) => (
+              <tr>
+                <th scope="row">{option}</th>
+                <td>{best}</td>
+                <td>{watch}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>When to leave the free tier</h2>
+      <div class="measure">
+        <p>
+          Free tiers are for learning and sharing. Once you have users and SLAs, move to a
+          managed LangGraph deployment, a real durable-execution engine such as Temporal, or
+          your own workers on a paid tier.
+        </p>
+        <p>
+          Nothing you built changes. Where it runs does. That is the whole payoff of putting
+          state in Postgres, keying every external effect, and treating waiting as state rather
+          than as a held process.
+        </p>
+        <p>
+          <a href={CHANNELS.repo} rel="noopener">Course repo: fixtures, starter code and artifacts &rarr;</a>
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="stack" />
+</Base>
+
+<style>
+  .why { margin: 1.5rem 0; border-top: 1px solid var(--line); }
+  .why__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .why dt {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--accent);
+  }
+  .why dd {
+    margin: 0;
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    max-width: 68ch;
+  }
+  @media (min-width: 800px) {
+    .why__row { grid-template-columns: 14rem minmax(0, 1fr); gap: 2rem; }
+  }
+</style>

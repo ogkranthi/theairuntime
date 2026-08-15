@@ -1,0 +1,202 @@
+---
+import "@fontsource/ibm-plex-mono/latin-400.css";
+import "@fontsource/ibm-plex-mono/latin-500.css";
+import "@fontsource/inter/latin-400.css";
+import "@fontsource/inter/latin-600.css";
+import "../styles/tokens.css";
+import Wordmark from "../components/Wordmark.astro";
+import { CHANNELS, utm } from "../lib/course";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Slug used for the OG image route and utm_content. */
+  pageSlug: string;
+  ogType?: "website" | "article";
+}
+
+const { title, description, pageSlug, ogType = "website" } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL(`/og/${pageSlug}.png`, Astro.site).href;
+const year = 2026;
+
+const nav = [
+  { href: "/", label: "Course" },
+  { href: "/labs/", label: "Labs" },
+  { href: "/stack/", label: "Stack" },
+  { href: "/about/", label: "About" },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="The AI Runtime, learn" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title="AIR Course 001" href="/rss.xml" />
+  </head>
+
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="shell site-header__inner">
+        <Wordmark />
+        <nav class="site-nav" aria-label="Primary">
+          {nav.map((n) => <a href={n.href} aria-current={Astro.url.pathname === n.href ? "page" : undefined}>{n.label}</a>)}
+          <a href={utm(CHANNELS.substack, pageSlug, "header")} rel="noopener" class="site-nav__out"
+            >Substack <span aria-hidden="true">&#8599;</span></a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell">
+        <slot name="footer-cta" />
+        <div class="site-footer__legal">
+          <span>&copy; {year} The AI Runtime</span>
+          <nav class="site-footer__links" aria-label="Footer">
+            <a href={CHANNELS.lab} rel="noopener">Field Lab</a>
+            <a href={utm(CHANNELS.substack, pageSlug, "footer")} rel="noopener">Substack</a>
+            <a href={CHANNELS.repo} rel="noopener">Course repo</a>
+            <a href="/about/">Contact</a>
+            <a href="/rss.xml">RSS</a>
+          </nav>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Progressive enhancement only. The reading experience needs no JS.
+
+      // 1. Copy button on every code block.
+      document.querySelectorAll("main pre").forEach((pre) => {
+        const wrap = document.createElement("div");
+        wrap.className = "code-wrap";
+        pre.parentNode?.insertBefore(wrap, pre);
+        wrap.appendChild(pre);
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "code-copy";
+        btn.textContent = "Copy";
+        btn.setAttribute("aria-label", "Copy code to clipboard");
+        btn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(pre.textContent ?? "");
+            btn.textContent = "Copied";
+          } catch {
+            btn.textContent = "Failed";
+          }
+          setTimeout(() => (btn.textContent = "Copy"), 1600);
+        });
+        wrap.appendChild(btn);
+      });
+
+      // 2. TOC highlight.
+      const links = document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]");
+      if (links.length) {
+        const byId = new Map<string, HTMLAnchorElement>();
+        links.forEach((l) => byId.set(l.dataset.tocLink ?? "", l));
+        const targets = [...byId.keys()]
+          .map((id) => document.getElementById(id))
+          .filter((el): el is HTMLElement => el !== null);
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              links.forEach((l) => l.removeAttribute("aria-current"));
+              byId.get(entry.target.id)?.setAttribute("aria-current", "true");
+            });
+          },
+          { rootMargin: "-80px 0px -70% 0px", threshold: 0 }
+        );
+        targets.forEach((t) => observer.observe(t));
+      }
+    </script>
+
+    <style>
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid var(--line);
+        background: color-mix(in srgb, var(--bg) 92%, transparent);
+        backdrop-filter: blur(8px);
+      }
+      .site-header__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        min-height: 3.5rem;
+        flex-wrap: wrap;
+      }
+      .site-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.35rem;
+        font-family: var(--font-mono);
+        font-size: var(--t-meta);
+      }
+      @media (max-width: 420px) {
+        .site-header__inner { padding: 0.75rem 0; }
+        .site-nav { gap: 0.4rem 1rem; font-size: 0.75rem; }
+      }
+      .site-nav a { color: var(--fg-muted); }
+      .site-nav a:hover { color: var(--accent); text-decoration: none; }
+      .site-nav a[aria-current="page"] { color: var(--fg); }
+      .site-nav__out { color: var(--accent) !important; }
+
+      .site-footer {
+        border-top: 1px solid var(--line);
+        margin-top: 4rem;
+        padding: 2.5rem 0 3rem;
+      }
+      .site-footer__legal {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 2rem;
+        justify-content: space-between;
+        margin-top: 2rem;
+        font-family: var(--font-mono);
+        font-size: var(--t-meta);
+        color: var(--fg-muted);
+      }
+      .site-footer__links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.2rem;
+      }
+      .site-footer__links a { color: var(--fg-muted); }
+      .site-footer__links a:hover { color: var(--accent); text-decoration: none; }
+    </style>
+  </body>
+</html>

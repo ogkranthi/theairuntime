@@ -1,0 +1,434 @@
+---
+import Base from "../layouts/Base.astro";
+import StateLedger from "../components/StateLedger.astro";
+import CtaBlock from "../components/CtaBlock.astro";
+import { CHANNELS, getModules, moduleHref, pad, utm } from "../lib/course";
+
+const modules = await getModules();
+// Modules 00 and 10 carry written exercises rather than a lab, so the count is
+// derived from the content instead of hardcoded.
+const labCount = modules.filter((m) => m.data.lab).length;
+
+const stack = [
+  ["Python", "Plain Python first. You feel the loop before you are handed a runtime for it."],
+  ["LangGraph", "Graph execution, state, persistence and interrupts as first-class runtime concepts."],
+  ["FastAPI", "The run API and the review endpoints. Never run the graph inside the HTTP request."],
+  ["PostgreSQL", "Checkpoints, event log, published reports. Durable state lives here, not on disk."],
+  ["Neon", "Free managed Postgres from Module 03, so nothing changes at deploy time except env vars."],
+  ["Render", "Free web service and git deploy, which is what makes the redeploy lab real."],
+  ["HTMX", "The run dashboard and review screen with no build step and no client framework."],
+];
+
+const constraints = [
+  ["Finite context leads to context rot.", "Performance degrades long before the hard token limit."],
+  ["Compounding errors.", "A wrong fact in step 3 poisons step 40."],
+  ["Models judge their own completeness poorly.", '"Done" from the model is a claim, not a fact.'],
+  ["Everything grows with duration.", "Cost, latency, security surface, and drift from the original goal."],
+  ["Failure is ambiguous.", "A timeout after a side effect leaves you not knowing whether the side effect happened."],
+];
+---
+
+<Base
+  title="Engineering Long-Running AI Agents | AIR Course 001"
+  description="A free, open course on taking an agent from a simple loop to a durable production system: state, checkpoints, idempotency, failure taxonomies, human-in-the-loop, context engineering, observability and evals."
+  pageSlug="home"
+>
+  <div class="shell">
+    <section class="hero section">
+      <p class="eyebrow">THE AI RUNTIME · COURSE 001 · FREE · OPEN SOURCE</p>
+      <h1 class="hero__title">Engineering Long-Running AI Agents</h1>
+      <p class="hero__sub">From a simple agent loop to a durable production system.</p>
+
+      <div class="hero__grid">
+        <div>
+          <blockquote class="hero__quote">
+            A long-running agent performs useful work whose lifecycle may outlive a single
+            request, process, context window, worker, or human interaction.
+          </blockquote>
+          <p class="muted">
+            The important property is not time. It is execution continuity. Thirteen modules,
+            {" "}{labCount} Failure Labs, one boring application, and every failure reproducible
+            on your machine.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--solid" href={moduleHref(modules[0]!)}>Start Module 00</a>
+            <a class="btn" href="/labs/">See the {labCount} Failure Labs</a>
+          </div>
+        </div>
+        <StateLedger current={0} status="ready" />
+      </div>
+    </section>
+
+    <section class="section" id="thesis">
+      <h2>Course thesis</h2>
+      <div class="measure">
+        <p>
+          Anyone can build an agent that works once. This course is about what happens
+          afterwards. Five constraints make long-running execution hard, and every module maps
+          to one of them.
+        </p>
+      </div>
+      <dl class="constraints">
+        {
+          constraints.map(([head, body]) => (
+            <div class="constraints__row">
+              <dt>{head}</dt>
+              <dd>{body}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="muted measure">
+        Autonomy is not automatically desirable. Every step toward a free-running agent costs
+        you predictability, testability and cost control. You should be able to say why you
+        moved right.
+      </p>
+    </section>
+
+    <section class="section" id="what-we-build">
+      <h2>What we build</h2>
+      <div class="build">
+        <div class="measure">
+          <p>
+            One application for all thirteen modules: a <strong>Vendor Review Agent</strong>.
+            Give it a vendor name and a URL, and it researches the vendor across their site and
+            produces an evidenced brief against a fixed checklist.
+          </p>
+          <p class="muted">
+            It is deliberately boring. The point is that every ounce of attention goes to the
+            runtime, not to inventing features.
+          </p>
+        </div>
+        <pre>{`CHECKLIST = [
+    "product",
+    "customer",
+    "pricing",
+    "security",
+    "developer_experience",
+    "unknowns",
+]`}</pre>
+      </div>
+
+      <h3>What a finished run looks like</h3>
+      <pre>{`Vendor: Acme
+
+Requirements covered: 5/6
+Unknown: Enterprise pricing
+
+Evidence: 12 pages examined
+Risks: 2
+Estimated completeness: 83%
+
+[Approve]   [Research missing items]   [Reject]`}</pre>
+      <p class="muted measure">
+        Human review needs evidence, not a yes or no. If the reviewer cannot see why the agent
+        believes an item is verified, the review is theatre.
+      </p>
+    </section>
+
+    <section class="section" id="why-this-example">
+      <h2>Why this example</h2>
+      <div class="measure">
+        <p>
+          The vendor brief is small enough to build in an evening and large enough to break in
+          every way that matters. It has real fetches, real side effects, a human gate, an
+          unbounded page space, and an output whose correctness is checkable.
+        </p>
+      </div>
+      <pre>{`                LONG-RUNNING AGENT
+                       │
+        ┌──────────────┼──────────────┐
+        ↓              ↓              ↓
+      STATE        EXECUTION       CONTEXT
+        │              │              │
+   checkpoints       retry        compression
+   progress          resume       artifacts
+   evidence          timeout      handoff
+        └──────────────┼──────────────┘
+                       ↓
+                    CONTROL
+                       │
+              human approval
+              cancellation
+              budgets
+              permissions
+                       ↓
+                OBSERVABILITY
+                       ↓
+                  EVALUATION`}</pre>
+      <p class="muted measure">
+        State, Execution, Context, Control, Observability, Evaluation. Modules 02 to 09 take
+        these one at a time, and Module 10 finds the same six primitives inside every credible
+        production system.
+      </p>
+      <div class="measure">
+        <p>
+          Every lab runs against a deterministic fixture server, so "pricing returns 503 twice
+          then 200" is one line of a profile file rather than a code change. Failures become
+          reproducible, comparable and gradeable.
+        </p>
+      </div>
+      <pre>{`git clone ${CHANNELS.repo}
+cd course-001 && make fixtures   # deterministic vendor sites on :8001`}</pre>
+    </section>
+
+    <section class="section" id="stack">
+      <h2>Stack</h2>
+      <div class="table-scroll">
+        <table class="stack-table">
+          <thead>
+            <tr><th scope="col">Piece</th><th scope="col">Why it is here</th></tr>
+          </thead>
+          <tbody>
+            {stack.map(([name, why]) => (
+              <tr>
+                <th scope="row">{name}</th>
+                <td>{why}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p><a href="/stack/">Why this stack, and the free hosting matrix &rarr;</a></p>
+    </section>
+
+    <section class="section" id="syllabus">
+      <h2>Syllabus</h2>
+      <p class="muted measure">
+        Thirteen modules in order. Read is always live. Watch turns on as each Failure Lab
+        ships on YouTube, Notes as each longform ships on Substack.
+      </p>
+
+      <ol class="syllabus">
+        {
+          modules.map((m) => (
+            <li class="syllabus__row">
+              <div class="syllabus__num">{pad(m.data.module)}</div>
+              <div class="syllabus__body">
+                <h3 class="syllabus__title">
+                  <a href={moduleHref(m)}>{m.data.title}</a>
+                </h3>
+                <p class="syllabus__goal">{m.data.goal}</p>
+                {m.data.lab && (
+                  <p class="syllabus__lab">
+                    <span class="syllabus__lab-tag">FAILURE LAB {pad(m.data.module)}</span>{" "}
+                    {m.data.lab}
+                  </p>
+                )}
+              </div>
+              <div class="syllabus__meta">
+                <span class="meta">{m.data.duration}</span>
+                <span class="syllabus__links">
+                  <a href={moduleHref(m)}>Read</a>
+                  {m.data.youtube ? (
+                    <a href={utm(m.data.youtube, m.id, "watch")} rel="noopener">Watch</a>
+                  ) : (
+                    <span class="is-pending" aria-disabled="true" title="Video not published yet">Watch</span>
+                  )}
+                  {m.data.substack ? (
+                    <a href={utm(m.data.substack, m.id, "notes")} rel="noopener">Notes</a>
+                  ) : (
+                    <span class="is-pending" aria-disabled="true" title="Longform not published yet">Notes</span>
+                  )}
+                </span>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="section" id="different">
+      <h2>How this course is different</h2>
+      <div class="different">
+        <div>
+          <p class="eyebrow eyebrow--muted">ONE BORING APP</p>
+          <p>
+            Every module builds the same vendor agent. Nothing is a toy example that vanishes
+            in the next chapter, so all the attention lands on durability instead of on a new
+            domain each week.
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow eyebrow--muted">FAILURE BEFORE ABSTRACTION</p>
+          <p>
+            You hit the failure first, on purpose, then get the primitive that fixes it.
+            LangGraph does not appear until Module 03, after you have lost a run twice and
+            felt exactly why a checkpointer exists.
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow eyebrow--muted">EVALS ARE THE LOOP</p>
+          <p>
+            Not a plug-in at the end. Error analysis on real traces, binary criteria, a judge
+            validated against human labels, and a regression gate that proves version B beats
+            version A instead of preferring it.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="home" />
+</Base>
+
+<style>
+  .hero { padding-top: 4rem; }
+  .hero__title {
+    font-size: var(--t-hero);
+    margin-bottom: 0.5rem;
+  }
+  .hero__sub {
+    font-size: var(--t-h3);
+    color: var(--fg-muted);
+    margin: 0 0 2.5rem;
+    max-width: var(--measure);
+  }
+  .hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+  .hero__quote {
+    font-family: var(--font-mono);
+    font-size: var(--t-body);
+    color: var(--fg);
+    margin-bottom: 1.25rem;
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .constraints {
+    margin: 1.5rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .constraints__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .constraints dt {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--fg);
+  }
+  .constraints dd {
+    margin: 0;
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+  }
+
+  .build {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .stack-table th[scope="row"] {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--accent);
+    white-space: nowrap;
+    width: 10rem;
+  }
+  .stack-table td { color: var(--fg-muted); }
+
+  .syllabus {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .syllabus__row {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: 0.35rem 1rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--line);
+    margin: 0;
+  }
+  .syllabus__num {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--accent);
+    padding-top: 0.2rem;
+  }
+  .syllabus__title {
+    font-size: var(--t-body);
+    margin: 0 0 0.3rem;
+  }
+  .syllabus__title a { color: var(--fg); }
+  .syllabus__title a:hover { color: var(--accent); text-decoration: none; }
+  .syllabus__goal {
+    margin: 0 0 0.4rem;
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    max-width: 62ch;
+  }
+  .syllabus__lab {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+  }
+  .syllabus__lab-tag { color: var(--accent); letter-spacing: 0.06em; }
+  .syllabus__meta {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    align-items: baseline;
+    margin-top: 0.5rem;
+  }
+  .syllabus__links {
+    display: flex;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+  }
+  .is-pending {
+    color: var(--fg-muted);
+    opacity: 0.55;
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+
+  .different {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+  .different p:last-child { margin-bottom: 0; font-size: var(--t-meta); color: var(--fg-muted); }
+
+  @media (min-width: 800px) {
+    .constraints__row {
+      grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+      gap: 0.5rem 2rem;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .hero__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); gap: 3rem; }
+    .build { grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); gap: 2.5rem; }
+    .different { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .syllabus__row { grid-template-columns: 3rem minmax(0, 1fr) 14rem; }
+    .syllabus__meta {
+      grid-column: 3;
+      grid-row: 1;
+      margin-top: 0;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.5rem;
+    }
+  }
+</style>

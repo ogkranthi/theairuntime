@@ -1,0 +1,180 @@
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import satori from "satori";
+import { Resvg } from "@resvg/resvg-js";
+import { LEDGER_LABELS, getModules, pad } from "../../lib/course";
+
+const require = createRequire(import.meta.url);
+
+function font(file: string): Buffer {
+  // Satori needs ttf/otf/woff. @fontsource ships a .woff next to every .woff2.
+  return fs.readFileSync(require.resolve(`@fontsource/ibm-plex-mono/files/${file}`));
+}
+
+const BG = "#0A0A0B";
+const FG = "#ECECEC";
+const MUTED = "#9A9AA0";
+const ACCENT = "#FB923C";
+const LINE = "#232326";
+
+type Page = {
+  slug: string;
+  eyebrow: string;
+  title: string;
+  /** Module number to mark with the arrow, or null for non-module pages. */
+  current: number | null;
+};
+
+export async function getStaticPaths() {
+  const modules = await getModules();
+
+  const pages: Page[] = [
+    { slug: "home", eyebrow: "COURSE 001 · FREE · OPEN SOURCE", title: "Engineering Long-Running AI Agents", current: null },
+    { slug: "labs", eyebrow: "COURSE 001 · FAILURE LABS", title: "Break it on purpose, then fix it", current: null },
+    { slug: "stack", eyebrow: "COURSE 001 · STACK", title: "Why this stack, and the free tier", current: null },
+    { slug: "about", eyebrow: "COURSE 001 · ABOUT", title: "Quality among noise", current: null },
+    { slug: "404", eyebrow: "COURSE 001", title: "No checkpoint at that step", current: null },
+    ...modules.map((m) => ({
+      slug: m.id,
+      eyebrow: `COURSE 001 · MODULE ${pad(m.data.module)}`,
+      title: m.data.title,
+      current: m.data.module,
+    })),
+  ];
+
+  return pages.map((page) => ({ params: { slug: page.slug }, props: { page } }));
+}
+
+/** Five ledger rows centred on the current module, clamped to the real range. */
+function ledgerRows(current: number | null) {
+  const start = current === null ? 0 : Math.min(Math.max(current - 2, 0), 12 - 4);
+  return Array.from({ length: 5 }, (_, i) => start + i).map((n) => ({
+    n,
+    label: LEDGER_LABELS[n] as string,
+    state: current === null ? "todo" : n === current ? "current" : n < current ? "done" : "todo",
+  }));
+}
+
+export async function GET({ props }: { props: { page: Page } }) {
+  const { page } = props;
+  const rows = ledgerRows(page.current);
+
+  const tree = {
+    type: "div",
+    props: {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        width: "1200px",
+        height: "630px",
+        backgroundColor: BG,
+        padding: "64px 72px",
+        fontFamily: "Plex",
+      },
+      children: [
+        {
+          type: "div",
+          props: {
+            style: { display: "flex", fontSize: 22, letterSpacing: "0.14em", color: ACCENT },
+            children: `THE AI RUNTIME · ${page.eyebrow}`,
+          },
+        },
+        {
+          type: "div",
+          props: {
+            style: { display: "flex", flexDirection: "column", maxWidth: "980px" },
+            children: [
+              ...(page.current === null
+                ? []
+                : [
+                    {
+                      type: "div",
+                      props: {
+                        style: { display: "flex", fontSize: 30, color: MUTED, marginBottom: "14px" },
+                        children: `MODULE ${pad(page.current)}`,
+                      },
+                    },
+                  ]),
+              {
+                type: "div",
+                props: {
+                  style: { display: "flex", fontSize: 64, lineHeight: 1.15, color: FG },
+                  children: page.title,
+                },
+              },
+            ],
+          },
+        },
+        {
+          type: "div",
+          props: {
+            style: {
+              display: "flex",
+              flexDirection: "column",
+              borderTop: `1px solid ${LINE}`,
+              paddingTop: "26px",
+            },
+            // The ledger markers are drawn as shapes, not glyphs: the Latin
+            // subset of Plex Mono has no arrow, check or circle, and satori has
+            // no system font to fall back to the way the browser does.
+            children: rows.map((r) => ({
+              type: "div",
+              props: {
+                style: {
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: 22,
+                  lineHeight: 1.6,
+                  color: r.state === "current" ? ACCENT : r.state === "done" ? FG : MUTED,
+                },
+                children: [
+                  {
+                    type: "div",
+                    props: {
+                      style: {
+                        display: "flex",
+                        width: "26px",
+                        height: "26px",
+                        alignItems: "center",
+                        justifyContent: "flex-start",
+                      },
+                      children: {
+                        type: "div",
+                        props: {
+                          style:
+                            r.state === "current"
+                              ? { display: "flex", width: "14px", height: "14px", backgroundColor: ACCENT, borderRadius: "2px" }
+                              : r.state === "done"
+                                ? { display: "flex", width: "12px", height: "12px", backgroundColor: FG, borderRadius: "2px" }
+                                : { display: "flex", width: "11px", height: "11px", border: `2px solid ${LINE}`, borderRadius: "50%" },
+                          children: "",
+                        },
+                      },
+                    },
+                  },
+                  { type: "div", props: { style: { display: "flex" }, children: `${pad(r.n)}  ${r.label}` } },
+                ],
+              },
+            })),
+          },
+        },
+      ],
+    },
+  };
+
+  const svg = await satori(tree as Parameters<typeof satori>[0], {
+    width: 1200,
+    height: 630,
+    fonts: [
+      { name: "Plex", data: font("ibm-plex-mono-latin-400-normal.woff"), weight: 400, style: "normal" },
+      { name: "Plex", data: font("ibm-plex-mono-latin-500-normal.woff"), weight: 500, style: "normal" },
+    ],
+  });
+
+  const png = new Resvg(svg, { fitTo: { mode: "width", value: 1200 } }).render().asPng();
+
+  return new Response(new Uint8Array(png), {
+    headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=31536000, immutable" },
+  });
+}

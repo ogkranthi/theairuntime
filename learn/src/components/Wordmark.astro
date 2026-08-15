@@ -1,0 +1,25 @@
+---
+interface Props {
+  href?: string;
+}
+const { href = "/" } = Astro.props;
+---
+
+<a class="wordmark" href={href} aria-label="The AI Runtime, learn">
+  <span class="wordmark__brand">THE AI RUNTIME</span><span class="wordmark__slash">/</span><span
+    class="wordmark__sub">learn</span
+  >
+</a>
+
+<style>
+  .wordmark {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    letter-spacing: 0.1em;
+    color: var(--fg);
+    white-space: nowrap;
+  }
+  .wordmark:hover { text-decoration: none; }
+  .wordmark__slash { color: var(--accent); margin: 0 0.45em; }
+  .wordmark__sub { color: var(--fg-muted); letter-spacing: 0.04em; }
+</style>

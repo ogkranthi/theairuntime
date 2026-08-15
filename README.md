@@ -5,6 +5,7 @@ Web platform for [The AI Runtime](https://theairuntime.com), the publication and
 **Domain split:**
 - `theairuntime.com` → Substack (Custom Domain). The publication itself: `/`, `/p/*`, `/feed`, `/archive`.
 - `events.theairuntime.com` → **this repo**. Meetups, speakers, and resources library.
+- `learn.theairuntime.com` → **[`learn/`](./learn)**, a standalone Astro site. AIR Course 001, the written curriculum and syllabus.
 
 **Routes here:**
 - `/boston` → Boston meetup hub (current/upcoming event, agenda, speakers, RSVP)
@@ -23,6 +24,13 @@ repo, no forms. Retired paths (`/submit`, `/start-here`, `/investigations`,
 `/briefs`) redirect to the closest surviving page. Host routing lives in
 `src/worker.ts`; lab URLs are listed in `/lab-sitemap.xml` and excluded from
 the main sitemap.
+
+**The course (`learn.theairuntime.com`):** a separate Astro project in
+[`learn/`](./learn) with its own `package.json`, deployed as its own Cloudflare
+Pages project (root directory `learn`). It hosts AIR Course 001, Engineering
+Long-Running AI Agents: 13 module pages from `learn/src/content/course/`, a
+Failure Labs index, a stack page, RSS, and per-module OpenGraph images generated
+at build. See [`learn/README.md`](./learn/README.md).
 
 Built with Astro + content collections, deployed to Cloudflare Pages.
 
