@@ -114,9 +114,11 @@ screens, on purpose. Do not convert them to images.
 
 ## Deploy
 
-Cloudflare Pages, as its own project separate from the events site. Build
-command `npm run build`, output directory `dist`, **root directory `learn`**,
-then bind `learn.theairuntime.com` to it.
+Cloudflare Pages, as its own project separate from the events site. The deploy
+runs in CI: push to `main` and `.github/workflows/deploy-learn.yml` type checks,
+builds, and ships it. Nothing to run locally, and no Cloudflare credential
+outside GitHub's secret store.
 
-Full setup, both the dashboard path and the CLI path, plus verification commands
-and the failure table: [`DEPLOY.md`](./DEPLOY.md).
+One-time setup (a scoped Cloudflare token in two repo secrets), how to trigger a
+deploy by hand, verification commands and the failure table:
+[`DEPLOY.md`](./DEPLOY.md).
