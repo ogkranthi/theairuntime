@@ -114,12 +114,9 @@ screens, on purpose. Do not convert them to images.
 
 ## Deploy
 
-Cloudflare Pages. Build command `npm run build`, output directory `dist`, root
-directory `learn`. Bind the custom domain `learn.theairuntime.com` to the Pages
-project. Add Cloudflare Web Analytics from the dashboard; there is no other
-analytics and no cookies.
+Cloudflare Pages, as its own project separate from the events site. Build
+command `npm run build`, output directory `dist`, **root directory `learn`**,
+then bind `learn.theairuntime.com` to it.
 
-```bash
-npm run build
-npx wrangler pages deploy dist --project-name learn-theairuntime
-```
+Full setup, both the dashboard path and the CLI path, plus verification commands
+and the failure table: [`DEPLOY.md`](./DEPLOY.md).
