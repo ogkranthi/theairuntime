@@ -13,6 +13,7 @@ const STAGE = new Map([
   ["Prove it", "prove"],
   ["Exit criteria", "exit"],
   ["Checkpoint", "checkpoint"],
+  ["Check your understanding", "checkpoint"],
 ]);
 
 function textOf(node) {

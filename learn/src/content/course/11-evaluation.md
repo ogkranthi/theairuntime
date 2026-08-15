@@ -3,7 +3,7 @@ module: 11
 title: "Evaluating Long-Running Agents"
 duration: "75-90 min"
 goal: "Make evals the development loop: error analysis on real traces, binary criteria, a validated judge, and a regression gate that proves version B beats version A."
-question: "How do we prove B is better than A?"
+question: "How do we prove version B is better than version A?"
 hook: "Version B feels better. Feels."
 scenario: "Two prompt versions, two plausible answer sets, one executive about to quote the wrong number. Deciding which version ships is an engineering problem."
 caseStudy: enterprise-data-agent
@@ -11,152 +11,283 @@ skills: [Error analysis, Judges, Regression gates]
 technologies: [Python]
 repoPath: "evals/"
 labNumber: 11
-invariant: "I10: a quality claim is backed by an evaluator validated against humans."
+invariant: "I12: version B is not called better without evaluation evidence."
 lab: "The Judge That Agreed With Everyone"
 deliverable: "evals/ (labeled traces, rubric, deterministic evaluator, judge, agreement report)"
 status: published
 ---
 
-This is the module the whole course has been building toward. If you only internalise one module, make it this one. The process here follows Hamel Husain's published eval methodology; the adaptations are for multi-hour trajectories rather than single responses.
+Do not begin by writing an LLM-judge prompt.
 
-## Lesson 11.1: What "good" means for a long-running agent
+Begin by looking at failures.
 
-Single-shot evals ask: *is the answer right?*
-Long-running evals ask, in order:
+## What are we evaluating?
 
-```text
-1. Did it finish honestly?         (verified items, unknowns declared, no false completion)
-2. Is every claim evidenced?        (claim ↔ evidence ↔ page hash resolves)
-3. Did it survive?                  (resumed after N kills without duplicate side effects)
-4. Was the trajectory sane?         (no loops, no re-fetches, budget respected)
-5. Was it worth it?                 (cost, wall-clock, human review rounds)
-```
+For a one-shot model response, an evaluator may ask whether the answer is correct.
 
-You are grading the **trajectory and the artifact**, not a chat turn.
-
-## Lesson 11.2: Error analysis first (look at the data)
-
-Before writing any rubric:
-
-1. Run the agent across the fixture vendors and 3-5 real public sites. Collect **50 traces**.
-2. Open each trace. Write one free-text note per trace: *what went wrong, if anything, and where.*
-3. Cluster the notes into failure categories. Do not pre-decide the categories.
-4. Count. The distribution tells you what to fix and what to measure.
-
-Typical first pass:
+For a long-running agent, evaluate several layers:
 
 ```text
-False completion (claimed verified, no evidence)      14
-Wrong page chosen repeatedly                            9
-Contradiction shipped                                   6
-Over-escalation to unknown (evidence existed)           5
-Budget stop with poor partial report                    4
-Clean                                                  12
+OUTCOME
+Did the run finish with the required useful result?
+
+EVIDENCE
+Are verified claims actually supported?
+
+TRAJECTORY
+Did the agent take sensible actions or loop/waste work?
+
+RECOVERY
+Did it preserve correct progress through injected failures?
+
+CONTROL
+Were approvals, cancellation, and permissions respected?
+
+EFFICIENCY
+What did it cost in time, calls, and money?
 ```
 
-Write **binary** pass/fail criteria from these clusters. Binary labels beat 1-5 scales: humans agree on them, judges can be validated against them, and trends are readable.
+The artifact and the trajectory both matter.
 
-## Lesson 11.3: Deterministic evaluators (free, fast, exact)
+## Step 1: Collect representative traces
 
-Most of your criteria need no LLM. Build these as pure functions over state + `run_events` + `published_reports`:
+Run across:
+
+```text
+fixture vendors
+failure profiles
+small set of stable public sites if useful
+```
+
+Collect enough traces to see repeated behavior, perhaps 30-50 for a first meaningful pass, not because the number is magical but because one or two demos are not error analysis.
+
+## Step 2: Human error analysis
+
+For each trace write:
+
+```text
+What went wrong?
+Where did it first go wrong?
+What was the impact?
+Could this be detected automatically?
+```
+
+Possible clusters:
+
+```text
+false completion
+repeated page selection
+missed contradiction
+unnecessary escalation
+budget spent on irrelevant pages
+unsafe retry
+stale approval
+```
+
+Let observed errors shape the eval criteria.
+
+Do not start with a generic rubric detached from your failure data.
+
+## Step 3: Deterministic evaluators first
+
+Many important properties do not require another model.
 
 ```python
-def evidence_resolves(state) -> bool        # every verified item has ≥1 evidence with a stored page hash
-def no_false_completion(state) -> bool      # verified ⊆ items with evidence
-def single_publish(run_id) -> bool          # COUNT(published_reports WHERE run_id) == 1
-def resumed_cleanly(events) -> bool         # after each kill marker, next node != first node
-def no_refetch(events) -> bool              # no url fetched twice with same hash
-def within_budget(state) -> bool
-def contradiction_free(findings) -> bool    # same requirement, opposing claims → fail
+def no_false_completion(run) -> bool:
+    ...
+
+def all_evidence_resolves(run) -> bool:
+    ...
+
+def publish_count_is_one(run) -> bool:
+    ...
+
+def approval_precedes_publish(run) -> bool:
+    ...
+
+def no_forbidden_fetch(run) -> bool:
+    ...
+
+def orphan_recovered(run) -> bool:
+    ...
 ```
 
-Run them on every run. Report a scorecard per run and an aggregate per code version.
+If SQL or code can prove the property exactly, use it.
 
-## Lesson 11.4: LLM-as-judge, validated
+## Step 4: Semantic evaluators
 
-Some criteria are semantic: *does the finding actually answer the question? Is the unknown genuinely unknown?* For these you build a judge, and then you **validate it against humans**.
+Some criteria require language understanding.
 
-Process:
+Example:
 
-1. Human-label 50 findings for `answers_question: pass/fail`.
-2. Write a judge prompt with the *same* binary criterion and 3-5 labelled examples (including negatives).
-3. Run the judge. Compute agreement, **true positive rate and true negative rate** separately: accuracy alone hides a judge that says "pass" to everything.
-4. Iterate the prompt until agreement is acceptable for your risk (aim ≥ 90% with balanced TPR/TNR). Re-check on 20 fresh labels.
-5. Only then use it at scale.
+> Does this evidence actually support the claim?
 
-Never let the model that produced the finding be its own judge in the eval. Separate roles.
+Judge input:
 
-## Lesson 11.5: Golden set and regression gate
+```json
+{
+  "claim": "The vendor supports SAML SSO.",
+  "evidence": "Enterprise accounts can configure SAML-based single sign-on."
+}
+```
 
-Freeze:
+Keep the criterion narrow:
 
 ```text
-evals/golden/
-  vendors/            fixture profiles + expected verified/unknown per item
-  traces/             50 labeled traces (jsonl)
-  labels.csv          human binary labels
-  rubric.md           criteria, one line each, with pass/fail definitions
+PASS if the supplied evidence directly supports the claim.
+FAIL if support is absent, indirect, contradictory, or requires facts outside the supplied evidence.
 ```
 
-CI gate: every change runs the fixture vendors, computes the deterministic scorecard and the judge scorecard, and fails the build if any aggregate metric drops below the previous version. That is how you *prove* B is better than A, not by reading two outputs and preferring one.
+One evaluator should not simultaneously grade writing style, truthfulness, completeness, and security.
 
-## Lesson 11.6: Production monitoring
+## Step 5: Validate a model judge against humans
 
-Sample real runs weekly. Re-run the deterministic evaluators (free). Run the judge on the sample. Human-review 10. Update the golden set when you find a new failure class. This is the loop; it never ends.
+Create human labels first.
+
+Run the judge on the same examples.
+
+Report:
+
+```text
+true positives
+false positives
+true negatives
+false negatives
+```
+
+A pass-happy judge can have deceptively high accuracy on a dataset where most examples pass.
+
+The confusion matrix reveals the error mode.
+
+For a safety/correctness criterion, false PASS may be much worse than false FAIL.
+
+Choose release thresholds based on consequence, not an arbitrary universal percentage.
+
+## Step 6: Regression suite
+
+Run the same golden set against A and B.
+
+Report:
+
+```text
+                      Version A   Version B   Delta
+Evidence pass rate
+False completion
+Recovery pass rate
+Security pass rate
+Median cost
+p95 duration
+Human escalations
+```
+
+A system change can improve quality while increasing cost. Show both.
+
+## Step 7: Slice results
+
+Aggregate averages hide regressions.
+
+Slice by:
+
+```text
+vendor type
+failure profile
+requirement
+model
+code version
+budget tier
+```
+
+Example:
+
+```text
+Overall score: improved
+Security-evidence slice: regressed
+```
+
+That slice may block release even when the mean is better.
+
+## Trajectory evaluators
+
+Examples:
+
+```text
+same content hash fetched >2 times?
+8 decisions without durable progress?
+publish attempted before approval?
+>50% of model cost produced no evidence?
+run successfully recovered after kill?
+```
+
+These often tell you more about an agent system than a generic final-answer judge.
+
+## Production sampling
+
+You cannot manually read every live trace.
+
+Sample strategically:
+
+```text
+all failed runs
+all security denials
+all high-cost runs
+all human escalations
+random successful runs
+```
+
+Continue error analysis after deployment.
 
 <div class="callout failure-lab">
 
 **FAILURE LAB 11: The Judge That Agreed With Everyone**
 
-Ship a deliberately weak judge prompt ("Is this finding good? Answer pass or fail."). Run it on the 50 labelled findings.
+Create a labeled set with both supported and unsupported claims.
 
-Observe: high accuracy, near-100% "pass", ~30% true negative rate. It agrees with everyone.
+Use an intentionally vague judge prompt first.
 
-Fix the prompt with the explicit criterion and negative examples. Recompute TPR/TNR. Then swap in one *contradictory* finding from Lab 08 and confirm the judge now catches it.
+Observe pass bias.
+
+Improve the criterion and examples.
+
+The lab output must contain:
+
+```text
+label distribution
+judge/model version
+confusion matrix
+known failure modes
+chosen release threshold and why
+```
 
 </div>
 
-<div class="callout deliverable">
 
-**Deliverable:** `evals/` with the labelled traces, `rubric.md`, deterministic evaluators, the judge + agreement report (before/after), and the CI gate config.
+## Eval card
 
-</div>
+Document each important semantic evaluator:
 
-<div class="callout takeaway">
+```text
+purpose
+input
+criterion
+human label process
+judge model/version
+validation data
+confusion matrix
+known blind spots
+release threshold
+```
 
-**Production takeaway:** evals are not a plug-in library. Look at the data, write binary criteria, validate your judge, gate on the golden set. Everything else is vibes.
-
-</div>
-
-## Diagnose
+## Check your understanding
 
 <div class="block-diagnose">
 
-The judge that agreed with everyone got replaced. Show your work:
+Answer before moving on. If one is fuzzy, the relevant section is a scroll away.
 
-1. The naive judge scored high accuracy. Which number exposed it, and why does accuracy alone hide a judge that passes everything?
-2. Which of your criteria turned out to need no model at all, and what did that buy you?
-3. Two humans disagreed on a label. Is that a judge problem or a rubric problem, and what do you fix first?
-4. Your regression gate went red on a planted regression. Which metric caught it, and what would have shipped without the gate?
-
-</div>
-
-## Prove it
-
-<div class="block-prove">
-
-```bash
-make lab LAB=11
-```
-
-Passing means, checked automatically, not eyeballed:
-
-- the weak judge on 50 labeled findings: near-100 percent pass rate, true negative rate around 30 percent, exposed by the report
-- the fixed judge reaches at least 90 percent agreement with balanced TPR/TNR on a held-out set, and catches the planted contradictory finding from Lab 08
-- deterministic evaluators run on every fixture run and produce a scorecard
-- the CI gate fails the build when any aggregate metric drops below the previous version
-
-The judge never grades its own model's findings; roles stay separate.
+1. Why does error analysis come before rubric design?
+2. Which properties should not use an LLM judge?
+3. Why can judge accuracy alone be misleading?
+4. What is a trajectory evaluator?
+5. Why should evaluation results be sliced?
 
 </div>
 
@@ -173,31 +304,6 @@ Observable conditions, not "I understand it". Check them off; progress is saved 
 - [ ] The golden set and regression gate run on every change
 
 </div>
-
-## Checkpoint
-
-Three questions before you move on. Answer first, then open.
-
-<details class="checkpoint">
-<summary>Why error analysis before metrics?</summary>
-
-Because the failure distribution of your app is an empirical fact you cannot guess. Reading 50 traces tells you what to fix and what to measure; picking metrics first produces dashboards that never move and never explain.
-
-</details>
-
-<details class="checkpoint">
-<summary>Why binary criteria instead of 1-to-5 scales?</summary>
-
-Humans agree on them, judges can be validated against them, and trends are readable. Ask for a 1-to-5 and you get 4s; ask a yes/no with a written definition and you get a signal.
-
-</details>
-
-<details class="checkpoint">
-<summary>What is the complaint flywheel?</summary>
-
-Every production complaint becomes a golden-set case, permanently. A complaint that does not become a test case is a complaint you will receive again.
-
-</details>
 
 ## Primary sources
 

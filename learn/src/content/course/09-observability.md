@@ -1,9 +1,9 @@
 ---
 module: 9
-title: "Observability & Run UX"
+title: "Observability and Run UX"
 duration: "45-60 min"
 goal: "Make every run explainable to a human in under a minute, from the dashboard, from the trace, and from the database."
-question: "Can an operator explain a run in under a minute?"
+question: "Can a human tell what the run is doing, whether it is stuck, and what happened after failure?"
 hook: "The run looks dead. Is it?"
 scenario: "A fetch has hung for 41 seconds. The dashboard, the trace and the event log each answer a different question about it, and an operator needs all three."
 caseStudy: incident-response-agent
@@ -11,128 +11,317 @@ skills: [Tracing, Event logs, Run UX]
 technologies: [Python, HTMX, LangSmith]
 repoPath: "dashboard.html"
 labNumber: 9
-invariant: "I8: every run can explain itself from the database in under a minute."
-lab: "The Silent Run"
+invariant: "I10: an operator can determine what a run is doing and why."
+lab: "Silent Run"
 deliverable: "dashboard.html + tracing config + runs/events tables"
 status: published
 ---
 
-## Lesson 09.1: Three audiences, three surfaces
+## Three audiences
+
+Design observability for different users.
+
+### Reviewer/user
+
+Needs:
 
 ```text
-OPERATOR    "Is it stuck? What is it doing? Can I stop it?"     → run dashboard
-ENGINEER    "Why did it choose that page? What did the model see?" → traces
-AUDITOR     "What happened, in order, with evidence?"             → event log
+progress
+evidence
+unknowns
+what is waiting on me
 ```
 
-One data model feeds all three. Do not build three.
+### Operator
 
-## Lesson 09.2: Event log (append-only)
+Needs:
+
+```text
+is the run alive?
+is it making progress?
+who owns it?
+is the lease healthy?
+can I cancel/recover it?
+```
+
+### Engineer
+
+Needs:
+
+```text
+model inputs/outputs
+tool calls
+latency
+exceptions
+state transitions
+retries
+versions
+```
+
+A raw trace is not a good end-user progress UI.
+
+## Logs, traces, metrics, and audit events
+
+Explain the difference.
+
+### Logs
+
+Diagnostic records.
+
+```text
+worker started
+timeout calling vendor
+retry scheduled
+```
+
+### Traces
+
+A causal tree/timeline for one execution.
+
+```text
+run_123
+  ├─ plan next action
+  │    └─ model call
+  ├─ fetch pricing
+  │    └─ HTTP call
+  └─ verify evidence
+       └─ model call
+```
+
+### Metrics
+
+Aggregated numerical behavior across many runs.
+
+```text
+p95 duration
+run failure rate
+median cost
+orphan count
+```
+
+### Audit events
+
+Business-significant facts that must be independently inspectable.
+
+```text
+approval requested
+approval received
+publish attempted
+publish reconciled
+run cancelled
+```
+
+Do not depend on parsing debug logs to reconstruct an approval audit trail.
+
+## Application event table
 
 ```sql
 CREATE TABLE run_events (
-  id        BIGSERIAL PRIMARY KEY,
-  run_id    TEXT NOT NULL,
-  ts        TIMESTAMPTZ DEFAULT now(),
-  node      TEXT NOT NULL,          -- fetch_page, extract_finding, ...
-  kind      TEXT NOT NULL,          -- started | finished | failed | decision | budget
-  payload   JSONB NOT NULL
+    event_id BIGSERIAL PRIMARY KEY,
+    run_id TEXT NOT NULL,
+    ts TIMESTAMPTZ NOT NULL DEFAULT now(),
+    event_type TEXT NOT NULL,
+    node TEXT,
+    attempt INT,
+    payload JSONB NOT NULL
 );
-CREATE INDEX ON run_events (run_id, id);
 ```
 
-Every node writes `started` and `finished`/`failed`. Every LLM decision writes `decision` with the *reason* the model gave. Budgets write `budget` on every change. This table is the audit trail and the raw material for evals.
-
-## Lesson 09.3: Traces
-
-Wire LangSmith (free tier) **or** self-hosted Langfuse. Both give you: per-node spans, prompts as sent, tokens, latency, cost. Tag every trace with `run_id`, `vendor`, `code_version`, `fixture_profile`.
-
-Non-negotiable: you must be able to open a trace and see the *exact* prompt the model saw for any decision. If your context builder (Module 08) is doing its job, that prompt should be small and readable.
-
-## Lesson 09.4: Run dashboard
-
-Plain HTML + HTMX, polling `GET /runs/{id}` every 2s. Shows the operational questions from Module 02, live:
+Useful events:
 
 ```text
-RUN f72c…  ·  Acme  ·  researching  ·  4m12s  ·  $0.31
-
-✓ product              verified   evidence: 2
-✓ customer             verified   evidence: 1
-→ pricing              researching (attempt 2, 503 retry)
-○ security
-○ developer_experience
-○ unknowns
-
-Pages: 7/25   Errors: 1   Last event: fetch_page finished 3s ago
-
-[Cancel run]
+run_created
+work_claimed
+node_started
+node_completed
+node_failed
+retry_scheduled
+evidence_added
+checkpoint_committed
+approval_requested
+approval_received
+cancel_requested
+side_effect_started
+side_effect_reconciled
+run_terminal
 ```
 
-Cancel sets `status=cancelled` in your `runs` table; every node checks it at entry. That is your kill switch, and it must work while a model call is in flight (check after, not before).
+## Correlation
 
-## Lesson 09.5: Alerts that matter
-
-Only three, and each is a query on `run_events`:
+Every important model/tool/runtime record should include:
 
 ```text
-STUCK      no event for > 5 min while status ∈ {researching, verifying}
-LOOPING    same node+payload hash > 3 times in a run
-BUDGET     any budget field at ≥ 80%
+run_id
 ```
+
+Often also:
+
+```text
+thread_id
+worker_id
+code_version
+model_id
+```
+
+Without correlation IDs, production debugging becomes timestamp archaeology.
+
+## Alive versus making progress
+
+This must be a major concept.
+
+A recent heartbeat means:
+
+```text
+worker appears alive
+```
+
+It does not mean:
+
+```text
+run is accomplishing useful work
+```
+
+Track:
+
+```text
+last_heartbeat_at
+last_progress_at
+```
+
+Define progress as a meaningful state change, for example:
+
+```text
+new evidence
+requirement verified
+contradiction found
+human decision received
+```
+
+## Silent loop example
+
+```text
+planner chooses page A
+planner chooses page B
+planner chooses page A
+planner chooses page B
+...
+```
+
+The worker can heartbeat forever.
+
+The HTTP service is healthy.
+
+Nothing throws an exception.
+
+The run is still bad.
+
+Add a progress watchdog:
+
+```python
+if decisions_since_progress > 8:
+    emit("suspected_loop")
+    pause_or_replan()
+```
+
+## Operator dashboard
+
+The top of the page should answer operational questions quickly:
+
+```text
+Run: run_123
+Status: researching
+
+Owner: worker-2
+Lease remaining: 38s
+Last heartbeat: 3s ago
+Last useful progress: 42s ago
+
+Current requirement: security
+Coverage: 3 / 5
+Unknowns: 1
+Errors: 2 transient
+
+Model calls: 17
+Cost: $0.14 / $0.40
+Pages fetched: 11
+
+[Cancel] [Pause] [Open trace]
+```
+
+Then show a compact event timeline and evidence-backed progress.
+
+## Cost attribution
+
+Long-running systems must answer:
+
+```text
+What did this run cost?
+What caused the cost?
+```
+
+Track cost by at least:
+
+```text
+run
+model
+operation type
+code version
+```
+
+For multi-tenant systems, also tenant/user.
+
+## SLO thinking
+
+Introduce service-level indicators without inventing universal thresholds.
+
+Examples:
+
+```text
+accepted runs reaching a terminal state
+orphan recovery time
+approval-to-resume latency
+duplicate side-effect count
+time to first useful progress
+```
+
+Choose thresholds from business consequence, not tutorial convention.
 
 <div class="callout failure-lab">
 
-**FAILURE LAB 09: The Silent Run**
+**FAILURE LAB 09: Silent Run**
 
-Fixture profile `hang`: one page responds after 45s. Start a run and walk away.
+Create a planner loop with:
 
-Without the dashboard, the run looks dead. With it, you see `→ pricing · fetch_page started 41s ago`, the STUCK alert at 5 min, and a working Cancel.
+```text
+process alive = yes
+heartbeats = yes
+new durable progress = no
+```
 
-Then open the trace for the last `select_next_task` decision and answer, from the prompt alone: *why did it choose that page?* If you can't, your context builder is hiding something.
+A passing implementation surfaces:
+
+```text
+alive = true
+making_progress = false
+suspected_loop = true
+```
+
+The operator should discover this from the dashboard/events without reading source code.
 
 </div>
 
-<div class="callout deliverable">
 
-**Deliverable:** `dashboard.html`, tracing config, `runs` and `run_events` migrations, and the three alert queries.
-
-</div>
-
-<div class="callout takeaway">
-
-**Production takeaway:** if a run cannot explain itself from the database, it is not observable: it is merely logged.
-
-</div>
-
-## Diagnose
+## Check your understanding
 
 <div class="block-diagnose">
 
-The silent run hung for 45 seconds and your instruments caught it. Audit them:
+Answer before moving on. If one is fuzzy, the relevant section is a scroll away.
 
-1. Which surface told you the run was stuck, and how long did detection take versus the 5-minute alert bound?
-2. Open the trace for the last select_next_task decision. Can you answer, from the prompt alone, why it chose that page?
-3. An auditor asks for the run's history with evidence. Which single table answers, and what would be missing without decision events?
-4. You cancelled mid-model-call. Where exactly did the run stop, and why is the check after the call rather than before?
-
-</div>
-
-## Prove it
-
-<div class="block-prove">
-
-```bash
-make lab LAB=09
-```
-
-Passing means, checked automatically, not eyeballed:
-
-- fixture profile `hang`: the dashboard shows the in-flight fetch with its age; the STUCK alert query fires within 5 minutes
-- Cancel works while a model call is in flight and the run ends cancelled at the next boundary
-- the trace for any decision shows the exact rendered prompt, small enough to read
-- the LOOPING and BUDGET alert queries return correct rows against seeded event data
-
-The timed test is social: hand a colleague a run_id and a complaint, and they explain the run inside a minute.
+1. Why are logs and audit events different?
+2. What does a trace show that a metric does not?
+3. Why is a heartbeat not proof of progress?
+4. What belongs in an operator view?
+5. How can a run be unhealthy while every process is healthy?
 
 </div>
 
@@ -149,29 +338,3 @@ Observable conditions, not "I understand it". Check them off; progress is saved 
 - [ ] A colleague explained a run from the database in under a minute, timed
 
 </div>
-
-## Checkpoint
-
-Three questions before you move on. Answer first, then open.
-
-<details class="checkpoint">
-<summary>Who are the three audiences, and what does each need?</summary>
-
-Operator (is it stuck, can I stop it: dashboard), engineer (why did it choose that, what did the model see: traces), auditor (what happened, in order, with evidence: event log). One data model feeds all three.
-
-</details>
-
-<details class="checkpoint">
-<summary>Why record the reason on every decision event?</summary>
-
-Because 'what happened' without 'why' cannot be debugged or audited. The reason string turns a trajectory into an explanation and is the raw material for the Module 11 judge.
-
-</details>
-
-<details class="checkpoint">
-<summary>Green dashboards, wrong report. What does that tell you?</summary>
-
-That observability proves the machinery ran, not that the answer was right. Semantic failure is invisible to metrics; the module's job is making it investigable in minutes, and evaluation's job is catching it.
-
-</details>
-

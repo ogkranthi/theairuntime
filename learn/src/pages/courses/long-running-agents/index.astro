@@ -16,18 +16,19 @@ const studies = await getCollection("caseStudies", ({ data }) =>
 const studyBydId = new Map(studies.map((s) => [s.id, s]));
 
 const learn = [
-  "durable state that survives process loss, with evidence instead of claims",
-  "checkpoint and replay semantics, and what they do not guarantee",
-  "idempotent external side effects and exactly-once outcomes",
-  "work ownership: claims, leases, heartbeats, orphan recovery",
-  "failure taxonomies instead of retry(3) everywhere",
-  "human approval that waits for days without holding compute",
-  "context rebuilt from durable artifacts rather than accumulated chat",
-  "operator, engineer and audit views of the same run",
+  "explicit durable state, with evidence instead of claims",
+  "checkpoints, replay semantics, and recovery",
+  "replay-safe steps and what may execute twice",
+  "idempotent side effects and reconciliation",
+  "worker ownership: claims, leases, heartbeats, fencing, orphan recovery",
+  "failure-specific retry policies, timeouts, and honest degradation",
+  "durable human approval that never holds a worker",
+  "artifact-based context management and handoffs",
+  "traces, events, and an operator dashboard",
   "security boundaries untrusted content cannot cross",
-  "trajectory evals, validated judges, regression gates",
-  "harness evaluation: what a framework carries versus what stays yours",
-  "public deployment whose reliability claims can be reproduced",
+  "trajectory evaluations and validated judges",
+  "a Deep Agents implementation, interrogated against your invariants",
+  "a deployable runtime with startup reconciliation and a runbook",
 ];
 
 const technologies = [
@@ -41,14 +42,14 @@ const technologies = [
 ---
 
 <Base
-  title="Engineering Long-Running AI Systems | AIR Course 001"
+  title="Engineering Long-Running AI Agents | AIR Course 001"
   description="Learn how to design agents whose work survives failures, restarts, long waits and changing context. 16 modules, 5 industry cases, 14 optional labs, one open reference implementation."
   pageSlug="long-running-agents"
   jsonLd={[
     {
       "@context": "https://schema.org",
       "@type": "Course",
-      name: "Engineering Long-Running AI Systems",
+      name: "Engineering Long-Running AI Agents",
       description:
         "Learn how to design agents whose work survives failures, restarts, long waits and changing context.",
       provider: { "@type": "Organization", name: "The AI Runtime", url: "https://theairuntime.com" },
@@ -60,7 +61,7 @@ const technologies = [
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Courses", item: "https://learn.theairuntime.com/courses/" },
-        { "@type": "ListItem", position: 2, name: "Engineering Long-Running AI Systems" },
+        { "@type": "ListItem", position: 2, name: "Engineering Long-Running AI Agents" },
       ],
     },
   ]}
@@ -69,7 +70,7 @@ const technologies = [
   <div class="shell">
     <section class="section chead">
       <p class="eyebrow">COURSE 001 · FDE ENGINEERING</p>
-      <h1>Engineering Long-Running AI Systems</h1>
+      <h1>Engineering Long-Running AI Agents</h1>
       <p class="chead__sub">
         Learn how to design agents whose work survives failures, restarts, long waits and
         changing context.
@@ -83,6 +84,7 @@ const technologies = [
         <span class="chead__soon">Introduction video coming soon</span>
         <a class="btn" href={CHANNELS.repo} rel="noopener">View repo <span aria-hidden="true">&#8599;</span></a>
       </div>
+      <p class="chead__fresh">Course content and API examples last verified: 2026-08 · exact dependency versions live in the reference repo lockfile</p>
       <p class="chead__continue" data-continue hidden>
         <a href="#" data-continue-link>Continue learning &rarr;</a>
       </p>
@@ -237,6 +239,16 @@ const technologies = [
   .chead__actions { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: center; }
   .chead__soon { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); }
   .chead__continue { margin: 1.25rem 0 0; font-weight: 600; }
+  .chead__fresh {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.7rem;
+    max-width: fit-content;
+    margin: 1.25rem 0 0;
+  }
 
   .learn { columns: 1; padding-left: 1.25rem; margin: 1rem 0 0; }
   .learn li { margin-bottom: 0.5em; break-inside: avoid; }

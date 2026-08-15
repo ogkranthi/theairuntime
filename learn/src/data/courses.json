@@ -3,12 +3,28 @@
     "id": "course-001",
     "number": "001",
     "slug": "long-running-agents",
-    "title": "Engineering Long-Running AI Systems",
+    "title": "Engineering Long-Running AI Agents",
     "description": "Learn how to design agents whose work survives failures, restarts, long waits and changing context.",
     "status": "live",
-    "caseStudyTags": ["Research", "Claims", "Incident Response", "Coding Agents"],
-    "skills": ["Durability", "State", "HITL", "Evaluation", "Observability"],
-    "stats": { "modules": 16, "cases": 5, "labs": 14, "hours": "15-20 h" },
+    "caseStudyTags": [
+      "Research",
+      "Claims",
+      "Incident Response",
+      "Coding Agents"
+    ],
+    "skills": [
+      "Durability",
+      "State",
+      "HITL",
+      "Evaluation",
+      "Observability"
+    ],
+    "stats": {
+      "modules": 16,
+      "cases": 5,
+      "labs": 14,
+      "hours": "15-20 h"
+    },
     "repo": "https://github.com/ogkranthi/air-course-long"
   },
   {
