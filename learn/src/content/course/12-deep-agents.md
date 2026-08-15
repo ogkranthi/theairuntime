@@ -3,7 +3,7 @@ module: 12
 title: "The Deep Agents Bridge"
 duration: "60-75 min"
 goal: "Rebuild the agent on a higher-level harness, verify every invariant still holds, and learn to tell framework features from guarantees."
-question: "What does a production harness add above the runtime?"
+question: "When a harness removes a lot of code, which guarantees did it provide and which are still ours?"
 hook: "The framework says it handles all this."
 scenario: "A harness rebuilds your agent in a fifth of the code. Somewhere in the missing four fifths were your idempotency keys and your leases."
 caseStudy: repository-migration-agent
@@ -11,134 +11,237 @@ skills: [Harness evaluation, Portability]
 technologies: [Python, Deep Agents, LangGraph]
 repoPath: "12_deepagents.py"
 labNumber: 12
-invariant: "I11: the harness can be replaced without losing a single runtime guarantee."
+invariant: "The harness can be replaced without losing a single runtime guarantee."
 lab: "Replace the Harness"
 deliverable: "12_deepagents.py + harness_comparison.md + green gauntlet subset on both harnesses"
 status: published
 ---
 
-You built the runtime by hand: state, checkpoints, idempotent effects, leases, interrupts, rebuilt context, guards. Now adopt a harness that ships opinions about all of it, and find out which of your properties it carries, which it improves, and which it silently drops.
+Do not make this a framework tutorial.
 
-This module uses [Deep Agents](https://docs.langchain.com/oss/python/deepagents/overview), a harness above LangGraph that adds planning, a filesystem-backed workspace, subagents, and built-in context management. The lesson is not "use Deep Agents." The lesson is the checklist you interrogate any harness with.
+The learner has already built the important runtime ideas. Now use a higher-level abstraction and interrogate it.
 
-## Lesson 12.1: What a harness is
-
-```text
-RUNTIME    the guarantees      durable state, replay, ownership, idempotency,
-                               interrupts, budgets, audit
-HARNESS    the ergonomics      planning loops, workspaces, subagent spawning,
-                               context management, tool scaffolding
-```
-
-A harness makes the agent easier to build. It does not automatically make it safe to operate. Confusing the two is the most expensive mistake in this field, because harness demos look identical to durable systems right up until the process dies.
-
-## Lesson 12.2: Port the agent
-
-Rebuild the Vendor Review Agent on Deep Agents, keeping your application tables as the source of truth:
+## First define the layers
 
 ```text
-planner          the built-in planning loop replaces choose_next_task
-workspace        research notes live in the harness filesystem backend
-subagents        the security deep-dive becomes a subagent with a clean
-                 context that returns findings + evidence pointers, which is
-                 Module 08's pattern as a first-class feature
-persistence      the LangGraph checkpointer you already run (Module 03)
-your tables      runs, run_events, effects, published_reports stay yours,
-                 written from tool implementations, exactly as before
+MODEL
+Reasoning and generation capability.
+
+HARNESS
+The machinery that turns a model into an agent:
+planning loop, tools, filesystem/workspace, subagents,
+context-management conventions.
+
+ORCHESTRATION RUNTIME
+Execution state, persistence, interrupts, durable continuation,
+streaming and workflow control.
+
+APPLICATION GUARANTEES
+Evidence rules, business state, idempotency, worker ownership,
+authorization, budgets, completion policy and evals.
 ```
 
-The port should be dramatically less code. Write down what got shorter; that list is what the harness is actually for.
+Frameworks can span several layers, but the distinction helps engineers ask the right questions.
 
-## Lesson 12.3: Interrogate it
+## Where LangGraph fits in this course
 
-For each invariant, find where it now lives. Three honest answers exist:
+Use LangGraph as the orchestration runtime for:
 
 ```text
-CARRIED      the harness provides it and you verified the mechanism
-             (persistence via the same Postgres checkpointer: read which
-             tables it writes and what one checkpoint contains)
-YOURS        the harness has no opinion and your code still enforces it
-             (idempotency keys, leases, SSRF guards, tenant scoping)
-DROPPED      your old code enforced it and the port quietly lost it
-             (the fenced checkpoint write is the classic casualty)
+explicit graph/state transitions
+checkpoint persistence
+durable execution semantics
+interrupt/resume
+streaming
 ```
 
-Fill the matrix in `harness_comparison.md`; empty cells are the finding:
+Do not say “LangGraph makes everything durable” without naming the exact behavior being relied on.
+
+## Where Deep Agents fits
+
+Deep Agents is a higher-level harness on top of LangGraph. Its current design includes capabilities around:
 
 ```text
-INVARIANT                      BY HAND        DEEP AGENTS PORT
-I1  evidence-backed progress   state.py       ?
-I2  crash-safe replay          checkpointer   ?
-I3  single publish             effects table  ?
-I4  single owner + reclaim     scheduler      ?
-I6  durable human wait         interrupts     ?
-I7  rebuilt context            context.py     ?
-I9  bounded permissions        guards         ?
+planning
+filesystem-backed work/context
+subagents
+context management
+memory/backends
 ```
 
-## Lesson 12.4: Subagents are context engineering, formalized
+This can replace a large amount of custom agent-loop code.
 
-The one place the harness genuinely upgrades your design: [subagent spawning with clean contexts](https://docs.langchain.com/oss/python/deepagents/subagents) is Module 08's "deep-dive with a fresh context" pattern as a primitive, with the workspace as the structured handoff. Use it for the security section and compare token spend per decision against your hand-rolled version, with the Module 09 traces as the instrument.
+The production question is not:
+
+> Is Deep Agents more powerful?
+
+It is:
+
+> Which of our invariants still pass after the port?
+
+## Port the Vendor Review Agent
+
+Give the agent a narrow tool set:
+
+```text
+discover_vendor_pages
+fetch_vendor_page
+store_evidence
+query_verified_findings
+request_review
+```
+
+Working artifacts might be:
+
+```text
+/plan.md
+/progress.md
+/open_questions.md
+```
+
+Specialized subagents:
+
+```text
+security_researcher
+pricing_researcher
+```
+
+## Working files are not automatically system-of-record state
+
+A plan file can be useful for model coherence.
+
+It should not become the authoritative source for:
+
+```text
+who currently owns the run
+whether a reviewer approved
+whether an external publish succeeded
+which tenant may see the run
+```
+
+Keep high-consequence business truth in structured durable state with deterministic validation.
+
+## Subagents: why they can help
+
+Do not teach “more agents = better.”
+
+A subagent is useful when it creates a meaningful boundary:
+
+```text
+main supervisor
+   ↓ delegate one bounded research problem
+security subagent
+   ↓ receives security-specific context/tools
+   ↓
+returns structured result
+   ↓
+main supervisor
+```
+
+Result schema:
+
+```python
+class ResearchResult(TypedDict):
+    requirement: str
+    finding: str | None
+    evidence_ids: list[str]
+    unknowns: list[str]
+```
+
+The main agent gets the result rather than an entire noisy internal transcript.
+
+This is context isolation.
+
+## Parallel/async subagents introduce runtime questions
+
+If work can run concurrently or in the background, explicitly ask:
+
+```text
+What is the subtask identity?
+Where is its partial progress stored?
+Who owns it?
+How is it cancelled?
+What if the parent process disappears?
+What if a result arrives twice?
+How is its budget bounded?
+How are concurrent findings merged?
+```
+
+A framework may answer some of these. Your application still needs the answers.
+
+## Harness comparison
+
+Run the same evaluation set against:
+
+```text
+A. explicit LangGraph Vendor Review Agent
+B. Deep Agents Vendor Review Agent
+```
+
+Compare:
+
+```text
+verified outcome quality
+evidence correctness
+trajectory length
+context size
+model calls
+cost
+crash recovery
+security invariants
+duplicate work
+implementation complexity
+```
+
+The purpose is not to declare one universally superior.
+
+It is to teach an engineering method for evaluating harnesses.
+
+## Framework portability checklist
+
+For any future agent framework, answer:
+
+```text
+Where is durable state stored?
+What identifies one logical run?
+Where are checkpoints written?
+What re-executes after process failure?
+How are external writes made safe?
+How does unfinished work become runnable?
+How is concurrent ownership controlled?
+How do human waits resume?
+How does cancellation propagate?
+How are tool permissions enforced outside the model?
+How are model/tool traces inspected?
+How do we run offline evals?
+```
+
+If one answer is unclear, build a failure lab instead of trusting a marketing phrase.
 
 <div class="callout failure-lab">
 
 **FAILURE LAB 12: Replace the Harness**
 
-Run the gauntlet subset (Labs 03, 04, 05, 07) against the Deep Agents port, unmodified.
+Port the agent, then run the existing invariants unchanged.
 
-Prediction first, in writing: which invariants survive the port untouched, and which break?
+The important outcome is not “the Deep Agent completed the task.”
 
-Typical first result: replay works (same checkpointer), the duplicate report returns (publish went through a harness tool without your idempotency key), and two workers double-execute (nothing in the harness knows about your lease table). Wire your effects table and scheduler back in at the tool boundary, re-run, and get all four labs green on both implementations.
-
-</div>
-
-<div class="callout deliverable">
-
-**Deliverable:** `12_deepagents.py`, the completed `harness_comparison.md` matrix with a CARRIED / YOURS / DROPPED verdict per invariant, and the four-lab gauntlet subset passing on both harnesses.
+It is a comparison report showing exactly which guarantees remained application-level and which implementation burden moved into the framework.
 
 </div>
 
-<div class="callout note">
 
-**What this does not solve.** The comparison is against one harness at one version. The matrix, not the verdict, is the durable artifact: frameworks change fast, and re-running the interrogation on the next version, or the next framework, takes an afternoon once the labs exist.
-
-</div>
-
-<div class="callout takeaway">
-
-**Production takeaway:** adopt harnesses for ergonomics, never for guarantees you have not located in their code. The question that cuts through any framework pitch is the one this course trained you to ask: what happens when the process dies, and show me the table.
-
-</div>
-
-## Diagnose
+## Check your understanding
 
 <div class="block-diagnose">
 
-The port broke exactly where the matrix predicted. Fill in the reasoning:
+Answer before moving on. If one is fuzzy, the relevant section is a scroll away.
 
-1. Which invariants did the harness carry, and where in its code or tables did you verify each one rather than trusting the docs?
-2. Which invariant broke first when the gauntlet subset ran, and why was it invisible in a demo?
-3. What got dramatically shorter in the port, and what does that list tell you the harness is actually for?
-4. If the harness disappeared tomorrow, which files of yours contain the guarantees, and would they still hold?
-
-</div>
-
-## Prove it
-
-<div class="block-prove">
-
-```bash
-make lab LAB=12
-```
-
-Passing means, checked automatically, not eyeballed:
-
-- the Deep Agents port runs the vendor review end to end
-- the four-lab gauntlet subset (03 replay, 04 single publish, 05 ownership, 07 durable wait) passes on BOTH implementations
-- harness_comparison.md has a CARRIED, YOURS, or DROPPED verdict for every invariant, none left blank
-- token-per-decision measured for the subagent security deep-dive versus your hand-rolled version
-
-Same labs, two harnesses, one set of invariants. That is portability, proven.
+1. What is a harness?
+2. What is the difference between harness features and application guarantees?
+3. Why can a filesystem artifact be useful without becoming the source of truth?
+4. What production questions appear when subagents become asynchronous?
+5. How would you evaluate a new framework without relying on a demo?
 
 </div>
 
@@ -154,31 +257,6 @@ Observable conditions, not "I understand it". Check them off; progress is saved 
 - [ ] The four-lab subset is green on both implementations
 
 </div>
-
-## Checkpoint
-
-Three questions before you move on. Answer first, then open.
-
-<details class="checkpoint">
-<summary>What is the difference between a harness and a runtime?</summary>
-
-The runtime is the guarantees: durable state, replay, ownership, idempotency, interrupts, budgets, audit. The harness is the ergonomics: planning, workspaces, subagents, context management. Harnesses make agents easier to build, not automatically safe to operate.
-
-</details>
-
-<details class="checkpoint">
-<summary>Why do harness demos look identical to durable systems?</summary>
-
-Because the difference only appears when the process dies, a call times out after succeeding, or two workers collide. Demos exercise none of those, which is why this course breaks things on purpose.
-
-</details>
-
-<details class="checkpoint">
-<summary>What one question cuts through any framework pitch?</summary>
-
-What happens when the process dies, and show me the table. If the answer is a diagram instead of a table, the guarantee is yours to build.
-
-</details>
 
 ## Primary sources
 

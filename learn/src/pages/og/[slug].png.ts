@@ -33,7 +33,7 @@ export async function getStaticPaths() {
   const pages: Page[] = [
     { slug: "home", eyebrow: "FDE ENGINEERING", title: "Learn AI Engineering Like an FDE", current: null },
     { slug: "courses", eyebrow: "FDE ENGINEERING · COURSES", title: "The catalog", current: null },
-    { slug: "long-running-agents", eyebrow: "COURSE 001 · FDE ENGINEERING", title: "Engineering Long-Running AI Systems", current: null },
+    { slug: "long-running-agents", eyebrow: "COURSE 001 · FDE ENGINEERING", title: "Engineering Long-Running AI Agents", current: null },
     { slug: "case-studies", eyebrow: "FDE ENGINEERING · CASE STUDIES", title: "Systems, not demos", current: null },
     { slug: "skills", eyebrow: "FDE ENGINEERING · SKILLS MAP", title: "What an FDE actually knows", current: null },
     { slug: "resources", eyebrow: "FDE ENGINEERING · RESOURCES", title: "Curated, not collected", current: null },

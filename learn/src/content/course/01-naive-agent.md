@@ -3,7 +3,7 @@ module: 1
 title: "Build the Naive Agent"
 duration: "45-60 min"
 goal: "Build something that works, in plain Python, before introducing any framework."
-question: "What does the simplest useful loop look like?"
+question: "What is the smallest useful agent before we add infrastructure?"
 hook: "Forty lines that work. Every line is a promise you cannot keep."
 scenario: "The first vendor review runs end to end on your laptop in ninety seconds. The customer asks what happens when they close the tab."
 skills: [Agent loops, Tool design]
@@ -15,176 +15,202 @@ deliverable: "01_naive_agent.py + resume_answer.md"
 status: published
 ---
 
-This module deliberately uses ordinary Python. No LangGraph yet. You need to feel the loop before you are handed a runtime for it.
+We intentionally build a fragile system first.
 
-## Lesson 01.1: Our vendor agent
-
-Input:
+## Define the contract
 
 ```python
 vendor = {
     "name": "Acme",
-    "url": "http://localhost:8001/vendor/acme",
+    "url": "http://localhost:8001/acme/",
 }
-```
 
-Checklist:
-
-```python
 CHECKLIST = [
     "product",
-    "customer",
+    "customers",
     "pricing",
     "security",
     "developer_experience",
-    "unknowns",
 ]
 ```
 
-Tools (keep these extremely simple):
+## Define three tools
 
 ```python
-def discover_pages(url: str) -> list[str]:
-    """Return candidate URLs from the site's nav/sitemap."""
+def discover_pages(root_url: str) -> list[str]:
+    ...
 
 def fetch_page(url: str) -> str:
-    """Return raw HTML/text for a URL."""
+    ...
 
-def extract_finding(page: str, question: str) -> dict:
-    """LLM call: answer `question` from `page`, with a quoted evidence span or None."""
+def extract_finding(page_text: str, requirement: str) -> dict:
+    ...
 ```
 
-## Lesson 01.2: Build the loop
+Only `extract_finding` fundamentally needs model reasoning.
 
-Conceptually:
+The course should repeatedly reinforce:
+
+> Use deterministic software where the rule is known. Use the model where semantic judgment is genuinely useful.
+
+## First state object
 
 ```python
-state = create_initial_state(vendor)
+state = {
+    "run_id": "run_123",
+    "vendor": vendor,
+    "remaining": list(CHECKLIST),
+    "findings": [],
+    "visited_urls": [],
+    "pages_fetched": 0,
+}
+```
 
-while not complete(state):
-    next_task = choose_next_task(state)          # LLM or heuristic
-    page = fetch_page(next_task.url)
-    finding = extract_finding(page, next_task.question)
-    state["findings"].append(finding)
+At this point, **state** means simply:
+
+> Information the program needs to know in order to decide what to do next.
+
+It lives only in process memory.
+
+## The loop
+
+```python
+while state["remaining"]:
+    requirement = choose_requirement(state)
+    url = choose_page(requirement, state)
+
+    page = fetch_page(url)
+    finding = extract_finding(page, requirement)
+
+    state["visited_urls"].append(url)
+    state["pages_fetched"] += 1
+
+    if finding["supported"]:
+        state["findings"].append(finding)
+        state["remaining"].remove(requirement)
 
 report = create_report(state)
 ```
 
-The model makes only useful semantic decisions: *which page next* and *what does this page say about X*. The outer loop stays understandable, testable, and yours.
-
-This introduces an AIR principle you will see repeatedly:
-
-> Use deterministic control where requirements are known. Use agentic reasoning where decisions are genuinely ambiguous.
-
-LangGraph (Module 03) is built around exactly this mix (deterministic graph logic with LLM-driven nodes) rather than delegating everything to a free-running agent.
-
-## Lesson 01.3: Deterministic fixture websites
-
-Do not make early labs dependent on the public internet. Every student must be able to reproduce the exact same failure on the exact same page.
-
-Provide:
+Operationally:
 
 ```text
-fixtures/
-  acme/
-    index.html
-    pricing.html
-    security.html
-    docs.html
-  beta/
-    index.html
-    security.html
-  flaky/
-    index.html
-    pricing.html
+process memory
+    │
+    ├─ choose
+    ├─ fetch
+    ├─ model
+    ├─ mutate state
+    └─ repeat
 ```
 
-Serve them locally (`make fixtures` → `http://localhost:8001`). The fixture server can intentionally produce, per URL and per attempt:
+## Hidden assumptions
+
+This small loop assumes:
 
 ```text
-200
-404
-500
-503
-10-second delay
-malformed HTML
-connection reset
+process remains alive
+memory remains available
+network calls return
+model calls return
+repeating a tool is harmless
+context remains useful
+only one worker executes this run
+the completion rule is trustworthy
 ```
 
-Behaviour is configured in a `profile.yaml`, so "pricing returns 503 twice then 200" is one line, not a code change. Later modules add profiles; the server does not change.
+The rest of the course removes these assumptions one at a time.
 
-This one decision does more for course quality than anything else: failures become reproducible, comparable, and gradeable.
+## Deterministic fixtures
+
+Do not make reliability labs depend on the live internet.
+
+Use fixture vendors and a failure profile:
+
+```yaml
+routes:
+  /flaky/pricing:
+    responses:
+      - status: 503
+      - status: 503
+      - status: 200
+        fixture: pricing.html
+```
+
+This ensures every learner can reproduce the same fault.
 
 <div class="callout failure-lab">
 
 **FAILURE LAB 01: Kill the Agent**
 
-Start the run:
+Run until:
 
 ```text
-✓ Product
-✓ Customer
-→ Pricing
-○ Security
-○ Developer experience
+Product                 complete
+Customers               complete
+Pricing                 in progress
+Security                pending
+Developer experience    pending
 ```
 
-Terminate Python. `Ctrl-C`, `kill -9`, close the laptop. Pick one.
+Stop Python.
 
 Restart it.
 
-Ask: *"Where should execution continue?"*
+What does the program know?
 
-The answer is: **we don't know.** The in-memory Python variables disappeared. The agent has no idea it ever ran.
+Nothing about the previous run.
 
-</div>
+It lost:
 
-<div class="callout deliverable">
-
-**Deliverable:** `01_naive_agent.py`, plus a short written answer in `resume_answer.md`:
-
-*"What information would need to survive for this agent to resume correctly?"*
-
-Expected concepts: run ID · input · checklist · completed items · findings · evidence · current status · errors.
-
-</div>
-
-Do **not** teach checkpoints yet. Let students discover why checkpoints are needed. Module 02 names it.
-
-<div class="callout takeaway">
-
-**Production takeaway:** an agent that works is not an agent that survives. Working is the starting line.
+```text
+run identity
+vendor input
+discovered pages
+visited pages
+findings
+current progress
+remaining work
+cost already spent
+```
 
 </div>
 
-## Diagnose
+
+## Measure the failure
+
+Run again and record:
+
+```text
+pages repeated
+model calls repeated
+time repeated
+estimated cost repeated
+```
+
+Reliability has a cost dimension.
+
+## The question that leads to Module 02
+
+Do not ask:
+
+> Which database should I use?
+
+Ask:
+
+> Which facts must survive for another process to continue correctly?
+
+## Check your understanding
 
 <div class="block-diagnose">
 
-The lab killed your agent mid-run. Before touching any code, answer from what you observed:
+Answer before moving on. If one is fuzzy, the relevant section is a scroll away.
 
-1. What exactly was lost when the process died, and in which variable did it live?
-2. Which line of the loop encodes the assumption that memory is the source of truth?
-3. Rerun the same vendor. Which work is repeated, and what does the repetition cost in seconds and dollars?
-4. What is the smallest change that would preserve progress across the kill, and name one failure it still would not survive.
-
-</div>
-
-## Prove it
-
-<div class="block-prove">
-
-```bash
-make lab LAB=01
-```
-
-Passing means, checked automatically, not eyeballed:
-
-- the run completes against fixture vendor `acme` and produces a report with findings
-- your step profile (`resume_answer.md`) records per-tool latency and call counts
-- after the scripted kill, the check asserts the rerun restarted from zero: every page fetched again, cost roughly doubled. In this one lab, observing the loss IS the pass
-
-This lab's check is deliberately inverted: it proves you saw the failure, because Module 02 only lands if you felt what was lost.
+1. What does “state” mean in this module?
+2. Which parts of the system actually need model reasoning?
+3. What assumptions does an in-memory loop make?
+4. Why use fixture websites?
+5. Which exact information disappeared after the kill?
 
 </div>
 
@@ -200,31 +226,6 @@ Observable conditions, not "I understand it". Check them off; progress is saved 
 - [ ] You can recite the loop's assumption list (memory, one process, calls return, tools re-runnable, context fits) without the page open
 
 </div>
-
-## Checkpoint
-
-Three questions before you move on. Answer first, then open.
-
-<details class="checkpoint">
-<summary>Why is max_steps a bill cap rather than a safety mechanism?</summary>
-
-It bounds spend, not progress. A crawl-trap run hits the cap having learned nothing; raising the cap just raises the bill. A real stop condition is a progress check against state, which needs state to exist first.
-
-</details>
-
-<details class="checkpoint">
-<summary>Which decisions belong to deterministic code, and which to the model?</summary>
-
-Known requirements get deterministic control: the loop, the checklist, completion checks. Genuinely ambiguous decisions get the model: which page next, what this page says about X. LangGraph is built around exactly this split.
-
-</details>
-
-<details class="checkpoint">
-<summary>Why do the labs run against fixture sites instead of the real web?</summary>
-
-Reproducibility. Every student hits the same failure on the same page at the same step, so failures are comparable and gradeable, and a fix can be proven rather than anecdotal.
-
-</details>
 
 ## Primary sources
 

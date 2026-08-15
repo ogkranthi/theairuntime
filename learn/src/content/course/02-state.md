@@ -3,7 +3,7 @@ module: 2
 title: "State: What Must Survive?"
 duration: "45-60 min"
 goal: "Separate conversation, execution state, artifacts, and external reality, and make state represent evidence, not claims."
-question: "What must survive process loss?"
+question: "What information is authoritative enough to survive a restart?"
 hook: "The agent says it finished. Prove it."
 scenario: "A claims decision reaches a reviewer marked verified. The auditor asks which document span supports it. The transcript is not an answer."
 caseStudy: claims-processing-agent
@@ -11,177 +11,261 @@ skills: [State modeling, Evidence]
 technologies: [Python, PostgreSQL]
 repoPath: "02_state_machine.py"
 labNumber: 2
-invariant: "I1: an item is verified only if resolvable evidence exists."
+invariant: "I1: no item is verified unless resolvable evidence exists."
 lab: "False Completion"
 deliverable: "02_state_machine.py"
 status: published
 ---
 
-This is one of the most important modules in the course. Most agent bugs in production are state-model bugs wearing a prompt-engineering costume.
+“Save state” is not enough. First decide what state means.
 
-## Lesson 02.1: What is state?
+## Four categories
 
-Ask: *"If our process disappears right now, what information must exist elsewhere to continue?"*
+### Conversation
 
-Build the answer as a type:
+What users/models said.
+
+```text
+Model: I found pricing information.
+```
+
+Useful, but not automatically authoritative.
+
+### Execution state
+
+What the runtime believes about progress.
+
+```text
+current requirement = pricing
+status = researching
+pages fetched = 7
+```
+
+### Artifacts
+
+Useful objects produced by the run.
+
+```text
+fetched page
+evidence record
+verification result
+draft report
+```
+
+### External reality
+
+What actually exists outside the runtime.
+
+```text
+Did the report get published?
+Did the refund happen?
+Did the ticket get created?
+```
+
+These can disagree.
+
+```text
+Model:            “I published it.”
+Application:      published = true
+External system:  no report exists
+```
+
+The external system is authoritative about that external effect.
+
+## State is a model of reality
+
+A field such as:
 
 ```python
-from typing import TypedDict
+state["published"] = True
+```
+
+is still only an application claim.
+
+Good state design makes incorrect claims hard to represent.
+
+## Structured state
+
+```python
+class Evidence(TypedDict):
+    evidence_id: str
+    requirement: str
+    url: str
+    content_hash: str
+    quote: str
+    retrieved_at: str
+
+class RequirementState(TypedDict):
+    status: str
+    finding: str | None
+    evidence_ids: list[str]
 
 class VendorReviewState(TypedDict):
     run_id: str
-
     vendor_name: str
     vendor_url: str
-
-    checklist: list[str]
-    completed_items: list[str]
-
+    requirements: dict[str, RequirementState]
     discovered_urls: list[str]
     visited_urls: list[str]
-
-    findings: list[dict]
-    evidence: list[dict]
-
+    evidence: list[Evidence]
+    contradictions: list[dict]
     errors: list[dict]
-    attempts: int
-
-    status: str                 # pending | researching | verifying | awaiting_approval | published | failed
-    draft_report: str | None
-    approval_status: str | None
+    status: str
+    terminal_reason: str | None
+    pages_fetched: int
+    cost_usd: float
+    schema_version: int
+    code_version: str
 ```
 
-If a field is not here, it does not survive. If it does not survive, the agent cannot use it after a restart.
+## Why structure matters
 
-## Lesson 02.2: Four kinds of information
+Weak:
 
 ```text
-CONVERSATION      What did the user and model say?
-EXECUTION STATE   Where are we in the process?
-ARTIFACTS         What useful work has been produced?
-EXTERNAL STATE    What happened outside the agent?
+“Pricing seems complete.”
 ```
+
+Checkable:
+
+```json
+{
+  "status": "verified",
+  "finding": "No public list price is available.",
+  "evidence_ids": ["ev_91"]
+}
+```
+
+## Introduce invariants
+
+An **invariant** is a property that must remain true even when expected failures occur.
 
 Example:
 
 ```text
-Model:            "I published the report."
-Execution state:  publish_complete = true
-Database:         Does the published report actually exist?
+IF requirement.status == VERIFIED
+THEN at least one evidence ID must resolve to stored evidence.
 ```
 
-These are **not equivalent**. The most dangerous bugs are the ones where two of these disagree and nobody checks.
+Code:
 
-## Lesson 02.3: State should answer operational questions
+```python
+def validate_state(state):
+    for name, req in state["requirements"].items():
+        if req["status"] == "verified" and not req["evidence_ids"]:
+            raise StateInvariantError(
+                f"{name} verified without evidence"
+            )
+```
 
-At any time, from state alone, you should be able to answer:
+This is stronger than asking the model to “remember to cite sources.”
+
+## State transitions
+
+Do not allow arbitrary jumps.
 
 ```text
-What is this run doing?
-What has completed?
-What is next?
-What failed?
-What evidence exists?
-Is human input required?
-Can we resume?
+PENDING
+  ↓
+RESEARCHING
+  ↓
+CANDIDATE_FOUND
+  ↓
+VERIFYING
+  ├────────→ VERIFIED
+  ├────────→ UNKNOWN
+  └────────→ NEEDS_MORE_RESEARCH
 ```
 
-If the state cannot answer these, the state model is incomplete. This list becomes your dashboard in Module 09 and your eval fixture in Module 09.
+A finding is not the same as a verified finding.
 
-## Exercise 02: Explicit state machine
+## First persistence
 
-Turn the naive agent into an explicit state machine that persists `VendorReviewState` to a JSON file after every step (a deliberately crude checkpoint; Postgres comes in Module 03).
+Before LangGraph, persist the state after meaningful transitions.
 
-Display on each iteration:
+Conceptually:
+
+```python
+transition(state)
+save_state(state)
+continue_work()
+```
+
+Kill the process.
+
+Reload the saved state.
+
+Now the application can recover the **facts** of the run.
+
+But questions remain:
 
 ```text
-Run ID: f72...
-Status: researching
-
-Checklist:
-✓ product
-✓ customer
-→ pricing
-○ security
-○ developer_experience
-
-Pages visited: 3
-Errors: 0
+Which function should execute next?
+What if a process dies halfway through a function?
+Which operations can run again?
+Who discovers unfinished work?
 ```
 
-Kill it. Restart it. It should now print the same block and continue.
+Those are durable-execution questions.
+
+## Schema evolution
+
+A run may outlive a deployment.
+
+Persist:
+
+```text
+schema_version
+code_version
+```
+
+When state changes, explicitly classify old runs as:
+
+```text
+compatible
+requires migration
+cannot safely resume
+```
 
 <div class="callout failure-lab">
 
 **FAILURE LAB 02: False Completion**
 
-Introduce a bug where:
+Inject:
 
 ```python
-completed_items = ["product", "customer", "pricing"]
+state["requirements"]["pricing"] = {
+    "status": "verified",
+    "finding": "Pricing available",
+    "evidence_ids": [],
+}
 ```
 
-but there is no actual pricing evidence in `evidence`.
+If the UI/report accepts this, the system has a state-model bug.
 
-The agent says: *"Research complete."*
+Fix the invariant in:
 
-Students must fix the invariant:
-
-```text
-completed  ≠  verified
-```
-
-Introduce a per-item status:
-
-```text
-pending → researched → verified
-                    ↘ failed
-```
-
-`researched` means the model produced a finding. `verified` means the finding has evidence that a checker (not the model that wrote it) accepted.
+1. the transition into `verified`;
+2. an independent report/evaluation check.
 
 </div>
 
-<div class="callout deliverable">
-
-**Deliverable:** `02_state_machine.py` with the JSON checkpoint, the per-item status field, and a `verify()` function that refuses to mark an item complete without an evidence record.
-
-</div>
-
-<div class="callout takeaway">
-
-**Production takeaway:** state should represent evidence-backed progress, not merely agent claims.
-
-</div>
-
-## Diagnose
-
-<div class="block-diagnose">
-
-The agent claimed completion while pricing was empty. Work backwards:
-
-1. Where did the word 'verified' come from: a piece of evidence, or a sentence the model produced?
-2. Which of the operational questions (how far along, what is missing, what did it cost) could your state not answer at the moment of the kill?
-3. What is the natural key of a finding, and what happens on replay if dedupe does not use it?
-4. The JSON-file checkpoint is deliberately crude. What does it already give you, and what does it not?
-
-</div>
 
 ## Prove it
 
-<div class="block-prove">
+A test must fail when verified state has no resolvable evidence.
 
-```bash
-make lab LAB=02
-```
+## Check your understanding
 
-Passing means, checked automatically, not eyeballed:
+<div class="block-diagnose">
 
-- `no_false_completion(state)` fails against the naive agent's output for the sparse vendor: it marked items verified with no evidence
-- after your fix, the same check passes: verified is a subset of items with resolvable evidence, and the sparse vendor's report honestly lists unknowns
-- applying the same event twice to your reducers leaves state byte-identical (the idempotency test Module 03 depends on)
+Answer before moving on. If one is fuzzy, the relevant section is a scroll away.
 
-The check is a pure function over state. No model, no network, instant.
+1. What is the difference between conversation and execution state?
+2. Why is external reality not identical to application state?
+3. What is an invariant?
+4. Why model progress as transitions?
+5. Why does state schema version matter?
 
 </div>
 
@@ -197,29 +281,3 @@ Observable conditions, not "I understand it". Check them off; progress is saved 
 - [ ] no_false_completion exists as code and passes on both fixture vendors
 
 </div>
-
-## Checkpoint
-
-Three questions before you move on. Answer first, then open.
-
-<details class="checkpoint">
-<summary>What is the difference between conversation state and execution state?</summary>
-
-Conversation state is how the run came to know things (messages, replayable, disposable). Execution state is what the run knows (typed facts, evidence, progress). Only execution state is load-bearing; losing messages costs you a cache, losing state costs you the run.
-
-</details>
-
-<details class="checkpoint">
-<summary>Why must state represent evidence rather than claims?</summary>
-
-Because 'the model said pricing is verified' survives a restart just as well when it is wrong. Evidence (a URL, a quoted span, a content hash) can be independently re-checked by code, a human, or an evaluator.
-
-</details>
-
-<details class="checkpoint">
-<summary>If your process disappears right now, what must exist elsewhere?</summary>
-
-Everything needed to continue: run identity, per-item status backed by evidence, budgets spent, and what to do next. That question is the entire design test for a state model.
-
-</details>
-

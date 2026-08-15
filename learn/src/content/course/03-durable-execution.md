@@ -1,9 +1,9 @@
 ---
 module: 3
-title: "Durable Execution & Checkpointing"
+title: "Durable Execution, Checkpoints, and Replay"
 duration: "60-75 min"
 goal: "Make the agent survive application failure using LangGraph with a PostgreSQL checkpointer."
-question: "What is replay, and what actually resumes?"
+question: "After a crash, what code runs again?"
 hook: "Your worker disappeared. Did the job?"
 scenario: "A production investigation has been running for 37 minutes. Four of six investigation tasks are complete. The worker dies during task five. What happens next?"
 caseStudy: incident-response-agent
@@ -11,31 +11,120 @@ skills: [Persistence, Checkpoints, Recovery]
 technologies: [Python, LangGraph, PostgreSQL]
 repoPath: "03_graph.py"
 labNumber: 3
-invariant: "I2: a crash never loses committed progress, and replay never corrupts state."
+invariant: "I2 + I3: committed progress survives a crash, and replaying a step cannot corrupt durable state."
 lab: "Pull the Plug"
 deliverable: "03_graph.py + checkpoint schema migration"
 status: published
 ---
 
-This is where LangGraph enters. Not before. Students have already encountered the problem twice.
+This module must build the durable-execution mental model before showing framework APIs.
 
-## Lesson 03.1: Why LangGraph now?
+## Persistence is not yet durable execution
 
-LangGraph gives us, as first-class runtime concepts:
+At the end of Module 02 we can:
 
 ```text
-Graph execution
-State
-Persistence
-Checkpoints
-Threads
-Interrupts
-Recovery
+run step
+save state
+run next step
+save state
 ```
 
-Its persistence system saves a checkpoint of graph state at each execution step, organised by **thread**. That is what enables fault tolerance, resumption, and human-in-the-loop. Read the official persistence docs before continuing; do not learn this from a tutorial that wraps it.
+If the process dies, we can manually reload state.
 
-## Lesson 03.2: Convert the process into a graph
+But we still need to know:
+
+```text
+which step comes next?
+what if the process died halfway through the step?
+what if a tool succeeded but the step never committed its result?
+what can execute twice?
+how does another process continue the logical run?
+```
+
+## What is a checkpoint?
+
+A **checkpoint** is a durable record of workflow state at a runtime-defined execution boundary.
+
+Conceptually:
+
+```json
+{
+  "run_id": "run_123",
+  "workflow_position": "extract_pricing",
+  "state": {"...": "..."},
+  "checkpoint_id": "cp_19",
+  "created_at": "..."
+}
+```
+
+The real framework stores additional metadata. The important mental model is:
+
+```text
+CHECKPOINT
+  = durable state
+  + durable execution position/metadata
+```
+
+It is **not** a frozen Python process.
+
+The runtime cannot generally stop in the middle of arbitrary Python instructions, serialize the call stack, and later continue at the exact CPU instruction.
+
+## The critical execution boundary
+
+Suppose checkpoint `C10` exists before one node.
+
+```text
+C10 committed
+  ↓
+node starts
+  ↓
+fetch succeeds
+  ↓
+model succeeds
+  ↓
+PROCESS DIES
+  ↓
+node never completes
+  ↓
+no C11 exists
+```
+
+When another process resumes, durable history says only:
+
+```text
+C10 is known good.
+```
+
+The unfinished node may execute again.
+
+## Replay
+
+**Replay/re-execution** means workflow logic is executed again from a durable point so the logical run can continue.
+
+For the learner, the key rule is:
+
+> Code between durable boundaries may run more than once after interruption.
+
+That is why replay safety matters.
+
+## Why this matters for model calls
+
+If a model request succeeded but the process died before its result became part of a durable checkpoint, the resumed run may call the model again.
+
+That can change:
+
+```text
+cost
+latency
+output
+```
+
+This does not automatically corrupt the run if the state transition is designed correctly, but it is real behavior that must be understood.
+
+## Build the graph
+
+Only now introduce LangGraph:
 
 ```text
 START
@@ -44,172 +133,149 @@ VALIDATE
   ↓
 DISCOVER
   ↓
-SELECT_NEXT_TASK ◄──────────┐
-  ↓                          │
-FETCH                        │
-  ↓                          │
-EXTRACT                      │
-  ↓                          │
-SAVE_PROGRESS                │
-  ↓                          │
-MORE WORK? ── yes ───────────┘
-  │
-  no
+SELECT_REQUIREMENT
+  ↓
+SELECT_PAGE
+  ↓
+FETCH
+  ↓
+EXTRACT
   ↓
 VERIFY
   ↓
-REPORT
+SAVE_PROGRESS
+  ├── remaining → SELECT_REQUIREMENT
+  ↓
+DRAFT
   ↓
 END
 ```
 
-## Lesson 03.3: Build nodes
+Each node should represent a meaningful state transition or operation with a coherent failure/retry boundary.
 
-```python
-def validate(state: VendorReviewState) -> dict: ...
-def discover_pages(state: VendorReviewState) -> dict: ...
-def select_next_task(state: VendorReviewState) -> dict: ...
-def fetch_page(state: VendorReviewState) -> dict: ...
-def extract_finding(state: VendorReviewState) -> dict: ...
-def save_progress(state: VendorReviewState) -> dict: ...
-def verify(state: VendorReviewState) -> dict: ...
-def write_report(state: VendorReviewState) -> dict: ...
+## Node size tradeoff
 
-def more_work(state: VendorReviewState) -> str:
-    return "continue" if remaining(state) else "verify"
-```
-
-Keep nodes small. Each node should answer one question:
-
-> What durable state transition does this operation represent?
-
-If a node does two transitions, split it. Checkpoints happen at node boundaries; big nodes mean big replays (Lesson 03.6).
-
-## Lesson 03.4: First use `InMemorySaver`
-
-```python
-from langgraph.checkpoint.memory import InMemorySaver
-graph = builder.compile(checkpointer=InMemorySaver())
-```
-
-Show that checkpoints exist: inspect `graph.get_state(config)` mid-run.
-
-Then kill the process. Everything still disappears.
-
-LangGraph's docs are explicit that the in-memory saver does not survive process restarts. Students need to see that with their own eyes:
+Large node:
 
 ```text
-CHECKPOINTING  ≠  DURABLE STORAGE
+fetch 10 pages
+10 model calls
+verify everything
+save once
 ```
 
-## Lesson 03.5: PostgreSQL checkpointing
+A late crash repeats a lot of work.
 
-Move to `PostgresSaver` (package `langgraph-checkpoint-postgres`). On first use, call `.setup()` to create the checkpoint tables.
+Very tiny nodes create more orchestration and checkpoint overhead.
 
-```python
-from langgraph.checkpoint.postgres import PostgresSaver
+Useful durable boundaries often occur when:
 
-with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer:
-    checkpointer.setup()             # once
-    graph = builder.compile(checkpointer=checkpointer)
+- expensive work becomes worth preserving;
+- retry policy changes;
+- a side effect is near;
+- human control may enter;
+- the next step can execute on another worker.
 
-    config = {"configurable": {"thread_id": run_id}}
-    graph.invoke(initial_state, config)
+## Thread identity
+
+Explain two identities:
+
+```text
+business run ID
+    identifies the customer's vendor-review job
+
+runtime thread ID
+    identifies the checkpoint history used by the orchestration runtime
 ```
 
-The **run ID is the thread ID**. That is the durable identity of the work. Store it in your own `runs` table too: LangGraph's tables are its; your operational tables are yours.
+For this course, they can map one-to-one, but they are conceptually different.
 
-Use Neon for the database from the start so nothing changes at deploy time in Module 14.
+## In-memory checkpointer
+
+Use it briefly to prove:
+
+```text
+checkpoint abstraction ≠ durable storage
+```
+
+If the checkpointer lives only in process memory, killing the process still loses it.
+
+## PostgreSQL-backed checkpointing
+
+Architecture:
+
+```text
+Worker A
+   │ checkpoint
+   ▼
+PostgreSQL
+   │
+   X Worker A dies
+   │
+Worker B
+   │ load checkpoint
+   ▼
+continue logical run
+```
 
 <div class="callout failure-lab">
 
 **FAILURE LAB 03: Pull the Plug**
 
-Run:
+Kill at four places:
+
+1. after FETCH has durably completed;
+2. during EXTRACT;
+3. after VERIFY but before the next durable boundary;
+4. during a slow model request.
+
+For each, record:
 
 ```text
-✓ product
-✓ customer
-✓ pricing
-→ security
+last durable checkpoint
+first operation after resume
+operations repeated
+extra model cost
+state duplicated?
+external side effect duplicated?
 ```
 
-Kill FastAPI. `kill -9`. Restart it. Reconnect with the same run ID and invoke the graph with `None` as input to resume from the last checkpoint.
-
-Expected:
-
-```text
-✓ product
-✓ customer
-✓ pricing
-→ security
-```
-
-Not:
-
-```text
-→ product
-```
-
-Then do it three more times at different points. Then do it during `EXTRACT` (a model call in flight).
+The objective is not merely “it resumed.” The learner must understand **what replayed**.
 
 </div>
 
-## Lesson 03.6: Important subtlety: checkpoint boundaries
 
-Checkpoints occur at graph execution boundaries. If the process dies inside a node, that **node executes again from its beginning** on resume.
+## What checkpointing solves
 
-For `fetch_page`, that is harmless: you fetch twice.
-For `publish_report`, that could be a disaster.
+- committed graph state can survive process loss;
+- another process can load the logical run;
+- runtime execution can continue from durable state;
+- durable interrupts become possible.
 
-That leads directly to Module 04.
+## What checkpointing does not solve
 
-<div class="callout deliverable">
+It does not automatically guarantee:
 
-**Deliverable:** `03_graph.py`, the Neon connection config, and a short `lab_03_log.md` recording each kill point and what resumed.
+- exactly-once external writes;
+- only one worker executes the run;
+- correct retry policy;
+- safe permissions;
+- good context;
+- semantic correctness.
 
-</div>
+Those are the next modules.
 
-<div class="callout takeaway">
-
-**Production takeaway:** the graph is the durable definition of the work; the process is disposable. Thread ID = run identity.
-
-</div>
-
-<div class="callout note">
-
-**What this does not solve.** Checkpointing preserves state. It does not make external side effects exactly-once (Module 04), and it does not schedule abandoned work onto a new worker (Module 05). A checkpointed run whose worker died is safe, and going nowhere.
-
-</div>
-
-## Diagnose
+## Check your understanding
 
 <div class="block-diagnose">
 
-You pulled the plug at step 9 and the run resumed. Now explain the machinery:
+Answer before moving on. If one is fuzzy, the relevant section is a scroll away.
 
-1. What exactly is inside one checkpoint, and which tables did the Postgres saver write?
-2. On resume, what was replayed and what was restored? Why did replaying step 9 not corrupt state?
-3. What would break if the checkpoint write and your runs-table update were two transactions instead of one?
-4. Name the checkpoint boundaries in your graph. Which node re-executes after a crash at each boundary?
-
-</div>
-
-## Prove it
-
-<div class="block-prove">
-
-```bash
-make lab LAB=03
-```
-
-Passing means, checked automatically, not eyeballed:
-
-- the chaos harness kills the process at 20 random steps; after each kill the run resumes with the same `run_id` and finishes
-- final state invariants (fact count, items covered, evidence resolvable) match an uninterrupted control run
-- no restart begins at step 0, and no replayed step produces duplicate findings
-
-Assert on state invariants, not byte-identical text: determinism holds here only because the fixtures are fixed and temperature is 0.
+1. What is conceptually stored in a checkpoint?
+2. Why is it not a suspended Python process?
+3. Why can a node execute again after a crash?
+4. Why does node size affect recovery cost?
+5. What does durable checkpointing solve, and what remains unsolved?
 
 </div>
 
@@ -225,31 +291,6 @@ Observable conditions, not "I understand it". Check them off; progress is saved 
 - [ ] You can point at each checkpoint boundary in the graph and say what re-executes
 
 </div>
-
-## Checkpoint
-
-Three questions before you move on. Answer first, then open.
-
-<details class="checkpoint">
-<summary>What does replay actually mean in a checkpointed graph?</summary>
-
-After a crash, execution restarts from the last committed checkpoint, so the work between that checkpoint and the crash runs again. Replay is safe only when replayed work is idempotent inside your process (reducers) and deduplicated outside it (Module 04).
-
-</details>
-
-<details class="checkpoint">
-<summary>Why checkpoint after the step instead of before it?</summary>
-
-Checkpoint-before loses the step's result on crash while recording that it ran, which is a lie. Checkpoint-after means a crash replays the step, which idempotent state absorbs. One transaction, after.
-
-</details>
-
-<details class="checkpoint">
-<summary>What does checkpointing NOT give you?</summary>
-
-Exactly-once side effects (a re-executed publish still publishes twice) and scheduling (a checkpointed run whose worker died is safe, and going nowhere). Those are Modules 04 and 05, on purpose.
-
-</details>
 
 ## Primary sources
 

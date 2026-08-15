@@ -96,12 +96,13 @@ edits applied on import were punctuation normalisation for this rule.
 
 ## Learner experience
 
-Every module follows the v2 rhythm: production question, lessons, Failure Lab,
-Diagnose (mechanism questions), Prove it (`make lab LAB=NN` plus what passing
-means), Exit criteria, and a Checkpoint of collapsible Q&A. Exit-criteria
-checkboxes are interactive and persist in localStorage; when all are checked
-the module is recorded complete, the syllabus row gets a tick, and the course
-nav shows N/16 progress. No accounts: progress lives in the reader's browser.
+Every lesson follows the first-principles anatomy from the course rewrite
+brief: production question (in the hero), concrete situation, what fails and
+why, new concept defined before use, under-the-hood execution timelines, a
+compact build, the Failure Lab, and Check your understanding. Exit-criteria
+checkboxes persist in localStorage; when all are checked the module is
+recorded complete and the course page shows it. No accounts: progress lives
+in the reader's browser.
 
 Lesson headings render with number chips via `src/plugins/rehype-lessons.mjs`;
 the rhythm sections are styled blocks (`block-diagnose`, `block-prove`,

@@ -1,9 +1,9 @@
 ---
 module: 14
-title: "Deploying the Agent Publicly"
+title: "Deploying and Operating the Agent"
 duration: "45-60 min"
 goal: "Put the agent on a public URL, for free, and prove that a redeploy mid-run does not lose work."
-question: "Can the public system survive restarts and redeploys?"
+question: "If a release replaces a worker, what wakes unfinished work and how does it safely continue?"
 hook: "Push to main, mid-run."
 scenario: "The incident agent is 20 minutes into an investigation when a deploy replaces the process. On the free tier. It has to shrug."
 caseStudy: incident-response-agent
@@ -11,128 +11,279 @@ skills: [Deployment, Migrations, Rollback]
 technologies: [Render, Neon, FastAPI]
 repoPath: "render.yaml"
 labNumber: 13
-invariant: "I12: a redeploy mid-run loses no work and duplicates no side effect."
+invariant: "A redeploy mid-run loses no work and duplicates no side effect."
 lab: "The Redeploy"
 deliverable: "Public URL + render.yaml + .env.example + deploy_checklist.md"
 status: published
 ---
 
-## Lesson 14.1: Reference deployment (free)
+## Separate request handling from execution
+
+Avoid this architecture:
 
 ```text
-Render (free web service)   ← FastAPI + dashboard, git-deploy from main
-Neon (free Postgres)        ← LangGraph checkpoints + your runs/events/published tables
-LangSmith free tier         ← traces (or Langfuse self-hosted on the same Render service)
-GitHub                      ← repo, CI eval gate from Module 11
+POST /run
+  ↓
+keep HTTP request open
+  ↓
+execute for 40 minutes
+  ↓
+return final response
 ```
 
-Nothing changes from local except env vars, because you used Neon since Module 03.
-
-`render.yaml`:
-
-```yaml
-services:
-  - type: web
-    name: vendor-review-agent
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: DATABASE_URL
-        sync: false
-      - key: LLM_API_KEY
-        sync: false
-      - key: LANGSMITH_API_KEY
-        sync: false
-```
-
-## Lesson 14.2: Free-tier realities you must design for
+Use:
 
 ```text
-Cold starts / spin-down     free web services sleep after idle → first request slow;
-                            long runs must not depend on one warm process (they don't, Module 07)
-Request timeouts            never run the graph inside the HTTP request; enqueue, return run_id,
-                            execute in a background task, poll /runs/{id}
-Ephemeral disk              anything on disk is gone on redeploy → raw pages go in Postgres/object store
-Connection limits           Neon free tier caps connections → use a pool, close cleanly
-No secrets in repo          .env.example only; real values in the host's env
+POST /runs
+  ↓
+validate input
+  ↓
+create durable run
+  ↓
+return 202 Accepted + run_id
 ```
 
-Background execution on a free tier: a FastAPI `BackgroundTasks` or a tiny in-process worker loop is enough for the course. Note explicitly that it is not a real queue: Module 15 will punish that, on purpose.
+The API has accepted work. It has not promised the work is complete.
 
-## Lesson 14.3: Free hosting matrix
+## Execution happens asynchronously
 
-| Option | Best for | Watch out |
-|---|---|---|
-| Render free + Neon | Full app with public URL, dashboard, DB (this course) | Spin-down, hours limits |
-| Hugging Face Spaces (Gradio/Streamlit) | Demo UI, permanent link, easiest | Compute limits, cold starts, not for background workers |
-| Fly.io / Railway free allowance | Small always-on services | Allowance changes; check current terms |
-| Oracle Cloud / GCP free tier VM | Self-managed always-on | You operate everything |
-| Cloudflare Tunnel / ngrok | Show a local run publicly for an hour | Temporary; not a deployment |
-| Modal free tier | Bursty background compute | Pair with a separate frontend |
+```text
+Browser
+  ↓
+FastAPI
+  ↓ creates run row
+PostgreSQL
+  ↓
+Scheduler/worker claims runnable run
+  ↓
+LangGraph executes
+  ↓
+checkpoints + events + artifacts persist
+```
 
-Production note: free tiers are for learning and sharing. Once you have users and SLAs, move to a managed LangGraph deployment, a real durable-execution engine (Temporal or similar), or your own workers on a paid tier. Nothing you built changes; where it runs does.
+For a small free deployment, API and worker loops may share one service/container. Keep their responsibilities conceptually separate.
 
-## Lesson 14.4: Security minimums, even for a demo
+## Run lifecycle
 
-- Rate-limit `POST /runs`; the run costs money.
-- Allow-list target domains for the fetcher (SSRF is real).
-- Never render fetched HTML into your dashboard unescaped.
-- Treat fetched page content as untrusted input to the model: prompt injection via a vendor's website is the obvious attack on this app.
+Example non-terminal states:
+
+```text
+pending
+running
+retry_wait
+awaiting_review
+publishing
+```
+
+Terminal states:
+
+```text
+completed
+completed_with_unknowns
+rejected
+cancelled
+failed
+```
+
+Explicit terminal reasons matter for operations and evals.
+
+## Startup reconciliation
+
+This section must be much clearer than typical tutorials.
+
+When a worker starts:
+
+```text
+1. connect to durable stores
+2. verify database/schema compatibility
+3. establish worker identity
+4. begin claim loop
+5. discover pending runs
+6. discover expired leases/orphans
+7. reclaim eligible work
+8. resume from durable runtime state
+```
+
+This is the bridge between:
+
+```text
+“My checkpoint is still in PostgreSQL.”
+```
+
+and:
+
+```text
+“My product actually continued the job.”
+```
+
+A checkpoint does not schedule itself.
+
+## Health versus readiness
+
+### Health
+
+Answers:
+
+```text
+Is this process alive?
+```
+
+### Readiness
+
+Answers:
+
+```text
+Can this process safely accept or execute work?
+```
+
+Readiness may require:
+
+```text
+database reachable
+required migrations applied
+secrets/config present
+scheduler started
+dependency initialization complete
+```
+
+A process can be healthy but not ready.
+
+## Deployment compatibility
+
+A long-running job may outlive a software release.
+
+Every run should record at least:
+
+```text
+code_version
+state_schema_version
+```
+
+When code changes, classify:
+
+### Compatible
+
+New code can safely resume old state.
+
+### Migratable
+
+Old state must be transformed before resume.
+
+### Breaking
+
+Drain/pin/terminate old runs explicitly rather than hoping they work.
+
+## Redeploy timeline
+
+```text
+Worker A owns run_123
+  ↓
+deploy begins
+  ↓
+Worker A terminated
+  ↓
+lease remains temporarily
+  ↓
+Worker B starts new version
+  ↓
+startup claim loop runs
+  ↓
+A's lease expires
+  ↓
+B claims run with new lease generation
+  ↓
+loads durable checkpoint
+  ↓
+continues
+```
+
+Now every concept from Modules 03 and 05 connects to deployment.
+
+## Public/free hosting
+
+A free web host and serverless Postgres can be used for the learning deployment.
+
+Be explicit in the copy:
+
+> Free hosting is a reproducible learning/portfolio environment, not a production SLA.
+
+Process spin-down and restarts are useful failure injectors because the architecture should treat local memory as disposable.
+
+Do not claim an in-process FastAPI background task is a durable queue.
+
+If the course uses a small DB-backed worker loop for simplicity, say so and explain what would change in a larger production deployment.
+
+## Abuse and cost controls
+
+A public agent endpoint can spend real money.
+
+At minimum discuss:
+
+```text
+authentication or abuse-resistant access
+per-user/tenant concurrency
+maximum pages per run
+maximum model steps
+maximum cost
+request-size limit
+allowed URL/domain policy
+```
+
+## Runbook
+
+Require the learner to answer:
+
+```text
+How do I find a stuck run?
+How do I cancel it?
+How do I inspect ownership?
+How do I see the last useful progress?
+How do I investigate an ambiguous side effect?
+How do I find its trace?
+How do I disable new run creation?
+How do I roll back a bad deploy?
+```
+
+A service is not fully built if nobody can operate it.
 
 <div class="callout failure-lab">
 
 **FAILURE LAB 13: The Redeploy**
 
-Start a run on the public URL. While it is mid-research, push a trivial commit. Render redeploys; the process is replaced.
+Restart/redeploy while the run is:
 
-Expected: the dashboard shows the run paused/stale, then continues (or resumes on next poll/resume call) from the last checkpoint. `published_reports` still ends with exactly one row.
+1. in an ordinary research step;
+2. waiting for review;
+3. owned by a worker;
+4. near/inside an ambiguous publish.
 
-Then do it during `await_review`. Then approve from your phone.
+Verify:
+
+```text
+committed state survives
+runnable work is discovered automatically
+expired ownership is reclaimed
+human wait survives
+publish does not duplicate
+code/schema version is visible
+```
+
+Normal recovery should require no manual database editing.
 
 </div>
 
-<div class="callout deliverable">
 
-**Deliverable:** your public URL, `render.yaml`, `.env.example`, and `deploy_checklist.md` (what you verified, including the redeploy lab).
-
-</div>
-
-<div class="callout takeaway">
-
-**Production takeaway:** deployment did not add durability. Modules 03 to 07 did. Deployment just proved it.
-
-</div>
-
-## Diagnose
+## Check your understanding
 
 <div class="block-diagnose">
 
-You redeployed mid-run and lost nothing. Give the mechanism, not the vibes:
+Answer before moving on. If one is fuzzy, the relevant section is a scroll away.
 
-1. At the moment Render replaced the process, what died and what survived, item by item?
-2. Why must every migration be backward compatible with the running version, and for roughly how long do both versions coexist?
-3. The service slept while a run waited for review. Why did that cost nothing, and which module made it so?
-4. Approving from your phone worked. Trace the request's path from tap to resumed graph.
-
-</div>
-
-## Prove it
-
-<div class="block-prove">
-
-```bash
-make lab LAB=13
-```
-
-Passing means, checked automatically, not eyeballed:
-
-- a run started on the public URL survives a mid-research redeploy and completes; published_reports ends with exactly one row
-- a redeploy during await_review changes nothing; the approval from a phone resumes and publishes once
-- the app boots with env vars only: no secret in the repo, .env.example complete
-- POST /runs is rate-limited and the fetcher's allow-list is active in production
-
-Deployment did not add durability; the lab proves the durability you already built.
+1. Why should API request handling be decoupled from long execution?
+2. What is startup reconciliation?
+3. Why does a checkpoint not automatically resume itself?
+4. What is health versus readiness?
+5. Why should a run record code and schema versions?
 
 </div>
 
@@ -149,31 +300,6 @@ Observable conditions, not "I understand it". Check them off; progress is saved 
 - [ ] deploy_checklist.md records what you verified, including the redeploy lab
 
 </div>
-
-## Checkpoint
-
-Three questions before you move on. Answer first, then open.
-
-<details class="checkpoint">
-<summary>Why is a deploy just another failure injection?</summary>
-
-A redeploy is a process kill with a schedule. If your runs survive kill -9 and reclaim, they survive deploys; if they do not, no amount of deployment tooling saves you.
-
-</details>
-
-<details class="checkpoint">
-<summary>What free-tier constraint most shaped the architecture?</summary>
-
-Spin-down: nothing can depend on one warm process. Which is why waiting is state, work is claimed by leases, and the graph never runs inside the HTTP request.
-
-</details>
-
-<details class="checkpoint">
-<summary>When do you leave the free tier, and what changes?</summary>
-
-Users and SLAs. You move to a managed deployment, a workflow engine, or paid workers, and nothing you built changes: where it runs does. That is the payoff of durable state.
-
-</details>
 
 ## Primary sources
 

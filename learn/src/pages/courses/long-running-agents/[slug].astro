@@ -67,14 +67,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
       url: canonical,
       author: { "@type": "Person", name: "Kranthi Manchikanti" },
       publisher: { "@type": "Organization", name: "The AI Runtime" },
-      isPartOf: { "@type": "Course", name: "Engineering Long-Running AI Systems" },
+      isPartOf: { "@type": "Course", name: "Engineering Long-Running AI Agents" },
     },
     {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Courses", item: "https://learn.theairuntime.com/courses/" },
-        { "@type": "ListItem", position: 2, name: "Engineering Long-Running AI Systems", item: `https://learn.theairuntime.com${COURSE_BASE}/` },
+        { "@type": "ListItem", position: 2, name: "Engineering Long-Running AI Agents", item: `https://learn.theairuntime.com${COURSE_BASE}/` },
         { "@type": "ListItem", position: 3, name: `Module ${pad(n)}: ${d.title}` },
       ],
     },

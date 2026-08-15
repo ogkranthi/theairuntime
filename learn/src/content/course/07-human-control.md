@@ -1,9 +1,9 @@
 ---
 module: 7
-title: "Human-in-the-Loop & Long Waits"
+title: "Human-in-the-Loop and Durable Waiting"
 duration: "50-60 min"
 goal: "Show how a workflow can stop for hours without keeping a worker occupied, and resume with full state."
-question: "How do runs wait for people without holding compute?"
+question: "How can a workflow wait for a human for hours without holding a worker for hours?"
 hook: "The approver is at lunch. For three hours."
 scenario: "A refund above threshold waits for a human. The service redeploys twice while they decide. The approval still has to work, exactly once, from their phone."
 caseStudy: customer-account-agent
@@ -11,161 +11,249 @@ skills: [HITL, Durable waits, Approvals]
 technologies: [Python, LangGraph, FastAPI]
 repoPath: "06_approval.py"
 labNumber: 7
-invariant: "I6: a waiting run holds no compute and survives restarts."
-lab: "The Three-Hour Approval"
+invariant: "I8: waiting for a person does not require a live worker."
+lab: "Three-Hour Approval"
 deliverable: "06_approval.py + /runs/{id}/review endpoints"
 status: published
 ---
 
-## Lesson 07.1: Our approval point
+## Naive waiting
 
-Before publishing:
-
-```text
-Research
-   ↓
-Verification
-   ↓
-Draft report
-   ↓
-─── PAUSE ───
-   ↓
-Human reviews
-   ↓
-Approve / Reject / Request more research
-   ↓
-Continue
-```
-
-## Lesson 07.2: Interrupt execution
-
-LangGraph's `interrupt()` persists graph state and stops execution until an external `Command(resume=...)` continues the run, on the same thread ID, from any process, at any later time.
+Bad:
 
 ```python
-from langgraph.types import interrupt, Command
+while not approved():
+    time.sleep(30)
+```
 
+Problems:
+
+- a worker remains occupied;
+- the process can restart;
+- a deploy destroys the sleeping call stack;
+- horizontal workers complicate ownership;
+- waiting for days becomes absurd.
+
+## Model the wait as state
+
+At the approval boundary, persist something like:
+
+```json
+{
+  "run_id": "run_123",
+  "status": "awaiting_review",
+  "review_round": 1,
+  "draft_report_id": "draft_19",
+  "review_requested_at": "...",
+  "review_version": 4
+}
+```
+
+Then stop executing that run.
+
+No function has to remain asleep.
+
+## What LangGraph interrupt means
+
+Conceptually:
+
+```python
 def await_review(state):
     decision = interrupt({
         "vendor": state["vendor_name"],
-        "coverage": coverage_summary(state),
         "draft": state["draft_report"],
+        "unknowns": state["unknowns"],
     })
-    return {"approval_status": decision["action"], "review_note": decision.get("note")}
+
+    return {"review_decision": decision}
 ```
 
-The key insight:
-
-> **Waiting is state, not compute.**
-
-The server does not need a Python function sleeping for three hours. Nothing is running. A row exists that says "awaiting approval." When the human acts, a fresh process resumes it.
-
-## Lesson 07.3: Human decisions
-
-Support three:
+Execution timeline:
 
 ```text
-APPROVE                → publish
-REJECT                 → status = rejected, end
-REQUEST MORE RESEARCH  → back to research with the reviewer's note as new tasks
+worker enters await_review
+  ↓
+interrupt produced
+  ↓
+workflow state/checkpoint persists
+  ↓
+worker returns to other work
+  ↓
+three hours pass
+  ↓
+reviewer submits HTTP request
+  ↓
+same durable run/thread is resumed
+  ↓
+a worker continues execution
 ```
 
-More research loops back:
+Now the learner has earned the concise rule:
+
+> Waiting is state, not compute.
+
+## Review payload
+
+Do not ask only:
 
 ```text
-review → needs_more_information → research → verify → review
+Approve? Yes / No
 ```
 
-Bound the loop (`MAX_REVIEW_ROUNDS = 3`). Humans can be indecisive too.
-
-## Lesson 07.4: Approval payload
-
-Don't show:
+Provide enough information to make a responsible decision:
 
 ```text
-Approve? [Yes]
+vendor
+coverage
+unknowns
+contradictions
+high-risk claims
+evidence links
+cost so far
+what action follows approval
 ```
 
-Show:
+Human review without evidence is theater.
+
+## Structured decision
+
+```python
+class ReviewDecision(TypedDict):
+    action: Literal[
+        "approve",
+        "reject",
+        "request_more_research",
+    ]
+    reviewer_id: str
+    note: str | None
+    requirements: list[str]
+    review_version: int
+```
+
+## Stale approval
+
+Important production scenario:
 
 ```text
-Vendor: Acme
-
-Requirements covered: 5/6
-Unknown: Enterprise pricing
-
-Evidence: 12 pages examined
-Risks: 2
-Estimated completeness: 83%
-
-[Approve]   [Research missing items]   [Reject]
+draft version 4 sent for review
+  ↓
+more research occurs
+  ↓
+draft version 5 exists
+  ↓
+reviewer clicks old approval for v4
 ```
 
-Human review needs evidence, not a yes/no. If the reviewer cannot see *why* the agent believes an item is verified, the review is theatre.
+An approval of version 4 must not silently authorize version 5.
 
-## Lesson 07.5: API shape
+Bind review decisions to a version or immutable artifact hash.
 
 ```text
-POST /runs                       → start, returns run_id
-GET  /runs/{id}                  → state summary (from Module 02's operational questions)
-GET  /runs/{id}/review           → approval payload (only when awaiting_approval)
-POST /runs/{id}/review           → {action, note} → resumes graph
+approval.review_version == current_review_version
 ```
+
+Otherwise reject the stale decision and request a new review.
+
+## Authentication versus authorization
+
+Authentication:
+
+```text
+Who is this person?
+```
+
+Authorization:
+
+```text
+May this person approve this action for this run?
+```
+
+Do not equate possession of a review URL with authorization.
+
+Possible roles:
+
+```text
+viewer
+reviewer
+admin
+```
+
+Publish may require all of:
+
+```text
+user role permits approval
+run belongs to user's tenant
+run state == awaiting_review
+review version matches
+decision == approve
+```
+
+## Timeouts and escalation
+
+Long human waits need explicit policy:
+
+```text
+review_due_at
+remind_at
+escalate_at
+expire_at
+```
+
+Possible behavior:
+
+```text
+send reminder
+route to backup reviewer
+cancel action
+continue only under pre-authorized policy
+```
+
+Do not ask the model to invent governance policy.
+
+## Durable steering
+
+Human control can include:
+
+```text
+cancel
+pause
+add a constraint
+change priority
+request specific evidence
+reduce budget
+```
+
+Represent these as durable control events, not ephemeral chat instructions.
 
 <div class="callout failure-lab">
 
-**FAILURE LAB 07: The Three-Hour Approval**
+**FAILURE LAB 07: Three-Hour Approval**
 
-Run reaches approval. Stop the application. Restart it. Go get lunch.
+1. Run until `awaiting_review`.
+2. Restart the service twice.
+3. Resume from a new process.
+4. Verify no worker was occupied during the wait.
+5. Verify the review payload is unchanged.
+6. Approve and confirm one publish.
+7. Try unauthorized approval.
+8. Try approval of an old review version.
 
-Come back. `POST /runs/{id}/review` with `approve`.
-
-The workflow must continue from persisted state (publish, once) rather than repeating research. Confirm with the `published_reports` table and the trace.
-
-Then: request more research, kill during the second research pass, resume, approve.
-
-</div>
-
-<div class="callout deliverable">
-
-**Deliverable:** `06_approval.py` and the two review endpoints, with the evidence-rich payload.
+Invalid approvals must not advance state.
 
 </div>
 
-<div class="callout takeaway">
 
-**Production takeaway:** long-running agent ≠ long-running process. A long-running business execution can consist of many short-lived compute sessions connected by durable state.
-
-</div>
-
-## Diagnose
+## Check your understanding
 
 <div class="block-diagnose">
 
-The approval survived a restart and three hours of silence. Explain why:
+Answer before moving on. If one is fuzzy, the relevant section is a scroll away.
 
-1. While the run waited, what existed in the database, and what existed in memory?
-2. You redeployed mid-wait. Why did the blocking version lose the run and the interrupt version not?
-3. The reviewer double-clicked approve. What makes the review endpoint safe against that, and against a redelivered webhook?
-4. The reviewer's edits changed the report. Where do those edits live, and why not in the message history?
-
-</div>
-
-## Prove it
-
-<div class="block-prove">
-
-```bash
-make lab LAB=07
-```
-
-Passing means, checked automatically, not eyeballed:
-
-- run reaches await_review; the process is stopped and restarted; POST /runs/{id}/review with approve resumes and publishes exactly once
-- published_reports has one row, and the trace shows resume from the review checkpoint, not a research replay
-- request-more-research loops back, is killed mid-second-pass, resumes, and approval still publishes once
-- a second identical approve returns already_resolved and changes nothing
-
-Waiting is state: the passing condition includes zero compute held during the wait.
+1. Why is `sleep()` not durable waiting?
+2. What is persisted when a workflow pauses for review?
+3. Why should approval bind to a specific draft/review version?
+4. What is authentication versus authorization?
+5. What happens to the worker while the human is away?
 
 </div>
 
@@ -182,31 +270,6 @@ Observable conditions, not "I understand it". Check them off; progress is saved 
 - [ ] Reviewer edits are folded into state and survive context rebuilds
 
 </div>
-
-## Checkpoint
-
-Three questions before you move on. Answer first, then open.
-
-<details class="checkpoint">
-<summary>Waiting is state, not compute. What does that buy you?</summary>
-
-Free waits of arbitrary length: the run survives deploys, restarts and weekends because nothing is running. A row says awaiting_approval; a fresh process resumes on the human's action.
-
-</details>
-
-<details class="checkpoint">
-<summary>Why must the approval payload be evidence-rich?</summary>
-
-If the reviewer cannot see why the agent believes an item is verified, the review is theatre. Evidence-rich payloads are also what make approval latency and edit rate meaningful signals about where the gate belongs.
-
-</details>
-
-<details class="checkpoint">
-<summary>What should happen when nobody ever clicks?</summary>
-
-Every interrupt gets a deadline and an explicit on_timeout: fail, proceed, or escalate, chosen per gate. proceed on an irreversible gate is how unattended systems email unreviewed reports, so that choice is written in code where it can be reviewed.
-
-</details>
 
 ## Primary sources
 
