@@ -4,6 +4,12 @@ title: "Context Engineering Across Long Runs"
 duration: "60-75 min"
 goal: "Treat execution state and model context as separate engineering surfaces; keep the model's working set small, evidenced, and reconstructible."
 question: "How do we prevent context accumulation and drift?"
+hook: "The agent read forty pages and got dumber."
+scenario: "The data agent's context fills with raw pages. By decision thirty it repeats itself, ships a contradiction, and declares victory early. Nothing errored."
+caseStudy: enterprise-data-agent
+skills: [Context engineering, Compaction, Artifacts]
+technologies: [Python]
+repoPath: "07_context.py"
 labNumber: 8
 invariant: "I7: model context is rebuilt from durable artifacts, never accumulated."
 lab: "Context Rot"

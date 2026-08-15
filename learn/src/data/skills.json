@@ -1,0 +1,75 @@
+[
+  {
+    "id": "fde-discovery",
+    "domain": "FDE Discovery",
+    "blurb": "Turning a customer's ask into a system worth building. The half of the job that happens before code.",
+    "skills": [
+      { "name": "Customer discovery", "courses": ["course-005"], "caseStudies": ["incident-response-agent"] },
+      { "name": "Workflow mapping", "courses": ["course-005"], "caseStudies": ["claims-processing-agent"] },
+      { "name": "Requirements", "courses": ["course-005"], "caseStudies": ["customer-account-agent"] },
+      { "name": "Success criteria", "lessons": ["/courses/long-running-agents/11-evaluation/"], "courses": ["course-001"] },
+      { "name": "AI suitability", "lessons": ["/courses/long-running-agents/00-mental-model/"], "courses": ["course-001"] }
+    ]
+  },
+  {
+    "id": "ai-engineering",
+    "domain": "AI Engineering",
+    "blurb": "The model-facing craft: agents, context, tools, memory, and the evaluation loops that keep them honest.",
+    "skills": [
+      { "name": "Models", "external": [{ "label": "Anthropic docs", "url": "https://docs.anthropic.com/" }] },
+      { "name": "Agents", "lessons": ["/courses/long-running-agents/01-naive-agent/"], "courses": ["course-001"] },
+      { "name": "RAG", "external": [{ "label": "Anthropic on context engineering", "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" }] },
+      { "name": "Context", "lessons": ["/courses/long-running-agents/08-context/"], "courses": ["course-001"], "caseStudies": ["enterprise-data-agent"] },
+      { "name": "Memory", "lessons": ["/courses/long-running-agents/08-context/"], "courses": ["course-001"] },
+      { "name": "Tools", "lessons": ["/courses/long-running-agents/10-security/"], "courses": ["course-001"], "caseStudies": ["customer-account-agent"] },
+      { "name": "Evals", "lessons": ["/courses/long-running-agents/11-evaluation/"], "courses": ["course-001", "course-002"], "external": [{ "label": "Hamel Husain, LLM-as-a-judge", "url": "https://hamel.dev/blog/posts/llm-judge/" }] }
+    ]
+  },
+  {
+    "id": "software-engineering",
+    "domain": "Software Engineering",
+    "blurb": "The load-bearing fundamentals AI systems inherit: APIs, data, distribution, testing, security.",
+    "skills": [
+      { "name": "APIs", "lessons": ["/courses/long-running-agents/07-human-control/"], "courses": ["course-001"] },
+      { "name": "Databases", "lessons": ["/courses/long-running-agents/02-state/", "/courses/long-running-agents/03-durable-execution/"], "courses": ["course-001"] },
+      { "name": "Distributed systems", "lessons": ["/courses/long-running-agents/04-side-effects/", "/courses/long-running-agents/05-work-ownership/"], "courses": ["course-001"], "caseStudies": ["incident-response-agent"] },
+      { "name": "Testing", "lessons": ["/courses/long-running-agents/11-evaluation/"], "courses": ["course-001"] },
+      { "name": "Security", "lessons": ["/courses/long-running-agents/10-security/"], "courses": ["course-001", "course-003"] }
+    ]
+  },
+  {
+    "id": "deployment-engineering",
+    "domain": "Deployment Engineering",
+    "blurb": "Everything between working code and a system a customer can rely on.",
+    "skills": [
+      { "name": "Identity", "courses": ["course-003"] },
+      { "name": "Networking", "lessons": ["/courses/long-running-agents/10-security/"], "courses": ["course-001"] },
+      { "name": "Observability", "lessons": ["/courses/long-running-agents/09-observability/"], "courses": ["course-001"], "caseStudies": ["incident-response-agent"] },
+      { "name": "CI/CD", "lessons": ["/courses/long-running-agents/14-deploy/"], "courses": ["course-001"] },
+      { "name": "Cost", "lessons": ["/courses/long-running-agents/08-context/"], "courses": ["course-001"] },
+      { "name": "Reliability", "lessons": ["/courses/long-running-agents/15-production-gauntlet/"], "courses": ["course-001"] }
+    ]
+  },
+  {
+    "id": "ai-native-development",
+    "domain": "AI-Native Development",
+    "blurb": "Building software with coding agents as a discipline rather than a novelty.",
+    "skills": [
+      { "name": "Coding agents", "lessons": ["/courses/long-running-agents/12-deep-agents/"], "courses": ["course-001", "course-004"], "caseStudies": ["repository-migration-agent"] },
+      { "name": "Repository engineering", "courses": ["course-004"], "caseStudies": ["repository-migration-agent"] },
+      { "name": "Specification", "courses": ["course-004"] },
+      { "name": "Verification", "lessons": ["/courses/long-running-agents/11-evaluation/"], "courses": ["course-004"], "caseStudies": ["repository-migration-agent"] }
+    ]
+  },
+  {
+    "id": "customer-engineering",
+    "domain": "Customer Engineering",
+    "blurb": "Operating in someone else's reality: tradeoffs, stakeholders, rollout, and the feedback loop after launch.",
+    "skills": [
+      { "name": "Architecture tradeoffs", "lessons": ["/courses/long-running-agents/13-industry-architectures/"], "courses": ["course-001"] },
+      { "name": "Stakeholder communication", "courses": ["course-005"] },
+      { "name": "Production rollout", "lessons": ["/courses/long-running-agents/14-deploy/"], "courses": ["course-001", "course-003"] },
+      { "name": "Feedback loops", "lessons": ["/courses/long-running-agents/11-evaluation/"], "courses": ["course-002"] }
+    ]
+  }
+]

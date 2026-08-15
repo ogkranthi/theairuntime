@@ -4,6 +4,12 @@ title: "Human-in-the-Loop & Long Waits"
 duration: "50-60 min"
 goal: "Show how a workflow can stop for hours without keeping a worker occupied, and resume with full state."
 question: "How do runs wait for people without holding compute?"
+hook: "The approver is at lunch. For three hours."
+scenario: "A refund above threshold waits for a human. The service redeploys twice while they decide. The approval still has to work, exactly once, from their phone."
+caseStudy: customer-account-agent
+skills: [HITL, Durable waits, Approvals]
+technologies: [Python, LangGraph, FastAPI]
+repoPath: "06_approval.py"
 labNumber: 7
 invariant: "I6: a waiting run holds no compute and survives restarts."
 lab: "The Three-Hour Approval"

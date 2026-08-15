@@ -42,6 +42,8 @@ export const MODULE_SLUGS: Record<number, string> = {
   15: "15-production-gauntlet",
 };
 
+export const COURSE_BASE = "/courses/long-running-agents";
+
 export const CHANNELS = {
   substack: "https://theairuntime.com/subscribe",
   youtube: "https://www.youtube.com/@theairuntime",
@@ -105,7 +107,7 @@ export function pad(n: number): string {
 }
 
 export function moduleHref(entry: Module): string {
-  return `/course-001/${entry.id}/`;
+  return `${COURSE_BASE}/${entry.id}/`;
 }
 
 export function neighbors(modules: Module[], current: Module) {

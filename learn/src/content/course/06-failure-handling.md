@@ -4,6 +4,12 @@ title: "Failure Handling, Retries & Recovery"
 duration: "60 min"
 goal: "Stop treating every exception as retry(3). Build a failure taxonomy and route each class differently."
 question: "Which failures retry, reroute, pause, or stop?"
+hook: "The log store is down. Should the investigation die?"
+scenario: "One of six evidence sources times out. A blind retry hammers the degraded system; giving up throws away five good results. Neither is the answer."
+caseStudy: incident-response-agent
+skills: [Failure taxonomy, Retries, Degradation]
+technologies: [Python]
+repoPath: "failure_policy.py"
 labNumber: 6
 invariant: "I5: every failure class gets its designed response, never a blind retry."
 lab: "The Failure Matrix"

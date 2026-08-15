@@ -1,0 +1,45 @@
+---
+interface Props {
+  technology: string;
+  why: string;
+  primerUrl?: string;
+  docsUrl?: string;
+  deeperUrl?: string;
+}
+const { technology, why, primerUrl, docsUrl, deeperUrl } = Astro.props;
+---
+
+<div class="techres">
+  <p class="techres__name">{technology}</p>
+  <p class="techres__why">{why}</p>
+  <p class="techres__links">
+    {primerUrl && <a href={primerUrl}>Quick primer</a>}
+    {docsUrl && <a href={docsUrl} rel="noopener">Official docs <span aria-hidden="true">&#8599;</span></a>}
+    {deeperUrl && <a href={deeperUrl} rel="noopener">Go deeper <span aria-hidden="true">&#8599;</span></a>}
+  </p>
+</div>
+
+<style>
+  .techres {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg-raise);
+    padding: 0.9rem 1.1rem;
+  }
+  .techres__name {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--fg);
+    font-weight: 500;
+    margin: 0 0 0.25rem;
+  }
+  .techres__why { font-size: var(--t-meta); color: var(--fg-muted); margin: 0 0 0.5rem; }
+  .techres__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    margin: 0;
+  }
+</style>

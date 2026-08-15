@@ -4,6 +4,12 @@ title: "Work Ownership: Claims, Leases & Orphans"
 duration: "50-60 min"
 goal: "Guarantee that exactly one worker executes a run at a time, and that a run whose worker dies is reclaimed automatically."
 question: "Who is allowed to execute a run right now?"
+hook: "Two workers picked up the same investigation."
+scenario: "Scale-out day: a second worker joins the incident agent. Both claim the same run, every model call happens twice, and the bill doubles before anyone sees it."
+caseStudy: incident-response-agent
+skills: [Leases, Ownership, Scheduling]
+technologies: [Python, PostgreSQL]
+repoPath: "05_scheduler.py"
 labNumber: 5
 invariant: "I4: a run has at most one active owner, and an orphaned run is reclaimed within one lease."
 lab: "Two Workers, One Run"

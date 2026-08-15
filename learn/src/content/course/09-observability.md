@@ -4,6 +4,12 @@ title: "Observability & Run UX"
 duration: "45-60 min"
 goal: "Make every run explainable to a human in under a minute, from the dashboard, from the trace, and from the database."
 question: "Can an operator explain a run in under a minute?"
+hook: "The run looks dead. Is it?"
+scenario: "A fetch has hung for 41 seconds. The dashboard, the trace and the event log each answer a different question about it, and an operator needs all three."
+caseStudy: incident-response-agent
+skills: [Tracing, Event logs, Run UX]
+technologies: [Python, HTMX, LangSmith]
+repoPath: "dashboard.html"
 labNumber: 9
 invariant: "I8: every run can explain itself from the database in under a minute."
 lab: "The Silent Run"

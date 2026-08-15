@@ -1,6 +1,5 @@
 ---
 import Base from "../layouts/Base.astro";
-import StateLedger from "../components/StateLedger.astro";
 ---
 
 <Base
@@ -13,11 +12,9 @@ import StateLedger from "../components/StateLedger.astro";
       <p class="eyebrow">404</p>
       <h1>No checkpoint at that step</h1>
       <p class="muted">
-        That page does not exist. The course is thirteen modules; pick one, or start at the
-        beginning.
+        That page does not exist. Start from the courses catalog, or browse the case studies.
       </p>
-      <p><a href="/">Course home</a> · <a href="/labs/">Failure Labs</a></p>
-      <StateLedger current={-1} status="not-found" />
+      <p><a href="/">Learn home</a> · <a href="/courses/">Courses</a> · <a href="/case-studies/">Case studies</a></p>
     </section>
   </div>
 </Base>

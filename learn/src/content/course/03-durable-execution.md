@@ -4,6 +4,12 @@ title: "Durable Execution & Checkpointing"
 duration: "60-75 min"
 goal: "Make the agent survive application failure using LangGraph with a PostgreSQL checkpointer."
 question: "What is replay, and what actually resumes?"
+hook: "Your worker disappeared. Did the job?"
+scenario: "A production investigation has been running for 37 minutes. Four of six investigation tasks are complete. The worker dies during task five. What happens next?"
+caseStudy: incident-response-agent
+skills: [Persistence, Checkpoints, Recovery]
+technologies: [Python, LangGraph, PostgreSQL]
+repoPath: "03_graph.py"
 labNumber: 3
 invariant: "I2: a crash never loses committed progress, and replay never corrupts state."
 lab: "Pull the Plug"

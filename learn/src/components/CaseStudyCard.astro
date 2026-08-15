@@ -1,0 +1,51 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  category: string;
+  summary: string;
+  concepts: string[];
+}
+const { href, title, category, summary, concepts } = Astro.props;
+---
+
+<article class="cscard">
+  <p class="cscard__cat">{category}</p>
+  <h3 class="cscard__title"><a href={href}>{title}</a></h3>
+  <p class="cscard__summary">{summary}</p>
+  <p class="cscard__concepts">
+    {concepts.map((c) => <span class="chip">{c}</span>)}
+  </p>
+</article>
+
+<style>
+  .cscard {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .cscard__cat {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+  .cscard__title { font-size: var(--t-h3); margin: 0 0 0.5rem; }
+  .cscard__title a { color: var(--fg); text-decoration: none; }
+  .cscard__title a:hover { color: var(--accent); }
+  .cscard__summary { font-size: var(--t-meta); color: var(--fg-muted); }
+  .cscard__concepts { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: auto 0 0; padding-top: 0.5rem; }
+  .chip {
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    background: var(--bg-inset);
+    border-radius: 999px;
+    padding: 0.12rem 0.6rem;
+  }
+</style>

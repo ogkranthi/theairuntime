@@ -4,6 +4,12 @@ title: "State: What Must Survive?"
 duration: "45-60 min"
 goal: "Separate conversation, execution state, artifacts, and external reality, and make state represent evidence, not claims."
 question: "What must survive process loss?"
+hook: "The agent says it finished. Prove it."
+scenario: "A claims decision reaches a reviewer marked verified. The auditor asks which document span supports it. The transcript is not an answer."
+caseStudy: claims-processing-agent
+skills: [State modeling, Evidence]
+technologies: [Python, PostgreSQL]
+repoPath: "02_state_machine.py"
 labNumber: 2
 invariant: "I1: an item is verified only if resolvable evidence exists."
 lab: "False Completion"

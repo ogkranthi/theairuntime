@@ -31,13 +31,17 @@ export async function getStaticPaths() {
   const modules = await getModules();
 
   const pages: Page[] = [
-    { slug: "home", eyebrow: "LEARN", title: "Training for engineers who ship AI", current: null },
-    { slug: "course-001", eyebrow: "COURSE 001 · FREE · OPEN SOURCE", title: "Engineering Long-Running AI Agents", current: null },
-    { slug: "labs", eyebrow: "COURSE 001 · FAILURE LABS", title: "Break it on purpose, then fix it", current: null },
-    { slug: "stack", eyebrow: "COURSE 001 · STACK", title: "Why this stack, and the free tier", current: null },
+    { slug: "home", eyebrow: "FDE ENGINEERING", title: "Learn AI Engineering Like an FDE", current: null },
+    { slug: "courses", eyebrow: "FDE ENGINEERING · COURSES", title: "The catalog", current: null },
+    { slug: "long-running-agents", eyebrow: "COURSE 001 · FDE ENGINEERING", title: "Engineering Long-Running AI Systems", current: null },
+    { slug: "case-studies", eyebrow: "FDE ENGINEERING · CASE STUDIES", title: "Systems, not demos", current: null },
+    { slug: "skills", eyebrow: "FDE ENGINEERING · SKILLS MAP", title: "What an FDE actually knows", current: null },
+    { slug: "resources", eyebrow: "FDE ENGINEERING · RESOURCES", title: "Curated, not collected", current: null },
+    { slug: "labs", eyebrow: "COURSE 001 · FAILURE LABS", title: "Break it on purpose", current: null },
+    { slug: "stack", eyebrow: "COURSE 001 · TECHNOLOGIES", title: "Boring on purpose", current: null },
     { slug: "sources", eyebrow: "COURSE 001 · PRIMARY SOURCES", title: "Read the originals", current: null },
-    { slug: "about", eyebrow: "COURSE 001 · ABOUT", title: "Quality among noise", current: null },
-    { slug: "404", eyebrow: "COURSE 001", title: "No checkpoint at that step", current: null },
+    { slug: "about", eyebrow: "FDE ENGINEERING · ABOUT", title: "Between the demo and production", current: null },
+    { slug: "404", eyebrow: "FDE ENGINEERING", title: "No checkpoint at that step", current: null },
     ...modules.map((m) => ({
       slug: m.id,
       eyebrow: `COURSE 001 · MODULE ${pad(m.data.module)}`,

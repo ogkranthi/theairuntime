@@ -3,6 +3,7 @@ import "@fontsource/ibm-plex-mono/latin-400.css";
 import "@fontsource/ibm-plex-mono/latin-500.css";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-600.css";
+import "@fontsource/inter/latin-700.css";
 import "../styles/tokens.css";
 import Wordmark from "../components/Wordmark.astro";
 import { CHANNELS, utm } from "../lib/course";
@@ -13,19 +14,29 @@ interface Props {
   /** Slug used for the OG image route and utm_content. */
   pageSlug: string;
   ogType?: "website" | "article";
+  /** Optional JSON-LD blocks (already-shaped objects). */
+  jsonLd?: Record<string, unknown>[];
+  /** Wider page chrome (lesson three-column layout). */
+  wide?: boolean;
 }
 
-const { title, description, pageSlug, ogType = "website" } = Astro.props;
+const { title, description, pageSlug, ogType = "website", jsonLd = [], wide = false } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const ogImage = new URL(`/og/${pageSlug}.png`, Astro.site).href;
 const year = 2026;
 
 const nav = [
-  { href: "/", label: "Courses" },
-  { href: "/course-001/", label: "Course 001" },
-  { href: "/about/", label: "About" },
+  { href: "/", label: "Learn" },
+  { href: "/courses/", label: "Courses" },
+  { href: "/case-studies/", label: "Case Studies" },
+  { href: "/skills/", label: "Skills Map" },
+  { href: CHANNELS.lab, label: "FDE Lab", external: true },
+  { href: "/resources/", label: "Resources" },
 ];
+
+const isActive = (href: string) =>
+  href === "/" ? Astro.url.pathname === "/" : Astro.url.pathname.startsWith(href);
 ---
 
 <!doctype html>
@@ -43,7 +54,7 @@ const nav = [
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:site_name" content="The AI Runtime, learn" />
+    <meta property="og:site_name" content="The AI Runtime, FDE Engineering" />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -53,21 +64,53 @@ const nav = [
     <meta name="twitter:image" content={ogImage} />
 
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <link rel="alternate" type="application/rss+xml" title="AIR Course 001" href="/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title="AIR FDE Engineering" href="/rss.xml" />
+    {jsonLd.map((block) => <script type="application/ld+json" set:html={JSON.stringify(block)} />)}
   </head>
 
   <body>
     <a class="skip" href="#main">Skip to content</a>
 
     <header class="site-header">
-      <div class="shell site-header__inner">
+      <div class:list={["shell site-header__inner", { "shell--wide": wide }]}>
         <Wordmark />
+
         <nav class="site-nav" aria-label="Primary">
-          {nav.map((n) => <a href={n.href} aria-current={Astro.url.pathname === n.href ? "page" : undefined}>{n.label}</a>)}
-          <a href={utm(CHANNELS.substack, pageSlug, "header")} rel="noopener" class="site-nav__out"
-            >Substack <span aria-hidden="true">&#8599;</span></a
+          {
+            nav.map((n) =>
+              n.external ? (
+                <a href={n.href} rel="noopener">{n.label} <span aria-hidden="true">&#8599;</span></a>
+              ) : (
+                <a href={n.href} aria-current={isActive(n.href) ? "page" : undefined}>{n.label}</a>
+              ),
+            )
+          }
+          <a href={utm(CHANNELS.publication, pageSlug, "header")} rel="noopener" class="site-nav__out"
+            >The AI Runtime <span aria-hidden="true">&#8599;</span></a
           >
         </nav>
+
+        <details class="mnav">
+          <summary aria-label="Menu">
+            <span class="mnav__bar" aria-hidden="true"></span>
+            <span class="mnav__bar" aria-hidden="true"></span>
+            <span class="mnav__bar" aria-hidden="true"></span>
+          </summary>
+          <nav class="mnav__panel" aria-label="Primary, mobile">
+            {
+              nav.map((n) =>
+                n.external ? (
+                  <a href={n.href} rel="noopener">{n.label} <span aria-hidden="true">&#8599;</span></a>
+                ) : (
+                  <a href={n.href} aria-current={isActive(n.href) ? "page" : undefined}>{n.label}</a>
+                ),
+              )
+            }
+            <a href={utm(CHANNELS.publication, pageSlug, "header")} rel="noopener" class="site-nav__out"
+              >The AI Runtime <span aria-hidden="true">&#8599;</span></a
+            >
+          </nav>
+        </details>
       </div>
     </header>
 
@@ -76,15 +119,15 @@ const nav = [
     </main>
 
     <footer class="site-footer">
-      <div class="shell">
+      <div class:list={["shell", { "shell--wide": wide }]}>
         <slot name="footer-cta" />
         <div class="site-footer__legal">
           <span>&copy; {year} The AI Runtime</span>
           <nav class="site-footer__links" aria-label="Footer">
-            <a href={CHANNELS.lab} rel="noopener">Field Lab</a>
+            <a href={CHANNELS.lab} rel="noopener">FDE Lab</a>
             <a href={utm(CHANNELS.substack, pageSlug, "footer")} rel="noopener">Substack</a>
-            <a href={CHANNELS.repo} rel="noopener">Course repo</a>
-            <a href="/about/">Contact</a>
+            <a href={CHANNELS.repo} rel="noopener">Reference repo</a>
+            <a href="/about/">About</a>
             <a href="/rss.xml">RSS</a>
           </nav>
         </div>
@@ -139,6 +182,11 @@ const nav = [
         );
         targets.forEach((t) => observer.observe(t));
       }
+
+      // 3. Close the mobile menu when a link inside it is chosen.
+      document.querySelectorAll<HTMLDetailsElement>(".mnav").forEach((d) => {
+        d.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => (d.open = false)));
+      });
     </script>
 
     <style>
@@ -156,23 +204,62 @@ const nav = [
         justify-content: space-between;
         gap: 1.5rem;
         min-height: 3.5rem;
-        flex-wrap: wrap;
       }
       .site-nav {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem 1.35rem;
-        font-family: var(--font-mono);
+        gap: 0.5rem 1.3rem;
         font-size: var(--t-meta);
-      }
-      @media (max-width: 420px) {
-        .site-header__inner { padding: 0.75rem 0; }
-        .site-nav { gap: 0.4rem 1rem; font-size: 0.75rem; }
+        font-weight: 500;
       }
       .site-nav a { color: var(--fg-muted); }
       .site-nav a:hover { color: var(--accent); text-decoration: none; }
       .site-nav a[aria-current="page"] { color: var(--fg); }
-      .site-nav__out { color: var(--accent) !important; }
+      .site-nav__out { color: var(--accent) !important; white-space: nowrap; }
+
+      /* Mobile disclosure menu */
+      .mnav { display: none; position: relative; }
+      .mnav summary {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 0.6rem 0.4rem;
+        border-radius: var(--radius-sm);
+      }
+      .mnav summary::-webkit-details-marker { display: none; }
+      .mnav__bar { width: 1.15rem; height: 2px; background: var(--fg); border-radius: 2px; }
+      .mnav[open] summary .mnav__bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+      .mnav[open] summary .mnav__bar:nth-child(2) { opacity: 0; }
+      .mnav[open] summary .mnav__bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+      .mnav__panel {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 0.5rem);
+        min-width: 13rem;
+        background: var(--bg-raise);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        z-index: 30;
+      }
+      .mnav__panel a {
+        color: var(--fg);
+        padding: 0.55rem 0.75rem;
+        border-radius: var(--radius-sm);
+        font-size: var(--t-meta);
+        font-weight: 500;
+      }
+      .mnav__panel a:hover { background: var(--bg-inset); text-decoration: none; }
+      .mnav__panel a[aria-current="page"] { color: var(--accent); }
+
+      @media (max-width: 860px) {
+        .site-nav { display: none; }
+        .mnav { display: block; }
+      }
 
       .site-footer {
         border-top: 1px solid var(--line);
@@ -189,11 +276,7 @@ const nav = [
         font-size: var(--t-meta);
         color: var(--fg-muted);
       }
-      .site-footer__links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.2rem;
-      }
+      .site-footer__links { display: flex; flex-wrap: wrap; gap: 1.2rem; }
       .site-footer__links a { color: var(--fg-muted); }
       .site-footer__links a:hover { color: var(--accent); text-decoration: none; }
     </style>

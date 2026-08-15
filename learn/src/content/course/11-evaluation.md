@@ -4,6 +4,12 @@ title: "Evaluating Long-Running Agents"
 duration: "75-90 min"
 goal: "Make evals the development loop: error analysis on real traces, binary criteria, a validated judge, and a regression gate that proves version B beats version A."
 question: "How do we prove B is better than A?"
+hook: "Version B feels better. Feels."
+scenario: "Two prompt versions, two plausible answer sets, one executive about to quote the wrong number. Deciding which version ships is an engineering problem."
+caseStudy: enterprise-data-agent
+skills: [Error analysis, Judges, Regression gates]
+technologies: [Python]
+repoPath: "evals/"
 labNumber: 11
 invariant: "I10: a quality claim is backed by an evaluator validated against humans."
 lab: "The Judge That Agreed With Everyone"
