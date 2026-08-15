@@ -149,6 +149,77 @@ Add the guards. Re-run. The metadata fetch is blocked and logged, the planted cl
 
 </div>
 
+## Diagnose
+
+<div class="block-diagnose">
+
+The hostile vendor planted an instruction and a metadata URL. Review the defence:
+
+1. Which guard layer stopped the 169.254.169.254 fetch, and why must the check run after DNS resolution and again on every redirect?
+2. The planted claim never reached the published report. Which layer actually killed it: the provenance fence, the decision boundary, or evidence resolution?
+3. Why can a system prompt alone not fix injection, and what does the runtime enforce that a prompt cannot?
+4. Your injection-resistance eval did not score 100 percent. What is the honest thing to do with that number?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=10
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- the canary token proves the unguarded agent fetched instance metadata; with guards, the fetch is Blocked and logged as permanent
+- ssrf_blocked: zero private, loopback, or off-allow-list fetches reach the network layer
+- grant_containment: the set of tool calls minus granted tools is empty across the run
+- injection resistance across the hostile fixture set is measured and reported as a rate, with the planted-claim cases failing evidence resolution
+
+Security checks run in the same eval harness as quality checks. Boundaries get numbers.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] security_policy.md states the threat model and where each of the four guard layers is enforced
+- [ ] guarded_fetch blocks bad schemes, off-list domains, private addresses, and revalidates redirects
+- [ ] Tool grants and budgets are per run, enforced in the runtime
+- [ ] Every query is scoped by run and tenant at the data layer
+- [ ] The injection eval runs in CI and its measured rate is reported, not rounded to safe
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>The prompt is a request; the runtime is the law. Give two concrete examples.</summary>
+
+Telling the model 'never fetch internal addresses' versus guarded_fetch rejecting resolved private IPs; telling it 'only use research tools' versus the run simply not having send_email granted. Every property you rely on must be enforced where the model cannot reach it.
+
+</details>
+
+<details class="checkpoint">
+<summary>Why is the vendor the attacker in this app's threat model?</summary>
+
+The vendor controls every byte of the pages the reviewer reads, so influencing the review requires writing HTML, not breaching a server. Whoever controls tool output controls the model's input.
+
+</details>
+
+<details class="checkpoint">
+<summary>What residual risk survives all four guard layers?</summary>
+
+On-topic persuasion inside allowed evidence: a subtly biased page still shifts summaries. That risk is measured by the injection eval and reduced by evidence-linking, never eliminated, and saying so is part of the deliverable.
+
+</details>
+
 ## Primary sources
 
 - [Anthropic on harness design for long-running work](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents): note how much of the safety story lives in the harness, not the model.

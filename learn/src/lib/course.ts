@@ -105,7 +105,7 @@ export function pad(n: number): string {
 }
 
 export function moduleHref(entry: Module): string {
-  return `/course/${entry.id}/`;
+  return `/course-001/${entry.id}/`;
 }
 
 export function neighbors(modules: Module[], current: Module) {

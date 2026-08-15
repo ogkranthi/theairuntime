@@ -176,6 +176,75 @@ That leads directly to Module 04.
 
 </div>
 
+## Diagnose
+
+<div class="block-diagnose">
+
+You pulled the plug at step 9 and the run resumed. Now explain the machinery:
+
+1. What exactly is inside one checkpoint, and which tables did the Postgres saver write?
+2. On resume, what was replayed and what was restored? Why did replaying step 9 not corrupt state?
+3. What would break if the checkpoint write and your runs-table update were two transactions instead of one?
+4. Name the checkpoint boundaries in your graph. Which node re-executes after a crash at each boundary?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=03
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- the chaos harness kills the process at 20 random steps; after each kill the run resumes with the same `run_id` and finishes
+- final state invariants (fact count, items covered, evidence resolvable) match an uninterrupted control run
+- no restart begins at step 0, and no replayed step produces duplicate findings
+
+Assert on state invariants, not byte-identical text: determinism holds here only because the fixtures are fixed and temperature is 0.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] PostgresSaver wired; the run id is the thread id and lives in your own runs table too
+- [ ] kill -9 at any step resumes from the last committed checkpoint
+- [ ] The 20-kill chaos test passes with invariants equal to the control run
+- [ ] You can point at each checkpoint boundary in the graph and say what re-executes
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>What does replay actually mean in a checkpointed graph?</summary>
+
+After a crash, execution restarts from the last committed checkpoint, so the work between that checkpoint and the crash runs again. Replay is safe only when replayed work is idempotent inside your process (reducers) and deduplicated outside it (Module 04).
+
+</details>
+
+<details class="checkpoint">
+<summary>Why checkpoint after the step instead of before it?</summary>
+
+Checkpoint-before loses the step's result on crash while recording that it ran, which is a lie. Checkpoint-after means a crash replays the step, which idempotent state absorbs. One transaction, after.
+
+</details>
+
+<details class="checkpoint">
+<summary>What does checkpointing NOT give you?</summary>
+
+Exactly-once side effects (a re-executed publish still publishes twice) and scheduling (a checkpointed run whose worker died is safe, and going nowhere). Those are Modules 04 and 05, on purpose.
+
+</details>
+
 ## Primary sources
 
 - [LangGraph persistence](https://docs.langchain.com/oss/python/langgraph/persistence): the authoritative answer to what one checkpoint contains and which tables the Postgres saver writes. Read it next to your own checkpointer so the comparison is concrete.

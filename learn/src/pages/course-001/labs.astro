@@ -1,7 +1,8 @@
 ---
-import Base from "../layouts/Base.astro";
-import CtaBlock from "../components/CtaBlock.astro";
-import { CHANNELS, getModules, moduleHref, pad, utm } from "../lib/course";
+import Base from "../../layouts/Base.astro";
+import CourseNav from "../../components/CourseNav.astro";
+import CtaBlock from "../../components/CtaBlock.astro";
+import { CHANNELS, getModules, moduleHref, pad, utm } from "../../lib/course";
 
 const modules = await getModules();
 const labs = modules
@@ -32,6 +33,7 @@ const PRIMITIVE: Record<number, string> = {
   description="Fourteen Failure Labs, the spine of Course 001. Each has a fault profile, an expected invariant, a one-command reproduction, observable symptoms, and an automated pass/fail check."
   pageSlug="labs"
 >
+  <CourseNav active="labs" />
   <div class="shell">
     <section class="section">
       <p class="eyebrow">FAILURE LABS</p>

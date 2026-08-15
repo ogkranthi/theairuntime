@@ -98,6 +98,77 @@ Then do it during `await_review`. Then approve from your phone.
 
 </div>
 
+## Diagnose
+
+<div class="block-diagnose">
+
+You redeployed mid-run and lost nothing. Give the mechanism, not the vibes:
+
+1. At the moment Render replaced the process, what died and what survived, item by item?
+2. Why must every migration be backward compatible with the running version, and for roughly how long do both versions coexist?
+3. The service slept while a run waited for review. Why did that cost nothing, and which module made it so?
+4. Approving from your phone worked. Trace the request's path from tap to resumed graph.
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=13
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- a run started on the public URL survives a mid-research redeploy and completes; published_reports ends with exactly one row
+- a redeploy during await_review changes nothing; the approval from a phone resumes and publishes once
+- the app boots with env vars only: no secret in the repo, .env.example complete
+- POST /runs is rate-limited and the fetcher's allow-list is active in production
+
+Deployment did not add durability; the lab proves the durability you already built.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] Public URL live on the free tier, deployed from main
+- [ ] The redeploy lab passed, both mid-research and mid-review
+- [ ] Migrations are additive and run before the new code starts
+- [ ] Security minimums applied: rate limit, allow-list, escaped rendering, untrusted-content fences
+- [ ] deploy_checklist.md records what you verified, including the redeploy lab
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>Why is a deploy just another failure injection?</summary>
+
+A redeploy is a process kill with a schedule. If your runs survive kill -9 and reclaim, they survive deploys; if they do not, no amount of deployment tooling saves you.
+
+</details>
+
+<details class="checkpoint">
+<summary>What free-tier constraint most shaped the architecture?</summary>
+
+Spin-down: nothing can depend on one warm process. Which is why waiting is state, work is claimed by leases, and the graph never runs inside the HTTP request.
+
+</details>
+
+<details class="checkpoint">
+<summary>When do you leave the free tier, and what changes?</summary>
+
+Users and SLAs. You move to a managed deployment, a workflow engine, or paid workers, and nothing you built changes: where it runs does. That is the payoff of durable state.
+
+</details>
+
 ## Primary sources
 
 - [Render free instance limitations](https://render.com/docs/free) and [Neon free-plan limits](https://neon.com/docs/introduction/plans): the two pages that decide whether Lesson 14.2's constraints still hold. Hosting limits change without notice; verify both before relying on this module's numbers.

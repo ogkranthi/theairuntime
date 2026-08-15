@@ -18,11 +18,12 @@ in the public course repo and are linked from here. Nothing is gated.
 ## Routes
 
 ```
-/                          Course home: promise, FDE framing, application contract, 16-module syllabus
-/course/00-mental-model     ... /course/15-production-gauntlet
-/labs                      14-lab catalog, the standard lab shape, fixture server snippet
-/stack                     Boring on purpose: core stack, lease-scheduler rationale, substitutions
-/sources                   Annotated primary sources (1-3 are also linked in place per module)
+/                          Courses landing: Course 001, the Field Lab, FDE Talks, next course
+/course-001/               Course home: promise, FDE framing, application contract, syllabus
+/course-001/00-mental-model ... /course-001/15-production-gauntlet
+/course-001/labs           14-lab catalog, the standard lab shape, fixture server snippet
+/course-001/stack          Boring on purpose: core stack, lease-scheduler rationale, substitutions
+/course-001/sources        Annotated primary sources (1-3 are also linked in place per module)
 /about                     Who is behind this, contact
 /rss.xml                   Module feed
 /og/<slug>.png             Generated OpenGraph image per page and per module
@@ -89,6 +90,19 @@ No em dashes and no en dashes, anywhere, per the parent repo's `CLAUDE.md`. Use
 a hyphen for ranges (`45-60 min`), and a comma, colon, period or parentheses in
 place of a dash. Curriculum prose is otherwise left exactly as written; the only
 edits applied on import were punctuation normalisation for this rule.
+
+## Learner experience
+
+Every module follows the v2 rhythm: production question, lessons, Failure Lab,
+Diagnose (mechanism questions), Prove it (`make lab LAB=NN` plus what passing
+means), Exit criteria, and a Checkpoint of collapsible Q&A. Exit-criteria
+checkboxes are interactive and persist in localStorage; when all are checked
+the module is recorded complete, the syllabus row gets a tick, and the course
+nav shows N/16 progress. No accounts: progress lives in the reader's browser.
+
+Lesson headings render with number chips via `src/plugins/rehype-lessons.mjs`;
+the rhythm sections are styled blocks (`block-diagnose`, `block-prove`,
+`block-exit`, `details.checkpoint`) defined in `tokens.css`.
 
 ## Distribution
 

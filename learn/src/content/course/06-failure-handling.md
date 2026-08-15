@@ -129,3 +129,74 @@ Then run with `MAX_PAGES=3` and confirm the run stops cleanly with a partial rep
 **Production takeaway:** retries are for the network. Everything else needs a decision.
 
 </div>
+
+## Diagnose
+
+<div class="block-diagnose">
+
+The failure matrix ran five fault profiles through your policy. For each, defend the routing:
+
+1. Which fixture failures were retried, and what made them retryable while the 404 was not?
+2. Where did Retry-After actually change your delay, and what would ignoring it have done to the degraded dependency?
+3. Which failure class must never be retried, and what exactly happens (and costs) when you retry it anyway?
+4. The vendor brief shipped with an item marked unknown. Where did that gap surface, and why is it a pass rather than a failure?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=06
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- each profile (flaky-503, slow-loris, poisoned-200, rate-limited, partial-json) routes to its designed action, asserted from run_events
+- retries carry full jitter and draw from a per-run budget; the budget is never exceeded
+- the poisoned 200 is detected by validation and marked unavailable, and the planner chooses a different page
+- the run completes with honest unknowns instead of dying or fabricating
+
+The policy is data (a table in code), so the test enumerates it.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] The failure taxonomy exists as one module mapping classes to actions, with a why per row
+- [ ] Transient retries are jittered, capped, budgeted, and respect Retry-After
+- [ ] A 200 with garbage content raises Poisoned and is never blindly retried
+- [ ] A run that cannot verify an item degrades to an honest unknown and continues
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>Why is retry(3) on everything worse than no retries at all?</summary>
+
+It turns a degraded dependency into a self-inflicted load test, retries failures that retrying cannot fix (poisoned, semantic), and converts a five-second blip into a forty-minute run with a doubled bill.
+
+</details>
+
+<details class="checkpoint">
+<summary>A page loads fine but contains nothing about pricing. What kind of failure is that?</summary>
+
+A finding failure, not a fetch failure. It needs verification or replanning, never an HTTP retry, because the request succeeded and repeating it reproduces the same emptiness.
+
+</details>
+
+<details class="checkpoint">
+<summary>Why is 'unknown' a valid outcome for the brief?</summary>
+
+Because the alternative is fabrication. An honest gap in section-level coverage is information the reviewer can act on; an invented claim is an incident waiting for a customer to find it.
+
+</details>
+

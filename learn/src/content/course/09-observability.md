@@ -97,3 +97,75 @@ Then open the trace for the last `select_next_task` decision and answer, from th
 **Production takeaway:** if a run cannot explain itself from the database, it is not observable: it is merely logged.
 
 </div>
+
+## Diagnose
+
+<div class="block-diagnose">
+
+The silent run hung for 45 seconds and your instruments caught it. Audit them:
+
+1. Which surface told you the run was stuck, and how long did detection take versus the 5-minute alert bound?
+2. Open the trace for the last select_next_task decision. Can you answer, from the prompt alone, why it chose that page?
+3. An auditor asks for the run's history with evidence. Which single table answers, and what would be missing without decision events?
+4. You cancelled mid-model-call. Where exactly did the run stop, and why is the check after the call rather than before?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=09
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- fixture profile `hang`: the dashboard shows the in-flight fetch with its age; the STUCK alert query fires within 5 minutes
+- Cancel works while a model call is in flight and the run ends cancelled at the next boundary
+- the trace for any decision shows the exact rendered prompt, small enough to read
+- the LOOPING and BUDGET alert queries return correct rows against seeded event data
+
+The timed test is social: hand a colleague a run_id and a complaint, and they explain the run inside a minute.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] run_events is append-only, and every node writes started plus finished or failed
+- [ ] Every LLM decision event records the model's stated reason
+- [ ] The dashboard answers the operator questions live, with a working Cancel
+- [ ] The three alerts exist as queries, tested against seeded events
+- [ ] A colleague explained a run from the database in under a minute, timed
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>Who are the three audiences, and what does each need?</summary>
+
+Operator (is it stuck, can I stop it: dashboard), engineer (why did it choose that, what did the model see: traces), auditor (what happened, in order, with evidence: event log). One data model feeds all three.
+
+</details>
+
+<details class="checkpoint">
+<summary>Why record the reason on every decision event?</summary>
+
+Because 'what happened' without 'why' cannot be debugged or audited. The reason string turns a trajectory into an explanation and is the raw material for the Module 11 judge.
+
+</details>
+
+<details class="checkpoint">
+<summary>Green dashboards, wrong report. What does that tell you?</summary>
+
+That observability proves the machinery ran, not that the answer was right. Semantic failure is invisible to metrics; the module's job is making it investigable in minutes, and evaluation's job is catching it.
+
+</details>
+

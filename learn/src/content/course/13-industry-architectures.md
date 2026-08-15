@@ -81,6 +81,43 @@ Then re-do Exercise 00's twelve classifications. Note what changed and why.
 
 </div>
 
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] Two published case studies extracted into the eight-line template, including what is missing or unclear
+- [ ] Exercise 00's twelve scenarios re-classified, with notes on what changed and why
+- [ ] For any architecture you read this week, you can say where durable state lives and what happens when its process dies
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>What are the six primitives you should find in every credible system?</summary>
+
+External artifacts, explicit done criteria, separate verification, clean handoffs, durable execution, and human gates at high stakes. They are the six surfaces of Module 00 wearing production clothes.
+
+</details>
+
+<details class="checkpoint">
+<summary>A case study is missing one of the six. What does that predict?</summary>
+
+Either the write-up omitted it, or the system discovers it in production. The absence is the most interesting question to ask its authors, and usually the next incident.
+
+</details>
+
+<details class="checkpoint">
+<summary>What is the marketing tell that hides a missing runtime?</summary>
+
+Uptime and demo fluency presented as reliability, with no reproducible evidence: no evals on named data, no recovery story, no audit trail. Uptime is not quality.
+
+</details>
+
 ## Primary sources
 
 - [Anthropic, how we built our multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system): a production long-horizon system described with unusual candor; extract the six primitives from it as your first exercise case.

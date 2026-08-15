@@ -29,7 +29,7 @@ const rows = numbers
     const state = n === current ? "current" : progress && n < current ? "done" : "todo";
     const marker = state === "current" ? "&rarr;" : state === "done" ? "&check;" : "&cir;";
     const label = esc(LEDGER_LABELS[n] as string);
-    const body = linked ? `<a href="/course/${MODULE_SLUGS[n]}/">${label}</a>` : label;
+    const body = linked ? `<a href="/course-001/${MODULE_SLUGS[n]}/">${label}</a>` : label;
     return `<span class="ledger__row ledger__row--${state}">${marker} ${pad(n)} ${body}</span>`;
   })
   .join("\n");

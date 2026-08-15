@@ -1,303 +1,128 @@
 ---
 import Base from "../layouts/Base.astro";
-import StateLedger from "../components/StateLedger.astro";
 import CtaBlock from "../components/CtaBlock.astro";
-import { CHANNELS, getModules, moduleHref, pad, utm } from "../lib/course";
+import { CHANNELS, getModules, utm } from "../lib/course";
 
 const modules = await getModules();
 const labCount = modules.filter((m) => m.data.lab).length;
-
-const learn = [
-  "durable state that survives process loss",
-  "checkpoint and replay semantics",
-  "idempotent and reconciled external side effects",
-  "work claims, leases, heartbeats, cancellation, and orphan recovery",
-  "failure taxonomies instead of retry(3) everywhere",
-  "human approval that can wait for hours or days",
-  "context rebuilt from durable artifacts rather than accumulated chat",
-  "operator, engineer, and audit views of the same run",
-  "tool permissions, SSRF controls, prompt-injection boundaries, and tenant isolation",
-  "trajectory evals and regression gates",
-  "a Deep Agents/LangGraph harness without confusing framework features for guarantees",
-  "a public deployment whose reliability claims can be reproduced",
-];
-
-const readiness = [
-  ["Python", "comfortable reading and writing it"],
-  ["Git", "clone, branch, commit"],
-  ["HTTP APIs", "you have called one from code"],
-  ["PostgreSQL", "a free Neon account by Module 03"],
-  ["Model API key", "any provider, by Module 01"],
-  ["Docker", "optional, only for local Postgres"],
-];
 ---
 
 <Base
-  title="Engineering Long-Running AI Agents | AIR Course 001"
-  description="Free FDE-track course: build an agent that keeps making correct progress after the request ends, the process dies, a tool times out, a human disappears for three hours, and the context window fills up."
+  title="Learn | The AI Runtime"
+  description="The training ground of The AI Runtime: free, practitioner-grade courses for engineers shipping AI to production. Start with Course 001, Engineering Long-Running AI Agents."
   pageSlug="home"
 >
   <div class="shell">
     <section class="hero section">
-      <p class="eyebrow">THE AI RUNTIME · COURSE 001 · FREE · OPEN SOURCE</p>
-      <h1 class="hero__title">Engineering Long-Running AI Agents</h1>
-      <p class="hero__promise">
-        Build an agent that keeps making correct progress after the request ends, the process
-        dies, a tool times out, a human disappears for three hours, and the context window
-        fills up.
+      <p class="eyebrow">THE AI RUNTIME · LEARN</p>
+      <h1 class="hero__title">Training for engineers who ship AI</h1>
+      <p class="hero__sub">
+        Free, practitioner-grade courses where you break a running system on purpose and prove
+        the fix. No accounts, no paywall, no certificates: public, reproducible evidence that
+        you can operate agents in production.
       </p>
-
-      <div class="hero__grid">
-        <div>
-          <p>
-            Most agent tutorials end when the first answer appears. Production engineering
-            starts there.
-          </p>
-          <p>
-            A long-running agent is not defined by taking ten minutes or ten hours. It is
-            defined by <strong>execution continuity</strong>:
-          </p>
-          <blockquote class="hero__quote">
-            A long-running agent performs useful work whose lifecycle may outlive a single
-            request, process, context window, worker, deployment, or human interaction.
-          </blockquote>
-          <div class="hero__actions">
-            <a class="btn btn--solid" href={moduleHref(modules[0]!)}>Start Module 00</a>
-            <a class="btn" href="/labs/">The {labCount} Failure Labs</a>
-          </div>
-        </div>
-        <StateLedger current={0} status="ready" />
-      </div>
     </section>
 
-    <section class="section" id="fde">
-      <h2>This course trains an FDE</h2>
-      <div class="measure">
-        <p>
-          The role this course trains is the <strong>Forward Deployed Engineer</strong>: the
-          person who ships an agent into someone else's messy production reality and is
-          accountable for it still running next week. An FDE cannot say "the demo worked."
-          An FDE has to answer, in the customer's conference room, what happens after failure,
-          and show the evidence.
+    <section class="section" id="courses">
+      <h2>Courses</h2>
+
+      <article class="card card--flagship">
+        <div class="card__head">
+          <p class="card__eyebrow">COURSE 001 · <span class="card__live">LIVE</span></p>
+          <p class="card__stats">16 modules · {labCount} Failure Labs · 15-20 h · free</p>
+        </div>
+        <h3 class="card__title"><a href="/course-001/">Engineering Long-Running AI Agents</a></h3>
+        <p class="card__promise">
+          Build an agent that keeps making correct progress after the request ends, the process
+          dies, a tool times out, a human disappears for three hours, and the context window
+          fills up.
         </p>
-        <p>
-          So the standard for completing this course is not "the demo works." The standard is:
+        <p class="card__detail muted">
+          The FDE track: one deliberately boring application, sixteen production questions,
+          and a Failure Lab for every primitive. You break the system first, then earn the
+          abstraction, then prove the invariant with a check anyone can run.
         </p>
-        <blockquote>
-          I can explain what happens after failure, prove the system preserves correct
-          progress, and show the evidence.
-        </blockquote>
-        <p class="muted">
-          Practitioners who operate at that standard are the people we interview on
-          <a href={utm(CHANNELS.podcast, "home", "listen")} rel="noopener">FDE Talks</a>.
-        </p>
-      </div>
-    </section>
-
-    <section class="section" id="what-you-learn">
-      <h2>What you will learn</h2>
-      <p class="muted measure">By the end, you should be able to explain and implement:</p>
-      <ul class="learn">
-        {learn.map((item) => <li>{item}</li>)}
-      </ul>
-    </section>
-
-    <section class="section" id="the-application">
-      <h2>The application</h2>
-      <div class="build">
-        <div class="measure">
-          <p>
-            One deliberately boring application, for all sixteen modules: a
-            <strong>Vendor Review Agent</strong>. It receives a vendor URL, researches a fixed
-            checklist, records evidence, identifies unknowns and contradictions, waits for
-            approval, and publishes one review.
-          </p>
-          <p class="muted">The application stays constant so the engineering gets harder.</p>
+        <div class="card__meta">
+          <span class="card__rhythm">BUILD <span aria-hidden="true">&rarr;</span> BREAK
+            <span aria-hidden="true">&rarr;</span> DIAGNOSE <span aria-hidden="true">&rarr;</span> FIX
+            <span aria-hidden="true">&rarr;</span> PROVE</span>
         </div>
-        <pre>{`VendorRequest(
-    name="Acme",
-    root_url="https://vendor.example",
-)
+        <div class="card__actions">
+          <a class="btn btn--solid" href="/course-001/">Start the course</a>
+          <a class="btn" href="/course-001/labs/">Browse the {labCount} labs</a>
+        </div>
+      </article>
 
-CHECKLIST = [
-    "product",
-    "customers",
-    "pricing",
-    "security",
-    "developer_experience",
-    "unknowns",
-]`}</pre>
+      <div class="card-grid">
+        <article class="card">
+          <p class="card__eyebrow">FIELD LAB · LIVE</p>
+          <h3 class="card__title">
+            <a href={CHANNELS.lab} rel="noopener">The AI Runtime Field Lab</a>
+          </h3>
+          <p class="card__detail muted">
+            Open engineering challenges with real customer-shaped problems, a reliability bar,
+            and public Field Reports. Where course skills meet unscripted work.
+          </p>
+          <p class="card__link">
+            <a href={CHANNELS.lab} rel="noopener">lab.theairuntime.com &rarr;</a>
+          </p>
+        </article>
+
+        <article class="card">
+          <p class="card__eyebrow">PODCAST</p>
+          <h3 class="card__title">
+            <a href={utm(CHANNELS.podcast, "home", "listen")} rel="noopener">FDE Talks</a>
+          </h3>
+          <p class="card__detail muted">
+            Practitioners who shipped long-running agents in production, interviewed at the
+            standard this course trains: what happens after failure, with evidence.
+          </p>
+          <p class="card__link">
+            <a href={utm(CHANNELS.podcast, "home", "listen")} rel="noopener">Listen &rarr;</a>
+          </p>
+        </article>
+
+        <article class="card card--planned">
+          <p class="card__eyebrow">COURSE 002 · IN PLANNING</p>
+          <h3 class="card__title">Shaped by Course 001 graduates</h3>
+          <p class="card__detail muted">
+            The next course is chosen by what practitioners hit after this one. Finish the
+            gauntlet, tell us where it hurt, and subscribe to vote on what gets built.
+          </p>
+          <p class="card__link">
+            <a href={utm(CHANNELS.substack, "home", "subscribe")} rel="noopener">Subscribe to shape it &rarr;</a>
+          </p>
+        </article>
       </div>
-
-      <h3>The output is not "a good report." It has a contract</h3>
-      <pre>{`Vendor: Acme
-Coverage: 5/6 verified
-Unknown: enterprise pricing
-
-Claims: 11
-Claims with resolvable evidence: 11/11
-Contradictions surfaced: 1
-Pages fetched: 14
-Retries: 2
-Human review rounds: 1
-Published reports: 1
-
-[Approve] [Research missing items] [Reject]`}</pre>
-      <p class="muted measure">
-        Every verified claim points to stored evidence. Every unknown remains unknown. Every
-        irreversible side effect is auditable.
-      </p>
     </section>
 
-    <section class="section" id="six-surfaces">
-      <h2>The six surfaces</h2>
-      <div class="measure">
-        <p>Use this model throughout the course. It is intentionally framework-independent.</p>
-      </div>
-      <pre>{`                 LONG-RUNNING AGENT
-                         │
-       ┌─────────────────┼─────────────────┐
-       ↓                 ↓                 ↓
-     STATE            EXECUTION          CONTEXT
-       │                 │                 │
-  durable facts       replay            working set
-  evidence            ownership         artifacts
-  progress            recovery          handoffs
-       └─────────────────┼─────────────────┘
-                         ↓
-                      CONTROL
-                approval · budgets
-             permissions · cancellation
-                         ↓
-                   OBSERVABILITY
-                         ↓
-                    EVALUATION`}</pre>
-    </section>
-
-    <section class="section" id="syllabus">
-      <h2>Syllabus</h2>
-      <p class="muted measure">
-        Sixteen modules, each built around one production question. Read is always live. Watch
-        turns on as each Failure Lab ships on YouTube, Notes as each longform ships on
-        Substack.
-      </p>
-
-      <ol class="syllabus">
-        {
-          modules.map((m) => (
-            <li class="syllabus__row">
-              <div class="syllabus__num">{pad(m.data.module)}</div>
-              <div class="syllabus__body">
-                <h3 class="syllabus__title">
-                  <a href={moduleHref(m)}>{m.data.title}</a>
-                </h3>
-                <p class="syllabus__goal">{m.data.question}</p>
-                {m.data.lab && m.data.labNumber !== undefined && (
-                  <p class="syllabus__lab">
-                    <span class="syllabus__lab-tag">LAB {pad(m.data.labNumber)}</span>{" "}
-                    {m.data.lab}
-                  </p>
-                )}
-              </div>
-              <div class="syllabus__meta">
-                <span class="meta">{m.data.duration}</span>
-                <span class="syllabus__links">
-                  <a href={moduleHref(m)}>Read</a>
-                  {m.data.youtube ? (
-                    <a href={utm(m.data.youtube, m.id, "watch")} rel="noopener">Watch</a>
-                  ) : (
-                    <span class="is-pending" aria-disabled="true" title="Video not published yet">Watch</span>
-                  )}
-                  {m.data.substack ? (
-                    <a href={utm(m.data.substack, m.id, "notes")} rel="noopener">Notes</a>
-                  ) : (
-                    <span class="is-pending" aria-disabled="true" title="Longform not published yet">Notes</span>
-                  )}
-                </span>
-              </div>
-            </li>
-          ))
-        }
-      </ol>
-    </section>
-
-    <section class="section" id="different">
-      <h2>What makes this course different</h2>
-      <div class="different">
+    <section class="section" id="how">
+      <h2>How these courses work</h2>
+      <div class="how">
         <div>
-          <p class="eyebrow eyebrow--muted">FAILURE BEFORE ABSTRACTION</p>
-          <p>
-            You lose a run before learning checkpointing. You create a duplicate external
-            write before learning idempotency. You watch two workers claim the same run before
-            learning leases. The primitive arrives after the failure has made it necessary.
-          </p>
-        </div>
-        <div>
-          <p class="eyebrow eyebrow--muted">EVIDENCE OVER AGENT CLAIMS</p>
-          <p>
-            "Done" is not a fact. "I published it" is not a fact. "I checked pricing" is not a
-            fact. The runtime records what can be independently verified.
-          </p>
-        </div>
-        <div>
-          <p class="eyebrow eyebrow--muted">EVALS ARE THE DEVELOPMENT LOOP</p>
-          <p>
-            The final module is not the first time quality appears. Every module adds an
-            invariant and an evaluator. By the end, the gauntlet is simply all those
-            invariants running together.
-          </p>
-        </div>
-      </div>
-      <p class="rhythm-strip" aria-label="Module rhythm">
-        Every module follows the same rhythm:&nbsp;
-        <span class="rhythm-strip__stages">BUILD <span aria-hidden="true">&rarr;</span> BREAK
-          <span aria-hidden="true">&rarr;</span> DIAGNOSE <span aria-hidden="true">&rarr;</span> FIX
-          <span aria-hidden="true">&rarr;</span> PROVE</span>
-      </p>
-    </section>
-
-    <section class="section" id="prerequisites">
-      <h2>Prerequisites and readiness</h2>
-      <div class="prereq">
-        <div class="measure">
-          <p>
-            You should be comfortable reading Python, calling an HTTP API, using Git, and
-            running PostgreSQL-backed applications. You do <strong>not</strong> need prior
-            LangGraph or Deep Agents experience.
-          </p>
+          <p class="eyebrow eyebrow--muted">FAILURE FIRST</p>
           <p class="muted">
-            Expect roughly 15-20 focused hours if you build every lab. Reading alone is
-            useful, but the course is designed around breaking and repairing the running
-            system.
+            You lose a run before learning checkpointing, duplicate a report before learning
+            idempotency, and watch two workers collide before learning leases. The primitive
+            arrives after the failure makes it necessary.
           </p>
         </div>
-        <dl class="prereq__list">
-          {
-            readiness.map(([name, note]) => (
-              <div class="prereq__row">
-                <dt>{name}</dt>
-                <dd>{note}</dd>
-              </div>
-            ))
-          }
-        </dl>
+        <div>
+          <p class="eyebrow eyebrow--muted">EVERYTHING REPRODUCIBLE</p>
+          <p class="muted">
+            Deterministic fixture servers, pinned environments, one command per lab. The
+            failure you hit is the failure everyone hits, so fixes are provable rather than
+            anecdotal.
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow eyebrow--muted">EVIDENCE, NOT BADGES</p>
+          <p class="muted">
+            Completion means a public reliability report a stranger can re-run, not a
+            certificate. The strongest reports become FDE Talks episodes.
+          </p>
+        </div>
       </div>
-    </section>
-
-    <section class="section" id="start">
-      <h2>Start</h2>
-      <div class="measure">
-        <p>
-          Clone the course repository, run the deterministic fixture server, and begin with
-          Module 00.
-        </p>
-      </div>
-      <pre>{`git clone ${CHANNELS.repo}
-cd air-course-long && make fixtures   # deterministic vendor sites on :8001`}</pre>
-      <p class="version-banner">
-        Course tested: 2026-08-15 · Python 3.x · LangGraph and Deep Agents pinned in the repo
-        lockfile · free-hosting limits last verified 2026-08-15
-      </p>
     </section>
   </div>
 
@@ -306,178 +131,91 @@ cd air-course-long && make fixtures   # deterministic vendor sites on :8001`}</p
 
 <style>
   .hero { padding-top: 4rem; }
-  .hero__title {
-    font-size: var(--t-hero);
-    margin-bottom: 0.75rem;
-  }
-  .hero__promise {
+  .hero__title { font-size: var(--t-hero); margin-bottom: 0.75rem; }
+  .hero__sub {
     font-size: var(--t-h3);
-    color: var(--fg);
-    font-weight: 600;
-    margin: 0 0 2rem;
+    color: var(--fg-muted);
+    margin: 0;
     max-width: var(--measure);
-    text-wrap: balance;
   }
-  .hero__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 2.5rem;
-    align-items: start;
+
+  .card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg);
+    padding: 1.5rem;
+    margin: 0 0 1.5rem;
   }
-  .hero__grid > div > p { max-width: var(--measure); }
-  .hero__quote {
-    font-family: var(--font-mono);
-    font-size: var(--t-body);
-    color: var(--fg);
-    margin-bottom: 1.25rem;
+  .card--flagship {
+    border-color: var(--accent-dim);
+    background: var(--bg-raise);
+    padding: 2rem;
   }
-  .hero__actions {
+  .card__head {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-  }
-
-  .learn {
-    columns: 1;
-    max-width: 100%;
-    margin: 1rem 0 0;
-    padding-left: 1.25rem;
-  }
-  .learn li { margin-bottom: 0.5em; break-inside: avoid; }
-
-  .build {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
-    align-items: start;
-  }
-
-  .syllabus {
-    list-style: none;
-    margin: 1.5rem 0 0;
-    padding: 0;
-    border-top: 1px solid var(--line);
-  }
-  .syllabus__row {
-    display: grid;
-    grid-template-columns: 3rem minmax(0, 1fr);
-    gap: 0.35rem 1rem;
-    padding: 1.25rem 0;
-    border-bottom: 1px solid var(--line);
-    margin: 0;
-  }
-  .syllabus__num {
-    font-family: var(--font-mono);
-    font-size: var(--t-meta);
-    color: var(--accent);
-    padding-top: 0.2rem;
-  }
-  .syllabus__title { font-size: var(--t-body); margin: 0 0 0.3rem; }
-  .syllabus__title a { color: var(--fg); }
-  .syllabus__title a:hover { color: var(--accent); text-decoration: none; }
-  .syllabus__goal {
-    margin: 0 0 0.4rem;
-    font-size: var(--t-meta);
-    color: var(--fg-muted);
-    max-width: 62ch;
-  }
-  .syllabus__lab {
-    margin: 0;
-    font-family: var(--font-mono);
-    font-size: var(--t-meta);
-    color: var(--fg-muted);
-  }
-  .syllabus__lab-tag { color: var(--accent); letter-spacing: 0.06em; }
-  .syllabus__meta {
-    grid-column: 2;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.25rem;
+    justify-content: space-between;
+    gap: 0.5rem 2rem;
     align-items: baseline;
-    margin-top: 0.5rem;
   }
-  .syllabus__links {
-    display: flex;
-    gap: 1rem;
+  .card__eyebrow {
     font-family: var(--font-mono);
-    font-size: var(--t-meta);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin: 0 0 0.75rem;
   }
-  .is-pending {
-    color: #71717A;   /* 4.75:1 on white, passes AA at meta size */
-    text-decoration: line-through;
-    cursor: not-allowed;
+  .card__live {
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
   }
-
-  .different {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 2rem;
-  }
-  .different p:last-child { margin-bottom: 0; font-size: var(--t-meta); color: var(--fg-muted); }
-  .rhythm-strip {
-    margin: 2rem 0 0;
+  .card__stats {
+    font-family: var(--font-mono);
     font-size: var(--t-meta);
     color: var(--fg-muted);
+    margin: 0;
   }
-  .rhythm-strip__stages {
+  .card__title { font-size: var(--t-h2); margin: 0 0 0.75rem; }
+  .card__title a { color: var(--fg); }
+  .card__title a:hover { color: var(--accent); text-decoration: none; }
+  .card--flagship .card__promise {
+    font-size: var(--t-body);
+    font-weight: 600;
+    color: var(--fg);
+    max-width: var(--measure);
+  }
+  .card__detail { font-size: var(--t-meta); max-width: var(--measure); }
+  .card__meta { margin: 1rem 0; }
+  .card__rhythm {
     font-family: var(--font-mono);
+    font-size: 0.75rem;
     letter-spacing: 0.08em;
     color: var(--fg);
   }
-  .rhythm-strip__stages span { color: var(--accent); }
+  .card__rhythm span { color: var(--accent); }
+  .card__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
+  .card__link { font-family: var(--font-mono); font-size: var(--t-meta); margin: 0; }
+  .card--planned { border-style: dashed; }
+  .card--planned .card__title { color: var(--fg-muted); font-size: var(--t-h3); }
 
-  .prereq {
+  .card-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  .card-grid .card { margin: 0; }
+
+  .how {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
-    align-items: start;
   }
-  .prereq__list {
-    margin: 0;
-    border-top: 1px solid var(--line);
-  }
-  .prereq__row {
-    display: grid;
-    grid-template-columns: 10rem minmax(0, 1fr);
-    gap: 1rem;
-    padding: 0.6rem 0;
-    border-bottom: 1px solid var(--line);
-    font-size: var(--t-meta);
-  }
-  .prereq__row dt {
-    font-family: var(--font-mono);
-    color: var(--accent);
-  }
-  .prereq__row dd { margin: 0; color: var(--fg-muted); }
+  .how p:last-child { margin-bottom: 0; font-size: var(--t-meta); }
 
-  .version-banner {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--fg-muted);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 0.6rem 0.85rem;
-    max-width: fit-content;
-    margin-top: 1.5rem;
-  }
-
-  @media (min-width: 800px) {
-    .learn { columns: 2; column-gap: 3rem; }
-  }
   @media (min-width: 900px) {
-    .hero__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); gap: 3rem; }
-    .build { grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); gap: 2.5rem; }
-    .different { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .prereq { grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); gap: 3rem; }
-    .syllabus__row { grid-template-columns: 3rem minmax(0, 1fr) 14rem; }
-    .syllabus__meta {
-      grid-column: 3;
-      grid-row: 1;
-      margin-top: 0;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.5rem;
-    }
+    .card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .how { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 </style>
