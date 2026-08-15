@@ -152,6 +152,75 @@ Do **not** teach checkpoints yet. Let students discover why checkpoints are need
 
 </div>
 
+## Diagnose
+
+<div class="block-diagnose">
+
+The lab killed your agent mid-run. Before touching any code, answer from what you observed:
+
+1. What exactly was lost when the process died, and in which variable did it live?
+2. Which line of the loop encodes the assumption that memory is the source of truth?
+3. Rerun the same vendor. Which work is repeated, and what does the repetition cost in seconds and dollars?
+4. What is the smallest change that would preserve progress across the kill, and name one failure it still would not survive.
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=01
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- the run completes against fixture vendor `acme` and produces a report with findings
+- your step profile (`resume_answer.md`) records per-tool latency and call counts
+- after the scripted kill, the check asserts the rerun restarted from zero: every page fetched again, cost roughly doubled. In this one lab, observing the loss IS the pass
+
+This lab's check is deliberately inverted: it proves you saw the failure, because Module 02 only lands if you felt what was lost.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] The naive loop runs end to end against the fixture server
+- [ ] Step profile recorded: latency and call counts per tool across a full run
+- [ ] You killed the process and documented, in resume_answer.md, exactly what was lost and what it cost to repeat
+- [ ] You can recite the loop's assumption list (memory, one process, calls return, tools re-runnable, context fits) without the page open
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>Why is max_steps a bill cap rather than a safety mechanism?</summary>
+
+It bounds spend, not progress. A crawl-trap run hits the cap having learned nothing; raising the cap just raises the bill. A real stop condition is a progress check against state, which needs state to exist first.
+
+</details>
+
+<details class="checkpoint">
+<summary>Which decisions belong to deterministic code, and which to the model?</summary>
+
+Known requirements get deterministic control: the loop, the checklist, completion checks. Genuinely ambiguous decisions get the model: which page next, what this page says about X. LangGraph is built around exactly this split.
+
+</details>
+
+<details class="checkpoint">
+<summary>Why do the labs run against fixture sites instead of the real web?</summary>
+
+Reproducibility. Every student hits the same failure on the same page at the same step, so failures are comparable and gradeable, and a fix can be proven rather than anecdotal.
+
+</details>
+
 ## Primary sources
 
 - [LangGraph overview](https://docs.langchain.com/oss/python/langgraph/overview): read only the first section now. The point is to see that the framework you meet in Module 03 is built around exactly the deterministic-control-plus-LLM-decisions mix you just wrote by hand.

@@ -137,3 +137,73 @@ even if the publish node executes three times. Then kill the process *inside* th
 **Production takeaway:** *"Exactly-once execution is not something I assume simply because my agent framework checkpoints state."* Say that sentence out loud in your next design review.
 
 </div>
+
+## Diagnose
+
+<div class="block-diagnose">
+
+Two reports reached the customer. Reconstruct the ambiguity:
+
+1. At the moment the timeout fired, was the publish not-done, done, or partially done, and how could the agent have known?
+2. Why must the idempotency key derive from run position (run_id:publish) rather than uuid4() or a timestamp?
+3. After twenty kill-retry cycles, what does the single row in published_reports prove, and to whom?
+4. One crash window remains (after the external write, before your record commits). Why can it not be closed, and how is it made detectable instead?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=04
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- the fixture profile `publish_timeout_after_write` makes publish succeed then time out; the naive agent produces 2 reports, the check fails
+- after the idempotent write, twenty kill-inside-publish cycles end with `COUNT(*) FROM published_reports WHERE run_id = $1` equal to exactly 1
+- re-running the whole graph node three times leaves the database identical
+
+There is no partial credit on this one. 1 is passing; 2 is the lab.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] Publish converges under retry, replay, and kill-inside-the-node: one row, always
+- [ ] The idempotency key derives from run position and survives process death
+- [ ] For a third-party API without idempotency keys, check-before-act is implemented and the external id is recorded the moment it returns
+- [ ] You said the takeaway sentence out loud in a design review, or at least rehearsed it
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>Why is 'request failed' not the same as 'operation failed'?</summary>
+
+A network error tells you the response was lost, not that the work was not done. Any side effect crossing a network boundary can be not-done, done, or partial after an error, and correct code must be safe in all three.
+
+</details>
+
+<details class="checkpoint">
+<summary>When do you use a provider idempotency key versus your own table?</summary>
+
+Provider key when the API accepts one (best: they dedupe for you). Your own keyed table when it does not, with the intent recorded before the call. Defer to an outbox when the effect does not need to happen inside the step.
+
+</details>
+
+<details class="checkpoint">
+<summary>Why does agent-level checkpointing not solve this?</summary>
+
+Checkpoints make replay possible; replay is exactly what re-executes the publish. Durability and idempotency are two layers, and neither substitutes for the other.
+
+</details>
+

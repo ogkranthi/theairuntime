@@ -147,3 +147,73 @@ pending → researched → verified
 **Production takeaway:** state should represent evidence-backed progress, not merely agent claims.
 
 </div>
+
+## Diagnose
+
+<div class="block-diagnose">
+
+The agent claimed completion while pricing was empty. Work backwards:
+
+1. Where did the word 'verified' come from: a piece of evidence, or a sentence the model produced?
+2. Which of the operational questions (how far along, what is missing, what did it cost) could your state not answer at the moment of the kill?
+3. What is the natural key of a finding, and what happens on replay if dedupe does not use it?
+4. The JSON-file checkpoint is deliberately crude. What does it already give you, and what does it not?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=02
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- `no_false_completion(state)` fails against the naive agent's output for the sparse vendor: it marked items verified with no evidence
+- after your fix, the same check passes: verified is a subset of items with resolvable evidence, and the sparse vendor's report honestly lists unknowns
+- applying the same event twice to your reducers leaves state byte-identical (the idempotency test Module 03 depends on)
+
+The check is a pure function over state. No model, no network, instant.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] VendorReviewState persists to disk after every step and a fresh process can load it
+- [ ] Reducers are idempotent: the double-apply test passes
+- [ ] The operational questions are answerable from state alone, with the process dead
+- [ ] no_false_completion exists as code and passes on both fixture vendors
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>What is the difference between conversation state and execution state?</summary>
+
+Conversation state is how the run came to know things (messages, replayable, disposable). Execution state is what the run knows (typed facts, evidence, progress). Only execution state is load-bearing; losing messages costs you a cache, losing state costs you the run.
+
+</details>
+
+<details class="checkpoint">
+<summary>Why must state represent evidence rather than claims?</summary>
+
+Because 'the model said pricing is verified' survives a restart just as well when it is wrong. Evidence (a URL, a quoted span, a content hash) can be independently re-checked by code, a human, or an evaluator.
+
+</details>
+
+<details class="checkpoint">
+<summary>If your process disappears right now, what must exist elsewhere?</summary>
+
+Everything needed to continue: run identity, per-item status backed by evidence, budgets spent, and what to do next. That question is the entire design test for a state model.
+
+</details>
+

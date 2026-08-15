@@ -122,6 +122,77 @@ Fix the prompt with the explicit criterion and negative examples. Recompute TPR/
 
 </div>
 
+## Diagnose
+
+<div class="block-diagnose">
+
+The judge that agreed with everyone got replaced. Show your work:
+
+1. The naive judge scored high accuracy. Which number exposed it, and why does accuracy alone hide a judge that passes everything?
+2. Which of your criteria turned out to need no model at all, and what did that buy you?
+3. Two humans disagreed on a label. Is that a judge problem or a rubric problem, and what do you fix first?
+4. Your regression gate went red on a planted regression. Which metric caught it, and what would have shipped without the gate?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=11
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- the weak judge on 50 labeled findings: near-100 percent pass rate, true negative rate around 30 percent, exposed by the report
+- the fixed judge reaches at least 90 percent agreement with balanced TPR/TNR on a held-out set, and catches the planted contradictory finding from Lab 08
+- deterministic evaluators run on every fixture run and produce a scorecard
+- the CI gate fails the build when any aggregate metric drops below the previous version
+
+The judge never grades its own model's findings; roles stay separate.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] 50 real traces labeled by hand, with failure modes clustered and counted
+- [ ] At least five binary criteria written with pass, fail, and edge definitions
+- [ ] Deterministic evaluators cover every criterion that needs no model
+- [ ] The judge is validated against human labels with TPR and TNR reported separately
+- [ ] The golden set and regression gate run on every change
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>Why error analysis before metrics?</summary>
+
+Because the failure distribution of your app is an empirical fact you cannot guess. Reading 50 traces tells you what to fix and what to measure; picking metrics first produces dashboards that never move and never explain.
+
+</details>
+
+<details class="checkpoint">
+<summary>Why binary criteria instead of 1-to-5 scales?</summary>
+
+Humans agree on them, judges can be validated against them, and trends are readable. Ask for a 1-to-5 and you get 4s; ask a yes/no with a written definition and you get a signal.
+
+</details>
+
+<details class="checkpoint">
+<summary>What is the complaint flywheel?</summary>
+
+Every production complaint becomes a golden-set case, permanently. A complaint that does not become a test case is a complaint you will receive again.
+
+</details>
+
 ## Primary sources
 
 - [Hamel Husain, LLM-as-a-judge](https://hamel.dev/blog/posts/llm-judge/): the methodology this module follows, including judge validation against human labels. If you read one thing this course links, read this.

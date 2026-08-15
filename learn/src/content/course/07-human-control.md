@@ -131,6 +131,77 @@ Then: request more research, kill during the second research pass, resume, appro
 
 </div>
 
+## Diagnose
+
+<div class="block-diagnose">
+
+The approval survived a restart and three hours of silence. Explain why:
+
+1. While the run waited, what existed in the database, and what existed in memory?
+2. You redeployed mid-wait. Why did the blocking version lose the run and the interrupt version not?
+3. The reviewer double-clicked approve. What makes the review endpoint safe against that, and against a redelivered webhook?
+4. The reviewer's edits changed the report. Where do those edits live, and why not in the message history?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=07
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- run reaches await_review; the process is stopped and restarted; POST /runs/{id}/review with approve resumes and publishes exactly once
+- published_reports has one row, and the trace shows resume from the review checkpoint, not a research replay
+- request-more-research loops back, is killed mid-second-pass, resumes, and approval still publishes once
+- a second identical approve returns already_resolved and changes nothing
+
+Waiting is state: the passing condition includes zero compute held during the wait.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] A waiting run holds no worker, no thread, no connection
+- [ ] Approve, reject, and request-more-research all work, and the research loop is bounded
+- [ ] The review endpoint is idempotent
+- [ ] The approval payload shows coverage, unknowns, and evidence counts, not a bare yes/no
+- [ ] Reviewer edits are folded into state and survive context rebuilds
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>Waiting is state, not compute. What does that buy you?</summary>
+
+Free waits of arbitrary length: the run survives deploys, restarts and weekends because nothing is running. A row says awaiting_approval; a fresh process resumes on the human's action.
+
+</details>
+
+<details class="checkpoint">
+<summary>Why must the approval payload be evidence-rich?</summary>
+
+If the reviewer cannot see why the agent believes an item is verified, the review is theatre. Evidence-rich payloads are also what make approval latency and edit rate meaningful signals about where the gate belongs.
+
+</details>
+
+<details class="checkpoint">
+<summary>What should happen when nobody ever clicks?</summary>
+
+Every interrupt gets a deadline and an explicit on_timeout: fail, proceed, or escalate, chosen per gate. proceed on an irreversible gate is how unattended systems email unreviewed reports, so that choice is written in code where it can be reviewed.
+
+</details>
+
 ## Primary sources
 
 - [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts): the exact semantics of `interrupt()` and `Command(resume=...)`, including what is replayed on resume. Worth reading before the lab, because the replay behavior is the part that surprises people.

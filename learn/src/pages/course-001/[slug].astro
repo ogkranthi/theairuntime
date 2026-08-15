@@ -4,6 +4,7 @@ import Base from "../../layouts/Base.astro";
 import StateLedger from "../../components/StateLedger.astro";
 import CtaBlock from "../../components/CtaBlock.astro";
 import Toc from "../../components/Toc.astro";
+import CourseNav from "../../components/CourseNav.astro";
 import { REACH_OUT, getModules, moduleHref, neighbors, pad, utm } from "../../lib/course";
 
 export async function getStaticPaths() {
@@ -40,6 +41,7 @@ const bodyHasReachOut = entry.body?.includes(REACH_OUT.slice(0, 40)) ?? false;
   pageSlug={entry.id}
   ogType="article"
 >
+  <CourseNav active="module" />
   <div class="shell module">
     <div class="module__main">
       <header class="module__header">
@@ -236,6 +238,49 @@ const bodyHasReachOut = entry.body?.includes(REACH_OUT.slice(0, 40)) ?? false;
     .module__rail { display: block; }
   }
 </style>
+
+<script define:vars={{ slug: entry.id }}>
+  // Exit criteria: enable the GFM task-list checkboxes, persist each to
+  // localStorage, and record the module complete when all are checked.
+  // Storage: air-c001-exit-<slug> = [bool,...]; air-c001-complete = [slug,...]
+  const KEY = `air-c001-exit-${slug}`;
+  const block = document.querySelector(".block-exit");
+  if (block) {
+    const boxes = [...block.querySelectorAll('input[type="checkbox"]')];
+    let saved = [];
+    try {
+      saved = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+    } catch { /* fresh */ }
+
+    const doneNote = document.createElement("p");
+    doneNote.className = "block-exit__done";
+    doneNote.textContent = `MODULE ${slug.slice(0, 2)} COMPLETE. It will show as done on the syllabus.`;
+    block.appendChild(doneNote);
+
+    const sync = () => {
+      const states = boxes.map((b) => b.checked);
+      try {
+        localStorage.setItem(KEY, JSON.stringify(states));
+        const all = states.length > 0 && states.every(Boolean);
+        const done = new Set(JSON.parse(localStorage.getItem("air-c001-complete") ?? "[]"));
+        if (all) done.add(slug);
+        else done.delete(slug);
+        localStorage.setItem("air-c001-complete", JSON.stringify([...done]));
+        block.classList.toggle("is-complete", all);
+      } catch { /* private mode */ }
+      boxes.forEach((b) => b.closest("li")?.classList.toggle("is-checked", b.checked));
+    };
+
+    boxes.forEach((box, i) => {
+      box.disabled = false;
+      box.checked = Boolean(saved[i]);
+      // GFM task-list inputs ship without labels; name each from its line.
+      box.setAttribute("aria-label", box.closest("li")?.textContent?.trim() ?? `Exit criterion ${i + 1}`);
+      box.addEventListener("change", sync);
+    });
+    sync();
+  }
+</script>
 
 <style is:global>
   /* Prose rhythm for rendered curriculum markdown. */

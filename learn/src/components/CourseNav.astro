@@ -1,0 +1,111 @@
+---
+interface Props {
+  /** Which tab is active. */
+  active: "overview" | "labs" | "stack" | "sources" | "module";
+}
+const { active } = Astro.props;
+
+const tabs = [
+  { key: "overview", href: "/course-001/", label: "Overview" },
+  { key: "labs", href: "/course-001/labs/", label: "Labs" },
+  { key: "stack", href: "/course-001/stack/", label: "Stack" },
+  { key: "sources", href: "/course-001/sources/", label: "Sources" },
+];
+---
+
+<nav class="coursenav" aria-label="Course 001">
+  <div class="shell coursenav__inner">
+    <a class="coursenav__chip" href="/course-001/">COURSE 001</a>
+    {
+      tabs.map((t) => (
+        <a
+          href={t.href}
+          class:list={["coursenav__tab", { "is-active": active === t.key }]}
+          aria-current={active === t.key ? "page" : undefined}
+        >
+          {t.label}
+        </a>
+      ))
+    }
+    <span class="coursenav__progress" data-course-progress hidden>
+      <span class="coursenav__bar"><span class="coursenav__fill" data-progress-fill></span></span>
+      <span data-progress-label></span>
+    </span>
+  </div>
+</nav>
+
+<style>
+  .coursenav {
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-raise);
+  }
+  .coursenav__inner {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    min-height: 2.75rem;
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    flex-wrap: wrap;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+  }
+  .coursenav__chip {
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+  }
+  .coursenav__chip:hover { text-decoration: none; }
+  .coursenav__tab { color: var(--fg-muted); }
+  .coursenav__tab:hover { color: var(--fg); text-decoration: none; }
+  .coursenav__tab.is-active {
+    color: var(--fg);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.15rem;
+  }
+  .coursenav__progress {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--fg-muted);
+    font-size: 0.75rem;
+  }
+  .coursenav__bar {
+    width: 7rem;
+    height: 5px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    display: inline-block;
+  }
+  .coursenav__fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 120ms linear;
+  }
+</style>
+
+<script>
+  // Course progress, from the exit-criteria completions saved per module.
+  // Storage shape: air-c001-complete = JSON array of module slugs.
+  const wrap = document.querySelector<HTMLElement>("[data-course-progress]");
+  if (wrap) {
+    try {
+      const done: string[] = JSON.parse(localStorage.getItem("air-c001-complete") ?? "[]");
+      const total = 16;
+      if (done.length > 0) {
+        wrap.hidden = false;
+        const fill = wrap.querySelector<HTMLElement>("[data-progress-fill]");
+        const label = wrap.querySelector<HTMLElement>("[data-progress-label]");
+        if (fill) fill.style.width = `${Math.round((done.length / total) * 100)}%`;
+        if (label) label.textContent = `${done.length}/${total}`;
+      }
+    } catch {
+      /* storage unavailable: stay hidden */
+    }
+  }
+</script>

@@ -122,6 +122,77 @@ Fix with the atomic claim, then run the harder scenario: `kill -9` worker A mid-
 
 </div>
 
+## Diagnose
+
+<div class="block-diagnose">
+
+Two workers executed one run, then the lease machinery stopped them. Trace it:
+
+1. Which single SQL construct made the claim atomic, and what did the select-then-update version race on?
+2. Why is a lease the right primitive rather than a lock, in one sentence about dead processes?
+3. Walk the SIGSTOP timeline: at which exact statement was the frozen worker fenced out, and what happened to its in-flight work?
+4. Why does cancellation need no signals, no kills, and no queue purges?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=05
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- with the racy claim, `run_events` shows interleaved owners on one run and doubled steps; the check fails loudly
+- with the atomic claim, two workers never share a run: every event's owner matches the lease holder at that timestamp
+- kill -9 mid-step: the run is reclaimed within one lease and finishes from the checkpoint
+- SIGSTOP/SIGCONT: the stale worker's fenced checkpoint writes zero rows and it exits without corrupting state
+
+The assertion is single ownership throughout history, not just a finished run.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] Claiming is one atomic statement with FOR UPDATE SKIP LOCKED
+- [ ] Heartbeat extends the lease inside the step loop, not in a background thread
+- [ ] Every commit is fenced with owner and lease predicates, and a zero-row write aborts the worker
+- [ ] An orphaned run is reclaimed within one lease interval, automatically
+- [ ] Cancellation is honored at the next step boundary via the status column
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>Ownership is the first line of defence and idempotency the last. Against what?</summary>
+
+Double execution. Leases make the two-owners window rare; fenced writes make it harmless inside your database; idempotency keys make it harmless outside. You need all three because the window can never be exactly zero.
+
+</details>
+
+<details class="checkpoint">
+<summary>What sets the right lease length?</summary>
+
+Much longer than a step, much shorter than your patience for stuck runs. A 2-minute lease over 15-second p99 steps makes reclaim fast and false reclaims rare; the fencing check covers the residue.
+
+</details>
+
+<details class="checkpoint">
+<summary>When does this Postgres scheduler stop being enough?</summary>
+
+At thousands of workers or strict fairness/priority needs, replace it with a queue or workflow engine. The point of building it first is knowing exactly which guarantees the replacement must carry: claim, lease, heartbeat, reclaim, cancel.
+
+</details>
+
 ## Primary sources
 
 - [Temporal's AI cookbook](https://docs.temporal.io/ai-cookbook/openai-agents-sdk-python) shows what claim, lease, heartbeat and reclaim look like when a durable workflow engine owns them; compare each concept to the table you just built.

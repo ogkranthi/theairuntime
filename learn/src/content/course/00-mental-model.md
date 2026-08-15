@@ -138,3 +138,42 @@ End Module 00 with the diagram you will reuse for the entire course:
 ```
 
 State, Execution, Context, Control, Observability, Evaluation. Modules 02 to 11 take these one at a time.
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] All twelve scenarios classified, each with one sentence of justification
+- [ ] You can state the execution-continuity definition without looking
+- [ ] You can name the four things people confuse with a long-running agent
+- [ ] The six-surfaces diagram drawn from memory, and each surface mapped to the module that builds it
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>What makes an agent long-running, if not duration?</summary>
+
+Execution continuity: the work's lifecycle may outlive a single request, process, context window, worker, deployment, or human interaction. A 90-second workflow that publishes an invoice can need durable execution; a 30-minute model call that just returns text might not.
+
+</details>
+
+<details class="checkpoint">
+<summary>Name a task that should NOT be a long-running agent, and why.</summary>
+
+Anything that can be one reliable model call: classify a ticket, extract fields, translate a document. Agent infrastructure around single-call work adds failure modes without adding capability.
+
+</details>
+
+<details class="checkpoint">
+<summary>Why is 'done' from the model a claim rather than a fact?</summary>
+
+Models are poor judges of their own completeness. 'Done' becomes a fact only when the runtime can verify it against evidence: checks passed, items covered, sources resolvable. That gap is what Modules 02 and 11 exist to close.
+
+</details>
+

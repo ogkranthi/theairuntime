@@ -100,6 +100,63 @@ Do not read the profile before the first run. Fix, rerun, submit.
 
 ---
 
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make gauntlet   # drives chaos.py against your public URL
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- every deterministic check on the scorecard is true: survived all kills, single publish, duplicate request handled, injection ignored,
+  contradiction surfaced, honest budget stop, evidence resolves, no false completion, no refetch
+- the judge scores at least 0.9 agreement against golden labels
+- the reliability report is public, with scorecard, traces, post-mortem and changes
+
+There is no partial credit for a duplicate report. The gauntlet is all the course invariants, running at once.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] The gauntlet scorecard is fully green against your deployed agent
+- [ ] The post-mortem answers what failed first, design gap versus bug, and the weakest surface
+- [ ] A regression test now covers the first thing that failed
+- [ ] The reliability report is public and another engineer can reproduce it from your repo
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>Why run every failure at once instead of one at a time?</summary>
+
+Because reality does not schedule its failures, and combined faults find the interactions single labs cannot: a kill during a retry during a budget stop. System-level reliability is a different claim than lab-level.
+
+</details>
+
+<details class="checkpoint">
+<summary>What makes your reliability claim credible to a stranger?</summary>
+
+Reproducibility: pinned versions, deterministic fixtures, public scorecard and traces, one command to re-run. Claims anyone can check are the only kind this field should trade in.
+
+</details>
+
+<details class="checkpoint">
+<summary>What would you not trust this system to do yet?</summary>
+
+Whatever your known-limitations section says, and there must be one. A system with no stated limits is a system whose limits are discovered by customers.
+
+</details>
+
 ## Closing guidance
 
 Quality comes from:

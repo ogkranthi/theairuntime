@@ -104,6 +104,76 @@ Typical first result: replay works (same checkpointer), the duplicate report ret
 
 </div>
 
+## Diagnose
+
+<div class="block-diagnose">
+
+The port broke exactly where the matrix predicted. Fill in the reasoning:
+
+1. Which invariants did the harness carry, and where in its code or tables did you verify each one rather than trusting the docs?
+2. Which invariant broke first when the gauntlet subset ran, and why was it invisible in a demo?
+3. What got dramatically shorter in the port, and what does that list tell you the harness is actually for?
+4. If the harness disappeared tomorrow, which files of yours contain the guarantees, and would they still hold?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=12
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- the Deep Agents port runs the vendor review end to end
+- the four-lab gauntlet subset (03 replay, 04 single publish, 05 ownership, 07 durable wait) passes on BOTH implementations
+- harness_comparison.md has a CARRIED, YOURS, or DROPPED verdict for every invariant, none left blank
+- token-per-decision measured for the subagent security deep-dive versus your hand-rolled version
+
+Same labs, two harnesses, one set of invariants. That is portability, proven.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] The port reuses your application tables as the source of truth
+- [ ] Idempotency keys and the lease scheduler are wired at the tool boundary of the harness
+- [ ] The comparison matrix is complete, with verification notes per row
+- [ ] The four-lab subset is green on both implementations
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>What is the difference between a harness and a runtime?</summary>
+
+The runtime is the guarantees: durable state, replay, ownership, idempotency, interrupts, budgets, audit. The harness is the ergonomics: planning, workspaces, subagents, context management. Harnesses make agents easier to build, not automatically safe to operate.
+
+</details>
+
+<details class="checkpoint">
+<summary>Why do harness demos look identical to durable systems?</summary>
+
+Because the difference only appears when the process dies, a call times out after succeeding, or two workers collide. Demos exercise none of those, which is why this course breaks things on purpose.
+
+</details>
+
+<details class="checkpoint">
+<summary>What one question cuts through any framework pitch?</summary>
+
+What happens when the process dies, and show me the table. If the answer is a diagram instead of a table, the guarantee is yours to build.
+
+</details>
+
 ## Primary sources
 
 - [Deep Agents overview](https://docs.langchain.com/oss/python/deepagents/overview) and [context engineering](https://docs.langchain.com/oss/python/deepagents/context-engineering): read the mechanisms, then map each to the module where you built it by hand.

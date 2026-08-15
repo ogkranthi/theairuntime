@@ -127,6 +127,77 @@ Expected: A re-fetches, ships the contradiction, and stops early. B does not. Re
 
 </div>
 
+## Diagnose
+
+<div class="block-diagnose">
+
+Run A rotted and Run B did not. Use the traces to say why:
+
+1. Which prompt grew with the step number in Run A, and what was the largest contributor to it?
+2. Run A shipped the pricing contradiction. At which decision did the contradicting evidence fall out of the model's view?
+3. After the crash, the new worker in Run B rebuilt its context. From which artifacts, exactly?
+4. What did Run A re-fetch that Run B did not, and what stopped B from doing it?
+
+</div>
+
+## Prove it
+
+<div class="block-prove">
+
+```bash
+make lab LAB=08
+```
+
+Passing means, checked automatically, not eyeballed:
+
+- against fixture profile `sprawl`, the check compares the two runs on four measurements from traces:
+  pages fetched more than once (B: 0), contradictions carried into the report (B: 0, surfaced instead),
+  tokens per decision p50/p95 (B: flat across steps), final coverage (B >= A)
+- the step-40 prompt in B is within 10 percent of the step-4 prompt's size
+
+A cost win with no quality column next to it is not a result; the check demands both.
+
+</div>
+
+## Exit criteria
+
+<div class="block-exit">
+
+Observable conditions, not "I understand it". Check them off; progress is saved in your browser.
+
+- [ ] Raw pages are stored once, addressable by URL and hash, and never enter the prompt twice
+- [ ] The progress artifact is current after every step and readable by a human
+- [ ] Active context is built per decision from state, and messages reset at node boundaries
+- [ ] The A/B log records all four measurements for both runs
+- [ ] The compaction contract is written down, including what may never be dropped
+
+</div>
+
+## Checkpoint
+
+Three questions before you move on. Answer first, then open.
+
+<details class="checkpoint">
+<summary>Why does quality fall long before the token limit?</summary>
+
+Accumulation buries the relevant facts: the model starts repeating pages, contradicting earlier findings, and declaring completion early. Context rot is a quality cliff, not a size error.
+
+</details>
+
+<details class="checkpoint">
+<summary>What are the three things this module separates?</summary>
+
+Raw material (fetched pages, in storage), durable knowledge (evidence and findings, in state), and active context (built per decision, discarded after). The model's context is a view over state, rebuilt every decision.
+
+</details>
+
+<details class="checkpoint">
+<summary>When do you reach for a sub-agent versus compaction?</summary>
+
+Sub-agent when one task genuinely needs many pages: clean context in, finding plus evidence pointers out. Compaction when one conversation must be long: summarize old turns into the progress artifact, proactively, on a threshold.
+
+</details>
+
 ## Primary sources
 
 - [Anthropic, effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents): the published basis for this module's claim that compaction alone is not sufficient and structured notes change behavior.

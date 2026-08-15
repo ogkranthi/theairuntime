@@ -31,7 +31,8 @@ export async function getStaticPaths() {
   const modules = await getModules();
 
   const pages: Page[] = [
-    { slug: "home", eyebrow: "COURSE 001 · FREE · OPEN SOURCE", title: "Engineering Long-Running AI Agents", current: null },
+    { slug: "home", eyebrow: "LEARN", title: "Training for engineers who ship AI", current: null },
+    { slug: "course-001", eyebrow: "COURSE 001 · FREE · OPEN SOURCE", title: "Engineering Long-Running AI Agents", current: null },
     { slug: "labs", eyebrow: "COURSE 001 · FAILURE LABS", title: "Break it on purpose, then fix it", current: null },
     { slug: "stack", eyebrow: "COURSE 001 · STACK", title: "Why this stack, and the free tier", current: null },
     { slug: "sources", eyebrow: "COURSE 001 · PRIMARY SOURCES", title: "Read the originals", current: null },
