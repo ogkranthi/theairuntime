@@ -1,82 +1,72 @@
 ---
 import Base from "../layouts/Base.astro";
+import FdeLifecycle from "../components/FdeLifecycle.astro";
 import { CHANNELS, REACH_OUT, utm } from "../lib/course";
 ---
 
 <Base
-  title="About | AIR Course 001"
-  description="Who is behind AIR Course 001, why the course exists, and what to reach out about."
+  title="About | The AI Runtime, FDE Engineering"
+  description="The AI Runtime teaches the engineering work between an AI demo and a production system, from the perspective of forward-deployed engineering."
   pageSlug="about"
 >
   <div class="shell">
     <section class="section measure">
       <p class="eyebrow">ABOUT</p>
-      <h1>Quality among noise</h1>
+      <h1>Between the demo and production</h1>
 
       <p>
-        Course 001 is written by Kranthi Manchikanti, a solutions architect working on agentic
-        systems in regulated and healthcare settings, and the person behind
-        <a href={CHANNELS.publication} rel="noopener">The AI Runtime</a>: a publication, a Boston
-        meetup, a public engineering lab, and the FDE Talks podcast.
+        The AI Runtime teaches the engineering work between an AI demo and a production
+        system. That gap is not model knowledge. It is what happens when the process dies at
+        step nine, when the publish call times out after it already succeeded, when a
+        reviewer approves three hours later from their phone, and when an auditor asks for
+        the evidence.
       </p>
 
       <p>
-        This course exists because the gap in agent education is not model knowledge. It is
-        runtime knowledge. There is no shortage of tutorials that get an agent working once,
-        and very little written about what happens when the process dies at step nine, when the
-        publish call times out after it already succeeded, or when a reviewer approves three
-        hours later from their phone. Those are the parts that decide whether an agent ships.
+        The curriculum takes the perspective of <strong>forward-deployed engineering</strong>:
+        every topic is taught the way an FDE meets it, in order.
       </p>
+    </section>
 
+    <section class="section">
+      <FdeLifecycle />
+    </section>
+
+    <section class="section measure">
+      <h2>How this works</h2>
+      <ul>
+        <li><strong>Free to read and watch.</strong> Every course is complete as written and recorded material.</li>
+        <li><strong>Optional open-source implementations.</strong> Reference repos exist for people who want their hands on the system; nothing requires cloning them.</li>
+        <li><strong>Optional labs.</strong> Failure Labs break the running system on purpose, for those who want to feel it.</li>
+        <li><strong>No account required.</strong> Progress, if you want it, lives in your browser and nowhere else.</li>
+        <li><strong>Not a paid LMS.</strong> No paywall, no seat licenses, no completion certificates.</li>
+        <li><strong>Curated external resources.</strong> When another source teaches a prerequisite better than we could, we link it and say why, official documentation first.</li>
+      </ul>
+    </section>
+
+    <section class="section measure">
+      <h2>Who is behind this</h2>
       <p>
-        The role it trains is the <strong>Forward Deployed Engineer</strong>. An FDE ships an
-        agent into someone else's production reality, is accountable for it running next week,
-        and has to answer "what happens after failure" in the customer's conference room with
-        evidence rather than confidence. Every module ends with an invariant you can prove,
-        because that is the currency of the job.
+        Written by Kranthi Manchikanti, a solutions architect working on agentic systems in
+        regulated and healthcare settings, and the person behind
+        <a href={CHANNELS.publication} rel="noopener">The AI Runtime</a>: a publication, a
+        Boston meetup, the <a href={CHANNELS.lab} rel="noopener">FDE Lab</a>, and the FDE
+        Talks podcast.
       </p>
-
       <p>
-        Everything here is free and public: the written curriculum, the fixture server, the
-        golden datasets, the evaluators, and the Field Reports. Public artifacts are the point.
-        Claims about reliability are only worth something if a stranger can reproduce them, so
-        every Failure Lab runs against a deterministic fixture server and every eval ships with
-        its labels.
-      </p>
-
-      <h2>What this course is not</h2>
-      <p>
-        Not a platform, not an LMS, not a cohort you buy. No accounts, no progress tracking, no
-        paywall, no comments. If you want the artifacts as they ship, subscribe to the
-        newsletter. That is the only ask on the whole site.
+        Everything here is public and reproducible on purpose: deterministic fixtures, pinned
+        environments, open datasets and evaluators. Claims about reliability are only worth
+        something if a stranger can re-run them.
       </p>
 
       <h2>Contact</h2>
       <ul class="contact">
-        <li>
-          <span class="contact__key">EMAIL</span>
-          <a href={CHANNELS.email}>info@theairuntime.com</a>
-        </li>
-        <li>
-          <span class="contact__key">LINKEDIN</span>
-          <a href={CHANNELS.linkedin} rel="noopener">Kranthi Manchikanti</a>
-        </li>
-        <li>
-          <span class="contact__key">SUBSTACK</span>
-          <a href={utm(CHANNELS.substack, "about", "subscribe")} rel="noopener">theairuntime.com</a>
-        </li>
-        <li>
-          <span class="contact__key">PODCAST</span>
-          <a href={utm(CHANNELS.podcast, "about", "listen")} rel="noopener">FDE Talks</a>
-        </li>
-        <li>
-          <span class="contact__key">LAB</span>
-          <a href={CHANNELS.lab} rel="noopener">lab.theairuntime.com</a>
-        </li>
-        <li>
-          <span class="contact__key">EVENTS</span>
-          <a href={CHANNELS.events} rel="noopener">events.theairuntime.com</a>
-        </li>
+        <li><span class="contact__key">EMAIL</span><a href={CHANNELS.email}>info@theairuntime.com</a></li>
+        <li><span class="contact__key">LINKEDIN</span><a href={CHANNELS.linkedin} rel="noopener">Kranthi Manchikanti</a></li>
+        <li><span class="contact__key">SUBSTACK</span><a href={utm(CHANNELS.substack, "about", "subscribe")} rel="noopener">theairuntime.com</a></li>
+        <li><span class="contact__key">PODCAST</span><a href={utm(CHANNELS.podcast, "about", "listen")} rel="noopener">FDE Talks</a></li>
+        <li><span class="contact__key">LAB</span><a href={CHANNELS.lab} rel="noopener">lab.theairuntime.com</a></li>
+        <li><span class="contact__key">EVENTS</span><a href={CHANNELS.events} rel="noopener">events.theairuntime.com</a></li>
       </ul>
 
       <p class="reach">{REACH_OUT}</p>
@@ -85,12 +75,7 @@ import { CHANNELS, REACH_OUT, utm } from "../lib/course";
 </Base>
 
 <style>
-  .contact {
-    list-style: none;
-    margin: 1.5rem 0;
-    padding: 0;
-    border-top: 1px solid var(--line);
-  }
+  .contact { list-style: none; margin: 1.5rem 0; padding: 0; border-top: 1px solid var(--line); }
   .contact li {
     display: flex;
     flex-wrap: wrap;
@@ -98,10 +83,10 @@ import { CHANNELS, REACH_OUT, utm } from "../lib/course";
     padding: 0.7rem 0;
     border-bottom: 1px solid var(--line);
     margin: 0;
-    font-family: var(--font-mono);
     font-size: var(--t-meta);
   }
   .contact__key {
+    font-family: var(--font-mono);
     color: var(--fg-muted);
     letter-spacing: 0.1em;
     width: 7rem;

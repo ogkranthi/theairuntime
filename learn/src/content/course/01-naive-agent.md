@@ -4,6 +4,11 @@ title: "Build the Naive Agent"
 duration: "45-60 min"
 goal: "Build something that works, in plain Python, before introducing any framework."
 question: "What does the simplest useful loop look like?"
+hook: "Forty lines that work. Every line is a promise you cannot keep."
+scenario: "The first vendor review runs end to end on your laptop in ninety seconds. The customer asks what happens when they close the tab."
+skills: [Agent loops, Tool design]
+technologies: [Python]
+repoPath: "01_naive_agent.py"
 labNumber: 1
 lab: "Kill the Agent"
 deliverable: "01_naive_agent.py + resume_answer.md"

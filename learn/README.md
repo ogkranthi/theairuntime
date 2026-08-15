@@ -18,12 +18,15 @@ in the public course repo and are linked from here. Nothing is gated.
 ## Routes
 
 ```
-/                          Courses landing: Course 001, the Field Lab, FDE Talks, next course
-/course-001/               Course home: promise, FDE framing, application contract, syllabus
-/course-001/00-mental-model ... /course-001/15-production-gauntlet
-/course-001/labs           14-lab catalog, the standard lab shape, fixture server snippet
-/course-001/stack          Boring on purpose: core stack, lease-scheduler rationale, substitutions
-/course-001/sources        Annotated primary sources (1-3 are also linked in place per module)
+/                          AIR Learning home: FDE Engineering positioning, lifecycle, catalog
+/courses/                  Course catalog (data-driven from src/data/courses.json)
+/courses/long-running-agents/            Course 001 landing
+/courses/long-running-agents/<module>/   16 lessons, three-column learner layout
+/courses/long-running-agents/labs|stack|sources
+/case-studies/             Industry case study library (src/content/case-studies/)
+/case-studies/<slug>/      5 case studies, reusable across courses
+/skills/                   Skills map taxonomy (src/data/skills.json)
+/resources/                Curated resource library (src/data/resources.json)
 /about                     Who is behind this, contact
 /rss.xml                   Module feed
 /og/<slug>.png             Generated OpenGraph image per page and per module

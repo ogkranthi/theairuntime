@@ -4,6 +4,12 @@ title: "Deploying the Agent Publicly"
 duration: "45-60 min"
 goal: "Put the agent on a public URL, for free, and prove that a redeploy mid-run does not lose work."
 question: "Can the public system survive restarts and redeploys?"
+hook: "Push to main, mid-run."
+scenario: "The incident agent is 20 minutes into an investigation when a deploy replaces the process. On the free tier. It has to shrug."
+caseStudy: incident-response-agent
+skills: [Deployment, Migrations, Rollback]
+technologies: [Render, Neon, FastAPI]
+repoPath: "render.yaml"
 labNumber: 13
 invariant: "I12: a redeploy mid-run loses no work and duplicates no side effect."
 lab: "The Redeploy"

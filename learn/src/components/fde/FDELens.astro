@@ -1,0 +1,48 @@
+---
+interface Props {
+  customerAsks: string;
+  realRequirement: string;
+  architectureImplication: string;
+}
+const { customerAsks, realRequirement, architectureImplication } = Astro.props;
+---
+
+<aside class="fdelens">
+  <p class="fdelens__tag">FDE LENS</p>
+  <dl>
+    <div><dt>Customer asks</dt><dd>&ldquo;{customerAsks}&rdquo;</dd></div>
+    <div><dt>Real requirement</dt><dd>{realRequirement}</dd></div>
+    <div><dt>Architecture implication</dt><dd>{architectureImplication}</dd></div>
+  </dl>
+</aside>
+
+<style>
+  .fdelens {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0;
+  }
+  .fdelens__tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin: 0 0 0.85rem;
+  }
+  .fdelens dl { margin: 0; }
+  .fdelens div { margin-bottom: 0.85rem; }
+  .fdelens div:last-child { margin-bottom: 0; }
+  .fdelens dt {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 0.15rem;
+  }
+  .fdelens dd { margin: 0; color: var(--fg); }
+  .fdelens div:first-child dd { font-style: italic; }
+</style>

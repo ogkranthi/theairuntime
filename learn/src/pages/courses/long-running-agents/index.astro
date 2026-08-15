@@ -1,0 +1,273 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import CourseNav from "../../../components/CourseNav.astro";
+import CtaBlock from "../../../components/CtaBlock.astro";
+import ModuleCard from "../../../components/ModuleCard.astro";
+import CaseStudyCard from "../../../components/CaseStudyCard.astro";
+import TechnologyResource from "../../../components/fde/TechnologyResource.astro";
+import { CHANNELS, getModules, moduleHref, utm } from "../../../lib/course";
+
+const modules = await getModules();
+const labCount = modules.filter((m) => m.data.lab).length;
+const studies = await getCollection("caseStudies", ({ data }) =>
+  data.courses.includes("course-001"),
+);
+const studyBydId = new Map(studies.map((s) => [s.id, s]));
+
+const learn = [
+  "durable state that survives process loss, with evidence instead of claims",
+  "checkpoint and replay semantics, and what they do not guarantee",
+  "idempotent external side effects and exactly-once outcomes",
+  "work ownership: claims, leases, heartbeats, orphan recovery",
+  "failure taxonomies instead of retry(3) everywhere",
+  "human approval that waits for days without holding compute",
+  "context rebuilt from durable artifacts rather than accumulated chat",
+  "operator, engineer and audit views of the same run",
+  "security boundaries untrusted content cannot cross",
+  "trajectory evals, validated judges, regression gates",
+  "harness evaluation: what a framework carries versus what stays yours",
+  "public deployment whose reliability claims can be reproduced",
+];
+
+const technologies = [
+  { technology: "Python", why: "The whole reference implementation; modules 00-02 are plain Python so the loop is visible.", docsUrl: "https://docs.python.org/3/" },
+  { technology: "LangGraph", why: "Graph execution, persistence, checkpoints and interrupts, adopted in Module 03 after the failures make them necessary.", primerUrl: "/courses/long-running-agents/03-durable-execution/", docsUrl: "https://docs.langchain.com/oss/python/langgraph/overview" },
+  { technology: "PostgreSQL", why: "Durable state, leases, event log, side-effect records. The load-bearing component.", docsUrl: "https://www.postgresql.org/docs/current/" },
+  { technology: "Deep Agents", why: "The higher-level harness Module 12 ports to and interrogates.", docsUrl: "https://docs.langchain.com/oss/python/deepagents/overview" },
+  { technology: "FastAPI + HTMX", why: "The run API, review endpoints and operator dashboard, with no frontend framework.", docsUrl: "https://fastapi.tiangolo.com/" },
+  { technology: "Render + Neon", why: "The free-tier public deployment whose restarts double as failure injection.", docsUrl: "https://render.com/docs/free" },
+];
+---
+
+<Base
+  title="Engineering Long-Running AI Systems | AIR Course 001"
+  description="Learn how to design agents whose work survives failures, restarts, long waits and changing context. 16 modules, 5 industry cases, 14 optional labs, one open reference implementation."
+  pageSlug="long-running-agents"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "Course",
+      name: "Engineering Long-Running AI Systems",
+      description:
+        "Learn how to design agents whose work survives failures, restarts, long waits and changing context.",
+      provider: { "@type": "Organization", name: "The AI Runtime", url: "https://theairuntime.com" },
+      isAccessibleForFree: true,
+      hasCourseInstance: { "@type": "CourseInstance", courseMode: "online", courseWorkload: "PT18H" },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Courses", item: "https://learn.theairuntime.com/courses/" },
+        { "@type": "ListItem", position: 2, name: "Engineering Long-Running AI Systems" },
+      ],
+    },
+  ]}
+>
+  <CourseNav active="overview" />
+  <div class="shell">
+    <section class="section chead">
+      <p class="eyebrow">COURSE 001 · FDE ENGINEERING</p>
+      <h1>Engineering Long-Running AI Systems</h1>
+      <p class="chead__sub">
+        Learn how to design agents whose work survives failures, restarts, long waits and
+        changing context.
+      </p>
+      <p class="chead__meta">
+        {modules.length} modules · {studies.length} industry cases · {labCount} optional labs ·
+        <a href={CHANNELS.repo} rel="noopener">reference repo <span aria-hidden="true">&#8599;</span></a>
+      </p>
+      <div class="chead__actions">
+        <a class="btn btn--solid" href={moduleHref(modules[0]!)}>Start course</a>
+        <span class="chead__soon">Introduction video coming soon</span>
+        <a class="btn" href={CHANNELS.repo} rel="noopener">View repo <span aria-hidden="true">&#8599;</span></a>
+      </div>
+      <p class="chead__continue" data-continue hidden>
+        <a href="#" data-continue-link>Continue learning &rarr;</a>
+      </p>
+    </section>
+
+    <section class="section" id="what-youll-learn">
+      <h2>What you'll learn</h2>
+      <ul class="learn">
+        {learn.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <section class="section" id="industry-cases">
+      <h2>Industry cases</h2>
+      <p class="muted measure">
+        You build one canonical system, the Vendor Review Agent, all the way through. The
+        concepts are grounded in five industry cases along the way: incident investigation,
+        claims and document workflows, customer operations, enterprise data, and coding
+        agents. One app to build, five systems to understand.
+      </p>
+      <div class="cases-grid">
+        {
+          studies.map((s) => (
+            <CaseStudyCard
+              href={`/case-studies/${s.id}/`}
+              title={s.data.title}
+              category={s.data.category}
+              summary={s.data.summary}
+              concepts={s.data.concepts.slice(0, 3)}
+            />
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="section" id="modules">
+      <h2>Course modules</h2>
+      <p class="muted measure">
+        Each module answers one production question. Watch or read to follow the course
+        completely; the labs and the repo are optional depth.
+      </p>
+      <div class="modlist">
+        {
+          modules.map((m) => {
+            const cs = m.data.caseStudy ? studyBydId.get(m.data.caseStudy) : undefined;
+            return (
+              <ModuleCard
+                entry={m}
+                href={moduleHref(m)}
+                caseTitle={cs?.data.title}
+                caseHref={cs ? `/case-studies/${cs.id}/` : undefined}
+                repoBase={CHANNELS.repo}
+              />
+            );
+          })
+        }
+      </div>
+    </section>
+
+    <section class="section" id="technologies">
+      <h2>Technologies used</h2>
+      <div class="tech-grid">
+        {technologies.map((t) => <TechnologyResource {...t} />)}
+      </div>
+      <p class="muted"><a href="/courses/long-running-agents/stack/">Why this stack, in depth &rarr;</a></p>
+    </section>
+
+    <section class="section" id="labs">
+      <h2>Optional labs</h2>
+      <p class="muted measure">
+        {labCount} Failure Labs break the running system on purpose: kill the worker, duplicate
+        the publish, poison a page, race two workers. Entirely optional; the lessons describe
+        each failure well enough to learn from without running anything.
+      </p>
+      <p><a class="btn" href="/courses/long-running-agents/labs/">Browse the labs</a></p>
+    </section>
+
+    <section class="section" id="reference">
+      <h2>Reference implementation</h2>
+      <p class="muted measure">
+        The Vendor Review Agent lives in an open repo with the fixture server the labs run
+        against. Clone it if you want your hands on the system; skip it if you are here to
+        watch and read.
+      </p>
+      <p><a class="btn" href={CHANNELS.repo} rel="noopener">github.com/ogkranthi/air-course-long <span aria-hidden="true">&#8599;</span></a></p>
+    </section>
+
+    <section class="section" id="additional-resources">
+      <h2>Additional resources</h2>
+      <p class="muted measure">
+        Every module links one to three primary sources with a sentence on why each is worth
+        your time. The full annotated list lives on the
+        <a href="/courses/long-running-agents/sources/">course sources page</a>, and the
+        site-wide library is at <a href="/resources/">/resources</a>.
+      </p>
+      <p class="muted measure">
+        Local progress only: your Watched/Read marks and exit-criteria checklists live in this
+        browser, never on a server.
+        <button type="button" class="reset-btn" data-reset-progress>Reset local progress</button>
+      </p>
+    </section>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="long-running-agents" />
+</Base>
+
+<script>
+  // Continue learning: first module not yet marked read, from local progress.
+  try {
+    const done: string[] = JSON.parse(localStorage.getItem("air-c001-complete") ?? "[]");
+    const marks = (slug: string) =>
+      JSON.parse(localStorage.getItem(`air-c001-marks-${slug}`) ?? "{}");
+    const rows = [...document.querySelectorAll<HTMLElement>("[data-module-slug]")];
+    const next = rows.find((r) => {
+      const slug = r.dataset.moduleSlug ?? "";
+      return !done.includes(slug) && !marks(slug).read;
+    });
+    const started = rows.some((r) => {
+      const slug = r.dataset.moduleSlug ?? "";
+      return done.includes(slug) || marks(slug).read || marks(slug).watched;
+    });
+    const wrap = document.querySelector<HTMLElement>("[data-continue]");
+    const link = document.querySelector<HTMLAnchorElement>("[data-continue-link]");
+    if (wrap && link && started && next) {
+      const a = next.querySelector<HTMLAnchorElement>("a[href]");
+      if (a) {
+        link.href = a.href;
+        link.textContent = `Continue learning: ${a.textContent?.trim()} →`;
+        wrap.hidden = false;
+      }
+    }
+  } catch {
+    /* storage unavailable: feature simply absent */
+  }
+
+  document.querySelector("[data-reset-progress]")?.addEventListener("click", () => {
+    try {
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("air-c001-"))
+        .forEach((k) => localStorage.removeItem(k));
+      location.reload();
+    } catch {
+      /* nothing to reset */
+    }
+  });
+</script>
+
+<style>
+  .chead h1 { font-size: clamp(2.2rem, 5vw, 3.25rem); max-width: 22ch; }
+  .chead__sub { font-size: 1.2rem; color: var(--fg-muted); max-width: 52ch; margin: 0 0 1rem; }
+  .chead__meta { font-family: var(--font-mono); font-size: var(--t-meta); color: var(--fg-muted); margin: 0 0 1.5rem; }
+  .chead__actions { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: center; }
+  .chead__soon { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); }
+  .chead__continue { margin: 1.25rem 0 0; font-weight: 600; }
+
+  .learn { columns: 1; padding-left: 1.25rem; margin: 1rem 0 0; }
+  .learn li { margin-bottom: 0.5em; break-inside: avoid; }
+
+  .cases-grid, .tech-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    margin: 1.5rem 0;
+  }
+  .modlist { display: grid; gap: 1rem; margin-top: 1.5rem; }
+  .reset-btn {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.6rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+  }
+  .reset-btn:hover { color: var(--accent); border-color: var(--accent-dim); }
+
+  @media (min-width: 800px) {
+    .learn { columns: 2; column-gap: 3rem; }
+    .cases-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tech-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1100px) {
+    .cases-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .tech-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>

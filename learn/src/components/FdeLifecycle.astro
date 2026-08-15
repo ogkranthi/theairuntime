@@ -1,0 +1,122 @@
+---
+// The FDE lifecycle: the site-wide mental model for what an FDE does.
+// Reusable, responsive, HTML/CSS only. No ASCII.
+interface Props {
+  /** Optionally highlight one stage by id. */
+  active?: string;
+  compact?: boolean;
+}
+const { active, compact = false } = Astro.props;
+
+const STAGES = [
+  { id: "discover", label: "Discover", blurb: "Find the real problem behind the customer's ask." },
+  { id: "shape", label: "Shape", blurb: "Define scope, constraints and what success measures." },
+  { id: "architect", label: "Architect", blurb: "Choose the system shape and the tradeoffs it commits to." },
+  { id: "build", label: "Build", blurb: "Implement with production primitives, not demo shortcuts." },
+  { id: "evaluate", label: "Evaluate", blurb: "Prove improvement and safety with validated evals." },
+  { id: "deploy", label: "Deploy", blurb: "Ship into the customer's environment and constraints." },
+  { id: "operate", label: "Operate", blurb: "Own what happens after failure, at 3am, with evidence." },
+];
+---
+
+<ol class:list={["lifecycle", { "lifecycle--compact": compact }]} role="list">
+  {
+    STAGES.map((s, i) => (
+      <li class:list={["lifecycle__stage", { "is-active": active === s.id }]}>
+        <span class="lifecycle__marker" aria-hidden="true">{i + 1}</span>
+        <span class="lifecycle__label">{s.label}</span>
+        {!compact && <span class="lifecycle__blurb">{s.blurb}</span>}
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .lifecycle {
+    list-style: none;
+    margin: 2rem 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    counter-reset: stage;
+  }
+  .lifecycle__stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    grid-template-areas: "marker label" "marker blurb";
+    column-gap: 1rem;
+    padding: 0.85rem 0;
+    margin: 0;
+  }
+  /* Vertical connector on mobile */
+  .lifecycle__stage:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: calc(1.125rem - 1px);
+    top: 2.6rem;
+    bottom: -0.3rem;
+    width: 2px;
+    background: var(--line);
+  }
+  .lifecycle__marker {
+    grid-area: marker;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--bg-raise);
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lifecycle__label {
+    grid-area: label;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+    align-self: center;
+  }
+  .lifecycle__blurb {
+    grid-area: blurb;
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    max-width: 40ch;
+  }
+  .lifecycle__stage.is-active .lifecycle__marker {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .lifecycle__stage.is-active .lifecycle__label { color: var(--accent); }
+
+  /* Horizontal rail on wide screens */
+  @media (min-width: 960px) {
+    .lifecycle {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 0 1rem;
+    }
+    .lifecycle__stage {
+      grid-template-columns: 1fr;
+      grid-template-areas: "marker" "label" "blurb";
+      row-gap: 0.5rem;
+      padding: 0;
+    }
+    .lifecycle__stage:not(:last-child)::after {
+      left: 2.6rem;
+      right: calc(-1rem + 0.35rem);
+      top: 1.125rem;
+      bottom: auto;
+      width: auto;
+      height: 2px;
+    }
+    .lifecycle__label { align-self: start; }
+  }
+
+  .lifecycle--compact { margin: 1rem 0; }
+  .lifecycle--compact .lifecycle__stage { padding: 0.4rem 0; }
+</style>

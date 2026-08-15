@@ -1,0 +1,50 @@
+---
+interface Props {
+  symptom: string;
+  rootCause: string;
+  productionImpact: string;
+  fix: string;
+}
+const { symptom, rootCause, productionImpact, fix } = Astro.props;
+---
+
+<aside class="failure">
+  <p class="failure__tag">FAILURE</p>
+  <dl>
+    <div><dt>Symptom</dt><dd>{symptom}</dd></div>
+    <div><dt>Root cause</dt><dd>{rootCause}</dd></div>
+    <div><dt>Production impact</dt><dd>{productionImpact}</dd></div>
+    <div class="failure__fix"><dt>Fix</dt><dd>{fix}</dd></div>
+  </dl>
+</aside>
+
+<style>
+  .failure {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--danger);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0;
+  }
+  .failure__tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    color: var(--danger);
+    margin: 0 0 0.85rem;
+  }
+  .failure dl { margin: 0; }
+  .failure div { margin-bottom: 0.7rem; }
+  .failure div:last-child { margin-bottom: 0; }
+  .failure dt {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 0.1rem;
+  }
+  .failure dd { margin: 0; font-size: var(--t-meta); color: var(--fg); }
+  .failure__fix dd { font-weight: 600; }
+</style>

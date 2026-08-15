@@ -1,0 +1,106 @@
+---
+/**
+ * Styled visual system for architecture and process diagrams. HTML/CSS, no
+ * ASCII. Two shapes:
+ *  - flow: nodes connected left-to-right (wraps vertically on mobile)
+ *  - layers: stacked tiers, top to bottom
+ * Nodes: { label, detail?, accent? }. Use `title` for an accessible name.
+ */
+interface Node {
+  label: string;
+  detail?: string;
+  accent?: boolean;
+}
+interface Props {
+  title: string;
+  kind?: "flow" | "layers";
+  nodes: Node[];
+  caption?: string;
+}
+const { title, kind = "flow", nodes, caption } = Astro.props;
+---
+
+<figure class:list={["adiagram", `adiagram--${kind}`]} role="group" aria-label={title}>
+  <ol class="adiagram__nodes" role="list">
+    {
+      nodes.map((n, i) => (
+        <li class:list={["adiagram__node", { "is-accent": n.accent }]}>
+          <span class="adiagram__label">{n.label}</span>
+          {n.detail && <span class="adiagram__detail">{n.detail}</span>}
+          {i < nodes.length - 1 && <span class="adiagram__arrow" aria-hidden="true" />}
+        </li>
+      ))
+    }
+  </ol>
+  {caption && <figcaption class="adiagram__caption">{caption}</figcaption>}
+</figure>
+
+<style>
+  .adiagram { margin: 2rem 0; }
+  .adiagram__nodes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .adiagram__node {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 0.85rem 1.15rem;
+    margin: 0;
+  }
+  .adiagram__node.is-accent { border-color: var(--accent); border-width: 1.5px; }
+  .adiagram__label { display: block; font-weight: 650; color: var(--fg); }
+  .adiagram__detail { display: block; font-size: var(--t-meta); color: var(--fg-muted); }
+  /* connector: vertical by default */
+  .adiagram__arrow {
+    position: absolute;
+    left: 50%;
+    bottom: -1.5rem;
+    width: 2px;
+    height: 1.5rem;
+    background: var(--line);
+  }
+  .adiagram__arrow::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: -3px;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--fg-muted);
+  }
+
+  @media (min-width: 800px) {
+    .adiagram--flow .adiagram__nodes { flex-direction: row; align-items: stretch; gap: 2rem; }
+    .adiagram--flow .adiagram__node { flex: 1 1 0; }
+    .adiagram--flow .adiagram__arrow {
+      left: auto;
+      right: -2rem;
+      top: 50%;
+      bottom: auto;
+      width: 2rem;
+      height: 2px;
+      transform: translateY(-50%);
+    }
+    .adiagram--flow .adiagram__arrow::after {
+      right: 0;
+      left: auto;
+      top: -3px;
+      bottom: auto;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-left: 5px solid var(--fg-muted);
+      border-right: 0;
+    }
+  }
+  .adiagram__caption {
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    margin-top: 1rem;
+  }
+</style>

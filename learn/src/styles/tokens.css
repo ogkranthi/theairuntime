@@ -5,21 +5,25 @@
    #C2410C (5.2:1). #EA580C stays for imagery (OG art, favicon) where no text
    contrast applies. Never use the Blink mascot orange #FB923C for UI on white. */
 :root {
-  --bg:        #FFFFFF;   /* page background */
-  --bg-raise:  #FAFAF9;   /* cards, callouts (subtle warm off-white) */
-  --bg-inset:  #F5F5F4;   /* pre backgrounds */
-  --line:      #E5E7EB;   /* hairlines */
+  --bg:        #FAFAF9;   /* warm off-white canvas */
+  --bg-raise:  #FFFFFF;   /* cards, panels */
+  --bg-inset:  #F1F1EF;   /* quiet inset surfaces (tables, chips) */
+  --code-bg:   #17171A;   /* dark graphite: actual code/terminal surfaces only */
+  --code-line: #2A2A2E;
+  --code-fg:   #E6E6E9;
+  --line:      #E5E5E1;   /* hairlines on the warm canvas */
   --fg:        #18181B;   /* headlines, body */
-  --fg-muted:  #52525B;   /* captions, meta (7:1 on white, safe at 13px) */
+  --fg-muted:  #52525B;   /* captions, meta (7:1, safe at 13px) */
   --accent:    #C2410C;   /* links, eyebrows, active states, lab markers */
-  --accent-dim:#FDBA74;   /* accent at rest / borders */
+  --accent-dim:#F3C9A8;   /* accent at rest / borders */
   --danger:    #C2410C;   /* failure labs use accent, not red. The brand is two-color. */
 
   --font-mono: "IBM Plex Mono", "Plex Mono Fallback", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-body: "Inter", "Inter Fallback", system-ui, -apple-system, Segoe UI, sans-serif;
 
-  --measure: 68ch;        /* max text width for prose */
-  --radius: 4px;          /* nearly square. This is an engineering doc. */
+  --measure: 68ch;        /* max text width for prose, ~780px at body size */
+  --radius: 10px;         /* editorial field-manual, not terminal */
+  --radius-sm: 6px;
 
   --shell: 1180px;        /* outer page width */
   --pad: 1.5rem;
@@ -75,11 +79,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Editorial headings: Inter, tight and confident. Monospace is reserved for
+   code, labels, metadata and identifiers, never headlines or body. */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-mono);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
+  font-family: var(--font-body);
+  font-weight: 650;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
   color: var(--fg);
   margin: 0 0 0.6em;
   text-wrap: balance;
@@ -127,7 +133,7 @@ code, pre, kbd, samp { font-family: var(--font-mono); }
 
 code {
   font-size: var(--t-code);
-  background: var(--bg-raise);
+  background: var(--bg-inset);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 0.08em 0.32em;
@@ -137,8 +143,9 @@ code {
 }
 
 pre {
-  background: var(--bg-inset) !important;
-  border: 1px solid var(--line);
+  background: var(--code-bg) !important;
+  color: var(--code-fg);
+  border: 1px solid var(--code-line);
   border-radius: var(--radius);
   padding: 1rem 1.15rem;
   overflow-x: auto;
@@ -156,13 +163,8 @@ pre code {
   white-space: pre;
 }
 
-/* Shiki github-light-default renders comments as #6E7781, which is 4.1:1 on
-   the inset code background and misses AA at code size. Darken just that
-   token. The inline-style attribute selector is ugly and correct. */
-pre span[style*="#6E7781" i],
-pre span[style*="#6e7781"] {
-  color: #57606A !important;
-}
+/* Shiki github-dark-default comments (#8B949E) hold AA on the graphite
+   surface; no per-token overrides needed on the dark code theme. */
 
 /* Wide content scrolls inside its own box. The page body never scrolls sideways. */
 .table-scroll {
@@ -207,6 +209,7 @@ th {
   margin: 0 auto;
   padding: 0 var(--pad);
 }
+.shell--wide { max-width: 1400px; }
 .measure { max-width: var(--measure); }
 
 .eyebrow {
@@ -314,7 +317,8 @@ th {
   font-weight: 500;
   letter-spacing: 0.02em;
 }
-.callout pre { background: var(--bg-inset) !important; }
+/* Code inside callouts keeps the graphite surface like everywhere else. */
+.callout pre { background: var(--code-bg) !important; }
 
 /* ---------- learner blocks (v2 module rhythm) ---------- */
 .lesson-h {
@@ -388,7 +392,7 @@ th {
   padding: 0.05rem 0.4rem;
 }
 
-.block-prove { background: var(--bg-inset); }
+.block-prove { background: var(--bg-raise); }
 .block-prove ul { font-size: var(--t-meta); }
 .block-prove > p:last-child {
   font-family: var(--font-mono);
@@ -471,9 +475,9 @@ details.checkpoint > p { padding: 0.85rem 1.15rem; margin: 0; color: var(--fg-mu
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--fg-muted);
-  background: var(--bg-raise);
-  border: 1px solid var(--line);
+  color: #A3A3AB;
+  background: var(--code-bg);
+  border: 1px solid var(--code-line);
   border-radius: var(--radius);
   padding: 0.25rem 0.5rem;
   cursor: pointer;
@@ -482,7 +486,7 @@ details.checkpoint > p { padding: 0.85rem 1.15rem; margin: 0; color: var(--fg-mu
 }
 .code-wrap:hover .code-copy,
 .code-copy:focus-visible { opacity: 1; }
-.code-copy:hover { color: var(--accent); border-color: var(--accent-dim); }
+.code-copy:hover { color: #FDBA74; border-color: #FDBA74; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

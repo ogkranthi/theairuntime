@@ -1,0 +1,141 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { pad } from "../lib/course";
+
+interface Props {
+  entry: CollectionEntry<"course">;
+  href: string;
+  caseTitle?: string;
+  caseHref?: string;
+  repoBase?: string;
+}
+const { entry, href, caseTitle, caseHref, repoBase } = Astro.props;
+const d = entry.data;
+const repoUrl = d.repoPath && repoBase ? `${repoBase}/tree/main/${d.repoPath}` : undefined;
+---
+
+<article class="mcard" data-module-slug={entry.id}>
+  <div class="mcard__num" aria-hidden="true">{pad(d.module)}</div>
+  <div class="mcard__body">
+    <h3 class="mcard__title"><a href={href}>{d.title}</a></h3>
+    {d.hook && <p class="mcard__hook">{d.hook}</p>}
+
+    <div class="mcard__meta">
+      {
+        caseTitle && (
+          <span class="mcard__case">
+            <span class="mcard__key">Case</span>
+            {caseHref ? <a href={caseHref}>{caseTitle}</a> : caseTitle}
+          </span>
+        )
+      }
+      {
+        d.skills.length > 0 && (
+          <span class="mcard__skills">
+            <span class="mcard__key">Skills</span>
+            {d.skills.map((s) => <span class="chip">{s}</span>)}
+          </span>
+        )
+      }
+    </div>
+
+    <div class="mcard__actions">
+      {
+        d.youtube ? (
+          <a class="mcard__act" href={d.youtube} rel="noopener">
+            <span aria-hidden="true">&#9654;</span> Watch
+          </a>
+        ) : (
+          <span class="mcard__soon">Video coming soon</span>
+        )
+      }
+      <a class="mcard__act mcard__act--primary" href={href}>Read lesson</a>
+      {
+        repoUrl && (
+          <a class="mcard__act" href={repoUrl} rel="noopener">
+            <span aria-hidden="true">&lt;/&gt;</span> Explore implementation
+          </a>
+        )
+      }
+      {
+        d.lab && d.labNumber !== undefined && (
+          <span class="mcard__lab">
+            Optional lab {pad(d.labNumber)}: {d.lab}
+          </span>
+        )
+      }
+    </div>
+  </div>
+</article>
+
+<style>
+  .mcard {
+    display: grid;
+    grid-template-columns: 3.25rem minmax(0, 1fr);
+    gap: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.35rem 1.5rem;
+  }
+  .mcard__num {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+    padding-top: 0.2rem;
+  }
+  .mcard__title { font-size: var(--t-h3); margin: 0 0 0.25rem; }
+  .mcard__title a { color: var(--fg); text-decoration: none; }
+  .mcard__title a:hover { color: var(--accent); }
+  .mcard__hook { color: var(--fg-muted); margin: 0 0 0.75rem; max-width: 58ch; }
+  .mcard__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+    margin-bottom: 0.85rem;
+    font-size: var(--t-meta);
+    align-items: baseline;
+  }
+  .mcard__key {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-right: 0.5rem;
+  }
+  .mcard__case a { color: var(--fg); }
+  .mcard__skills { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; align-items: baseline; }
+  .chip {
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+    background: var(--bg-inset);
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+  }
+  .mcard__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.35rem;
+    align-items: baseline;
+    font-size: var(--t-meta);
+  }
+  .mcard__act { font-family: var(--font-mono); white-space: nowrap; }
+  .mcard__act--primary { font-weight: 600; }
+  .mcard__soon {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+  }
+  .mcard__lab {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+  }
+  @media (max-width: 560px) {
+    .mcard { grid-template-columns: minmax(0, 1fr); }
+    .mcard__num { padding-top: 0; }
+  }
+</style>

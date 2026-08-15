@@ -4,6 +4,12 @@ title: "Security: The Hostile Vendor"
 duration: "50-60 min"
 goal: "Bound what untrusted content can make the agent do: tool permissions, SSRF controls, prompt-injection boundaries, and tenant isolation."
 question: "What can untrusted content make the agent do?"
+hook: "The vendor's website is talking to your agent."
+scenario: "A page the data agent reads contains hidden instructions and a link to your cloud metadata endpoint. The model cannot tell; the runtime must."
+caseStudy: enterprise-data-agent
+skills: [Permissions, SSRF, Injection boundaries]
+technologies: [Python]
+repoPath: "10_guards.py"
 labNumber: 10
 invariant: "I9: untrusted content cannot widen the agent's permissions, targets, or claims."
 lab: "The Hostile Vendor"

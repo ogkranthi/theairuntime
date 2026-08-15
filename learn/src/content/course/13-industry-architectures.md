@@ -4,6 +4,9 @@ title: "Industry Architectures & Case Studies"
 duration: "45-60 min"
 goal: "Recognise the same six primitives you built inside every credible production long-running agent, and spot the marketing that hides their absence."
 question: "How do real systems instantiate the same primitives?"
+hook: "Every credible system has the same skeleton."
+scenario: "Coding agents, claims pipelines, incident responders, data agents: strip the marketing and the same six primitives appear, or the incident report explains why not."
+skills: [Architecture tradeoffs, Case analysis]
 deliverable: "case_study_extraction.md + re-classified exercise_00"
 status: published
 ---

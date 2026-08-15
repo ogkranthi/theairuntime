@@ -1,0 +1,94 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import CtaBlock from "../../components/CtaBlock.astro";
+import { COURSE_BASE, MODULE_SLUGS, pad } from "../../lib/course";
+
+const resources = await getCollection("resources");
+const categories = [
+  "Frameworks",
+  "Agent runtimes",
+  "Evaluation",
+  "Observability",
+  "Context/RAG",
+  "Coding agents",
+  "Distributed systems",
+  "Deployment",
+] as const;
+const groups = categories
+  .map((c) => ({ category: c, items: resources.filter((r) => r.data.category === c) }))
+  .filter((g) => g.items.length > 0);
+---
+
+<Base
+  title="Resources | The AI Runtime, FDE Engineering"
+  description="Curated resources for production AI engineering: official docs first, every entry annotated with why AIR recommends it and where the curriculum uses it."
+  pageSlug="resources"
+>
+  <div class="shell">
+    <section class="section">
+      <p class="eyebrow">RESOURCES</p>
+      <h1>Curated, not collected</h1>
+      <p class="muted measure">
+        When another source teaches something better than we could, we send you there. Every
+        entry says why it earns your time, and official documentation is preferred wherever a
+        framework is being taught. No link dumps.
+      </p>
+    </section>
+
+    {
+      groups.map((g) => (
+        <section class="section">
+          <h2>{g.category}</h2>
+          <ul class="reslist">
+            {g.items.map((r) => (
+              <li class="res">
+                <div class="res__head">
+                  <a class="res__title" href={r.data.url} rel="noopener">
+                    {r.data.title} <span aria-hidden="true">&#8599;</span>
+                  </a>
+                  <span class="res__org">{r.data.organization} · {r.data.type}</span>
+                </div>
+                <p class="res__why">{r.data.why}</p>
+                <p class="res__meta">
+                  {r.data.skills.map((s) => <span class="chip">{s}</span>)}
+                  {r.data.module !== undefined && (
+                    <a class="res__module" href={`${COURSE_BASE}/${MODULE_SLUGS[r.data.module]}/`}>
+                      Module {pad(r.data.module)}
+                    </a>
+                  )}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="resources" />
+</Base>
+
+<style>
+  .reslist { list-style: none; margin: 1rem 0 0; padding: 0; border-top: 1px solid var(--line); }
+  .res { padding: 1.1rem 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .res__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    align-items: baseline;
+    margin-bottom: 0.3rem;
+  }
+  .res__title { font-weight: 600; }
+  .res__org { font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); }
+  .res__why { font-size: var(--t-meta); color: var(--fg-muted); margin: 0 0 0.5rem; max-width: 72ch; }
+  .res__meta { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; align-items: baseline; margin: 0; }
+  .chip {
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+    background: var(--bg-inset);
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+  }
+  .res__module { font-family: var(--font-mono); font-size: 0.78rem; }
+</style>

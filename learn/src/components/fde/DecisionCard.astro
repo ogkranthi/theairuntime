@@ -1,0 +1,65 @@
+---
+/**
+ * The FDE learning centerpiece: a real engineering decision with the options
+ * that were on the table, what was chosen, why, and what it costs.
+ */
+interface Props {
+  decision: string;
+  options: string[];
+  chosen: string;
+  why: string;
+  tradeoffs: string;
+}
+const { decision, options, chosen, why, tradeoffs } = Astro.props;
+---
+
+<aside class="decision">
+  <p class="decision__tag">DECISION</p>
+  <p class="decision__q">{decision}</p>
+  <dl>
+    <div>
+      <dt>Options considered</dt>
+      <dd>
+        <ul>
+          {options.map((o) => <li class:list={{ "is-chosen": o === chosen }}>{o}{o === chosen && <span class="decision__pick"> &larr; chosen</span>}</li>)}
+        </ul>
+      </dd>
+    </div>
+    <div><dt>Why</dt><dd>{why}</dd></div>
+    <div><dt>Tradeoffs</dt><dd>{tradeoffs}</dd></div>
+  </dl>
+</aside>
+
+<style>
+  .decision {
+    border: 1px solid var(--accent-dim);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0;
+  }
+  .decision__tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+  .decision__q { font-weight: 650; color: var(--fg); margin: 0 0 0.85rem; }
+  .decision dl { margin: 0; }
+  .decision dl > div { margin-bottom: 0.7rem; }
+  .decision dl > div:last-child { margin-bottom: 0; }
+  .decision dt {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 0.15rem;
+  }
+  .decision dd { margin: 0; font-size: var(--t-meta); color: var(--fg); }
+  .decision ul { margin: 0; padding-left: 1.1rem; }
+  .decision li { margin-bottom: 0.15rem; color: var(--fg-muted); }
+  .decision li.is-chosen { color: var(--fg); font-weight: 600; }
+  .decision__pick { color: var(--accent); font-family: var(--font-mono); font-size: 0.72rem; }
+</style>

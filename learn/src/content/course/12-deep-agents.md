@@ -4,6 +4,12 @@ title: "The Deep Agents Bridge"
 duration: "60-75 min"
 goal: "Rebuild the agent on a higher-level harness, verify every invariant still holds, and learn to tell framework features from guarantees."
 question: "What does a production harness add above the runtime?"
+hook: "The framework says it handles all this."
+scenario: "A harness rebuilds your agent in a fifth of the code. Somewhere in the missing four fifths were your idempotency keys and your leases."
+caseStudy: repository-migration-agent
+skills: [Harness evaluation, Portability]
+technologies: [Python, Deep Agents, LangGraph]
+repoPath: "12_deepagents.py"
 labNumber: 12
 invariant: "I11: the harness can be replaced without losing a single runtime guarantee."
 lab: "Replace the Harness"

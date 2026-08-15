@@ -1,0 +1,133 @@
+---
+interface Props {
+  number: string;
+  title: string;
+  description: string;
+  status: "live" | "coming-next" | "planned";
+  href?: string;
+  caseStudyTags?: string[];
+  skills?: string[];
+  stats?: { modules: number; cases: number; labs: number; hours: string };
+}
+const { number, title, description, status, href, caseStudyTags = [], skills = [], stats } = Astro.props;
+const statusLabel = status === "live" ? "LIVE" : status === "coming-next" ? "COMING NEXT" : "PLANNED";
+---
+
+<article class:list={["ccard", `ccard--${status}`]}>
+  <div class="ccard__top">
+    <span class="ccard__num">COURSE {number}</span>
+    <span class:list={["ccard__status", { "is-live": status === "live" }]}>{statusLabel}</span>
+  </div>
+  <h3 class="ccard__title">
+    {href ? <a href={href}>{title}</a> : title}
+  </h3>
+  <p class="ccard__desc">{description}</p>
+
+  {
+    caseStudyTags.length > 0 && (
+      <p class="ccard__row">
+        <span class="ccard__key">Case studies</span>
+        <span class="ccard__chips">{caseStudyTags.map((c) => <span class="chip">{c}</span>)}</span>
+      </p>
+    )
+  }
+  {
+    skills.length > 0 && (
+      <p class="ccard__row">
+        <span class="ccard__key">Skills</span>
+        <span class="ccard__chips">{skills.map((s) => <span class="chip">{s}</span>)}</span>
+      </p>
+    )
+  }
+  {
+    stats && (
+      <p class="ccard__stats">
+        {stats.modules} modules · {stats.cases} industry cases · {stats.labs} optional labs · {stats.hours}
+      </p>
+    )
+  }
+  {
+    href && (
+      <div class="ccard__actions">
+        <a class="btn btn--solid" href={href}>Start course</a>
+      </div>
+    )
+  }
+</article>
+
+<style>
+  .ccard {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.75rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .ccard--live { border-color: var(--accent-dim); }
+  .ccard--planned { border-style: dashed; background: transparent; }
+  .ccard__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .ccard__num {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+  }
+  .ccard__status {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--fg-muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+  }
+  .ccard__status.is-live {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .ccard__title { font-size: var(--t-h3); margin: 0 0 0.4rem; }
+  .ccard__title a { color: var(--fg); text-decoration: none; }
+  .ccard__title a:hover { color: var(--accent); }
+  .ccard__desc { color: var(--fg-muted); margin: 0 0 0.75rem; }
+  .ccard--planned .ccard__title { color: var(--fg-muted); }
+  .ccard__row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+    margin: 0 0 0.5rem;
+    flex-wrap: wrap;
+  }
+  .ccard__key {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    flex: none;
+  }
+  .ccard__chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .chip {
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    background: var(--bg-inset);
+    border-radius: 999px;
+    padding: 0.12rem 0.6rem;
+  }
+  .ccard__stats {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    margin: 0.25rem 0 0;
+  }
+  .ccard__actions { margin-top: auto; padding-top: 1rem; }
+</style>

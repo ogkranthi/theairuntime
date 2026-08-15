@@ -4,6 +4,10 @@ title: "Long-Running Agents: The Mental Model"
 duration: "30-40 min"
 goal: "Understand what makes long-running agent execution fundamentally different from an ordinary LLM request."
 question: "When is a long-running agent justified?"
+hook: "When is an agent worth this much engineering?"
+scenario: "A team asks for an agent. Half their use cases are one reliable model call wearing a costume. Telling them which half is the first thing an FDE does."
+skills: [AI suitability, Architecture]
+technologies: [Python]
 deliverable: "exercise_00_classification.md"
 status: published
 ---

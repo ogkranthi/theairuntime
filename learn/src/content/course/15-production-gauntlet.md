@@ -4,6 +4,12 @@ title: "Production Failure Gauntlet"
 duration: "90-120 min"
 goal: "Run every failure at once against your deployed agent, measure it, and publish a reliability report anyone can reproduce."
 question: "Does it survive multiple failures at once?"
+hook: "Everything fails at once. That is the exam."
+scenario: "Timeouts, kills, duplicate requests, an injected instruction, a budget squeeze, all in one run, against your deployed system. Reality does not schedule its failures."
+caseStudy: claims-processing-agent
+skills: [Reliability, Chaos testing, Auditability]
+technologies: [Python]
+repoPath: "chaos.py"
 labNumber: 14
 invariant: "All twelve invariants hold at once, under combined fault load."
 lab: "All of them, at once"

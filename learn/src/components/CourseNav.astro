@@ -6,16 +6,16 @@ interface Props {
 const { active } = Astro.props;
 
 const tabs = [
-  { key: "overview", href: "/course-001/", label: "Overview" },
-  { key: "labs", href: "/course-001/labs/", label: "Labs" },
-  { key: "stack", href: "/course-001/stack/", label: "Stack" },
-  { key: "sources", href: "/course-001/sources/", label: "Sources" },
+  { key: "overview", href: "/courses/long-running-agents/", label: "Overview" },
+  { key: "labs", href: "/courses/long-running-agents/labs/", label: "Labs" },
+  { key: "stack", href: "/courses/long-running-agents/stack/", label: "Technologies" },
+  { key: "sources", href: "/courses/long-running-agents/sources/", label: "Sources" },
 ];
 ---
 
 <nav class="coursenav" aria-label="Course 001">
   <div class="shell coursenav__inner">
-    <a class="coursenav__chip" href="/course-001/">COURSE 001</a>
+    <a class="coursenav__chip" href="/courses/long-running-agents/">COURSE 001</a>
     {
       tabs.map((t) => (
         <a

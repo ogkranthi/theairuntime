@@ -1,0 +1,66 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import CtaBlock from "../../components/CtaBlock.astro";
+import CourseCard from "../../components/CourseCard.astro";
+
+const courses = (await getCollection("courses")).sort((a, b) =>
+  a.data.number.localeCompare(b.data.number),
+);
+---
+
+<Base
+  title="Courses | The AI Runtime, FDE Engineering"
+  description="The AIR course catalog: production AI engineering taught through real customer problems, one course per discipline. Course 001 is live; the rest are shaped by what its graduates hit next."
+  pageSlug="courses"
+>
+  <div class="shell">
+    <section class="section">
+      <p class="eyebrow">COURSES</p>
+      <h1>The catalog</h1>
+      <p class="muted measure">
+        Each course teaches one discipline of forward-deployed AI engineering through real
+        customer problems. Everything is free, watchable and readable end to end; repos and
+        labs are optional depth, never a gate.
+      </p>
+    </section>
+
+    <section class="section">
+      <div class="grid">
+        {
+          courses.map((c) => (
+            <CourseCard
+              number={c.data.number}
+              title={c.data.title}
+              description={c.data.description}
+              status={c.data.status}
+              href={c.data.slug ? `/courses/${c.data.slug}/` : undefined}
+              caseStudyTags={c.data.caseStudyTags}
+              skills={c.data.skills}
+              stats={c.data.stats}
+            />
+          ))
+        }
+      </div>
+      <p class="muted">
+        The sequence is deliberate: what practitioners hit after Course 001 shapes Course 002,
+        and so on. Finishing a course and telling us where it hurt is how the catalog grows.
+      </p>
+    </section>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="courses" />
+</Base>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .grid > :global(article:first-child) { grid-column: 1 / -1; }
+  @media (min-width: 860px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>

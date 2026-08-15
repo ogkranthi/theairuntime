@@ -1,0 +1,48 @@
+---
+interface Props {
+  industry: string;
+  samePrimitive: string;
+  caseHref?: string;
+  caseTitle?: string;
+}
+const { industry, samePrimitive, caseHref, caseTitle } = Astro.props;
+---
+
+<aside class="infield">
+  <p class="infield__tag">IN THE FIELD · {industry.toUpperCase()}</p>
+  <div class="infield__body"><slot /></div>
+  <p class="infield__prim"><span>Same primitive</span> {samePrimitive}</p>
+  {caseHref && <p class="infield__link"><a href={caseHref}>Case study: {caseTitle ?? industry} &rarr;</a></p>}
+</aside>
+
+<style>
+  .infield {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-inset);
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0;
+  }
+  .infield__tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    color: var(--fg-muted);
+    margin: 0 0 0.75rem;
+  }
+  .infield__body :global(p:last-child) { margin-bottom: 0; }
+  .infield__prim {
+    margin: 0.85rem 0 0;
+    font-size: var(--t-meta);
+    color: var(--fg);
+  }
+  .infield__prim span {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-right: 0.5rem;
+  }
+  .infield__link { margin: 0.5rem 0 0; font-size: var(--t-meta); }
+</style>

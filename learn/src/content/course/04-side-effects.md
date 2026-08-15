@@ -4,6 +4,12 @@ title: "Idempotency & External Side Effects"
 duration: "50-60 min"
 goal: "Learn the concept most agent tutorials skip: a checkpoint does not guarantee an external operation happened exactly once."
 question: "How do we survive ambiguous external writes?"
+hook: "The customer got two refunds. The agent swears it sent one."
+scenario: "The account agent issues a refund, the API times out after the money moves, and the retry issues it again. Nobody notices until finance does."
+caseStudy: customer-account-agent
+skills: [Idempotency, Side effects]
+technologies: [Python, PostgreSQL]
+repoPath: "04_publish.py"
 labNumber: 4
 invariant: "I3: one logical publish produces at most one external report."
 lab: "The Duplicate Report"
