@@ -40,7 +40,7 @@ export const CHANNELS = {
   substack: "https://theairuntime.com/subscribe",
   youtube: "https://www.youtube.com/@theairuntime",
   podcast: "https://theairuntime.com/s/fde-talks",
-  repo: "https://github.com/ogkranthi/air-course-001",
+  repo: "https://github.com/ogkranthi/air-course-long",
   publication: "https://theairuntime.com",
   lab: "https://lab.theairuntime.com",
   events: "https://events.theairuntime.com",
