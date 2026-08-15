@@ -3,6 +3,9 @@ module: 3
 title: "Durable Execution & Checkpointing"
 duration: "60-75 min"
 goal: "Make the agent survive application failure using LangGraph with a PostgreSQL checkpointer."
+question: "What is replay, and what actually resumes?"
+labNumber: 3
+invariant: "I2: a crash never loses committed progress, and replay never corrupts state."
 lab: "Pull the Plug"
 deliverable: "03_graph.py + checkpoint schema migration"
 status: published
@@ -110,7 +113,7 @@ with PostgresSaver.from_conn_string(DATABASE_URL) as checkpointer:
 
 The **run ID is the thread ID**. That is the durable identity of the work. Store it in your own `runs` table too: LangGraph's tables are its; your operational tables are yours.
 
-Use Neon for the database from the start so nothing changes at deploy time in Module 11.
+Use Neon for the database from the start so nothing changes at deploy time in Module 14.
 
 <div class="callout failure-lab">
 
@@ -166,3 +169,14 @@ That leads directly to Module 04.
 **Production takeaway:** the graph is the durable definition of the work; the process is disposable. Thread ID = run identity.
 
 </div>
+
+<div class="callout note">
+
+**What this does not solve.** Checkpointing preserves state. It does not make external side effects exactly-once (Module 04), and it does not schedule abandoned work onto a new worker (Module 05). A checkpointed run whose worker died is safe, and going nowhere.
+
+</div>
+
+## Primary sources
+
+- [LangGraph persistence](https://docs.langchain.com/oss/python/langgraph/persistence): the authoritative answer to what one checkpoint contains and which tables the Postgres saver writes. Read it next to your own checkpointer so the comparison is concrete.
+- [LangGraph graph API on re-execution](https://docs.langchain.com/oss/python/langgraph/graph-api): why the docs themselves tell you to keep node logic idempotent, which is the bridge into Module 04.

@@ -1,14 +1,17 @@
 ---
-module: 6
+module: 7
 title: "Human-in-the-Loop & Long Waits"
 duration: "50-60 min"
 goal: "Show how a workflow can stop for hours without keeping a worker occupied, and resume with full state."
+question: "How do runs wait for people without holding compute?"
+labNumber: 7
+invariant: "I6: a waiting run holds no compute and survives restarts."
 lab: "The Three-Hour Approval"
 deliverable: "06_approval.py + /runs/{id}/review endpoints"
 status: published
 ---
 
-## Lesson 06.1: Our approval point
+## Lesson 07.1: Our approval point
 
 Before publishing:
 
@@ -28,7 +31,7 @@ Approve / Reject / Request more research
 Continue
 ```
 
-## Lesson 06.2: Interrupt execution
+## Lesson 07.2: Interrupt execution
 
 LangGraph's `interrupt()` persists graph state and stops execution until an external `Command(resume=...)` continues the run, on the same thread ID, from any process, at any later time.
 
@@ -50,7 +53,7 @@ The key insight:
 
 The server does not need a Python function sleeping for three hours. Nothing is running. A row exists that says "awaiting approval." When the human acts, a fresh process resumes it.
 
-## Lesson 06.3: Human decisions
+## Lesson 07.3: Human decisions
 
 Support three:
 
@@ -68,7 +71,7 @@ review → needs_more_information → research → verify → review
 
 Bound the loop (`MAX_REVIEW_ROUNDS = 3`). Humans can be indecisive too.
 
-## Lesson 06.4: Approval payload
+## Lesson 07.4: Approval payload
 
 Don't show:
 
@@ -93,7 +96,7 @@ Estimated completeness: 83%
 
 Human review needs evidence, not a yes/no. If the reviewer cannot see *why* the agent believes an item is verified, the review is theatre.
 
-## Lesson 06.5: API shape
+## Lesson 07.5: API shape
 
 ```text
 POST /runs                       → start, returns run_id
@@ -104,7 +107,7 @@ POST /runs/{id}/review           → {action, note} → resumes graph
 
 <div class="callout failure-lab">
 
-**FAILURE LAB 06: The Three-Hour Approval**
+**FAILURE LAB 07: The Three-Hour Approval**
 
 Run reaches approval. Stop the application. Restart it. Go get lunch.
 
@@ -127,3 +130,8 @@ Then: request more research, kill during the second research pass, resume, appro
 **Production takeaway:** long-running agent ≠ long-running process. A long-running business execution can consist of many short-lived compute sessions connected by durable state.
 
 </div>
+
+## Primary sources
+
+- [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts): the exact semantics of `interrupt()` and `Command(resume=...)`, including what is replayed on resume. Worth reading before the lab, because the replay behavior is the part that surprises people.
+- [Temporal's human-in-the-loop example](https://docs.temporal.io/ai-cookbook/human-in-the-loop-python): the same durable-wait pattern in a workflow engine, useful to see that "waiting is state" is an industry invariant and not a LangGraph quirk.

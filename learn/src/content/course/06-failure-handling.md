@@ -1,14 +1,17 @@
 ---
-module: 5
+module: 6
 title: "Failure Handling, Retries & Recovery"
 duration: "60 min"
 goal: "Stop treating every exception as retry(3). Build a failure taxonomy and route each class differently."
+question: "Which failures retry, reroute, pause, or stop?"
+labNumber: 6
+invariant: "I5: every failure class gets its designed response, never a blind retry."
 lab: "The Failure Matrix"
 deliverable: "failure_policy.py"
 status: published
 ---
 
-## Lesson 05.1: Failure taxonomy
+## Lesson 06.1: Failure taxonomy
 
 Five categories. Memorise them.
 
@@ -22,7 +25,7 @@ UNEXPECTED          bug · corruption · unknown exception
 
 LangGraph's own guidance distinguishes transient, model-recoverable, user-fixable, and unexpected failures with different handling strategies. Read it, then build yours.
 
-## Lesson 05.2: Retry transient failures
+## Lesson 06.2: Retry transient failures
 
 ```python
 from langgraph.types import RetryPolicy
@@ -36,7 +39,7 @@ builder.add_node(
 
 Apply to: page fetches, model requests, temporary DB/network operations. Nowhere else.
 
-## Lesson 05.3: Don't retry everything
+## Lesson 06.3: Don't retry everything
 
 ```text
 HTTP 401
@@ -49,12 +52,12 @@ Retrying 50 times will not produce credentials. Route instead:
  ↓
 status = requires_user_action
  ↓
-interrupt (Module 06)
+interrupt (Module 07)
 ```
 
 Same for 404 on a page: mark it `unavailable`, record it in `errors`, and let the planner choose a different page. The run continues; the item may end as `unknown`, which is a *valid, honest* outcome for the vendor brief.
 
-## Lesson 05.4: Semantic failure
+## Lesson 06.4: Semantic failure
 
 The most important distinction:
 
@@ -72,7 +75,7 @@ extract_finding → "no pricing information on this page"
 select_next_task (with visited_urls + reason)
 ```
 
-## Lesson 05.5: Budgets and circuit breakers
+## Lesson 06.5: Budgets and circuit breakers
 
 Every run gets:
 
@@ -87,7 +90,7 @@ Exceeding any → `status = budget_exceeded`, run stops cleanly with a partial r
 
 <div class="callout failure-lab">
 
-**FAILURE LAB 05: The Failure Matrix**
+**FAILURE LAB 06: The Failure Matrix**
 
 Fixture profile `matrix`:
 

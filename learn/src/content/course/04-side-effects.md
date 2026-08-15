@@ -3,6 +3,9 @@ module: 4
 title: "Idempotency & External Side Effects"
 duration: "50-60 min"
 goal: "Learn the concept most agent tutorials skip: a checkpoint does not guarantee an external operation happened exactly once."
+question: "How do we survive ambiguous external writes?"
+labNumber: 4
+invariant: "I3: one logical publish produces at most one external report."
 lab: "The Duplicate Report"
 deliverable: "04_publish.py + published_reports migration"
 status: published

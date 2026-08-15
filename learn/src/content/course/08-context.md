@@ -1,8 +1,11 @@
 ---
-module: 7
+module: 8
 title: "Context Engineering Across Long Runs"
 duration: "60-75 min"
 goal: "Treat execution state and model context as separate engineering surfaces; keep the model's working set small, evidenced, and reconstructible."
+question: "How do we prevent context accumulation and drift?"
+labNumber: 8
+invariant: "I7: model context is rebuilt from durable artifacts, never accumulated."
 lab: "Context Rot"
 deliverable: "07_context.py + compaction A/B log"
 status: published
@@ -10,7 +13,7 @@ status: published
 
 Anthropic's published work on long-running agents found that compaction alone was not sufficient for complex extended work; structured progress artifacts and clean handoffs materially changed agent behaviour. Their context-engineering guidance names compaction, structured note-taking, and multi-agent context separation as the working techniques. This module makes you build all three, small.
 
-## Lesson 07.1: The naive approach
+## Lesson 08.1: The naive approach
 
 Every fetched page goes into `messages[]`. After many pages:
 
@@ -30,7 +33,7 @@ previous reasoning
 
 The model sees everything. That is not context engineering. That is **accumulation**. Quality falls long before you hit a token limit: the model starts repeating pages, contradicting earlier findings, and declaring completion early.
 
-## Lesson 07.2: Separate three things
+## Lesson 08.2: Separate three things
 
 ```text
 RAW MATERIAL        Fetched pages          → object store / DB, addressable by URL + hash
@@ -38,7 +41,7 @@ DURABLE KNOWLEDGE   Evidence + findings    → state (small, structured)
 ACTIVE CONTEXT      What the model needs   → built per decision, discarded after
 ```
 
-## Lesson 07.3: Evidence store
+## Lesson 08.3: Evidence store
 
 Instead of carrying entire pages, carry claims with pointers:
 
@@ -55,7 +58,7 @@ Instead of carrying entire pages, carry claims with pointers:
 
 The model can retrieve raw content again when necessary, by URL and hash, deterministically. Raw pages are stored once (`pages` table: `url, hash, fetched_at, body`), never in the prompt twice.
 
-## Lesson 07.4: Progress artifact
+## Lesson 08.4: Progress artifact
 
 Maintain a small, always-current handoff note:
 
@@ -72,7 +75,7 @@ Maintain a small, always-current handoff note:
 
 Progress becomes inspectable, by the model at the start of every decision, by a human in the dashboard, and by a *new* worker picking up the run after a crash. This is the "structured note" that survives when the message history does not.
 
-## Lesson 07.5: Build active context per decision
+## Lesson 08.5: Build active context per decision
 
 For `select_next_task`, the prompt is assembled from:
 
@@ -85,7 +88,7 @@ For `select_next_task`, the prompt is assembled from:
 
 Not: the whole message history. `messages[]` becomes a per-node scratchpad, reset at node boundaries. The durable memory is the state, not the transcript.
 
-## Lesson 07.6: Compaction and sub-agents
+## Lesson 08.6: Compaction and sub-agents
 
 When a node genuinely needs many pages (e.g. a security deep-dive across five docs), spawn a **sub-agent with a clean context** that returns only a finding + evidence pointers. The parent never sees the raw pages.
 
@@ -93,7 +96,7 @@ When a single conversation must be long (the review loop with a human), **compac
 
 <div class="callout failure-lab">
 
-**FAILURE LAB 07: Context Rot**
+**FAILURE LAB 08: Context Rot**
 
 Fixture profile `sprawl`: a vendor with 40 pages, several near-duplicates, and one contradiction (pricing page says "free tier", docs page says "no free tier").
 
@@ -123,3 +126,8 @@ Expected: A re-fetches, ships the contradiction, and stops early. B does not. Re
 **Production takeaway:** the model's context is a *view* over your state, rebuilt per decision. If you can't reconstruct it from the database, you don't control it.
 
 </div>
+
+## Primary sources
+
+- [Anthropic, effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents): the published basis for this module's claim that compaction alone is not sufficient and structured notes change behavior.
+- [Deep Agents context engineering](https://docs.langchain.com/oss/python/deepagents/context-engineering): the same three techniques as framework features; you will meet them as primitives in Module 12.

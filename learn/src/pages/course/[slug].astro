@@ -17,12 +17,17 @@ const { prev, next } = neighbors(modules, entry);
 const { Content, headings } = await render(entry);
 
 const n = entry.data.module;
+const labN = entry.data.labNumber;
 const metaLine = [
   entry.data.duration,
-  entry.data.lab ? `Failure Lab ${pad(n)}: ${entry.data.lab}` : null,
+  entry.data.lab && labN !== undefined ? `Failure Lab ${pad(labN)}: ${entry.data.lab}` : null,
 ]
   .filter(Boolean)
   .join(" · ");
+
+// The recognizable rhythm of every module. Rendered as a quiet strip, not a
+// component per stage; the stages live in the prose.
+const RHYTHM = ["BUILD", "BREAK", "DIAGNOSE", "FIX", "PROVE"];
 
 // The reach-out line renders exactly once per page. Module 12 already carries
 // it in its closing prose, so the CTA block stands down there.
@@ -39,16 +44,34 @@ const bodyHasReachOut = entry.body?.includes(REACH_OUT.slice(0, 40)) ?? false;
     <div class="module__main">
       <header class="module__header">
         <p class="eyebrow">MODULE {pad(n)}</p>
+        <p class="module__question">{entry.data.question}</p>
         <h1>{entry.data.title}</h1>
         {entry.data.subtitle && <p class="module__subtitle">{entry.data.subtitle}</p>}
         <p class="meta">{metaLine}</p>
         <p class="module__goal"><strong>Goal:</strong> {entry.data.goal}</p>
 
+        {
+          entry.data.invariant && (
+            <p class="module__invariant">
+              <span class="module__invariant-tag">INVARIANT</span> {entry.data.invariant}
+            </p>
+          )
+        }
+
+        <p class="module__rhythm" aria-label="Module rhythm">
+          {RHYTHM.map((stage, i) => (
+            <Fragment>
+              {i > 0 && <span aria-hidden="true" class="module__rhythm-sep">&rarr;</span>}
+              <span>{stage}</span>
+            </Fragment>
+          ))}
+        </p>
+
         <div class="module__links">
           {
-            entry.data.youtube && (
+            entry.data.youtube && labN !== undefined && (
               <a class="btn" href={utm(entry.data.youtube, entry.id, "watch")} rel="noopener">
-                <span aria-hidden="true">&#9654;</span> Watch Failure Lab {pad(n)}
+                <span aria-hidden="true">&#9654;</span> Watch Failure Lab {pad(labN)}
               </a>
             )
           }
@@ -131,6 +154,40 @@ const bodyHasReachOut = entry.body?.includes(REACH_OUT.slice(0, 40)) ?? false;
 
   .module__header { margin-bottom: 2.5rem; }
   .module__header h1 { margin-bottom: 0.5rem; }
+  .module__question {
+    font-family: var(--font-mono);
+    font-size: var(--t-h3);
+    color: var(--fg);
+    margin: 0 0 1rem;
+    max-width: 40ch;
+    text-wrap: balance;
+  }
+  .module__invariant {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    border: 1px solid var(--accent-dim);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.75rem;
+    margin: 0 0 1rem;
+    max-width: fit-content;
+  }
+  .module__invariant-tag {
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-right: 0.5rem;
+  }
+  .module__rhythm {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--fg-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 1.5rem;
+  }
+  .module__rhythm-sep { color: var(--accent); }
   .module__subtitle {
     font-size: var(--t-h3);
     color: var(--fg-muted);

@@ -1,15 +1,19 @@
-/* learn.theairuntime.com design tokens. Locked brand, do not deviate.
-   Black and warm orange only. No gradients, no third color, no shadows. */
+/* learn.theairuntime.com design tokens. Light theme per BRAND.md: white plus
+   warm orange only. No gradients, no third color, no shadows.
+   Contrast note: the brand UI orange #EA580C is 3.55:1 on white, which fails
+   AA for the small mono text this design leans on, so text-level accent uses
+   #C2410C (5.2:1). #EA580C stays for imagery (OG art, favicon) where no text
+   contrast applies. Never use the Blink mascot orange #FB923C for UI on white. */
 :root {
-  --bg:        #0A0A0B;   /* page background */
-  --bg-raise:  #111113;   /* cards, code blocks */
-  --bg-inset:  #060607;   /* pre backgrounds */
-  --line:      #232326;   /* hairlines */
-  --fg:        #ECECEC;   /* body text */
-  --fg-muted:  #9A9AA0;   /* captions, meta */
-  --accent:    #FB923C;   /* Blink orange, links, eyebrows, active states, lab markers */
-  --accent-dim:#7C4A21;   /* accent at rest / borders */
-  --danger:    #FB923C;   /* failure labs use accent, not red. The brand is two-color. */
+  --bg:        #FFFFFF;   /* page background */
+  --bg-raise:  #FAFAF9;   /* cards, callouts (subtle warm off-white) */
+  --bg-inset:  #F5F5F4;   /* pre backgrounds */
+  --line:      #E5E7EB;   /* hairlines */
+  --fg:        #18181B;   /* headlines, body */
+  --fg-muted:  #52525B;   /* captions, meta (7:1 on white, safe at 13px) */
+  --accent:    #C2410C;   /* links, eyebrows, active states, lab markers */
+  --accent-dim:#FDBA74;   /* accent at rest / borders */
+  --danger:    #C2410C;   /* failure labs use accent, not red. The brand is two-color. */
 
   --font-mono: "IBM Plex Mono", "Plex Mono Fallback", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-body: "Inter", "Inter Fallback", system-ui, -apple-system, Segoe UI, sans-serif;
@@ -53,7 +57,7 @@
 
 html {
   background: var(--bg);
-  color-scheme: dark;
+  color-scheme: light;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
@@ -91,6 +95,17 @@ strong { font-weight: 600; color: var(--fg); }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
 
+/* Links inside running text must not rely on color alone. Structural links
+   (nav, tables, cards, TOC) keep the quiet default and underline on hover. */
+p a, blockquote a, li a, dd a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--accent-dim);
+}
+p a:hover, blockquote a:hover, li a:hover, dd a:hover {
+  text-decoration-color: var(--accent);
+}
+
 ul, ol { margin: 0 0 1.15em; padding-left: 1.25rem; }
 li { margin: 0 0 0.4em; }
 li::marker { color: var(--accent-dim); }
@@ -116,6 +131,9 @@ code {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 0.08em 0.32em;
+  /* Inline code carries long URLs and identifiers; let them break rather than
+     widen the page on narrow screens. pre code below restores no-wrap. */
+  overflow-wrap: anywhere;
 }
 
 pre {
@@ -136,6 +154,14 @@ pre code {
   padding: 0;
   font-size: inherit;
   white-space: pre;
+}
+
+/* Shiki github-light-default renders comments as #6E7781, which is 4.1:1 on
+   the inset code background and misses AA at code size. Darken just that
+   token. The inline-style attribute selector is ugly and correct. */
+pre span[style*="#6E7781" i],
+pre span[style*="#6e7781"] {
+  color: #57606A !important;
 }
 
 /* Wide content scrolls inside its own box. The page body never scrolls sideways. */

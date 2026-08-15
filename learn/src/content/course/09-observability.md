@@ -1,14 +1,17 @@
 ---
-module: 8
+module: 9
 title: "Observability & Run UX"
 duration: "45-60 min"
 goal: "Make every run explainable to a human in under a minute, from the dashboard, from the trace, and from the database."
+question: "Can an operator explain a run in under a minute?"
+labNumber: 9
+invariant: "I8: every run can explain itself from the database in under a minute."
 lab: "The Silent Run"
 deliverable: "dashboard.html + tracing config + runs/events tables"
 status: published
 ---
 
-## Lesson 08.1: Three audiences, three surfaces
+## Lesson 09.1: Three audiences, three surfaces
 
 ```text
 OPERATOR    "Is it stuck? What is it doing? Can I stop it?"     → run dashboard
@@ -18,7 +21,7 @@ AUDITOR     "What happened, in order, with evidence?"             → event log
 
 One data model feeds all three. Do not build three.
 
-## Lesson 08.2: Event log (append-only)
+## Lesson 09.2: Event log (append-only)
 
 ```sql
 CREATE TABLE run_events (
@@ -34,13 +37,13 @@ CREATE INDEX ON run_events (run_id, id);
 
 Every node writes `started` and `finished`/`failed`. Every LLM decision writes `decision` with the *reason* the model gave. Budgets write `budget` on every change. This table is the audit trail and the raw material for evals.
 
-## Lesson 08.3: Traces
+## Lesson 09.3: Traces
 
 Wire LangSmith (free tier) **or** self-hosted Langfuse. Both give you: per-node spans, prompts as sent, tokens, latency, cost. Tag every trace with `run_id`, `vendor`, `code_version`, `fixture_profile`.
 
-Non-negotiable: you must be able to open a trace and see the *exact* prompt the model saw for any decision. If your context builder (Module 07) is doing its job, that prompt should be small and readable.
+Non-negotiable: you must be able to open a trace and see the *exact* prompt the model saw for any decision. If your context builder (Module 08) is doing its job, that prompt should be small and readable.
 
-## Lesson 08.4: Run dashboard
+## Lesson 09.4: Run dashboard
 
 Plain HTML + HTMX, polling `GET /runs/{id}` every 2s. Shows the operational questions from Module 02, live:
 
@@ -61,7 +64,7 @@ Pages: 7/25   Errors: 1   Last event: fetch_page finished 3s ago
 
 Cancel sets `status=cancelled` in your `runs` table; every node checks it at entry. That is your kill switch, and it must work while a model call is in flight (check after, not before).
 
-## Lesson 08.5: Alerts that matter
+## Lesson 09.5: Alerts that matter
 
 Only three, and each is a query on `run_events`:
 
@@ -73,7 +76,7 @@ BUDGET     any budget field at ≥ 80%
 
 <div class="callout failure-lab">
 
-**FAILURE LAB 08: The Silent Run**
+**FAILURE LAB 09: The Silent Run**
 
 Fixture profile `hang`: one page responds after 45s. Start a run and walk away.
 

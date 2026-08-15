@@ -3,6 +3,8 @@ module: 1
 title: "Build the Naive Agent"
 duration: "45-60 min"
 goal: "Build something that works, in plain Python, before introducing any framework."
+question: "What does the simplest useful loop look like?"
+labNumber: 1
 lab: "Kill the Agent"
 deliverable: "01_naive_agent.py + resume_answer.md"
 status: published
@@ -149,3 +151,7 @@ Do **not** teach checkpoints yet. Let students discover why checkpoints are need
 **Production takeaway:** an agent that works is not an agent that survives. Working is the starting line.
 
 </div>
+
+## Primary sources
+
+- [LangGraph overview](https://docs.langchain.com/oss/python/langgraph/overview): read only the first section now. The point is to see that the framework you meet in Module 03 is built around exactly the deterministic-control-plus-LLM-decisions mix you just wrote by hand.

@@ -11,11 +11,13 @@ function font(file: string): Buffer {
   return fs.readFileSync(require.resolve(`@fontsource/ibm-plex-mono/files/${file}`));
 }
 
-const BG = "#0A0A0B";
-const FG = "#ECECEC";
-const MUTED = "#9A9AA0";
-const ACCENT = "#FB923C";
-const LINE = "#232326";
+// Light theme, matching tokens.css. #EA580C is safe here: OG art is imagery,
+// not text subject to contrast audits, so the brighter brand orange carries.
+const BG = "#FFFFFF";
+const FG = "#18181B";
+const MUTED = "#71717A";
+const ACCENT = "#EA580C";
+const LINE = "#E5E7EB";
 
 type Page = {
   slug: string;
@@ -32,6 +34,7 @@ export async function getStaticPaths() {
     { slug: "home", eyebrow: "COURSE 001 · FREE · OPEN SOURCE", title: "Engineering Long-Running AI Agents", current: null },
     { slug: "labs", eyebrow: "COURSE 001 · FAILURE LABS", title: "Break it on purpose, then fix it", current: null },
     { slug: "stack", eyebrow: "COURSE 001 · STACK", title: "Why this stack, and the free tier", current: null },
+    { slug: "sources", eyebrow: "COURSE 001 · PRIMARY SOURCES", title: "Read the originals", current: null },
     { slug: "about", eyebrow: "COURSE 001 · ABOUT", title: "Quality among noise", current: null },
     { slug: "404", eyebrow: "COURSE 001", title: "No checkpoint at that step", current: null },
     ...modules.map((m) => ({
@@ -47,7 +50,7 @@ export async function getStaticPaths() {
 
 /** Five ledger rows centred on the current module, clamped to the real range. */
 function ledgerRows(current: number | null) {
-  const start = current === null ? 0 : Math.min(Math.max(current - 2, 0), 12 - 4);
+  const start = current === null ? 0 : Math.min(Math.max(current - 2, 0), 15 - 4);
   return Array.from({ length: 5 }, (_, i) => start + i).map((n) => ({
     n,
     label: LEDGER_LABELS[n] as string,
@@ -147,7 +150,7 @@ export async function GET({ props }: { props: { page: Page } }) {
                               ? { display: "flex", width: "14px", height: "14px", backgroundColor: ACCENT, borderRadius: "2px" }
                               : r.state === "done"
                                 ? { display: "flex", width: "12px", height: "12px", backgroundColor: FG, borderRadius: "2px" }
-                                : { display: "flex", width: "11px", height: "11px", border: `2px solid ${LINE}`, borderRadius: "50%" },
+                                : { display: "flex", width: "11px", height: "11px", border: `2px solid ${MUTED}`, borderRadius: "50%" },
                           children: "",
                         },
                       },
