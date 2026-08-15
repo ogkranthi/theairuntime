@@ -1,95 +1,109 @@
 # Deploying learn.theairuntime.com
 
-The code is on `main`. Nothing serves the domain until a Cloudflare Pages
-project exists for it. This is a one-time setup, then every push to `main`
-deploys on its own.
+The course site deploys itself from CI. Push to `main` and it ships. There is no
+dashboard step in the normal flow, nothing to run on a laptop, and no Cloudflare
+credential outside GitHub's secret store.
 
-**Do not bind `learn.theairuntime.com` to the existing `theairuntime` Pages
-project.** That project is the events site, and its Worker does host routing for
-`lab.theairuntime.com`. Adding a third host there means writing routing code
-instead of getting an independent deploy. The course site is its own project,
-the same way the Lab could be.
+The pipeline lives in
+[`.github/workflows/deploy-learn.yml`](../.github/workflows/deploy-learn.yml)
+and is scoped to `learn/**`, so the events site, which deploys through
+Cloudflare's own git integration, is untouched by it.
 
-## Option A: dashboard, git integration (recommended)
+## One-time setup
 
-This is how the events site already deploys: Cloudflare watches the repo and
-rebuilds on every push. No secrets, no CI, no extra deploy path to maintain.
+Two steps, both in a browser, about five minutes. After this, nobody touches a
+dashboard again.
 
-### 1. Create the Pages project
+### 1. Create a scoped Cloudflare API token
 
-Cloudflare dashboard, **Workers & Pages** → **Create** → **Pages** → **Connect to
-Git** → pick `ogkranthi/theairuntime`.
+**My Profile → API Tokens → Create Token → Create Custom Token**, with exactly
+these permissions:
 
-Then set exactly these, and nothing else:
+| Scope | Permission | Access |
+|---|---|---|
+| Account | Cloudflare Pages | Edit |
+| Zone | DNS | Edit |
+| Zone | Zone | Read |
+| Account | Account Settings | Read |
 
-| Field | Value |
+Restrict the two Zone rows to `theairuntime.com`. Do not use the Global API Key:
+it is unscoped and cannot be revoked without resetting every integration on the
+account.
+
+Grab the account id too. It is in the dashboard sidebar, and in the URL of any
+page: `dash.cloudflare.com/<account_id>/...`. It is not a secret.
+
+### 2. Store both in GitHub
+
+Repo → **Settings → Secrets and variables → Actions → New repository secret**:
+
+| Name | Value |
 |---|---|
-| Project name | `learn-theairuntime` |
-| Production branch | `main` |
-| Framework preset | None (or Astro; it only prefills the two fields below) |
-| Build command | `npm run build` |
-| Build output directory | `dist` |
-| **Root directory** | **`learn`** |
+| `CLOUDFLARE_API_TOKEN` | the token from step 1 |
+| `CLOUDFLARE_ACCOUNT_ID` | the account id |
 
-The root directory is the field that matters and the one that is easy to miss.
-It is under **Build settings**, sometimes collapsed behind "Advanced". Leave it
-empty and Cloudflare builds the events site at the repo root instead, which
-either fails or silently deploys the wrong site to this domain.
+That is the whole setup. The token now lives in GitHub's encrypted secret store,
+where it is write-only: it can be used by a workflow and replaced, but not read
+back by anyone, including the workflow logs.
 
-Save and deploy. The first build takes about a minute and ends with a
-`learn-theairuntime.pages.dev` URL. Open it and confirm the course home page
-renders before touching DNS.
+### 3. First run, with the domain
 
-### 2. Bind the custom domain
+Trigger the workflow once with domain binding on:
 
-In the new project: **Custom domains** → **Set up a custom domain** →
-`learn.theairuntime.com` → **Activate domain**.
+- **Actions → Deploy learn.theairuntime.com → Run workflow**, tick
+  **bind_domain**, run.
+- Or from a terminal: `gh workflow run deploy-learn.yml -f bind_domain=true`
 
-The zone is already on this Cloudflare account, so the CNAME is created for you.
-Status goes Pending, then Active, usually within a couple of minutes.
+The run creates the Pages project, builds, deploys, attaches
+`learn.theairuntime.com`, creates the proxied CNAME, and prints the verification
+checks. DNS goes Active within a couple of minutes.
 
-Nothing about `theairuntime.com` (Substack), `events.theairuntime.com`, or
-`lab.theairuntime.com` changes. This is a new subdomain on the same zone.
+Leave `bind_domain` off for ordinary deploys. It is idempotent either way, it is
+just an unnecessary pair of API calls once the domain is attached.
 
-### 3. Turn on Web Analytics (optional)
+## After setup
 
-**Web Analytics** → **Add a site** → `learn.theairuntime.com`. Cloudflare Web
-Analytics is the only analytics this site expects, and it sets no cookies. If
-you want the beacon inlined rather than injected, add the token as
-`PUBLIC_CF_BEACON_TOKEN` and wire it in `learn/src/layouts/Base.astro`; the
-automatic injection needs no code change at all.
+| To do this | Do this |
+|---|---|
+| Ship a content or code change | Merge to `main`. It deploys. |
+| Redeploy without a code change | Actions → Run workflow |
+| Re-attach the domain, or repair DNS | Run workflow with `bind_domain` ticked |
+| Roll back | Revert the commit and merge, or promote an older deployment in the Pages dashboard |
 
-## Option B: CLI direct upload
+An agent session can trigger a deploy the same way through the GitHub API, with
+no Cloudflare credential in the session at all. That is the point of putting the
+token in GitHub rather than handing it to a tool: the credential stays in one
+place, and the deploy is a button anyone authorised can press.
 
-Use this only if you do not want Cloudflare reading the repo. It is a real
-tradeoff, not just a different button:
+## What the pipeline does
 
-> A Pages project is **either** git-connected **or** direct-upload, permanently.
-> A project created by `wrangler pages deploy` cannot later be connected to git.
-> You would then need to run the deploy yourself, or add a CI workflow, on every
-> change.
+1. `npm ci` in `learn/`
+2. `npx astro check`, which fails the build on a type error
+3. `npm run build`
+4. `scripts/cloudflare-pages.sh ensure-project`, creates the Pages project if it
+   does not exist yet
+5. `wrangler pages deploy dist`, tagged with the commit sha
+6. `scripts/cloudflare-pages.sh ensure-domain`, only when `bind_domain` is set
+7. Verification curls against the live domain, printed in the log
 
-```bash
-cd learn
-npm install
-npm run build
+[`scripts/cloudflare-pages.sh`](./scripts/cloudflare-pages.sh) is idempotent
+throughout: every step checks current state before acting, which is what makes
+it safe to run on every deploy. It can also be run locally with the same two
+environment variables if you ever need to.
 
-npx wrangler login                       # or export CLOUDFLARE_API_TOKEN=...
-npx wrangler pages project create learn-theairuntime --production-branch main
-npx wrangler pages deploy dist --project-name learn-theairuntime
-```
+## Why not Cloudflare's git integration
 
-Then bind the domain, either in the dashboard as in step 2 above, or:
+It would also auto-deploy, and it needs no token. The tradeoff is that
+connecting a Pages project to a repo can only be done through the dashboard
+OAuth flow, and a project is permanently either git-connected or direct-upload.
+This setup keeps the whole deploy in the repo, reviewable in a diff, runnable on
+demand, and identical whether a human or an agent triggers it.
 
-```bash
-npx wrangler pages domain add learn.theairuntime.com --project-name learn-theairuntime
-```
+Consequence worth knowing: because this project is direct-upload, the Pages
+dashboard will not show a "retry build from commit" button. Redeploy by running
+the workflow instead.
 
-If you use an API token instead of `wrangler login`, it needs **Account →
-Cloudflare Pages → Edit**, plus **Zone → DNS → Edit** on `theairuntime.com` for
-the domain binding to create the record.
-
-## Verifying
+## Verifying a live deploy
 
 ```bash
 curl -sI https://learn.theairuntime.com/ | head -1                 # 200
@@ -98,18 +112,23 @@ curl -sI https://learn.theairuntime.com/og/04-idempotency.png | grep -i content-
 curl -s https://learn.theairuntime.com/rss.xml | head -c 120
 ```
 
-All four should work. The OG image check is the useful one: it proves the build
-ran the satori route rather than serving a stale or wrong `dist/`.
+The OG image check is the useful one. It proves the build ran the satori route
+rather than a stale `dist/` being served.
 
-## When a build fails
+## When it fails
 
 | Symptom | Cause |
 |---|---|
-| Build runs but deploys the events site | Root directory is empty. Set it to `learn`. |
-| `Cannot find module 'astro'` | Root directory is wrong, so `npm install` ran against the wrong `package.json`. |
-| Build succeeds, `/` is a 404 | Output directory is not `dist`, or is set to `learn/dist` when the root is already `learn`. It is relative to the root directory. |
-| Domain stuck on Pending | The CNAME was created outside Cloudflare, or the zone is not on this account. Check DNS for `learn`. |
-| OG images missing | `@resvg/resvg-js` is a native module. It builds on Cloudflare's default image; if it ever fails, pin the build image to the latest version in project settings. |
+| `set CLOUDFLARE_API_TOKEN` | The repo secret is missing or misspelled. Names are case sensitive. |
+| `could not create project` with an auth error | Token is missing **Account → Cloudflare Pages → Edit**. |
+| `zone theairuntime.com not found` | Token is missing **Zone → Zone → Read**, or the zone rows were not scoped to this domain. |
+| `could not create dns record` | Token is missing **Zone → DNS → Edit**. |
+| Deploy succeeds, domain still 404s | DNS is still propagating, or `bind_domain` was never run. Re-run with it ticked. |
+| Build fails on `astro check` | A real type error. Fix it; the gate is doing its job. |
+| OG images missing | `@resvg/resvg-js` is a native module. It builds on `ubuntu-latest`; if that ever changes, pin the runner. |
 
-The build must stay green with `npm run build` and `npx astro check` reporting
-zero errors. Both run clean as of the initial commit.
+## Rotating the token
+
+Create a replacement in Cloudflare, update the `CLOUDFLARE_API_TOKEN` repo
+secret, then delete the old token. No code change, and the next deploy picks it
+up. Do this if the token is ever pasted somewhere it should not have been.

@@ -1,0 +1,79 @@
+name: Deploy learn.theairuntime.com
+
+# The course site deploys itself. Push to main and it ships; there is no
+# dashboard step and nothing to run locally. Can also be triggered by hand
+# (Actions tab, or `gh workflow run`, or an agent session) via workflow_dispatch.
+#
+# Scoped to learn/** so the events site, which deploys through Cloudflare's own
+# git integration, is untouched by this workflow.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'learn/**'
+      - '.github/workflows/deploy-learn.yml'
+  workflow_dispatch:
+    inputs:
+      bind_domain:
+        description: 'Also ensure the custom domain and DNS record (safe to repeat)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-learn
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: learn
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: learn/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Type check
+        run: npx astro check
+
+      - name: Build
+        run: npm run build
+
+      - name: Ensure Pages project exists
+        run: bash scripts/cloudflare-pages.sh ensure-project
+
+      - name: Deploy
+        run: |
+          npx wrangler pages deploy dist \
+            --project-name learn-theairuntime \
+            --branch main \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-dirty=false
+
+      - name: Ensure custom domain
+        if: inputs.bind_domain
+        run: bash scripts/cloudflare-pages.sh ensure-domain
+
+      - name: Verify
+        run: |
+          for path in / /course/04-idempotency/ /rss.xml; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' "https://learn.theairuntime.com$path" || echo 000)
+            echo "$path -> $code"
+          done
+          type=$(curl -sSI https://learn.theairuntime.com/og/04-idempotency.png |
+                 tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print $2}')
+          echo "og image content-type -> ${type:-none}"
