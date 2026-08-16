@@ -5,18 +5,19 @@ import { CHANNELS, REACH_OUT, utm } from "../lib/course";
 ---
 
 <Base
-  title="About | The AI Runtime, FDE Engineering"
-  description="The AI Runtime teaches the engineering work between an AI demo and a production system, from the perspective of forward-deployed engineering."
+  title="About FDE Commons | The AI Runtime"
+  description="FDE Commons is free, evidence-first learning for Forward Deployed Engineering, built by The AI Runtime."
   pageSlug="about"
 >
   <div class="shell">
     <section class="section measure">
       <p class="eyebrow">ABOUT</p>
-      <h1>Between the demo and production</h1>
+      <h1>Open learning for Forward Deployed Engineering</h1>
 
       <p>
-        The AI Runtime teaches the engineering work between an AI demo and a production
-        system. That gap is not model knowledge. It is what happens when the process dies at
+        FDE Commons helps people understand the profession, build production capability,
+        practice realistic field work, publish proof, and prepare for the right roles. It is
+        built by The AI Runtime for the gap between an AI demo and production: when the process dies at
         step nine, when the publish call times out after it already succeeded, when a
         reviewer approves three hours later from their phone, and when an auditor asks for
         the evidence.
@@ -26,6 +27,11 @@ import { CHANNELS, REACH_OUT, utm } from "../lib/course";
         The curriculum takes the perspective of <strong>forward-deployed engineering</strong>:
         every topic is taught the way an FDE meets it, in order.
       </p>
+    </section>
+
+    <section class="section boundaries">
+      <div><p class="eyebrow">THE PRODUCT BOUNDARY</p><h2>What belongs here</h2><p>Free, no-signup, evidence-first, practitioner-oriented learning that materially improves FDE clarity, capability, proof, or career readiness.</p></div>
+      <div><p class="eyebrow">WHAT DOES NOT</p><h2>No career theater</h2><p>Not a bootcamp, certificate mill, recruiter marketplace, mass-scraped job board, generic AI news feed, or framework-hype site.</p></div>
     </section>
 
     <section class="section">
@@ -92,6 +98,7 @@ import { CHANNELS, REACH_OUT, utm } from "../lib/course";
 
 <style>
   .quality { display: grid; grid-template-columns: .8fr 1.2fr; gap: 4rem; }
+  .boundaries { display:grid;grid-template-columns:1fr 1fr;gap:4rem;background:#fff1e6;margin-inline:calc(50% - 50vw);padding-inline:max(var(--pad),calc((100vw - var(--shell))/2 + var(--pad))); }
   .standard { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--line); }
   .standard li { margin: 0; padding: .7rem 0; border-bottom: 1px solid var(--line); font-size: var(--t-meta); }
   .standard li::before { content: "✓"; color: var(--accent); font-family: var(--font-mono); margin-right: .7rem; }
@@ -119,5 +126,5 @@ import { CHANNELS, REACH_OUT, utm } from "../lib/course";
     font-size: var(--t-meta);
     color: var(--fg-muted);
   }
-  @media (max-width: 760px) { .quality { grid-template-columns: 1fr; gap: 2rem; } .standard { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .quality,.boundaries { grid-template-columns: 1fr; gap: 2rem; } .standard { grid-template-columns: 1fr; } }
 </style>

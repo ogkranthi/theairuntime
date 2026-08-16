@@ -1,0 +1,138 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import CtaBlock from "../../../components/CtaBlock.astro";
+import FDELens from "../../../components/fde/FDELens.astro";
+import { COURSE_BASE, MODULE_SLUGS, LEDGER_LABELS, pad } from "../../../lib/course";
+
+export async function getStaticPaths() {
+  const studies = await getCollection("caseStudies", ({ data }) => data.status !== "draft");
+  return studies.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const courses = await getCollection("courses");
+const usedBy = courses.filter((c) => d.courses.includes(c.data.id));
+---
+
+<Base
+  title={`${d.title} | AIR Case Studies`}
+  description={d.summary}
+  pageSlug="case-studies"
+  ogType="article"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: d.title,
+      description: d.summary,
+      author: { "@type": "Person", name: "Kranthi Manchikanti" },
+      publisher: { "@type": "Organization", name: "The AI Runtime" },
+    },
+  ]}
+>
+  <div class="shell study">
+    <header class="section study__head">
+      <p class="eyebrow">{d.category.toUpperCase()} · CASE STUDY</p>
+      <h1>{d.title}</h1>
+      <p class="study__summary">{d.summary}</p>
+      <p class="study__concepts">{d.concepts.map((c) => <span class="chip">{c}</span>)}</p>
+    </header>
+
+    <div class="study__grid">
+      <article class="prose measure">
+        <FDELens
+          customerAsks={d.customerAsk}
+          realRequirement={d.realRequirement}
+          architectureImplication="The sections below walk the shape this forces."
+        />
+        <Content />
+      </article>
+
+      <aside class="study__rail">
+        {
+          usedBy.length > 0 && (
+            <div class="rail-box">
+              <p class="rail-box__title">USED IN</p>
+              <ul>
+                {usedBy.map((c) => (
+                  <li>
+                    {c.data.slug ? (
+                      <a href={`/learn/courses/${c.data.slug}/`}>Course {c.data.number}: {c.data.title}</a>
+                    ) : (
+                      <span>Course {c.data.number}: {c.data.title}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+        {
+          d.modules.length > 0 && (
+            <div class="rail-box">
+              <p class="rail-box__title">RELATED MODULES</p>
+              <ul>
+                {d.modules.map((n) => (
+                  <li>
+                    <a href={`${COURSE_BASE}/${MODULE_SLUGS[n]}/`}>
+                      {pad(n)} {LEDGER_LABELS[n]}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+      </aside>
+    </div>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="case-studies" />
+</Base>
+
+<style>
+  .study__head h1 { max-width: 24ch; }
+  .study__summary { color: var(--fg-muted); max-width: var(--measure); font-size: 1.15rem; }
+  .study__concepts { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 0; }
+  .chip {
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    background: var(--bg-inset);
+    border-radius: 999px;
+    padding: 0.12rem 0.6rem;
+  }
+  .study__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3rem;
+    padding-bottom: 3rem;
+  }
+  .rail-box {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .rail-box__title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    margin: 0 0 0.6rem;
+  }
+  .rail-box ul { list-style: none; margin: 0; padding: 0; }
+  .rail-box li { margin: 0 0 0.4rem; font-size: var(--t-meta); }
+  .rail-box a { font-family: var(--font-mono); }
+  @media (min-width: 1024px) {
+    .study__grid { grid-template-columns: minmax(0, var(--measure)) minmax(0, 18rem); gap: 4rem; }
+    .study__rail { position: sticky; top: 5rem; align-self: start; }
+  }
+</style>
+
+<style is:global>
+  .prose h2 { margin-top: 2.5rem; scroll-margin-top: 5rem; }
+</style>

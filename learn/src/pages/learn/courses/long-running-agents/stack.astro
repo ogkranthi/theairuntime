@@ -1,0 +1,169 @@
+---
+import Base from "../../../../layouts/Base.astro";
+import CourseNav from "../../../../components/CourseNav.astro";
+import CtaBlock from "../../../../components/CtaBlock.astro";
+import { CHANNELS } from "../../../../lib/course";
+
+const core = [
+  ["Python", "Modules 00 to 02 stay close to ordinary Python so you can see the agent loop and state transitions directly."],
+  ["LangGraph", "Graph execution, persistence, checkpoints, and interrupts, adopted after the failure modes are understood, not before."],
+  ["Deep Agents", "Introduced late as a higher-level harness for planning, filesystem-backed work, subagents, and context management. You compare it against your explicit implementation instead of treating it as magic."],
+  ["FastAPI", "Run creation, run status, review endpoints, dashboard, health and readiness."],
+  ["PostgreSQL / Neon", "Application-owned run state, leases, event log, side-effect records, artifacts, and LangGraph checkpoint persistence. The course keeps application tables explicitly separate from framework-owned checkpoint tables."],
+  ["HTMX", "A deliberately small server-rendered operator and reviewer UI. No frontend framework is required to learn runtime engineering."],
+  ["LangSmith or Langfuse", "Traces. The course contract is tool-independent: exact model input and output, tool spans, tokens, cost, latency, and run correlation must be inspectable."],
+];
+
+const substitutions = [
+  ["stronger durable workflow semantics", "Temporal"],
+  ["different trace backend", "Langfuse / OpenTelemetry stack"],
+  ["managed agent deployment", "LangSmith deployment"],
+  ["container hosting", "Cloud Run / paid Render / Kubernetes"],
+  ["durable queue", "cloud queue, Redis/Celery, Postgres queue"],
+  ["object store", "S3-compatible storage"],
+];
+---
+
+<Base
+  title="Stack and Architecture | AIR Course 001"
+  description="The Course 001 stack, boring on purpose: Python, LangGraph, Deep Agents, FastAPI, Postgres on Neon, HTMX, and a pinned, reproducible environment."
+  pageSlug="stack"
+>
+  <CourseNav active="stack" />
+  <div class="shell">
+    <section class="section">
+      <p class="eyebrow">STACK</p>
+      <h1>Boring on purpose</h1>
+      <div class="measure">
+        <p>
+          The stack is selected to expose production primitives, not to maximize framework
+          count. Every piece is either free, boring, or the thing that makes a specific
+          Failure Lab reproducible.
+        </p>
+      </div>
+
+      <dl class="why">
+        {
+          core.map(([name, reason]) => (
+            <div class="why__row">
+              <dt>{name}</dt>
+              <dd>{reason}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section class="section">
+      <h2>Why not a message queue from day one?</h2>
+      <div class="measure">
+        <p>
+          Because you should first build one small PostgreSQL-backed lease scheduler and
+          understand, in your own code:
+        </p>
+      </div>
+      <pre>{`claim
+lease
+heartbeat
+retry timer
+orphan recovery
+cancellation`}</pre>
+      <div class="measure">
+        <p class="muted">
+          After that, you can replace it with a managed queue or a durable workflow engine and
+          know exactly which guarantees moved. The course teaches what to demand from the
+          replacement, not brand loyalty.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Free public deployment</h2>
+      <div class="measure">
+        <p>
+          The reference deployment uses a free web service (Render) plus serverless Postgres
+          (Neon). One caveat matters enough to state as a rule:
+        </p>
+        <blockquote>
+          Free infrastructure is a teaching and portfolio target, not a production-SLA claim.
+        </blockquote>
+        <p class="muted">
+          Idle spin-down and restarts are useful failure injectors. The application must
+          recover from durable state, which is the whole point of Modules 03 to 07, and
+          Module 14 proves it with a redeploy mid-run.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Pin the environment</h2>
+      <div class="measure">
+        <p>A production course should be reproducible six months later. The repo contains:</p>
+      </div>
+      <pre>{`pyproject.toml
+uv.lock (or equivalent lockfile)
+.env.example
+Makefile
+docker-compose.yml for local dependencies where useful`}</pre>
+      <div class="measure">
+        <p class="muted">
+          And every gauntlet result records the course repo commit, Python version, package
+          lock hash, model identifier, fixture profile version, and database migration
+          version, so a reliability claim can be re-run against the exact system that made it.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Optional advanced substitutions</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th scope="col">Need</th><th scope="col">Alternative</th></tr>
+          </thead>
+          <tbody>
+            {
+              substitutions.map(([need, alt]) => (
+                <tr>
+                  <td>{need}</td>
+                  <td class="mono-cell">{alt}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <a href={CHANNELS.repo} rel="noopener">Course repo: fixtures, starter code and artifacts &rarr;</a>
+      </p>
+    </section>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="stack" />
+</Base>
+
+<style>
+  .why { margin: 1.5rem 0; border-top: 1px solid var(--line); }
+  .why__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .why dt {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--accent);
+  }
+  .why dd {
+    margin: 0;
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    max-width: 68ch;
+  }
+  .mono-cell { font-family: var(--font-mono); font-size: var(--t-meta); }
+  @media (min-width: 800px) {
+    .why__row { grid-template-columns: 14rem minmax(0, 1fr); gap: 2rem; }
+  }
+</style>

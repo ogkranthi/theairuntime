@@ -1,0 +1,68 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import CtaBlock from "../../../components/CtaBlock.astro";
+import CaseStudyCard from "../../../components/CaseStudyCard.astro";
+
+const studies = await getCollection("caseStudies", ({ data }) => data.status !== "draft");
+const categories = [
+  "Financial Services",
+  "Healthcare",
+  "SaaS",
+  "Developer Tools",
+  "Enterprise Operations",
+] as const;
+const byCategory = categories
+  .map((c) => ({ category: c, items: studies.filter((s) => s.data.category === c) }))
+  .filter((g) => g.items.length > 0);
+---
+
+<Base
+  title="Case Studies | The AI Runtime, FDE Engineering"
+  description="Industry case studies of production AI systems: the customer problem, the architecture, the decisions, and the lessons. Reusable across courses, browsable on their own."
+  pageSlug="case-studies"
+>
+  <div class="shell">
+    <section class="section">
+      <p class="eyebrow">CASE STUDIES</p>
+      <h1>Systems, not demos</h1>
+      <p class="muted measure">
+        Each case study is a production-shaped system: the customer problem it exists to
+        solve, the architecture it committed to, the decisions along the way, and where the
+        courses use it. Read them independently, or meet them inside a course.
+      </p>
+    </section>
+
+    {
+      byCategory.map((g) => (
+        <section class="section">
+          <h2>{g.category}</h2>
+          <div class="grid">
+            {g.items.map((s) => (
+              <CaseStudyCard
+                href={`/learn/case-studies/${s.id}/`}
+                title={s.data.title}
+                category={s.data.category}
+                summary={s.data.summary}
+                concepts={s.data.concepts}
+              />
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="case-studies" />
+</Base>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  @media (min-width: 860px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
