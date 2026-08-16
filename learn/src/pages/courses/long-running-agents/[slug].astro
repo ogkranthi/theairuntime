@@ -30,6 +30,26 @@ const d = entry.data;
 const n = d.module;
 const labN = d.labNumber;
 
+const beginnerNotes: Record<number, { plain: string; remember: string }> = {
+  0: { plain: "First decide whether the task needs an agent at all.", remember: "Use the least-agentic design that solves the problem." },
+  1: { plain: "Build the smallest agent loop so every moving part is visible.", remember: "An agent is a loop: choose, act, observe, repeat." },
+  2: { plain: "Move important facts out of the model and into durable storage.", remember: "The database is the source of truth; the model is not." },
+  3: { plain: "Save progress so a stopped process can safely continue.", remember: "Checkpoint after meaningful progress, then resume from that checkpoint." },
+  4: { plain: "Prevent retries from sending the same email, charge, or update twice.", remember: "Record intent, observe reality, then retry only what is missing." },
+  5: { plain: "Make sure only one healthy worker owns a piece of work.", remember: "Ownership expires unless the worker proves it is alive." },
+  6: { plain: "Treat different failures differently instead of retrying everything.", remember: "Retry only failures that are temporary and safe to repeat." },
+  7: { plain: "Pause for a person without keeping a process alive while they decide.", remember: "Persist first, wait without a worker, resume from the decision." },
+  8: { plain: "Give the model only the evidence needed for its next decision.", remember: "Store full artifacts; build small working context from them." },
+  9: { plain: "Make a running agent understandable to the people operating it.", remember: "Events explain what happened; current state explains what is true now." },
+  10: { plain: "Keep untrusted text from gaining authority over tools and data.", remember: "Content can inform a decision, but it cannot grant permission." },
+  11: { plain: "Test both the final result and the path the agent took to produce it.", remember: "A good answer reached unsafely is still a failed run." },
+  12: { plain: "Put tools, policies, budgets, and verification around the model.", remember: "The harness—not the prompt—makes agent behavior governable." },
+  13: { plain: "Compare the same runtime ideas across real production architectures.", remember: "Products differ; the reliability surfaces repeat." },
+  14: { plain: "Deploy the system without losing work when processes are replaced.", remember: "A deployment is a routine failure-recovery test." },
+  15: { plain: "Combine the failures and prove the complete system still holds.", remember: "Production-ready means the invariants survive together." },
+};
+const beginner = beginnerNotes[n];
+
 const studies = await getCollection("caseStudies");
 const caseStudy = d.caseStudy ? studies.find((s) => s.id === d.caseStudy) : undefined;
 
@@ -146,6 +166,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
             )
           }
         </div>
+
+        <section class="first-pass" aria-label="First-time learner guide">
+          <div class="first-pass__intro">
+            <span>FIRST PASS</span>
+            <strong>{beginner.plain}</strong>
+          </div>
+          <ol>
+            <li><b>1</b><span><strong>Read the idea</strong><small>No setup required</small></span></li>
+            <li><b>2</b><span><strong>Trace the example</strong><small>Focus on what fails</small></span></li>
+            <li><b>3</b><span><strong>Check yourself</strong><small>Lab is optional</small></span></li>
+          </ol>
+          <p><span>ONE THING TO REMEMBER</span>{beginner.remember}</p>
+        </section>
 
         {
           d.invariant && (
@@ -461,6 +494,18 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     margin: 0;
   }
   .lhero__invariant span { color: var(--accent); letter-spacing: 0.1em; margin-right: 0.5rem; }
+  .first-pass { margin: 1rem 0; border: 1px solid var(--fg); background: var(--bg-raise); }
+  .first-pass__intro { display: grid; grid-template-columns: 7rem 1fr; gap: 1rem; padding: 1rem 1.1rem; border-bottom: 1px solid var(--line); align-items: baseline; }
+  .first-pass__intro span, .first-pass>p span { font: 500 .65rem var(--font-mono); letter-spacing: .1em; color: var(--accent); }
+  .first-pass__intro strong { font-size: 1rem; }
+  .first-pass ol { display: grid; grid-template-columns: repeat(3,1fr); list-style: none; padding: 0; margin: 0; }
+  .first-pass li { display: flex; gap: .65rem; padding: .8rem 1rem; margin: 0; border-right: 1px solid var(--line); }
+  .first-pass li:last-child { border-right: 0; }
+  .first-pass li>b { font: 500 .65rem var(--font-mono); color: var(--accent); }
+  .first-pass li strong, .first-pass li small { display: block; }
+  .first-pass li strong { font-size: .75rem; }
+  .first-pass li small { font: 400 .62rem var(--font-mono); color: var(--fg-muted); }
+  .first-pass>p { display: grid; grid-template-columns: 10rem 1fr; gap: 1rem; padding: .85rem 1.1rem; margin: 0; background: var(--bg-inset); font-size: .8rem; }
 
   /* ---- nav / rail ---- */
   .lesson__nav {
@@ -522,6 +567,12 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     .lesson__left { display: block; }
     .outline { padding: 0.5rem 1rem; }
     .outline:not([open]) { background: var(--bg-raise); }
+  }
+
+  @media (max-width: 620px) {
+    .first-pass__intro, .first-pass>p { grid-template-columns: 1fr; gap: .25rem; }
+    .first-pass ol { grid-template-columns: 1fr; }
+    .first-pass li { border-right: 0; border-bottom: 1px solid var(--line); }
   }
 
   @media (min-width: 1100px) {
