@@ -1,0 +1,6 @@
+---
+const path = Astro.url.pathname;
+const links = [{href:"/fde/",label:"Atlas"},{href:"/fde/segments/",label:"8 segments"},{href:"/fde/roles/",label:"Role decoder"},{href:"/fde/companies/",label:"Company map"},{href:"/fde/jobs/",label:"Live openings"}];
+---
+<nav class="fde-nav" aria-label="FDE Career Atlas"><div class="shell"><a class="brand" href="/fde/">FDE / CAREER ATLAS</a>{links.map(l=><a class:list={{active:path===l.href||path.startsWith(l.href)&&l.href!=="/fde/"}} href={l.href}>{l.label}</a>)}</div></nav>
+<style>.fde-nav{border-bottom:1px solid var(--line);background:#fff}.fde-nav .shell{display:flex;gap:1.25rem;align-items:center;min-height:3rem;overflow-x:auto;font:500 .7rem var(--font-mono);white-space:nowrap}.fde-nav a{color:var(--fg-muted)}.fde-nav a:hover{text-decoration:none;color:var(--fg)}.fde-nav .brand{color:var(--accent);letter-spacing:.1em;margin-right:auto}.fde-nav .active{color:var(--fg);border-bottom:2px solid var(--accent);padding-block:.85rem}</style>
