@@ -63,8 +63,8 @@ const technologies = [
       <p class="eyebrow">COURSE 001 · FDE ENGINEERING</p>
       <h1>Engineering Long-Running AI Agents</h1>
       <p class="chead__sub">
-        Learn how to design agents whose work survives failures, restarts, long waits and
-        changing context.
+        Ship one customer-shaped AI workflow that is bounded, observable, recoverable,
+        evidence-backed, cost-aware, and useful when the happy path ends.
       </p>
       <p class="chead__meta">
         {modules.length} modules · {studies.length} industry cases · {labCount} optional labs ·
@@ -72,13 +72,18 @@ const technologies = [
       </p>
       <div class="chead__actions">
         <a class="btn btn--solid" href={moduleHref(modules[0]!)}>Start with Module 00</a>
-        <a class="btn" href="#how-to-learn">How the course works</a>
+        <a class="btn" href="/courses/long-running-agents/capstone/">See what you will ship</a>
         <a class="btn" href={CHANNELS.repo} rel="noopener">View repo <span aria-hidden="true">&#8599;</span></a>
       </div>
       <p class="chead__fresh">Course content and API examples last verified: 2026-08 · exact dependency versions live in the reference repo lockfile</p>
       <p class="chead__continue" data-continue hidden>
         <a href="#" data-continue-link>Continue learning &rarr;</a>
       </p>
+    </section>
+
+    <section class="section outcome">
+      <div><p class="eyebrow">THE PROMISE</p><h2>Not merely clever.<br/>Ready to be tested.</h2></div>
+      <div class="outcome__body"><p>The course keeps its technical center: durable state, safe side effects, ownership, recovery, human control, context, observability, security, and evaluation. The FDE layer turns that runtime into one narrow workflow for a real user.</p><div class="outcome__qualities"><span>Bounded</span><span>Observable</span><span>Recoverable</span><span>Evidence-backed</span><span>Cost-aware</span><span>Useful</span></div><a href="/courses/long-running-agents/capstone/">Open the customer-shaped capstone →</a></div>
     </section>
 
     <section class="section first-time" id="how-to-learn">
@@ -255,6 +260,8 @@ const technologies = [
     max-width: fit-content;
     margin: 1.25rem 0 0;
   }
+  .outcome { display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(2rem,7vw,7rem);background:#fff1e6;margin-inline:calc(50% - 50vw);padding-inline:max(var(--pad),calc((100vw - var(--shell))/2 + var(--pad))); }
+  .outcome h2{font-size:clamp(2.2rem,4vw,3.8rem)}.outcome__body>p{color:var(--fg-muted);max-width:58ch}.outcome__qualities{display:flex;flex-wrap:wrap;gap:.45rem;margin:1.5rem 0}.outcome__qualities span{font:500 .68rem var(--font-mono);border:1px solid #e2b99d;background:#fffaf6;padding:.45rem .65rem;color:#9f3510}.outcome__body>a{font:600 .78rem var(--font-mono)}
 
   .first-time { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(2rem,6vw,6rem); align-items: center; }
   .first-time__intro h2 { font-size: clamp(2rem,4vw,3.6rem); }
@@ -297,7 +304,7 @@ const technologies = [
     .tech-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 799px) {
-    .first-time { grid-template-columns: 1fr; }
+    .first-time,.outcome { grid-template-columns: 1fr; }
     .stage-grid { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 520px) { .stage-grid { grid-template-columns: 1fr; } }

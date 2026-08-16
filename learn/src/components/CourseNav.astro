@@ -1,12 +1,13 @@
 ---
 interface Props {
   /** Which tab is active. */
-  active: "overview" | "labs" | "stack" | "sources" | "module";
+  active: "overview" | "capstone" | "labs" | "stack" | "sources" | "module";
 }
 const { active } = Astro.props;
 
 const tabs = [
   { key: "overview", href: "/courses/long-running-agents/", label: "Overview" },
+  { key: "capstone", href: "/courses/long-running-agents/capstone/", label: "Ship it" },
   { key: "labs", href: "/courses/long-running-agents/labs/", label: "Labs" },
   { key: "stack", href: "/courses/long-running-agents/stack/", label: "Technologies" },
   { key: "sources", href: "/courses/long-running-agents/sources/", label: "Sources" },
