@@ -44,6 +44,22 @@ import { CHANNELS, REACH_OUT, utm } from "../lib/course";
       </ul>
     </section>
 
+    <section class="section quality">
+      <div>
+        <p class="eyebrow">THE AIR QUALITY STANDARD</p>
+        <h2>What makes an AIR course?</h2>
+        <p class="muted">The artifact is the credential. Every flagship course must make its claims inspectable and its failures reproducible.</p>
+      </div>
+      <ul class="standard">
+        <li>First-principles explanations</li><li>Real production architecture</li>
+        <li>One coherent system, end to end</li><li>Failure timelines</li>
+        <li>Runnable implementation</li><li>Reproducible Failure Labs</li>
+        <li>Explicit invariants</li><li>Industry architectures</li>
+        <li>Primary sources</li><li>Evaluations and known limitations</li>
+        <li>Public Field Report</li>
+      </ul>
+    </section>
+
     <section class="section measure">
       <h2>Who is behind this</h2>
       <p>
@@ -75,6 +91,10 @@ import { CHANNELS, REACH_OUT, utm } from "../lib/course";
 </Base>
 
 <style>
+  .quality { display: grid; grid-template-columns: .8fr 1.2fr; gap: 4rem; }
+  .standard { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--line); }
+  .standard li { margin: 0; padding: .7rem 0; border-bottom: 1px solid var(--line); font-size: var(--t-meta); }
+  .standard li::before { content: "✓"; color: var(--accent); font-family: var(--font-mono); margin-right: .7rem; }
   .contact { list-style: none; margin: 1.5rem 0; padding: 0; border-top: 1px solid var(--line); }
   .contact li {
     display: flex;
@@ -99,4 +119,5 @@ import { CHANNELS, REACH_OUT, utm } from "../lib/course";
     font-size: var(--t-meta);
     color: var(--fg-muted);
   }
+  @media (max-width: 760px) { .quality { grid-template-columns: 1fr; gap: 2rem; } .standard { grid-template-columns: 1fr; } }
 </style>

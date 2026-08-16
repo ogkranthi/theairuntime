@@ -1,0 +1,26 @@
+---
+import Base from "../../layouts/Base.astro";
+import { concepts, patterns } from "../../data/knowledge";
+export function getStaticPaths() { return concepts.map((item) => ({ params: { slug: item.slug }, props: { item } })); }
+const { item } = Astro.props;
+const relatedPatterns = patterns.filter((pattern) => pattern.related.includes(item.slug));
+const definition = item.definition ?? `${item.title} is a production AI building block used to make system behavior explicit, inspectable, and recoverable.`;
+---
+<Base title={`${item.title} — Production AI Concept | AIR Learn`} description={item.summary} pageSlug="concepts" ogType="article">
+  <div class="shell article-shell">
+    <header class="section concept-head">
+      <p class="eyebrow">CONCEPT · 10 MIN READ</p><h1>{item.title}</h1><p class="lede">{definition}</p>
+      <div class="route"><span>LEARN IN CONTEXT</span><a href="/courses/long-running-agents/">Course 001 · {item.module} →</a></div>
+    </header>
+    <article class="section prose">
+      <h2>Why it exists</h2><p>Long-running systems cross process boundaries, wait on external actors, and repeat work after uncertainty. {item.title} gives engineers a precise way to reason about one part of that reliability problem.</p>
+      <h2>The naive implementation</h2><pre><code>{`run task\n  → keep progress in memory\n  → assume the call succeeded\n  → continue`}</code></pre>
+      <h2>What breaks</h2><p>The process can disappear between an external effect and the local record of that effect. On recovery, the system no longer knows what happened. Retrying blindly may duplicate work; skipping may lose it.</p>
+      <h2>How it works</h2><pre><code>{item.slug === "lease" ? `Worker A claims Run 91\n        ↓\nlease expires at 10:01\n        ↓\nWorker A dies\n        ↓\n10:01 — Worker B may claim Run 91` : `observe durable state\n        ↓\nmake one bounded decision\n        ↓\nrecord evidence + outcome\n        ↓\ncontinue or recover`}</code></pre>
+      <h2>What it does not guarantee</h2><p>This concept is not a complete reliability strategy. It does not make external side effects transactional, prove semantic correctness, or remove the need for monitoring and evaluation.</p>
+      <h2>Related concepts</h2><div class="links">{item.related.map((slug) => { const related = concepts.find((c) => c.slug === slug); return related && <a href={`/concepts/${slug}/`}>{related.title} →</a>; })}</div>
+      {relatedPatterns.length > 0 && <><h2>Use it in a pattern</h2><div class="links">{relatedPatterns.map((p) => <a href={`/patterns/${p.slug}/`}>{p.title} →</a>)}</div></>}
+    </article>
+  </div>
+</Base>
+<style>.article-shell{max-width:960px}.concept-head h1{font-size:clamp(2.8rem,8vw,5.5rem)}.lede{font-size:1.3rem;max-width:55ch;color:var(--fg-muted)}.route{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;margin-top:2rem;padding:1rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-family:var(--font-mono);font-size:var(--t-meta)}.route span{color:var(--fg-muted)}.prose{max-width:70ch}.prose h2{margin-top:2.5rem}.links{display:flex;flex-wrap:wrap;gap:.6rem}.links a{padding:.5rem .75rem;border:1px solid var(--line);border-radius:999px;font-family:var(--font-mono);font-size:.78rem}.links a:hover{text-decoration:none;border-color:var(--accent)}</style>

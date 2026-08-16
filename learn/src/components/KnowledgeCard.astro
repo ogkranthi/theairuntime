@@ -1,0 +1,19 @@
+---
+interface Props { kind: "concept" | "pattern"; slug: string; title: string; summary: string; module: string; }
+const { kind, slug, title, summary, module } = Astro.props;
+---
+<a class="knowledge-card" href={`/${kind}s/${slug}/`}>
+  <span class="knowledge-card__kind">{kind}</span>
+  <h3>{title}</h3>
+  <p>{summary}</p>
+  <span class="knowledge-card__module">{module} <span aria-hidden="true">→</span></span>
+</a>
+
+<style>
+  .knowledge-card { display: flex; flex-direction: column; min-height: 13rem; padding: 1.35rem; color: var(--fg); background: var(--bg-raise); border: 1px solid var(--line); border-radius: var(--radius); transition: transform 140ms ease, border-color 140ms ease; }
+  .knowledge-card:hover { border-color: var(--accent-dim); transform: translateY(-2px); text-decoration: none; }
+  .knowledge-card__kind, .knowledge-card__module { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .09em; text-transform: uppercase; color: var(--accent); }
+  h3 { margin: .85rem 0 .45rem; }
+  p { color: var(--fg-muted); font-size: var(--t-meta); line-height: 1.55; margin: 0 0 1.2rem; }
+  .knowledge-card__module { color: var(--fg-muted); margin-top: auto; text-transform: none; letter-spacing: 0; }
+</style>
