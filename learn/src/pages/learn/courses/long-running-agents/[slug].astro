@@ -1,0 +1,609 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../../../layouts/Base.astro";
+import CtaBlock from "../../../../components/CtaBlock.astro";
+import Toc from "../../../../components/Toc.astro";
+import LessonVideo from "../../../../components/LessonVideo.astro";
+import {
+  CHANNELS,
+  COURSE_BASE,
+  LEDGER_LABELS,
+  REACH_OUT,
+  getModules,
+  moduleHref,
+  neighbors,
+  pad,
+  utm,
+} from "../../../../lib/course";
+
+export async function getStaticPaths() {
+  const modules = await getModules();
+  return modules.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const modules = await getModules();
+const { prev, next } = neighbors(modules, entry);
+const { Content, headings } = await render(entry);
+
+const d = entry.data;
+const n = d.module;
+const labN = d.labNumber;
+
+const beginnerNotes: Record<number, { plain: string; remember: string }> = {
+  0: { plain: "First decide whether the task needs an agent at all.", remember: "Use the least-agentic design that solves the problem." },
+  1: { plain: "Build the smallest agent loop so every moving part is visible.", remember: "An agent is a loop: choose, act, observe, repeat." },
+  2: { plain: "Move important facts out of the model and into durable storage.", remember: "The database is the source of truth; the model is not." },
+  3: { plain: "Save progress so a stopped process can safely continue.", remember: "Checkpoint after meaningful progress, then resume from that checkpoint." },
+  4: { plain: "Prevent retries from sending the same email, charge, or update twice.", remember: "Record intent, observe reality, then retry only what is missing." },
+  5: { plain: "Make sure only one healthy worker owns a piece of work.", remember: "Ownership expires unless the worker proves it is alive." },
+  6: { plain: "Treat different failures differently instead of retrying everything.", remember: "Retry only failures that are temporary and safe to repeat." },
+  7: { plain: "Pause for a person without keeping a process alive while they decide.", remember: "Persist first, wait without a worker, resume from the decision." },
+  8: { plain: "Give the model only the evidence needed for its next decision.", remember: "Store full artifacts; build small working context from them." },
+  9: { plain: "Make a running agent understandable to the people operating it.", remember: "Events explain what happened; current state explains what is true now." },
+  10: { plain: "Keep untrusted text from gaining authority over tools and data.", remember: "Content can inform a decision, but it cannot grant permission." },
+  11: { plain: "Test both the final result and the path the agent took to produce it.", remember: "A good answer reached unsafely is still a failed run." },
+  12: { plain: "Put tools, policies, budgets, and verification around the model.", remember: "The harness—not the prompt—makes agent behavior governable." },
+  13: { plain: "Compare the same runtime ideas across real production architectures.", remember: "Products differ; the reliability surfaces repeat." },
+  14: { plain: "Deploy the system without losing work when processes are replaced.", remember: "A deployment is a routine failure-recovery test." },
+  15: { plain: "Combine the failures and prove the complete system still holds.", remember: "Production-ready means the invariants survive together." },
+};
+const beginner = beginnerNotes[n];
+
+const studies = await getCollection("caseStudies");
+const caseStudy = d.caseStudy ? studies.find((s) => s.id === d.caseStudy) : undefined;
+
+const repoUrl = d.repoPath ? `${CHANNELS.repo}/tree/main/${d.repoPath}` : undefined;
+
+// Small per-technology link map for the right rail.
+const TECH_LINKS: Record<string, { docs: string; primer?: string }> = {
+  Python: { docs: "https://docs.python.org/3/" },
+  LangGraph: { docs: "https://docs.langchain.com/oss/python/langgraph/overview", primer: `${COURSE_BASE}/03-durable-execution/` },
+  PostgreSQL: { docs: "https://www.postgresql.org/docs/current/" },
+  FastAPI: { docs: "https://fastapi.tiangolo.com/" },
+  HTMX: { docs: "https://htmx.org/docs/" },
+  "Deep Agents": { docs: "https://docs.langchain.com/oss/python/deepagents/overview" },
+  LangSmith: { docs: "https://docs.smith.langchain.com/" },
+  Render: { docs: "https://render.com/docs" },
+  Neon: { docs: "https://neon.com/docs/introduction" },
+};
+
+const bodyHasReachOut = entry.body?.includes(REACH_OUT.slice(0, 40)) ?? false;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<Base
+  title={`${d.title} | AIR Course 001, Module ${pad(n)}`}
+  description={d.goal}
+  pageSlug={entry.id}
+  ogType="article"
+  wide={true}
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      headline: d.title,
+      description: d.goal,
+      url: canonical,
+      author: { "@type": "Person", name: "Kranthi Manchikanti" },
+      publisher: { "@type": "Organization", name: "The AI Runtime" },
+      isPartOf: { "@type": "Course", name: "Engineering Long-Running AI Agents" },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Courses", item: "https://learn.theairuntime.com/learn/courses/" },
+        { "@type": "ListItem", position: 2, name: "Engineering Long-Running AI Agents", item: `https://learn.theairuntime.com${COURSE_BASE}/` },
+        { "@type": "ListItem", position: 3, name: `Module ${pad(n)}: ${d.title}` },
+      ],
+    },
+  ]}
+>
+  <div class="shell shell--wide lesson">
+    <!-- LEFT: course outline -->
+    <nav class="lesson__left" aria-label="Course outline">
+      <details class="outline" open>
+        <summary class="outline__summary">
+          <span class="outline__course">COURSE 001</span>
+          <span class="outline__toggle" aria-hidden="true"></span>
+        </summary>
+        <a class="outline__overview" href={`${COURSE_BASE}/`}>Course overview</a>
+        <ol class="outline__list">
+          {
+            modules.map((m) => (
+              <li>
+                <a
+                  href={moduleHref(m)}
+                  class:list={{ "is-current": m.id === entry.id }}
+                  aria-current={m.id === entry.id ? "page" : undefined}
+                >
+                  <span class="outline__num">{pad(m.data.module)}</span>
+                  {LEDGER_LABELS[m.data.module]}
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+        <div class="outline__extras">
+          <a href={`${COURSE_BASE}/labs/`}>Labs</a>
+          <a href={`${COURSE_BASE}/stack/`}>Technologies</a>
+          <a href={`${COURSE_BASE}/sources/`}>Sources</a>
+        </div>
+      </details>
+    </nav>
+
+    <!-- CENTER: lesson -->
+    <div class="lesson__main">
+      <header class="lhero">
+        <p class="lhero__eyebrow">{pad(n)} · {d.title.toUpperCase()}</p>
+        {d.hook && <h1 class="lhero__hook">{d.hook}</h1>}
+        {!d.hook && <h1>{d.title}</h1>}
+
+        {
+          caseStudy && (
+            <p class="lhero__case">
+              <span class="lhero__casekey">Case Study</span>
+              <a href={`/learn/case-studies/${caseStudy.id}/`}>{caseStudy.data.title}</a>
+            </p>
+          )
+        }
+        {d.scenario && <p class="lhero__scenario">{d.scenario}</p>}
+
+        <p class="lhero__meta">
+          {d.duration}
+          {labN !== undefined && d.lab && <span> · Optional lab {pad(labN)}: {d.lab}</span>}
+        </p>
+
+        <LessonVideo url={d.youtube} title={`Module ${pad(n)}: ${d.title}`} />
+
+        <div class="lhero__learn">
+          <p class="lhero__key">WHAT YOU'LL LEARN</p>
+          <p class="lhero__goal">{d.goal}</p>
+          {
+            d.skills.length > 0 && (
+              <p class="lhero__chips">{d.skills.map((s) => <span class="chip">{s}</span>)}</p>
+            )
+          }
+        </div>
+
+        <section class="first-pass" aria-label="First-time learner guide">
+          <div class="first-pass__intro">
+            <span>FIRST PASS</span>
+            <strong>{beginner.plain}</strong>
+          </div>
+          <ol>
+            <li><b>1</b><span><strong>Read the idea</strong><small>No setup required</small></span></li>
+            <li><b>2</b><span><strong>Trace the example</strong><small>Focus on what fails</small></span></li>
+            <li><b>3</b><span><strong>Check yourself</strong><small>Lab is optional</small></span></li>
+          </ol>
+          <p><span>ONE THING TO REMEMBER</span>{beginner.remember}</p>
+        </section>
+
+        {
+          d.invariant && (
+            <p class="lhero__invariant">
+              <span>INVARIANT</span> {d.invariant}
+            </p>
+          )
+        }
+      </header>
+
+      <article class="prose">
+        <Content />
+      </article>
+
+      <nav class="lesson__nav" aria-label="Module navigation">
+        {
+          prev ? (
+            <a href={moduleHref(prev)} class="lesson__nav-a">
+              <span class="meta">Prev</span>
+              <span>&larr; {pad(prev.data.module)} {prev.data.title}</span>
+            </a>
+          ) : (
+            <a href={`${COURSE_BASE}/`} class="lesson__nav-a">
+              <span class="meta">Prev</span>
+              <span>&larr; Course overview</span>
+            </a>
+          )
+        }
+        {
+          next ? (
+            <a href={moduleHref(next)} class="lesson__nav-a lesson__nav-a--next">
+              <span class="meta">Next</span>
+              <span>{pad(next.data.module)} {next.data.title} &rarr;</span>
+            </a>
+          ) : (
+            <a href={`${COURSE_BASE}/labs/`} class="lesson__nav-a lesson__nav-a--next">
+              <span class="meta">Next</span>
+              <span>All Failure Labs &rarr;</span>
+            </a>
+          )
+        }
+      </nav>
+    </div>
+
+    <!-- RIGHT: context rail -->
+    <aside class="lesson__right">
+      <div class="rail-box" data-marks>
+        <p class="rail-box__title">YOUR PROGRESS</p>
+        <div class="marks">
+          <button type="button" data-mark="watched">Watched</button>
+          <button type="button" data-mark="read">Read</button>
+          <button type="button" data-mark="explored">Explored</button>
+          <button type="button" data-mark="built">Built</button>
+        </div>
+        <p class="marks__note">Saved in this browser only.</p>
+      </div>
+
+      <Toc headings={headings} />
+
+      {
+        caseStudy && (
+          <div class="rail-box">
+            <p class="rail-box__title">CASE STUDY</p>
+            <p class="rail-box__body">
+              <a href={`/learn/case-studies/${caseStudy.id}/`}>{caseStudy.data.title}</a>
+            </p>
+            <p class="rail-box__sub">{caseStudy.data.category}</p>
+          </div>
+        )
+      }
+
+      {
+        d.technologies.length > 0 && (
+          <div class="rail-box">
+            <p class="rail-box__title">TECHNOLOGIES</p>
+            <ul class="rail-box__list">
+              {d.technologies.map((t) => {
+                const links = TECH_LINKS[t];
+                return (
+                  <li>
+                    <span class="rail-tech">{t}</span>
+                    {links && (
+                      <span class="rail-tech__links">
+                        {links.primer && <a href={links.primer}>primer</a>}
+                        <a href={links.docs} rel="noopener">docs <span aria-hidden="true">&#8599;</span></a>
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )
+      }
+
+      <div class="rail-box">
+        <p class="rail-box__title">RESOURCES</p>
+        <ul class="rail-box__list">
+          {repoUrl && (
+            <li><a href={repoUrl} rel="noopener">Explore implementation <span aria-hidden="true">&#8599;</span></a></li>
+          )}
+          <li><a href={CHANNELS.repo} rel="noopener">Reference repo <span aria-hidden="true">&#8599;</span></a></li>
+          <li><a href={`${COURSE_BASE}/sources/`}>Primary sources</a></li>
+          {d.substack && <li><a href={utm(d.substack, entry.id, "longform")} rel="noopener">Longform on Substack <span aria-hidden="true">&#8599;</span></a></li>}
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <CtaBlock
+    slot="footer-cta"
+    pageSlug={entry.id}
+    moduleNumber={n}
+    youtube={d.youtube}
+    reachOut={!bodyHasReachOut}
+  />
+</Base>
+
+<script define:vars={{ slug: entry.id }}>
+  // Exit criteria persistence (existing behavior, storage key unchanged).
+  const KEY = `air-c001-exit-${slug}`;
+  const block = document.querySelector(".block-exit");
+  if (block) {
+    const boxes = [...block.querySelectorAll('input[type="checkbox"]')];
+    let saved = [];
+    try { saved = JSON.parse(localStorage.getItem(KEY) ?? "[]"); } catch { /* fresh */ }
+
+    const doneNote = document.createElement("p");
+    doneNote.className = "block-exit__done";
+    doneNote.textContent = `MODULE ${slug.slice(0, 2)} COMPLETE. It will show as done on the course page.`;
+    block.appendChild(doneNote);
+
+    const sync = () => {
+      const states = boxes.map((b) => b.checked);
+      try {
+        localStorage.setItem(KEY, JSON.stringify(states));
+        const all = states.length > 0 && states.every(Boolean);
+        const done = new Set(JSON.parse(localStorage.getItem("air-c001-complete") ?? "[]"));
+        if (all) done.add(slug); else done.delete(slug);
+        localStorage.setItem("air-c001-complete", JSON.stringify([...done]));
+        block.classList.toggle("is-complete", all);
+      } catch { /* private mode */ }
+      boxes.forEach((b) => b.closest("li")?.classList.toggle("is-checked", b.checked));
+    };
+
+    boxes.forEach((box, i) => {
+      box.disabled = false;
+      box.checked = Boolean(saved[i]);
+      box.setAttribute("aria-label", box.closest("li")?.textContent?.trim() ?? `Exit criterion ${i + 1}`);
+      box.addEventListener("change", sync);
+    });
+    sync();
+  }
+
+  // Watched / Read / Explored / Built marks. air-c001-marks-<slug> = {watched:bool,...}
+  const MARKS_KEY = `air-c001-marks-${slug}`;
+  const wrap = document.querySelector("[data-marks]");
+  if (wrap) {
+    let marks = {};
+    let storageOk = true;
+    try { marks = JSON.parse(localStorage.getItem(MARKS_KEY) ?? "{}"); }
+    catch { storageOk = false; }
+
+    const buttons = wrap.querySelectorAll("[data-mark]");
+    const paint = () => {
+      buttons.forEach((b) => {
+        const on = Boolean(marks[b.dataset.mark]);
+        b.classList.toggle("is-on", on);
+        b.setAttribute("aria-pressed", String(on));
+        b.textContent = (on ? "✓ " : "") + b.dataset.mark.charAt(0).toUpperCase() + b.dataset.mark.slice(1);
+      });
+    };
+    buttons.forEach((b) => {
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", () => {
+        marks[b.dataset.mark] = !marks[b.dataset.mark];
+        try { localStorage.setItem(MARKS_KEY, JSON.stringify(marks)); } catch { /* keep in-memory */ }
+        paint();
+      });
+    });
+    if (!storageOk) wrap.querySelector(".marks__note").textContent = "Storage unavailable; marks last for this page view.";
+    paint();
+  }
+</script>
+
+<style>
+  .lesson {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    padding-top: 2.5rem;
+  }
+  .lesson__main { min-width: 0; max-width: 50.5rem; }
+
+  /* ---- left outline ---- */
+  .outline {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 0.75rem 1rem;
+  }
+  .outline__summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    padding: 0.25rem 0;
+  }
+  .outline__summary::-webkit-details-marker { display: none; }
+  .outline__toggle::after { content: "+"; color: var(--accent); font-size: 1rem; }
+  .outline[open] .outline__toggle::after { content: "\2212"; }
+  .outline__overview {
+    display: block;
+    font-size: var(--t-meta);
+    font-weight: 600;
+    margin: 0.5rem 0;
+  }
+  .outline__list { list-style: none; margin: 0; padding: 0; }
+  .outline__list li { margin: 0; }
+  .outline__list a {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.28rem 0.5rem;
+    margin: 0 -0.5rem;
+    border-radius: var(--radius-sm);
+    color: var(--fg-muted);
+    font-size: 0.83rem;
+    line-height: 1.45;
+  }
+  .outline__list a:hover { background: var(--bg-inset); color: var(--fg); text-decoration: none; }
+  .outline__list a.is-current { background: var(--bg-inset); color: var(--fg); font-weight: 600; }
+  .outline__list a.is-current .outline__num { color: var(--accent); }
+  .outline__num { font-family: var(--font-mono); font-size: 0.72rem; color: var(--fg-muted); padding-top: 0.1rem; }
+  .outline__extras {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+
+  /* ---- hero ---- */
+  .lhero { margin-bottom: 3rem; }
+  .lhero__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin: 0 0 0.75rem;
+  }
+  .lhero__hook {
+    font-size: clamp(1.9rem, 4.5vw, 2.75rem);
+    letter-spacing: -0.03em;
+    max-width: 22ch;
+    margin-bottom: 1rem;
+  }
+  .lhero__case { font-size: var(--t-meta); margin: 0 0 0.75rem; }
+  .lhero__casekey {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-right: 0.6rem;
+  }
+  .lhero__scenario {
+    font-size: 1.1rem;
+    color: var(--fg-muted);
+    max-width: 58ch;
+    border-left: 2px solid var(--accent-dim);
+    padding-left: 1rem;
+    margin: 0 0 1rem;
+  }
+  .lhero__meta { font-family: var(--font-mono); font-size: var(--t-meta); color: var(--fg-muted); margin: 0 0 0.5rem; }
+  .lhero__learn {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0 1rem;
+  }
+  .lhero__key {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    margin: 0 0 0.4rem;
+  }
+  .lhero__goal { margin: 0 0 0.5rem; }
+  .lhero__chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0; }
+  .chip {
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+    background: var(--bg-inset);
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+  }
+  .lhero__invariant {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    border: 1px solid var(--accent-dim);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    max-width: fit-content;
+    margin: 0;
+  }
+  .lhero__invariant span { color: var(--accent); letter-spacing: 0.1em; margin-right: 0.5rem; }
+  .first-pass { margin: 1rem 0; border: 1px solid var(--fg); background: var(--bg-raise); }
+  .first-pass__intro { display: grid; grid-template-columns: 7rem 1fr; gap: 1rem; padding: 1rem 1.1rem; border-bottom: 1px solid var(--line); align-items: baseline; }
+  .first-pass__intro span, .first-pass>p span { font: 500 .65rem var(--font-mono); letter-spacing: .1em; color: var(--accent); }
+  .first-pass__intro strong { font-size: 1rem; }
+  .first-pass ol { display: grid; grid-template-columns: repeat(3,1fr); list-style: none; padding: 0; margin: 0; }
+  .first-pass li { display: flex; gap: .65rem; padding: .8rem 1rem; margin: 0; border-right: 1px solid var(--line); }
+  .first-pass li:last-child { border-right: 0; }
+  .first-pass li>b { font: 500 .65rem var(--font-mono); color: var(--accent); }
+  .first-pass li strong, .first-pass li small { display: block; }
+  .first-pass li strong { font-size: .75rem; }
+  .first-pass li small { font: 400 .62rem var(--font-mono); color: var(--fg-muted); }
+  .first-pass>p { display: grid; grid-template-columns: 10rem 1fr; gap: 1rem; padding: .85rem 1.1rem; margin: 0; background: var(--bg-inset); font-size: .8rem; }
+
+  /* ---- nav / rail ---- */
+  .lesson__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .lesson__nav-a { display: block; }
+  .lesson__nav-a:hover { text-decoration: none; }
+  .lesson__nav-a .meta { display: block; margin-bottom: 0.25rem; }
+  .lesson__nav-a span:last-child { font-weight: 600; }
+  .lesson__nav-a--next { margin-left: auto; text-align: right; }
+
+  .rail-box {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1rem 1.15rem;
+    margin-bottom: 1.25rem;
+  }
+  .rail-box__title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    margin: 0 0 0.6rem;
+  }
+  .rail-box__body { margin: 0 0 0.2rem; font-weight: 600; }
+  .rail-box__sub { margin: 0; font-size: 0.78rem; color: var(--fg-muted); }
+  .rail-box__list { list-style: none; margin: 0; padding: 0; }
+  .rail-box__list li { margin: 0 0 0.45rem; font-size: var(--t-meta); display: flex; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+  .rail-tech { font-family: var(--font-mono); font-size: 0.8rem; color: var(--fg); }
+  .rail-tech__links { display: flex; gap: 0.75rem; font-family: var(--font-mono); font-size: 0.72rem; }
+
+  .marks { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .marks button {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--fg-muted);
+    cursor: pointer;
+  }
+  .marks button:hover { border-color: var(--accent-dim); color: var(--fg); }
+  .marks button.is-on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .marks__note { margin: 0.6rem 0 0; font-size: 0.7rem; color: var(--fg-muted); }
+
+  .lesson__left { display: none; }
+  .lesson__right { display: none; }
+
+  @media (max-width: 1099px) {
+    /* Mobile/tablet: outline collapses above content; rail folds below hero. */
+    .lesson__left { display: block; }
+    .outline { padding: 0.5rem 1rem; }
+    .outline:not([open]) { background: var(--bg-raise); }
+  }
+
+  @media (max-width: 620px) {
+    .first-pass__intro, .first-pass>p { grid-template-columns: 1fr; gap: .25rem; }
+    .first-pass ol { grid-template-columns: 1fr; }
+    .first-pass li { border-right: 0; border-bottom: 1px solid var(--line); }
+  }
+
+  @media (min-width: 1100px) {
+    .lesson {
+      grid-template-columns: 15rem minmax(0, 1fr) 16.5rem;
+      gap: 3rem;
+    }
+    .lesson__left {
+      display: block;
+      position: sticky;
+      top: 5rem;
+      align-self: start;
+      max-height: calc(100vh - 6rem);
+      overflow-y: auto;
+    }
+    .lesson__right {
+      display: block;
+      position: sticky;
+      top: 5rem;
+      align-self: start;
+      max-height: calc(100vh - 6rem);
+      overflow-y: auto;
+    }
+  }
+</style>
+
+<style is:global>
+  .prose h2 { margin-top: 2.75rem; padding-top: 0.5rem; scroll-margin-top: 5rem; }
+  .prose h3 { margin-top: 2rem; scroll-margin-top: 5rem; }
+  .prose > pre { margin: 1.5rem 0; }
+  .prose blockquote { font-size: var(--t-body); color: var(--fg); }
+  /* On narrow screens the right rail content is hidden; the TOC lives there,
+     which is acceptable: lesson headings + outline cover navigation. */
+</style>

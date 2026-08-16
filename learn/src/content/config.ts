@@ -71,7 +71,7 @@ const courses = defineCollection({
   schema: z.object({
     id: z.string(),                            // "course-001"
     number: z.string(),                        // "001"
-    slug: z.string().optional(),               // route under /courses/, when live
+    slug: z.string().optional(),               // route under /learn/courses/, when live
     title: z.string(),
     description: z.string(),
     status: z.enum(["live", "coming-next", "planned"]),

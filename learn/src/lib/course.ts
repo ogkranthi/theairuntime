@@ -42,7 +42,7 @@ export const MODULE_SLUGS: Record<number, string> = {
   15: "15-production-gauntlet",
 };
 
-export const COURSE_BASE = "/courses/long-running-agents";
+export const COURSE_BASE = "/learn/courses/long-running-agents";
 
 export const CHANNELS = {
   substack: "https://theairuntime.com/subscribe",

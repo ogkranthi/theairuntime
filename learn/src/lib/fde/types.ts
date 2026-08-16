@@ -1,0 +1,14 @@
+export type FdeSegment = "frontier-model" | "agent-application" | "enterprise-platform" | "inference-ml-systems" | "eval-observability" | "vertical-ai" | "public-sector" | "physical-ai";
+export type CareerLevel = "aspiring" | "fde" | "senior" | "staff-principal" | "lead-manager" | "head-of-fde";
+export type SkillDomain = "software-engineering" | "ai-systems" | "deployment-operations" | "customer-discovery" | "product-judgment" | "domain-fluency";
+export type ContentDepth = "understand" | "apply" | "engineer" | "prove";
+export type ContentKind = "primer" | "concept" | "pattern" | "reference-system" | "field-case-study" | "course" | "lab" | "scenario" | "career-guide";
+export interface BaseLearningAsset { slug:string; title:string; summary:string; kind:ContentKind; depth:ContentDepth[]; segments:FdeSegment[]; skills:SkillDomain[]; careerLevels:CareerLevel[]; prerequisites?:string[]; related?:string[]; lastReviewed?:string; featured?:boolean; }
+export interface PathMilestone { id:string; title:string; outcome:string; assetSlugs:string[]; proof?:string; }
+export interface FdePath { slug:string; title:string; audience:string; goal:string; description:string; recommendedSegments:FdeSegment[]; milestones:PathMilestone[]; }
+export interface CompanyDossier { slug:string; name:string; segments:FdeSegment[]; roleVariants:string[]; deploymentModelSummary:string; technicalSignals:string[]; customerEnvironment?:string[]; travelSignal?:string; compensationNotes?:string; interviewNotes?:string[]; sourceUrls:string[]; lastVerified:string; analysisNotes?:string[]; }
+export interface JobOpening { id:string; companySlug:string; title:string; location:string; region:"US"|"Canada"|"Europe"|"UK"|"India"|"APAC"|"Other"; remote?:boolean; segments:FdeSegment[]; sourceUrl:string; postedAt?:string; lastVerified:string; compensation?:{min?:number;max?:number;currency?:string;period?:"year"|"hour";note?:string}; }
+export interface AssessmentOption { id:string; label:string; segmentWeights?:Partial<Record<FdeSegment,number>>; skillSignals?:Partial<Record<SkillDomain,number>>; journeyWeights?:Partial<Record<"software-engineer-to-fde"|"solutions-to-fde"|"fde-to-senior",number>>; }
+export interface AssessmentQuestion { id:string; prompt:string; help?:string; multi?:boolean; options:AssessmentOption[]; }
+export interface FailureLab { slug:string; title:string; summary:string; segments:FdeSegment[]; skills:SkillDomain[]; difficulty:"foundation"|"intermediate"|"advanced"; estimatedMinutes?:number; startingState:string; injectedFailure:string; learnerGoal:string; evidenceRequired:string[]; successCriteria:string[]; hints?:string[]; repoUrl?:string; relatedLearning:string[]; }
+export interface CustomerScenario { slug:string; title:string; brief:string; ambiguity:string[]; constraints:string[]; stakeholderSignals:string[]; questionsToAnswer:string[]; evaluationRubric:{dimension:string;strong:string;weak:string}[]; }

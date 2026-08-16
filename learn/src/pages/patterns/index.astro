@@ -1,9 +1,0 @@
----
-import Base from "../../layouts/Base.astro";
-import KnowledgeCard from "../../components/KnowledgeCard.astro";
-import { patterns } from "../../data/knowledge";
----
-<Base title="AIR Patterns | The AI Runtime Learn" description="Reusable architecture patterns for production AI systems, including their invariants and tradeoffs." pageSlug="patterns">
-  <div class="shell"><header class="section intro"><p class="eyebrow">30 MINUTES · ENGINEERING DECISIONS</p><h1>AIR Patterns</h1><p>Concepts tell you what something is. Patterns tell you when to use it, how it fails, and which invariant must remain true.</p></header><section class="section"><div class="grid">{patterns.map((item) => <KnowledgeCard kind="pattern" {...item} />)}</div></section></div>
-</Base>
-<style>.intro p:last-child{max-width:62ch;color:var(--fg-muted);font-size:1.2rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:1rem}</style>

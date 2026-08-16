@@ -1,0 +1,172 @@
+---
+import Base from "../../../../layouts/Base.astro";
+import CourseNav from "../../../../components/CourseNav.astro";
+import CtaBlock from "../../../../components/CtaBlock.astro";
+import { CHANNELS, getModules, moduleHref, pad, utm } from "../../../../lib/course";
+
+const modules = await getModules();
+const labs = modules
+  .filter((m) => m.data.lab && m.data.labNumber !== undefined)
+  .sort((a, b) => (a.data.labNumber ?? 0) - (b.data.labNumber ?? 0));
+
+/** One line per lab: what breaks, and the primitive it teaches. */
+const PRIMITIVE: Record<number, string> = {
+  1: "state must survive",
+  2: "evidence-backed progress",
+  3: "checkpoint + replay semantics",
+  4: "idempotency + reconciliation",
+  5: "leases + ownership",
+  6: "failure-specific routing",
+  7: "durable human waits",
+  8: "reconstructed working context",
+  9: "progress-aware observability",
+  10: "trust boundaries + permissions",
+  11: "validated evals",
+  12: "framework portability",
+  13: "automatic recovery",
+  14: "system-level reliability",
+};
+---
+
+<Base
+  title="The Failure Labs | AIR Course 001"
+  description="Fourteen Failure Labs, the spine of Course 001. Each has a fault profile, an expected invariant, a one-command reproduction, observable symptoms, and an automated pass/fail check."
+  pageSlug="labs"
+>
+  <CourseNav active="labs" />
+  <div class="shell">
+    <section class="section">
+      <p class="eyebrow">FAILURE LABS</p>
+      <h1>Break it on purpose</h1>
+      <div class="measure">
+        <p>Failure Labs are the spine of Course 001. Every lab has five artifacts:</p>
+      </div>
+      <pre>{`fault profile
+expected invariant
+reproduction command
+observable symptoms
+automated pass/fail check`}</pre>
+      <div class="measure">
+        <p class="muted">
+          A lab does not pass because the run eventually finished. A lab passes only when the
+          relevant invariant is directly checked.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Lab catalog</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Lab</th>
+              <th scope="col">Failure</th>
+              <th scope="col">Primitive learned</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              labs.map((m) => {
+                const ln = m.data.labNumber ?? 0;
+                return (
+                  <tr>
+                    <th scope="row">{pad(ln)}</th>
+                    <td><a href={moduleHref(m)}>{m.data.lab}</a></td>
+                    <td class="labs__primitive">{PRIMITIVE[ln]}</td>
+                    <td class="labs__watch">
+                      {m.data.youtube ? (
+                        <a href={utm(m.data.youtube, m.id, "watch")} rel="noopener">
+                          <span aria-hidden="true">&#9654;</span> Watch
+                        </a>
+                      ) : (
+                        <span class="is-pending">coming</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="muted measure">
+        Lab numbers run 01 to 14, independent of module numbers: Modules 00 and 13 carry
+        written exercises instead of a lab (the twelve-scenario classification and the
+        case-study extraction).
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>The standard lab page</h2>
+      <div class="measure">
+        <p>Every lab follows the same shape, and each part earns its place:</p>
+      </div>
+      <dl class="labshape">
+        <div><dt>Failure</dt><dd>One sentence describing what is intentionally broken.</dd></div>
+        <div><dt>Prediction</dt><dd>Before running it, you write down what you think will happen.</dd></div>
+        <div><dt>Reproduce</dt><dd>One command: <code>make lab LAB=05</code>. No setup reconstructed from prose.</dd></div>
+        <div><dt>Observe</dt><dd>Where to look, not what the answer is: the dashboard, <code>run_events</code>, the trace, the runs table, the external side-effect table.</dd></div>
+        <div><dt>Diagnose</dt><dd>Questions that force mechanism-level thinking.</dd></div>
+        <div><dt>Fix</dt><dd>The invariant is stated; the implementation is yours.</dd></div>
+        <div><dt>Prove</dt><dd>A deterministic test or a measured comparison.</dd></div>
+        <div><dt>Production extension</dt><dd>What the course implementation simplifies, stated plainly.</dd></div>
+      </dl>
+    </section>
+
+    <section class="section">
+      <h2>Run the fixture server</h2>
+      <pre>{`git clone ${CHANNELS.repo}
+cd air-course-long && make fixtures   # deterministic vendor sites on :8001`}</pre>
+      <div class="measure">
+        <p class="muted">
+          A failure course becomes weak when every student sees a different website, latency
+          profile, or model behavior. Environmental faults stay deterministic; model-semantic
+          behavior can still vary, so the model and prompt versions are recorded with every
+          run so results can be compared.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="labs" />
+</Base>
+
+<style>
+  table th[scope="row"] {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0.06em;
+    width: 3.5rem;
+  }
+  table td a { font-family: var(--font-mono); }
+  .labs__primitive { color: var(--fg-muted); }
+  .labs__watch { font-family: var(--font-mono); white-space: nowrap; }
+  .is-pending { color: #71717A; }   /* 4.75:1 on white, passes AA */
+
+  .labshape { margin: 1.5rem 0 0; border-top: 1px solid var(--line); }
+  .labshape > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem 2rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .labshape dt {
+    font-family: var(--font-mono);
+    font-size: var(--t-meta);
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+  .labshape dd {
+    margin: 0;
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    max-width: 68ch;
+  }
+  @media (min-width: 720px) {
+    .labshape > div { grid-template-columns: 13rem minmax(0, 1fr); }
+  }
+</style>
