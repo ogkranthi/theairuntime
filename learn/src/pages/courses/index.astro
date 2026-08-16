@@ -7,28 +7,28 @@ import CourseCard from "../../components/CourseCard.astro";
 const courses = (await getCollection("courses")).sort((a, b) =>
   a.data.number.localeCompare(b.data.number),
 );
+const live = courses.filter((course) => course.data.status === "live");
 ---
 
 <Base
   title="Courses | The AI Runtime, FDE Engineering"
-  description="The AIR course catalog: production AI engineering taught through real customer problems, one course per discipline. Course 001 is live; the rest are shaped by what its graduates hit next."
+  description="AIR flagship courses teach production AI engineering through one coherent system, real failures, and reproducible labs."
   pageSlug="courses"
 >
   <div class="shell">
     <section class="section">
       <p class="eyebrow">COURSES</p>
-      <h1>The catalog</h1>
+      <h1>Flagship courses</h1>
       <p class="muted measure">
-        Each course teaches one discipline of forward-deployed AI engineering through real
-        customer problems. Everything is free, watchable and readable end to end; repos and
-        labs are optional depth, never a gate.
+        We publish one exceptional course before promising the next. Everything is free,
+        readable end to end, and passive-first; repos and labs are optional depth, never a gate.
       </p>
     </section>
 
     <section class="section">
       <div class="grid">
         {
-          courses.map((c) => (
+          live.map((c) => (
             <CourseCard
               number={c.data.number}
               title={c.data.title}
@@ -43,8 +43,9 @@ const courses = (await getCollection("courses")).sort((a, b) =>
         }
       </div>
       <p class="muted">
-        The sequence is deliberate: what practitioners hit after Course 001 shapes Course 002,
-        and so on. Finishing a course and telling us where it hurt is how the catalog grows.
+        The next course will be shaped by what engineers hit after Course 001—not by a catalog
+        deadline. Meanwhile, its reusable ideas are becoming <a href="/concepts/">concepts</a>
+        and <a href="/patterns/">AIR Patterns</a>.
       </p>
     </section>
   </div>

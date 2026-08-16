@@ -1,222 +1,41 @@
 ---
-import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
-import CtaBlock from "../components/CtaBlock.astro";
-import CourseCard from "../components/CourseCard.astro";
-import FdeLifecycle from "../components/FdeLifecycle.astro";
 import { CHANNELS } from "../lib/course";
-
-const courses = (await getCollection("courses")).sort((a, b) =>
-  a.data.number.localeCompare(b.data.number),
-);
-const live = courses.filter((c) => c.data.status === "live");
-const upcoming = courses.filter((c) => c.data.status !== "live");
-
-const modes = [
-  {
-    badge: "PASSIVE FIRST",
-    title: "Watch the Case Study",
-    body: "Understand the customer problem, architecture, decisions and production lessons.",
-  },
-  {
-    badge: "GO DEEPER",
-    title: "Explore the System",
-    body: "Inspect diagrams, code, traces, technology choices and deeper resources.",
-  },
-  {
-    badge: "HANDS-ON",
-    title: "Build It Yourself",
-    body: "Clone the reference implementation and try optional labs.",
-  },
+import { concepts, patterns } from "../data/knowledge";
+const depths = [
+  { time: "10 MIN", title: "Concepts", copy: "Build a precise mental model.", href: "/concepts/", mark: "01" },
+  { time: "30 MIN", title: "Patterns", copy: "Make a production decision.", href: "/patterns/", mark: "02" },
+  { time: "1 HOUR", title: "Systems", copy: "Trace a real architecture.", href: "/systems/", mark: "03" },
+  { time: "15 HOURS", title: "Courses", copy: "Build connected expertise.", href: "/courses/", mark: "04" },
+  { time: "HANDS-ON", title: "FDE Lab", copy: "Break it. Measure it. Prove it.", href: CHANNELS.lab, mark: "05", external: true },
 ];
 ---
-
-<Base
-  title="Learn AI Engineering Like an FDE | The AI Runtime"
-  description="Real customer problems. Production architectures. Engineering decisions. Learn how AI systems are actually designed, built, deployed, and operated."
-  pageSlug="home"
-  jsonLd={[
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: "The AI Runtime, FDE Engineering",
-      url: "https://learn.theairuntime.com/",
-    },
-  ]}
->
+<Base title="The Open Curriculum for Production AI Engineering | AIR Learn" description="Learn how reliable AI systems are designed, evaluated, deployed, and operated. Free, practical, and built from real production systems." pageSlug="home" jsonLd={[{"@context":"https://schema.org","@type":"WebSite",name:"The AI Runtime Learn",url:"https://learn.theairuntime.com/"}]}>
   <div class="shell">
-    <section class="hero section">
-      <p class="eyebrow">THE AI RUNTIME · FDE ENGINEERING</p>
-      <h1 class="hero__title">Learn AI Engineering Like an FDE</h1>
-      <p class="hero__sub">
-        Real customer problems. Production architectures. Engineering decisions. Learn how AI
-        systems are actually designed, built, deployed, and operated.
-      </p>
-      <div class="hero__actions">
-        <a class="btn btn--solid" href="/courses/">Explore courses</a>
-        <a class="btn" href="/case-studies/">Browse case studies</a>
-      </div>
-      <p class="hero__meta">Free · Practical · Open-source implementations · No signup required</p>
+    <section class="hero">
+      <div class="hero__copy"><p class="eyebrow">THE AI RUNTIME / LEARN</p><h1>The Open Curriculum for <em>Production AI Engineering</em></h1><p class="hero__lede">Learn how AI systems are designed, evaluated, deployed, and operated when reliability matters.</p><div class="hero__actions"><a class="btn btn--solid" href="/courses/long-running-agents/">Start here <span aria-hidden="true">→</span></a><a class="btn" href="#curriculum">Explore the curriculum</a></div><p class="hero__meta">Free. Practical. Open. No signup required.</p></div>
+      <aside class="hero__lens" aria-label="The FDE learning method"><p class="lens__label">LEARN LIKE AN FDE</p><ol><li><span>01</span>Start with the customer problem</li><li><span>02</span>Understand the architecture</li><li><span>03</span>Study what fails</li><li><span>04</span>Build it yourself</li></ol></aside>
     </section>
 
-    <section class="section" id="how-you-learn">
-      <h2>How you learn here</h2>
-      <p class="muted measure">
-        Every course is designed to be consumed passively first. Depth is there when you want
-        it, never required to follow along.
-      </p>
-      <div class="modes">
-        {
-          modes.map((m, i) => (
-            <article class="mode">
-              <p class="mode__step" aria-hidden="true">{i + 1}</p>
-              <p class="mode__badge">{m.badge}</p>
-              <h3 class="mode__title">{m.title}</h3>
-              <p class="mode__body">{m.body}</p>
-            </article>
-          ))
-        }
-      </div>
-    </section>
+    <section class="section" id="curriculum"><div class="section-head"><div><p class="eyebrow">CHOOSE YOUR DEPTH</p><h2>One body of knowledge.<br/>Five ways in.</h2></div><p>You do not need a local environment to begin. Learn the idea in ten minutes, then go as deep as the problem demands.</p></div><div class="depth-grid">{depths.map((d) => <a class="depth" href={d.href} rel={d.external ? "noopener" : undefined}><span class="depth__mark">{d.mark}</span><span class="depth__time">{d.time}</span><h3>{d.title}</h3><p>{d.copy}</p><span class="depth__arrow">{d.external ? "↗" : "→"}</span></a>)}</div></section>
 
-    <section class="section" id="lifecycle">
-      <h2>The FDE lifecycle</h2>
-      <p class="muted measure">
-        Forward-deployed engineering is a full loop, not a coding sprint. The curriculum
-        teaches every stage of it, from the customer conversation to the 3am page.
-      </p>
-      <FdeLifecycle />
-    </section>
+    <section class="section flagship"><div class="flagship__intro"><p class="eyebrow">START HERE · COURSE 001</p><h2>Engineering Long-Running AI Agents</h2><p>One coherent system, from a naive loop to a production runtime that survives failures, restarts, long waits, and changing context.</p><a class="btn btn--solid" href="/courses/long-running-agents/">Start Course 001 →</a></div><div class="flagship__map"><div class="numbers"><strong>16</strong><span>modules</span><strong>14</strong><span>failure labs</span><strong>5</strong><span>systems</span></div><pre aria-label="Course learning progression">{`UNDERSTAND\nmental models + architecture\n        ↓\nEXPLORE\ncode + traces + failures\n        ↓\nBUILD\nrepo + evals + deployment`}</pre></div></section>
 
-    <section class="section" id="courses">
-      <h2>Courses</h2>
-      <div class="courses-grid courses-grid--live">
-        {
-          live.map((c) => (
-            <CourseCard
-              number={c.data.number}
-              title={c.data.title}
-              description={c.data.description}
-              status={c.data.status}
-              href={c.data.slug ? `/courses/${c.data.slug}/` : undefined}
-              caseStudyTags={c.data.caseStudyTags}
-              skills={c.data.skills}
-              stats={c.data.stats}
-            />
-          ))
-        }
-      </div>
-      <div class="courses-grid">
-        {
-          upcoming.map((c) => (
-            <CourseCard
-              number={c.data.number}
-              title={c.data.title}
-              description={c.data.description}
-              status={c.data.status}
-            />
-          ))
-        }
-      </div>
-      <p class="muted"><a href="/courses/">The full catalog &rarr;</a></p>
-    </section>
+    <section class="section knowledge"><div class="section-head"><div><p class="eyebrow">NEW IN THE KNOWLEDGE BASE</p><h2>Learn one thing.<br/>Use it today.</h2></div><p>Short, linkable explanations make the curriculum useful before—and long after—you finish the course.</p></div><div class="knowledge__columns"><div><p class="column-label">CONCEPTS · WHAT IT IS</p>{concepts.slice(0,5).map((item, i) => <a href={`/concepts/${item.slug}/`}><span>0{i+1}</span><strong>{item.title}</strong><small>{item.summary}</small><b>→</b></a>)}<a class="view-all" href="/concepts/">Explore all concepts →</a></div><div><p class="column-label">PATTERNS · WHEN TO USE IT</p>{patterns.slice(0,5).map((item, i) => <a href={`/patterns/${item.slug}/`}><span>0{i+1}</span><strong>{item.title}</strong><small>{item.summary}</small><b>→</b></a>)}<a class="view-all" href="/patterns/">Explore all patterns →</a></div></div></section>
 
-    <section class="section" id="lab">
-      <h2>Learn, explore, then do</h2>
-      <div class="tri">
-        <div>
-          <p class="eyebrow eyebrow--muted">LEARN</p>
-          <p class="muted">Understand how FDEs solve production AI problems, through courses built on real cases.</p>
-        </div>
-        <div>
-          <p class="eyebrow eyebrow--muted">EXPLORE</p>
-          <p class="muted">Study reference systems and <a href="/case-studies/">case studies</a>, with diagrams, decisions and code.</p>
-        </div>
-        <div>
-          <p class="eyebrow eyebrow--muted">LAB</p>
-          <p class="muted">Solve a client-shaped problem yourself at the <a href={CHANNELS.lab} rel="noopener">FDE Lab <span aria-hidden="true">&#8599;</span></a>.</p>
-        </div>
-      </div>
-    </section>
+    <section class="section skills"><div><p class="eyebrow">THE PRODUCTION AI SKILLS MAP</p><h2>Know what to learn next.</h2><p>See the complete terrain—from discovery and AI engineering to deployment and customer adoption—without turning it into a checklist of tools.</p><a class="btn" href="/skills/">Explore the skills map →</a></div><div class="skills__orbit" aria-label="Skills covered"><span>Discovery</span><span>AI Engineering</span><span>Software Engineering</span><span>Deployment</span><span>AI-Native Development</span><span>Customer Engineering</span></div></section>
+
+    <section class="section proof"><p class="eyebrow">FROM KNOWLEDGE TO PROOF</p><div class="proof__flow"><span><b>01</b>Learn the concept</span><i>→</i><span><b>02</b>Study the system</span><i>→</i><span><b>03</b>Break it in the Lab</span><i>→</i><span><b>04</b>Publish the Field Report</span></div><p><a href={CHANNELS.lab} rel="noopener">Enter the FDE Lab ↗</a></p></section>
   </div>
-
-  <CtaBlock slot="footer-cta" pageSlug="home" />
 </Base>
 
 <style>
-  .hero { padding-top: 4.5rem; }
-  .hero__title {
-    font-size: clamp(2.4rem, 6vw, 3.75rem);
-    letter-spacing: -0.03em;
-    margin-bottom: 1rem;
-    max-width: 18ch;
-  }
-  .hero__sub {
-    font-size: 1.25rem;
-    color: var(--fg-muted);
-    margin: 0 0 2rem;
-    max-width: 56ch;
-  }
-  .hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
-  .hero__meta {
-    font-family: var(--font-mono);
-    font-size: var(--t-meta);
-    color: var(--fg-muted);
-    margin: 0;
-  }
-
-  .modes {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-  }
-  .mode {
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--bg-raise);
-    padding: 1.5rem;
-    position: relative;
-  }
-  .mode__step {
-    font-family: var(--font-mono);
-    font-size: 2rem;
-    color: var(--accent-dim);
-    margin: 0 0 0.5rem;
-    line-height: 1;
-  }
-  .mode__badge {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    color: var(--accent);
-    border: 1px solid var(--accent-dim);
-    border-radius: 999px;
-    padding: 0.15rem 0.6rem;
-    margin: 0;
-  }
-  .mode__title { font-size: var(--t-h3); margin: 0 0 0.4rem; }
-  .mode__body { font-size: var(--t-meta); color: var(--fg-muted); margin: 0; max-width: 44ch; }
-
-  .courses-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
-    margin: 1.5rem 0;
-  }
-  .tri {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
-  }
-  .tri p:last-child { margin-bottom: 0; font-size: var(--t-meta); }
-
-  @media (min-width: 860px) {
-    .modes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .courses-grid:not(.courses-grid--live) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .tri { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  }
+  .hero{min-height:calc(100vh - 3.5rem);display:grid;align-items:center;grid-template-columns:minmax(0,1.45fr) minmax(18rem,.55fr);gap:clamp(3rem,8vw,8rem);padding:6rem 0}.hero h1{font-size:clamp(3.2rem,7vw,6.6rem);line-height:.96;letter-spacing:-.06em;max-width:13ch;margin-bottom:1.75rem}.hero h1 em{font-style:normal;color:var(--accent)}.hero__lede{max-width:51ch;font-size:1.28rem;line-height:1.55;color:var(--fg-muted)}.hero__actions{display:flex;flex-wrap:wrap;gap:.75rem;margin:2rem 0 1.25rem}.hero__meta{font-family:var(--font-mono);font-size:.72rem;color:var(--fg-muted)}.hero__lens{border-left:1px solid var(--accent-dim);padding-left:1.5rem}.lens__label,.column-label{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;color:var(--accent)}.hero__lens ol{list-style:none;padding:0;margin:1.5rem 0 0}.hero__lens li{padding:.85rem 0;border-top:1px solid var(--line);font-size:.88rem}.hero__lens li span{display:inline-block;width:2.2rem;font-family:var(--font-mono);font-size:.68rem;color:var(--accent)}
+  .section{padding:6rem 0}.section-head{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:end;margin-bottom:2.5rem}.section-head h2{font-size:clamp(2.2rem,4.5vw,4rem)}.section-head>p{color:var(--fg-muted);max-width:46ch;justify-self:end}.depth-grid{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line);background:var(--line);gap:1px}.depth{position:relative;background:var(--bg);color:var(--fg);padding:1.25rem;min-height:14rem;display:flex;flex-direction:column}.depth:hover{background:var(--bg-raise);text-decoration:none}.depth__mark{font-family:var(--font-mono);font-size:2rem;color:var(--accent-dim)}.depth__time{font-family:var(--font-mono);font-size:.65rem;color:var(--accent);margin-top:auto}.depth h3{margin:.4rem 0}.depth p{font-size:.78rem;color:var(--fg-muted);margin:0}.depth__arrow{position:absolute;right:1rem;top:1rem;color:var(--accent)}
+  .flagship{display:grid;grid-template-columns:1.15fr .85fr;gap:5rem;background:var(--fg);color:var(--bg);margin-inline:calc(50% - 50vw);padding-inline:max(var(--pad),calc((100vw - var(--shell))/2 + var(--pad)))}.flagship h2{font-size:clamp(2.4rem,5vw,4.5rem);color:white;max-width:13ch}.flagship__intro>p:not(.eyebrow){color:#c4c4c8;max-width:52ch}.flagship__map{align-self:center}.numbers{display:grid;grid-template-columns:auto 1fr;gap:.2rem 1rem;align-items:baseline;margin-bottom:1.5rem}.numbers strong{font-size:2.5rem;color:#fff}.numbers span{font-family:var(--font-mono);font-size:.75rem;color:#a3a3ab}.flagship pre{border-color:#353539}
+  .knowledge__columns{display:grid;grid-template-columns:1fr 1fr;gap:3rem}.knowledge__columns>div>a:not(.view-all){display:grid;grid-template-columns:2rem 1fr auto;column-gap:.75rem;padding:1rem 0;border-top:1px solid var(--line);color:var(--fg);align-items:start}.knowledge__columns a:hover{text-decoration:none}.knowledge__columns a span,.knowledge__columns a b{font-family:var(--font-mono);font-size:.7rem;color:var(--accent);font-weight:400}.knowledge__columns a small{grid-column:2;font-size:.75rem;color:var(--fg-muted)}.view-all{display:inline-block;margin-top:1.25rem;font-family:var(--font-mono);font-size:.75rem}
+  .skills{display:grid;grid-template-columns:.8fr 1.2fr;gap:6rem;align-items:center}.skills h2{font-size:clamp(2.3rem,5vw,4rem)}.skills>div:first-child>p:not(.eyebrow){color:var(--fg-muted)}.skills__orbit{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center}.skills__orbit span{border:1px solid var(--line);border-radius:999px;padding:.8rem 1rem;font-family:var(--font-mono);font-size:.76rem;background:var(--bg-raise)}.skills__orbit span:nth-child(2){border-color:var(--accent);color:var(--accent);font-size:.9rem}
+  .proof{text-align:center}.proof__flow{display:flex;justify-content:center;align-items:center;gap:1.2rem;margin:2.5rem 0;flex-wrap:wrap}.proof__flow span{font-weight:600}.proof__flow b{display:block;font-family:var(--font-mono);font-size:.65rem;color:var(--accent);margin-bottom:.25rem}.proof__flow i{font-style:normal;color:var(--accent-dim)}
+  @media(max-width:900px){.hero{grid-template-columns:1fr;min-height:auto}.hero__lens{max-width:28rem}.depth-grid{grid-template-columns:repeat(2,1fr)}.depth:last-child{grid-column:1/-1}.flagship,.skills{grid-template-columns:1fr;gap:3rem}.section-head,.knowledge__columns{grid-template-columns:1fr}.section-head>p{justify-self:start}}
+  @media(max-width:540px){.hero{padding:4rem 0}.hero h1{font-size:3rem}.section{padding:4rem 0}.depth-grid{grid-template-columns:1fr}.depth:last-child{grid-column:auto}.depth{min-height:11rem}.knowledge__columns{gap:3rem}.proof__flow{align-items:stretch;flex-direction:column}.proof__flow i{transform:rotate(90deg)}}
 </style>
