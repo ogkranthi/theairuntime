@@ -15,20 +15,11 @@ const studies = await getCollection("caseStudies", ({ data }) =>
 );
 const studyBydId = new Map(studies.map((s) => [s.id, s]));
 
-const learn = [
-  "explicit durable state, with evidence instead of claims",
-  "checkpoints, replay semantics, and recovery",
-  "replay-safe steps and what may execute twice",
-  "idempotent side effects and reconciliation",
-  "worker ownership: claims, leases, heartbeats, fencing, orphan recovery",
-  "failure-specific retry policies, timeouts, and honest degradation",
-  "durable human approval that never holds a worker",
-  "artifact-based context management and handoffs",
-  "traces, events, and an operator dashboard",
-  "security boundaries untrusted content cannot cross",
-  "trajectory evaluations and validated judges",
-  "a Deep Agents implementation, interrogated against your invariants",
-  "a deployable runtime with startup reconciliation and a runbook",
+const learningStages = [
+  { step: "01", title: "See the problem", modules: "00–02", copy: "Start with a tiny agent loop. Learn why memory, process state, and model context are not durable state." },
+  { step: "02", title: "Make it survive", modules: "03–07", copy: "Add checkpoints, safe side effects, worker ownership, recovery, and human approval—one failure at a time." },
+  { step: "03", title: "Make it governable", modules: "08–12", copy: "Control context, observe behavior, enforce security boundaries, evaluate the path, and build the harness." },
+  { step: "04", title: "Prove it", modules: "13–15", copy: "Compare real architectures, deploy the runtime, then run every failure together in the production gauntlet." },
 ];
 
 const technologies = [
@@ -80,8 +71,8 @@ const technologies = [
         <a href={CHANNELS.repo} rel="noopener">reference repo <span aria-hidden="true">&#8599;</span></a>
       </p>
       <div class="chead__actions">
-        <a class="btn btn--solid" href={moduleHref(modules[0]!)}>Start course</a>
-        <span class="chead__soon">Introduction video coming soon</span>
+        <a class="btn btn--solid" href={moduleHref(modules[0]!)}>Start with Module 00</a>
+        <a class="btn" href="#how-to-learn">How the course works</a>
         <a class="btn" href={CHANNELS.repo} rel="noopener">View repo <span aria-hidden="true">&#8599;</span></a>
       </div>
       <p class="chead__fresh">Course content and API examples last verified: 2026-08 · exact dependency versions live in the reference repo lockfile</p>
@@ -90,11 +81,26 @@ const technologies = [
       </p>
     </section>
 
+    <section class="section first-time" id="how-to-learn">
+      <div class="first-time__intro">
+        <p class="eyebrow">NEW TO PRODUCTION AI?</p>
+        <h2>Watch or read first.<br/>Build only when ready.</h2>
+        <p>You do not need the repository, Docker, an API key, or prior agent experience. Every module explains the failure visually before it introduces the engineering fix.</p>
+      </div>
+      <ol class="mode-grid">
+        <li><span>1</span><div><strong>Understand</strong><small>Read or watch the explanation. No setup.</small></div></li>
+        <li><span>2</span><div><strong>Trace</strong><small>Follow the code and failure timeline.</small></div></li>
+        <li><span>3</span><div><strong>Check</strong><small>Answer one question in your own words.</small></div></li>
+        <li><span>+</span><div><strong>Build · optional</strong><small>Run the lab only when you want practice.</small></div></li>
+      </ol>
+    </section>
+
     <section class="section" id="what-youll-learn">
-      <h2>What you'll learn</h2>
-      <ul class="learn">
-        {learn.map((item) => <li>{item}</li>)}
-      </ul>
+      <p class="eyebrow">THE LEARNING PATH</p>
+      <h2>One system. Four clear stages.</h2>
+      <div class="stage-grid">
+        {learningStages.map((stage) => <article><span>{stage.step}</span><small>MODULES {stage.modules}</small><h3>{stage.title}</h3><p>{stage.copy}</p></article>)}
+      </div>
     </section>
 
     <section class="section" id="industry-cases">
@@ -250,8 +256,21 @@ const technologies = [
     margin: 1.25rem 0 0;
   }
 
-  .learn { columns: 1; padding-left: 1.25rem; margin: 1rem 0 0; }
-  .learn li { margin-bottom: 0.5em; break-inside: avoid; }
+  .first-time { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(2rem,6vw,6rem); align-items: center; }
+  .first-time__intro h2 { font-size: clamp(2rem,4vw,3.6rem); }
+  .first-time__intro>p:last-child { color: var(--fg-muted); max-width: 50ch; }
+  .mode-grid { list-style: none; padding: 0; margin: 0; border: 1px solid var(--line); background: var(--bg-raise); }
+  .mode-grid li { display: grid; grid-template-columns: 2rem 1fr; gap: .75rem; padding: .9rem 1rem; margin: 0; border-bottom: 1px solid var(--line); }
+  .mode-grid li:last-child { border: 0; background: var(--bg-inset); }
+  .mode-grid li>span { font: 500 .7rem var(--font-mono); color: var(--accent); }
+  .mode-grid strong,.mode-grid small { display: block; }
+  .mode-grid small { color: var(--fg-muted); font-size: .75rem; }
+  .stage-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; border: 1px solid var(--line); background: var(--line); margin-top: 1.5rem; }
+  .stage-grid article { background: var(--bg-raise); padding: 1.25rem; min-height: 15rem; }
+  .stage-grid article>span { display: block; font: 500 2rem var(--font-mono); color: var(--accent-dim); }
+  .stage-grid article>small { font: 500 .62rem var(--font-mono); color: var(--accent); }
+  .stage-grid h3 { margin-top: 2.5rem; }
+  .stage-grid p { color: var(--fg-muted); font-size: .8rem; line-height: 1.5; }
 
   .cases-grid, .tech-grid {
     display: grid;
@@ -274,10 +293,14 @@ const technologies = [
   .reset-btn:hover { color: var(--accent); border-color: var(--accent-dim); }
 
   @media (min-width: 800px) {
-    .learn { columns: 2; column-gap: 3rem; }
     .cases-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .tech-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
+  @media (max-width: 799px) {
+    .first-time { grid-template-columns: 1fr; }
+    .stage-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 520px) { .stage-grid { grid-template-columns: 1fr; } }
   @media (min-width: 1100px) {
     .cases-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .tech-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
