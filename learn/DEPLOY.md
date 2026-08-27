@@ -45,8 +45,8 @@ workers.dev host is passthrough, so the prefix serves as-is there).
 
 ```bash
 curl -sI https://learn.theairuntime.com/ | head -1                 # 200
-curl -s https://learn.theairuntime.com/course/04-idempotency/ | grep -o "<title>.*</title>"
-curl -sI https://learn.theairuntime.com/og/04-idempotency.png | grep -i content-type   # image/png
+curl -s https://learn.theairuntime.com/learn/courses/long-running-agents/04-side-effects/ | grep -o "<title>.*</title>"
+curl -sI https://learn.theairuntime.com/og/04-side-effects.png | grep -i content-type   # image/png
 curl -s https://learn.theairuntime.com/rss.xml | head -c 120
 curl -sI https://events.theairuntime.com/learn-site/ | grep -iE "^(HTTP|location)"     # 301 to learn
 ```
