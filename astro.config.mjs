@@ -43,5 +43,6 @@ export default defineConfig({
   // be enumerated as static redirect files.
   redirects: {
     '/host': '/partner',
+    '/fde-table': '/fde-circle',
   },
 });
