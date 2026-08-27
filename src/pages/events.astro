@@ -14,7 +14,15 @@ const fmt = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short',
 
 // Announced AI Runtime events that do not have a full event page yet.
 // Move them into src/content/events/boston/ once the date and venue are set.
-const announced: { title: string; detail: string; url: string; linkLabel: string }[] = [];
+const announced: { title: string; detail: string; url: string; badge?: string }[] = [
+  {
+    title: 'FDE Table',
+    detail:
+      'An invite-only dinner for forward deployed engineers in Boston. Date and venue to be announced. Email to ask for a seat.',
+    url: 'mailto:info@theairuntime.com?subject=FDE%20Table',
+    badge: 'Invite only',
+  },
+];
 
 // The Boston AI scene: events and communities around town worth your calendar.
 // Links are the official pages; entries without a public page stay unlinked.
@@ -103,18 +111,24 @@ const around = [
           </a>
         </li>
       ))}
-      {announced.map((a) => (
-        <li>
-          <a class="row" href={a.url} target="_blank" rel="noopener">
-            <span class="date tba">TBA</span>
-            <span class="body">
-              <span class="title">{a.title}</span>
-              <span class="meta muted">{a.detail}</span>
-            </span>
-            <span class="go" aria-hidden="true">↗</span>
-          </a>
-        </li>
-      ))}
+      {announced.map((a) => {
+        const external = a.url.startsWith('http');
+        return (
+          <li>
+            <a class="row" href={a.url} target={external ? '_blank' : undefined} rel={external ? 'noopener' : undefined}>
+              <span class="date tba">TBA</span>
+              <span class="body">
+                <span class="title">
+                  {a.title}
+                  {a.badge && <span class="badge">{a.badge}</span>}
+                </span>
+                <span class="meta muted">{a.detail}</span>
+              </span>
+              <span class="go" aria-hidden="true">{external ? '↗' : '→'}</span>
+            </a>
+          </li>
+        );
+      })}
     </ul>
     <p class="muted small note">
       RSVP for the next meetup on <a href="/boston">the Boston page</a>, or
@@ -195,6 +209,19 @@ const around = [
   .date.tba { color: var(--text-3); }
   .body { display: flex; flex-direction: column; gap: 0.15rem; }
   .title { font-weight: 700; }
+  .badge {
+    margin-left: 0.6rem;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+  }
   .meta { font-size: 0.88rem; }
   .go { color: var(--text-3); }
   @media (max-width: 560px) {
