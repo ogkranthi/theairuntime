@@ -53,6 +53,25 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
             <span class="podcast-cta">Listen to FDE Talks →</span>
           </a>
         </div>
+        <a class="circle-hero" href="/fde-circle" aria-label="FDE Circle, an invite-only dinner for forward deployed engineers in Boston">
+            <svg class="circle-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+              <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="1" opacity="0.35" />
+              <circle cx="58" cy="32" r="4.2" fill="currentColor" />
+              <circle cx="50.4" cy="13.6" r="4.2" fill="currentColor" />
+              <circle cx="32" cy="6" r="4.2" fill="currentColor" />
+              <circle cx="13.6" cy="13.6" r="4.2" fill="currentColor" />
+              <circle cx="6" cy="32" r="4.2" fill="currentColor" />
+              <circle cx="13.6" cy="50.4" r="4.2" fill="currentColor" />
+              <circle cx="32" cy="58" r="4.2" fill="currentColor" />
+              <circle cx="50.4" cy="50.4" r="4.2" fill="currentColor" />
+            </svg>
+            <span class="circle-copy">
+              <span class="circle-tag">Invite only</span>
+              <span class="circle-name">FDE Circle</span>
+              <span class="circle-line">A dinner for forward deployed engineers in Boston.</span>
+            <span class="circle-cta">See the FDE Circle →</span>
+          </span>
+        </a>
       </div>
     </div>
   </section>
@@ -259,12 +278,22 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
   .grid {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
-    gap: 2.5rem;
+    grid-template-areas:
+      'copy art'
+      'copy circle';
+    gap: 1rem 2.5rem;
     align-items: center;
   }
+  .copy { grid-area: copy; }
+  .art { grid-area: art; justify-self: center; }
+  .circle-hero { grid-area: circle; justify-self: center; }
   @media (max-width: 720px) {
-    .grid { grid-template-columns: 1fr; }
+    /* Keep the podcast cover above the headline, but push the second tile
+       below the copy so the h1 is not driven off the first screen. */
+    .grid { display: flex; flex-direction: column; }
     .art { order: -1; }
+    .copy { order: 0; }
+    .circle-hero { order: 1; align-self: center; }
   }
   h1 { margin: 0.7rem 0 0; }
   .lede { font-size: 1.15rem; max-width: 36rem; margin-top: 1rem; }
@@ -291,6 +320,41 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
     font-weight: 600;
     color: var(--accent);
     text-align: center;
+  }
+
+  /* Companion tile to the podcast cover: FDE Circle has no cover art, so the
+     mark is drawn, eight seats around one ring. */
+  .circle-hero {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 21rem;
+    padding: 1.1rem 1.2rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: border-color 140ms ease;
+  }
+  .circle-hero:hover { border-color: var(--accent); }
+  .circle-mark { width: 46px; height: 46px; flex: 0 0 auto; color: var(--accent); }
+  .circle-copy { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+  .circle-tag {
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .circle-name { font-weight: 700; font-size: 1.02rem; color: var(--text); }
+  .circle-line { font-size: 0.83rem; line-height: 1.45; color: var(--text-2); }
+  .circle-cta {
+    margin-top: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
   }
 
   .issues { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
