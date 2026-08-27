@@ -5,7 +5,7 @@ import Blink from '../components/Blink.astro';
 import SubstackEmbed from '../components/SubstackEmbed.astro';
 import { LAB_URL } from '../lib/field-briefs';
 
-const REQUEST_URL = 'mailto:info@theairuntime.com?subject=FDE%20Table';
+const REQUEST_URL = 'mailto:info@theairuntime.com?subject=FDE%20Circle';
 
 const seats = [
   'Forward deployed engineers',
@@ -15,18 +15,18 @@ const seats = [
 ];
 ---
 <BaseLayout
-  title="FDE Table · The AI Runtime"
-  description="An invite-only dinner in Boston for forward deployed engineers: the people who take AI systems from demo to deployment. Small table, real conversation, no stage."
+  title="FDE Circle · The AI Runtime"
+  description="An invite-only dinner in Boston for forward deployed engineers: the people who take AI systems from demo to deployment. Small circle, real conversation, no stage."
 >
-  <Section eyebrow="FDE Table">
+  <Section eyebrow="FDE Circle">
     <div class="hero">
       <div>
         <span class="tag">Invite only</span>
-        <h1>A table for forward deployed engineers</h1>
+        <h1>A circle of forward deployed engineers</h1>
         <p class="lede dim">
           An invite-only dinner in Boston for the people who take AI systems from demo to
           deployment. No stage, no slides, no pitch. One table, one conversation, and the war
-          stories that never make it into a talk.
+          stories that never make it into a talk. Dinner, among people who have shipped.
         </p>
         <p class="ctas">
           <a class="btn" href={REQUEST_URL}>Ask for a seat</a>
@@ -41,19 +41,19 @@ const seats = [
     <div class="prose">
       <p>
         The Boston meetup is public and built around talks. The Field Lab is public and built
-        around code. The FDE Table is neither. It is a small dinner, off the record, where forward
+        around code. The FDE Circle is neither. It is a small dinner, off the record, where forward
         deployed practitioners compare notes on the work that usually stays behind an NDA: what
         broke in the client environment, where the model belonged and where it did not, what the
         customer actually accepted, and what it cost to get there.
       </p>
       <p>
-        Seats are limited by design. A table only works when everyone at it has shipped something
+        The circle stays small by design. It only works when everyone in it has shipped something
         and can say what really happened.
       </p>
     </div>
   </Section>
 
-  <Section eyebrow="Who's at the table" title="Forward deployed, whatever your title says">
+  <Section eyebrow="Who's in the circle" title="Forward deployed, whatever your title says">
     <ul class="seats">
       {seats.map((s) => (
         <li><span class="check" aria-hidden="true">✓</span> {s}</li>
@@ -75,7 +75,7 @@ const seats = [
     </div>
   </Section>
 
-  <Section eyebrow="Also from the FDE side" title="Talks, tables, and labs">
+  <Section eyebrow="Also from the FDE side" title="Talks, circles, and labs">
     <div class="related">
       <article class="card">
         <span class="arm-k">Listen</span>
@@ -104,7 +104,7 @@ const seats = [
       lessons behind them.
     </p>
     <SubstackEmbed
-      source="fde-table"
+      source="fde-circle"
       headline="The AI Runtime newsletter"
       subhead="Production lessons from AI practitioners. New issues every week."
     />
