@@ -1,0 +1,153 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import Blink from '../components/Blink.astro';
+import SubstackEmbed from '../components/SubstackEmbed.astro';
+import { LAB_URL } from '../lib/field-briefs';
+
+const REQUEST_URL = 'mailto:info@theairuntime.com?subject=FDE%20Table';
+
+const seats = [
+  'Forward deployed engineers',
+  'Solutions architects who own delivery',
+  'Consultants and in-house deployment teams',
+  'Applied AI engineers shipping to real users',
+];
+---
+<BaseLayout
+  title="FDE Table · The AI Runtime"
+  description="An invite-only dinner in Boston for forward deployed engineers: the people who take AI systems from demo to deployment. Small table, real conversation, no stage."
+>
+  <Section eyebrow="FDE Table">
+    <div class="hero">
+      <div>
+        <span class="tag">Invite only</span>
+        <h1>A table for forward deployed engineers</h1>
+        <p class="lede dim">
+          An invite-only dinner in Boston for the people who take AI systems from demo to
+          deployment. No stage, no slides, no pitch. One table, one conversation, and the war
+          stories that never make it into a talk.
+        </p>
+        <p class="ctas">
+          <a class="btn" href={REQUEST_URL}>Ask for a seat</a>
+          <a class="btn btn-ghost" href="/events">See all events</a>
+        </p>
+      </div>
+      <div class="art"><Blink size={140} showMotion={true} showCheeks={true} /></div>
+    </div>
+  </Section>
+
+  <Section eyebrow="What it is" title="Dinner, not a meetup">
+    <div class="prose">
+      <p>
+        The Boston meetup is public and built around talks. The Field Lab is public and built
+        around code. The FDE Table is neither. It is a small dinner, off the record, where forward
+        deployed practitioners compare notes on the work that usually stays behind an NDA: what
+        broke in the client environment, where the model belonged and where it did not, what the
+        customer actually accepted, and what it cost to get there.
+      </p>
+      <p>
+        Seats are limited by design. A table only works when everyone at it has shipped something
+        and can say what really happened.
+      </p>
+    </div>
+  </Section>
+
+  <Section eyebrow="Who's at the table" title="Forward deployed, whatever your title says">
+    <ul class="seats">
+      {seats.map((s) => (
+        <li><span class="check" aria-hidden="true">✓</span> {s}</li>
+      ))}
+    </ul>
+    <p class="dim wide note">
+      The common thread is delivery: you are accountable for an AI system working in someone
+      else's environment, under their constraints.
+    </p>
+  </Section>
+
+  <Section eyebrow="How to get a seat" title="Ask, and tell us what you are shipping">
+    <div class="prose">
+      <p>
+        There is no public RSVP. Email us a line about what you are deploying and where, and we
+        will add you to the list. Invites go out ahead of time with the date and venue.
+      </p>
+      <p><a class="btn" href={REQUEST_URL}>Ask for a seat</a></p>
+    </div>
+  </Section>
+
+  <Section eyebrow="Also from the FDE side" title="Talks, tables, and labs">
+    <div class="related">
+      <article class="card">
+        <span class="arm-k">Listen</span>
+        <h3>FDE Talks</h3>
+        <p class="dim">
+          The podcast on forward deployed AI engineering: conversations with the people who take AI
+          systems from demo to deployment.
+        </p>
+        <a class="arm-link" href="https://theairuntime.com/s/fde-talks">Listen to FDE Talks →</a>
+      </article>
+      <article class="card">
+        <span class="arm-k">Build</span>
+        <h3>The FDE Lab</h3>
+        <p class="dim">
+          A public client for forward deployed work: realistic briefs, open labels, deterministic
+          evaluators, and reference builds documented failure by failure.
+        </p>
+        <a class="arm-link" href={`${LAB_URL}/`}>Explore the FDE Lab →</a>
+      </article>
+    </div>
+  </Section>
+
+  <Section eyebrow="Subscribe" title="Hear about the next one">
+    <p class="dim wide">
+      Invites go to the list first. Subscribers get the events, the recaps, and the production
+      lessons behind them.
+    </p>
+    <SubstackEmbed
+      source="fde-table"
+      headline="The AI Runtime newsletter"
+      subhead="Production lessons from AI practitioners. New issues every week."
+    />
+  </Section>
+</BaseLayout>
+
+<style>
+  .hero { display: grid; grid-template-columns: 1.6fr 1fr; gap: 2rem; align-items: center; }
+  @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } .art { order: -1; } }
+  .hero h1 { margin-top: 0.6rem; }
+  .lede { font-size: 1.15rem; max-width: 38rem; margin-top: 1rem; }
+  .ctas { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .art { display: flex; justify-content: center; }
+
+  .prose { max-width: 42rem; }
+  .prose p { color: var(--text-2); line-height: 1.75; margin: 0 0 1.1rem; }
+  .prose p:last-child { margin-bottom: 0; }
+
+  .seats { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.7rem; max-width: 42rem; }
+  .seats li { display: flex; gap: 0.75rem; align-items: baseline; color: var(--text-2); line-height: 1.6; }
+  .seats .check { color: var(--accent); font-weight: 700; }
+  .note { margin-top: 1.5rem; }
+  .wide { max-width: 42rem; }
+
+  .related { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  @media (max-width: 760px) { .related { grid-template-columns: 1fr; } }
+  .card {
+    display: flex; flex-direction: column;
+    padding: 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 140ms ease;
+  }
+  .card:hover { border-color: var(--accent); }
+  .arm-k {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .card h3 { margin: 0.5rem 0 0.5rem; font-size: 1.15rem; }
+  .card p { margin: 0 0 1rem; font-size: 0.95rem; line-height: 1.65; }
+  .arm-link { margin-top: auto; font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); }
+</style>

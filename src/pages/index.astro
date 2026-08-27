@@ -61,7 +61,7 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
 
   <StatBand />
 
-  <Section eyebrow="What we do" title="Read, meet, and build" flush>
+  <Section eyebrow="What we do" title="Read, meet, listen, and gather" flush>
     <ul class="arms">
       <li>
         <span class="arm-k">Read</span>
@@ -80,6 +80,12 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
         <h3>FDE Talks</h3>
         <p class="dim">The AI Runtime podcast on forward deployed AI engineering: conversations with the people who take AI systems from demo to deployment.</p>
         <a class="arm-link" href="https://theairuntime.com/s/fde-talks">Listen to FDE Talks →</a>
+      </li>
+      <li>
+        <span class="arm-k">Gather</span>
+        <h3>FDE Table</h3>
+        <p class="dim">An invite-only dinner in Boston for forward deployed engineers. Small table, off the record, the war stories that never make it into a talk.</p>
+        <a class="arm-link" href="/fde-table">See the FDE Table →</a>
       </li>
     </ul>
   </Section>
@@ -213,9 +219,10 @@ const lastRecapSlug = lastRecap?.slug.replace(/^boston\//, '');
     padding: 0;
     margin: 0;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
   }
+  @media (max-width: 1040px) { .arms { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 760px) { .arms { grid-template-columns: 1fr; } }
   .arms li {
     display: flex;
