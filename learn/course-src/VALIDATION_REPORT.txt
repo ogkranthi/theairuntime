@@ -1,0 +1,13 @@
+Agentic AI System Design course validation
+Generated: 2026-08-26
+
+Modules: 17
+Quiz questions: 51
+Practice scenarios: 12
+Errors: 0
+Warnings: 0
+
+Files: 62
+Module words: 26849
+Practice words: 11489
+Reference words: 11826

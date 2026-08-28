@@ -77,9 +77,12 @@ const courses = defineCollection({
     status: z.enum(["live", "coming-next", "planned"]),
     caseStudyTags: z.array(z.string()).default([]),  // display names on the card
     skills: z.array(z.string()).default([]),
-    stats: z
-      .object({ modules: z.number(), cases: z.number(), labs: z.number(), hours: z.string() })
-      .optional(),
+    /**
+     * Headline numbers for the card. Label/value pairs rather than fixed keys,
+     * because courses count different things: Course 001 has labs, Course 002
+     * has practice scenarios and a quiz bank.
+     */
+    stats: z.array(z.object({ label: z.string(), value: z.string() })).optional(),
     repo: z.string().url().optional(),
   }),
 });
@@ -131,4 +134,58 @@ const resources = defineCollection({
   }),
 });
 
-export const collections = { course, caseStudies, courses, skills, resources };
+// ---------------------------------------------------------------------------
+// Course 002: Agentic AI System Design. Ingested from the upstream course
+// package; the frontmatter contract below mirrors site/CONTENT_MODEL.md, so an
+// invalid lesson fails the build with a clear Zod error.
+// ---------------------------------------------------------------------------
+const DIFFICULTY = z.enum(["Core", "Advanced", "Capstone"]);
+
+const asdModules = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/asd-modules" }),
+  schema: z.object({
+    id: z.string().regex(/^\d{2}$/),           // "07", zero-padded, matches filename
+    slug: z.string(),
+    title: z.string(),
+    track: z.string(),
+    duration_minutes: z.number().int().positive(),
+    difficulty: DIFFICULTY,
+    build_milestone: z.string(),
+    objectives: z.array(z.string()).min(3),    // the upstream validator demands 3+
+    prerequisites: z.array(z.string()).default([]),
+  }),
+});
+
+const asdPractice = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/asd-practice" }),
+  schema: z.object({
+    id: z.string().regex(/^P\d{2}$/),
+    slug: z.string(),
+    title: z.string(),
+    difficulty: z.string(),
+    focus: z.array(z.string()).default([]),
+    estimated_minutes: z.number().int().positive(),
+  }),
+});
+
+// Reference material and assessment docs: canvas, templates, glossary, rubrics.
+// Upstream files carry no frontmatter, so everything is optional here and the
+// display title falls back to the first H1.
+const asdReference = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/asd-reference" }),
+  schema: z.object({
+    title: z.string().optional(),
+    summary: z.string().optional(),
+  }),
+});
+
+export const collections = {
+  course,
+  caseStudies,
+  courses,
+  skills,
+  resources,
+  asdModules,
+  asdPractice,
+  asdReference,
+};

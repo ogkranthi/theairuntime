@@ -1,0 +1,180 @@
+---
+import type { QuizQuestion } from "../../lib/asd";
+
+interface Props {
+  moduleSlug: string;
+  questions: QuizQuestion[];
+}
+const { moduleSlug, questions } = Astro.props;
+---
+
+{
+  questions.length > 0 && (
+    <section class="quiz" data-quiz={moduleSlug} aria-labelledby={`quiz-${moduleSlug}`}>
+      <h2 class="asd-h asd-h--check" id={`quiz-${moduleSlug}`}>Quiz</h2>
+      <p class="quiz__lead">
+        {questions.length} questions. Answer, then check. Retry as often as you like; only your
+        score is kept, in this browser.
+      </p>
+
+      <form class="quiz__form" data-quiz-form>
+        {
+          questions.map((q, i) => (
+            <fieldset class="quiz__q" data-question={q.id} data-type={q.type} data-correct={q.correct_option_ids.join(",")}>
+              <legend class="quiz__prompt">
+                <span class="quiz__num">{i + 1}</span>
+                {q.prompt}
+                {q.type === "multi" && <span class="quiz__hint">Select all that apply</span>}
+              </legend>
+              <ul class="quiz__options">
+                {q.options.map((o) => (
+                  <li>
+                    <label class="quiz__option">
+                      <input
+                        type={q.type === "multi" ? "checkbox" : "radio"}
+                        name={q.id}
+                        value={o.id}
+                      />
+                      <span>{o.text}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              <p class="quiz__explain" data-explain hidden>{q.explanation}</p>
+            </fieldset>
+          ))
+        }
+
+        <div class="quiz__actions">
+          <button type="submit" class="btn btn--solid">Check answers</button>
+          <button type="button" class="btn" data-quiz-reset>Try again</button>
+          <p class="quiz__result" data-quiz-result role="status" aria-live="polite"></p>
+        </div>
+      </form>
+    </section>
+  )
+}
+
+<style>
+  .quiz { margin-top: 3rem; }
+  .quiz__lead { color: var(--fg-muted); font-size: var(--t-meta); max-width: var(--measure); }
+  .quiz__form { margin-top: 1.5rem; }
+  .quiz__q {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.15rem 1.35rem;
+    margin: 0 0 1rem;
+  }
+  .quiz__q[data-state="correct"] { border-color: #15803D; }
+  .quiz__q[data-state="incorrect"] { border-color: var(--accent); }
+  .quiz__prompt {
+    font-weight: 650;
+    color: var(--fg);
+    padding: 0;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+  .quiz__num {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+    margin-right: 0.6rem;
+  }
+  .quiz__hint {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    font-weight: 400;
+    margin-top: 0.35rem;
+  }
+  .quiz__options { list-style: none; margin: 0; padding: 0; }
+  .quiz__options li { margin: 0 0 0.35rem; }
+  .quiz__option {
+    display: flex;
+    gap: 0.7rem;
+    align-items: baseline;
+    padding: 0.45rem 0.6rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: var(--t-meta);
+  }
+  .quiz__option:hover { background: var(--bg-inset); }
+  .quiz__option input { accent-color: var(--accent); flex: none; }
+  .quiz__option[data-mark="correct"] { background: #F0FDF4; }
+  .quiz__option[data-mark="missed"] { background: #FFF7ED; }
+  .quiz__explain {
+    margin: 0.85rem 0 0;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+  }
+  .quiz__actions { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center; }
+  .quiz__result { margin: 0; font-family: var(--font-mono); font-size: var(--t-meta); color: var(--fg); }
+</style>
+
+<script>
+  import { recordQuizAttempt } from "../../scripts/asd-progress";
+
+  document.querySelectorAll<HTMLElement>("[data-quiz]").forEach((root) => {
+    const moduleSlug = root.dataset.quiz ?? "";
+    const form = root.querySelector<HTMLFormElement>("[data-quiz-form]");
+    const result = root.querySelector<HTMLElement>("[data-quiz-result]");
+    if (!form || !result) return;
+
+    const questions = [...root.querySelectorAll<HTMLElement>("[data-question]")];
+
+    const clearMarks = () => {
+      questions.forEach((q) => {
+        delete q.dataset.state;
+        q.querySelector<HTMLElement>("[data-explain]")?.setAttribute("hidden", "");
+        q.querySelectorAll<HTMLElement>(".quiz__option").forEach((o) => delete o.dataset.mark);
+      });
+      result.textContent = "";
+    };
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      let correctCount = 0;
+
+      questions.forEach((q) => {
+        const expected = new Set((q.dataset.correct ?? "").split(",").filter(Boolean));
+        const chosen = new Set(
+          [...q.querySelectorAll<HTMLInputElement>("input:checked")].map((i) => i.value),
+        );
+        const isCorrect =
+          chosen.size === expected.size && [...expected].every((id) => chosen.has(id));
+        if (isCorrect) correctCount += 1;
+        q.dataset.state = isCorrect ? "correct" : "incorrect";
+
+        q.querySelectorAll<HTMLInputElement>("input").forEach((input) => {
+          const label = input.closest<HTMLElement>(".quiz__option");
+          if (!label) return;
+          if (expected.has(input.value)) label.dataset.mark = "correct";
+          else if (input.checked) label.dataset.mark = "missed";
+        });
+
+        q.querySelector<HTMLElement>("[data-explain]")?.removeAttribute("hidden");
+      });
+
+      result.textContent = `${correctCount} of ${questions.length} correct`;
+      recordQuizAttempt(moduleSlug, {
+        at: new Date().toISOString(),
+        correct: correctCount,
+        total: questions.length,
+      });
+    });
+
+    root.querySelector("[data-quiz-reset]")?.addEventListener("click", () => {
+      form.reset();
+      clearMarks();
+    });
+  });
+</script>

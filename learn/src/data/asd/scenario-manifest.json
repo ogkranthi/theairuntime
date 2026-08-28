@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "P01",
+      "slug": "cloud-security-remediation-agent",
+      "title": "Cloud Security Investigation and Remediation Agent",
+      "difficulty": "Advanced",
+      "estimated_minutes": 45,
+      "focus": [
+        "authority",
+        "tool safety",
+        "durable execution",
+        "incident response"
+      ],
+      "file": "01-cloud-security-remediation-agent.md"
+    },
+    {
+      "id": "P02",
+      "slug": "enterprise-coding-agent",
+      "title": "Enterprise Coding Agent for a Million-Line Repository",
+      "difficulty": "Advanced",
+      "estimated_minutes": 45,
+      "focus": [
+        "repository context",
+        "sandboxing",
+        "long-running execution",
+        "evaluation"
+      ],
+      "file": "02-enterprise-coding-agent.md"
+    },
+    {
+      "id": "P03",
+      "slug": "insurance-claims-agent",
+      "title": "Insurance Claims Intake and Adjudication Support Agent",
+      "difficulty": "Advanced",
+      "estimated_minutes": 45,
+      "focus": [
+        "documents",
+        "human authority",
+        "long-running workflows",
+        "governance"
+      ],
+      "file": "03-insurance-claims-agent.md"
+    },
+    {
+      "id": "P04",
+      "slug": "customer-support-refund-agent",
+      "title": "Customer Support Agent with Refund Authority",
+      "difficulty": "Core",
+      "estimated_minutes": 45,
+      "focus": [
+        "interactive latency",
+        "action authority",
+        "scale",
+        "fraud controls"
+      ],
+      "file": "04-customer-support-refund-agent.md"
+    },
+    {
+      "id": "P05",
+      "slug": "enterprise-research-acl-agent",
+      "title": "Enterprise Research Agent with Document ACLs",
+      "difficulty": "Core",
+      "estimated_minutes": 45,
+      "focus": [
+        "retrieval",
+        "access control",
+        "citations",
+        "memory"
+      ],
+      "file": "05-enterprise-research-acl-agent.md"
+    },
+    {
+      "id": "P06",
+      "slug": "procurement-approval-agent",
+      "title": "Long-Running Procurement and Vendor Coordination Agent",
+      "difficulty": "Advanced",
+      "estimated_minutes": 45,
+      "focus": [
+        "long-running workflows",
+        "external communication",
+        "approvals",
+        "multi-agent boundaries"
+      ],
+      "file": "06-procurement-approval-agent.md"
+    },
+    {
+      "id": "P07",
+      "slug": "healthcare-prior-authorization-agent",
+      "title": "Healthcare Prior-Authorization Preparation Agent",
+      "difficulty": "Advanced",
+      "estimated_minutes": 45,
+      "focus": [
+        "sensitive data",
+        "evidence and policy",
+        "urgent workflows",
+        "human authority"
+      ],
+      "file": "07-healthcare-prior-authorization-agent.md"
+    },
+    {
+      "id": "P08",
+      "slug": "incident-response-copilot",
+      "title": "Production Incident-Response Copilot",
+      "difficulty": "Advanced",
+      "estimated_minutes": 45,
+      "focus": [
+        "real-time operations",
+        "reversible actions",
+        "observability",
+        "human coordination"
+      ],
+      "file": "08-incident-response-copilot.md"
+    },
+    {
+      "id": "P09",
+      "slug": "financial-research-trade-proposal-agent",
+      "title": "Financial Research and Trade-Proposal Agent",
+      "difficulty": "Advanced",
+      "estimated_minutes": 45,
+      "focus": [
+        "freshness",
+        "evidence",
+        "market-data licensing",
+        "action separation"
+      ],
+      "file": "09-financial-research-trade-proposal-agent.md"
+    },
+    {
+      "id": "P10",
+      "slug": "autonomous-data-analyst",
+      "title": "Autonomous Data Analyst over an Enterprise Warehouse",
+      "difficulty": "Advanced",
+      "estimated_minutes": 45,
+      "focus": [
+        "code execution",
+        "data governance",
+        "semantic layer",
+        "cost control"
+      ],
+      "file": "10-autonomous-data-analyst.md"
+    },
+    {
+      "id": "P11",
+      "slug": "travel-disruption-recovery-agent",
+      "title": "Travel Disruption Recovery Agent",
+      "difficulty": "Core",
+      "estimated_minutes": 45,
+      "focus": [
+        "burst traffic",
+        "external transactions",
+        "user preferences",
+        "multi-step compensation"
+      ],
+      "file": "11-travel-disruption-recovery-agent.md"
+    },
+    {
+      "id": "P12",
+      "slug": "enterprise-agent-platform",
+      "title": "Enterprise Agent Platform for Multiple Product Teams",
+      "difficulty": "Advanced",
+      "estimated_minutes": 45,
+      "focus": [
+        "platform boundaries",
+        "multi-tenancy",
+        "governance",
+        "developer experience"
+      ],
+      "file": "12-enterprise-agent-platform.md"
+    }
+  ]
+}

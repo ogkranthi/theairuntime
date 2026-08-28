@@ -175,6 +175,28 @@ const isActive = (href: string) =>
       document.querySelectorAll<HTMLDetailsElement>(".mnav").forEach((d) => {
         d.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => (d.open = false)));
       });
+
+      // 4. Keyboard shortcut to search: "/" or Cmd/Ctrl+K, unless the reader is
+      // already typing somewhere. On /search it focuses the field instead of
+      // reloading the page.
+      document.addEventListener("keydown", (event) => {
+        const slash = event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey;
+        const cmdK = event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey);
+        if (!slash && !cmdK) return;
+
+        const active = document.activeElement;
+        const typing =
+          active instanceof HTMLInputElement ||
+          active instanceof HTMLTextAreaElement ||
+          active instanceof HTMLSelectElement ||
+          (active instanceof HTMLElement && active.isContentEditable);
+        if (typing) return;
+
+        event.preventDefault();
+        const field = document.querySelector<HTMLInputElement>("[data-query]");
+        if (field) field.focus();
+        else window.location.href = "/search/";
+      });
     </script>
 
     <style>

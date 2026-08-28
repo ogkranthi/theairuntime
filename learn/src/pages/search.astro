@@ -1,6 +1,197 @@
 ---
-import Base from "../layouts/Base.astro"; import {concepts,patterns} from "../data/knowledge"; import {fdeSegments} from "../data/fde"; import {paths,specializations} from "../data/paths";
-const items=[...concepts.map(x=>({...x,type:"Concept",href:`/learn/concepts/${x.slug}/`})),...patterns.map(x=>({...x,type:"Pattern",href:`/learn/patterns/${x.slug}/`})),...fdeSegments.map(x=>({title:x.title,summary:x.short,type:"Career segment",href:`/career/segments/${x.slug}/`})),...paths.map(x=>({title:x.title,summary:x.description,type:"Path",href:`/paths/${x.slug}/`})),...specializations.map(x=>({title:x.title,summary:x.summary,type:"Specialization",href:`/paths/specializations/${x.slug}/`}))];
+import { getEntry } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { concepts, patterns } from "../data/knowledge";
+import { fdeSegments } from "../data/fde";
+import { paths, specializations } from "../data/paths";
+import {
+  ASD_BASE,
+  REFERENCE_DOCS,
+  getAsdModules,
+  getAsdScenarios,
+  moduleHref,
+  referenceHref,
+  scenarioHref,
+} from "../lib/asd";
+import { getModules, moduleHref as c001Href } from "../lib/course";
+
+/**
+ * Static index, filtered in the browser. Everything a learner might look for
+ * by name lives here: course lessons, practice scenarios, reference artifacts,
+ * glossary terms, concepts, patterns, paths, and career segments.
+ */
+const c001 = await getModules();
+const asdModules = await getAsdModules();
+const asdScenarios = await getAsdScenarios();
+
+// Glossary definitions are one bolded term per paragraph. Pull the terms out so
+// a search for "acknowledgment gap" lands on the definition, not just a page.
+const glossaryEntry = await getEntry("asdReference", "glossary");
+const glossaryTerms = [...(glossaryEntry?.body ?? "").matchAll(/^\*\*(.+?)\*\*:\s*(.+)$/gm)].map(
+  (m) => ({
+    title: m[1],
+    summary: m[2],
+    type: "Glossary",
+    href: `${ASD_BASE}/glossary/#${m[1].toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
+  }),
+);
+
+const items = [
+  ...asdModules.map((m) => ({
+    title: m.data.title,
+    summary: m.data.build_milestone,
+    type: `Course 002 · ${m.data.track}`,
+    href: moduleHref(m),
+  })),
+  ...c001.map((m) => ({
+    title: m.data.title,
+    summary: m.data.goal,
+    type: "Course 001",
+    href: c001Href(m),
+  })),
+  ...asdScenarios.map((s) => ({
+    title: s.data.title,
+    summary: `Practice scenario, ${s.data.estimated_minutes} minutes. Focus: ${s.data.focus.join(", ")}.`,
+    type: "Practice",
+    href: scenarioHref(s),
+  })),
+  ...REFERENCE_DOCS.map((d) => ({
+    title: d.title,
+    summary: d.blurb,
+    type: `Reference · ${d.kind}`,
+    href: referenceHref(d.slug),
+  })),
+  ...concepts.map((x) => ({ ...x, type: "Concept", href: `/learn/concepts/${x.slug}/` })),
+  ...patterns.map((x) => ({ ...x, type: "Pattern", href: `/learn/patterns/${x.slug}/` })),
+  ...fdeSegments.map((x) => ({
+    title: x.title,
+    summary: x.short,
+    type: "Career segment",
+    href: `/career/segments/${x.slug}/`,
+  })),
+  ...paths.map((x) => ({ title: x.title, summary: x.description, type: "Path", href: `/paths/${x.slug}/` })),
+  ...specializations.map((x) => ({
+    title: x.title,
+    summary: x.summary,
+    type: "Specialization",
+    href: `/paths/specializations/${x.slug}/`,
+  })),
+  ...glossaryTerms,
+];
 ---
-<Base title="Search | FDE Commons" description="Search FDE Commons paths, concepts, patterns, specializations, and career segments." pageSlug="search"><div class="shell search"><header><p class="eyebrow">SEARCH THE COMMONS</p><h1>Find the mechanism, path, or role.</h1><label><span class="sr-only">Search</span><input type="search" placeholder="Try: durable execution, agent FDE, evidence…" autofocus data-query/></label><p><span data-count>{items.length}</span> curated resources · local, instant, no tracking</p></header><div class="results" data-results>{items.map(item=><a href={item.href} data-item={`${item.title} ${item.summary} ${item.type}`.toLowerCase()}><span>{item.type}</span><h2>{item.title}</h2><p>{item.summary}</p><b>→</b></a>)}</div></div><script>const input=document.querySelector<HTMLInputElement>("[data-query]");const nodes=[...document.querySelectorAll<HTMLElement>("[data-item]")];const count=document.querySelector("[data-count]");input?.addEventListener("input",()=>{const q=input.value.trim().toLowerCase();let n=0;nodes.forEach(el=>{const show=!q||el.dataset.item?.includes(q);el.hidden=!show;if(show)n++});if(count)count.textContent=String(n)})</script></Base>
-<style>.search{max-width:950px}.search header{padding:6rem 0 3rem}.search h1{font-size:clamp(3rem,6vw,6rem)}.search input{width:100%;font:500 1.1rem var(--font-body);padding:1rem;border:2px solid var(--fg);background:white}.search header>p:last-child{font:400 .65rem var(--font-mono);color:var(--fg-muted);margin-top:1rem}.results{border-top:1px solid var(--line);padding-bottom:6rem}.results a{display:grid;grid-template-columns:8rem 1fr auto;gap:.5rem;padding:1rem;color:var(--fg);border-bottom:1px solid var(--line)}.results a:hover{text-decoration:none;background:#fff1e6}.results span{font:500 .62rem var(--font-mono);color:var(--accent)}.results h2{margin:0}.results p{grid-column:2;font-size:.75rem;color:var(--fg-muted)}.results b{grid-column:3;grid-row:1/3;color:var(--accent)}@media(max-width:600px){.results a{grid-template-columns:1fr auto}.results p{grid-column:1}.results b{grid-column:2}}</style>
+
+<Base
+  title="Search | FDE Commons"
+  description="Search both AIR courses, practice scenarios, reference templates, the glossary, concepts, patterns, paths, and career segments."
+  pageSlug="search"
+>
+  <div class="shell search">
+    <header>
+      <p class="eyebrow">SEARCH THE COMMONS</p>
+      <h1>Find the mechanism, module, or role.</h1>
+      <label>
+        <span class="sr-only">Search</span>
+        <input
+          type="search"
+          placeholder="Try: idempotency, authority boundary, durable execution, agent FDE"
+          autofocus
+          data-query
+        />
+      </label>
+      <p>
+        <span data-count>{items.length}</span> entries · local, instant, no tracking · press
+        <kbd>/</kbd> or <kbd>Cmd</kbd>+<kbd>K</kbd> anywhere on the site
+      </p>
+    </header>
+
+    <div class="results" data-results>
+      {
+        items.map((item) => (
+          <a href={item.href} data-item={`${item.title} ${item.summary} ${item.type}`.toLowerCase()}>
+            <span>{item.type}</span>
+            <h2>{item.title}</h2>
+            <p>{item.summary}</p>
+            <b aria-hidden="true">&rarr;</b>
+          </a>
+        ))
+      }
+    </div>
+    <p class="empty" data-empty hidden>Nothing matches that. Try a shorter term.</p>
+  </div>
+
+  <script>
+    const input = document.querySelector<HTMLInputElement>("[data-query]");
+    const nodes = [...document.querySelectorAll<HTMLElement>("[data-item]")];
+    const count = document.querySelector("[data-count]");
+    const empty = document.querySelector<HTMLElement>("[data-empty]");
+
+    input?.addEventListener("input", () => {
+      const q = input.value.trim().toLowerCase();
+      let n = 0;
+      nodes.forEach((el) => {
+        const show = !q || el.dataset.item?.includes(q);
+        el.hidden = !show;
+        if (show) n++;
+      });
+      if (count) count.textContent = String(n);
+      if (empty) empty.hidden = n > 0;
+    });
+
+    // Enter opens the first visible result, so the keyboard path is complete.
+    input?.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      const first = nodes.find((el) => !el.hidden);
+      if (first instanceof HTMLAnchorElement) {
+        event.preventDefault();
+        window.location.href = first.href;
+      }
+    });
+  </script>
+</Base>
+
+<style>
+  .search { max-width: 950px; }
+  .search header { padding: 4rem 0 2.5rem; }
+  .search h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); letter-spacing: -0.03em; }
+  .search input {
+    width: 100%;
+    font: 500 1.1rem var(--font-body);
+    padding: 1rem;
+    border: 2px solid var(--fg);
+    background: white;
+    color: var(--fg);
+  }
+  .search header > p:last-child {
+    font: 400 0.72rem var(--font-mono);
+    color: var(--fg-muted);
+    margin-top: 1rem;
+  }
+  kbd {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.05rem 0.3rem;
+    background: var(--bg-raise);
+  }
+  .results { border-top: 1px solid var(--line); padding-bottom: 4rem; }
+  .results a {
+    display: grid;
+    grid-template-columns: 10rem 1fr auto;
+    gap: 0.5rem;
+    padding: 1rem;
+    color: var(--fg);
+    border-bottom: 1px solid var(--line);
+  }
+  .results a:hover { text-decoration: none; background: #fff1e6; }
+  .results span { font: 500 0.62rem var(--font-mono); color: var(--accent); }
+  .results h2 { margin: 0; font-size: 1.05rem; }
+  .results p { grid-column: 2; font-size: 0.78rem; color: var(--fg-muted); margin: 0; }
+  .results b { grid-column: 3; grid-row: 1 / 3; color: var(--accent); }
+  .empty { font-family: var(--font-mono); font-size: var(--t-meta); color: var(--fg-muted); padding: 2rem 1rem 6rem; }
+  @media (max-width: 600px) {
+    .results a { grid-template-columns: 1fr auto; }
+    .results p { grid-column: 1; }
+    .results b { grid-column: 2; }
+  }
+</style>

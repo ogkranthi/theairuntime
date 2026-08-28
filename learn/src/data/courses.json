@@ -19,38 +19,92 @@
       "Evaluation",
       "Observability"
     ],
-    "stats": {
-      "modules": 16,
-      "cases": 5,
-      "labs": 14,
-      "hours": "15-20 h"
-    },
+    "stats": [
+      {
+        "label": "modules",
+        "value": "16"
+      },
+      {
+        "label": "industry cases",
+        "value": "5"
+      },
+      {
+        "label": "optional labs",
+        "value": "14"
+      },
+      {
+        "label": "reading time",
+        "value": "15-20 h"
+      }
+    ],
     "repo": "https://github.com/ogkranthi/air-course-long"
   },
   {
     "id": "course-002",
     "number": "002",
+    "slug": "agentic-system-design",
+    "title": "Agentic AI System Design",
+    "description": "Design agentic systems from first principles: authority, tool contracts, context, durable state, security, evaluation, and the operations that keep them alive. You build one system, Atlas, end to end.",
+    "status": "live",
+    "caseStudyTags": [
+      "Due Diligence",
+      "Cloud Security",
+      "Claims",
+      "Coding Agents",
+      "Support"
+    ],
+    "skills": [
+      "Authority",
+      "Tool Contracts",
+      "Context",
+      "Durability",
+      "Security",
+      "Evaluation",
+      "Operations"
+    ],
+    "stats": [
+      {
+        "label": "modules",
+        "value": "17"
+      },
+      {
+        "label": "practice scenarios",
+        "value": "12"
+      },
+      {
+        "label": "quiz questions",
+        "value": "51"
+      },
+      {
+        "label": "study time",
+        "value": "35-45 h"
+      }
+    ]
+  },
+  {
+    "id": "course-003",
+    "number": "003",
     "title": "Evaluating Production AI Systems",
     "description": "Learn how to determine whether an AI system is actually improving and safe enough to release.",
     "status": "coming-next"
   },
   {
-    "id": "course-003",
-    "number": "003",
+    "id": "course-004",
+    "number": "004",
     "title": "Building Enterprise AI Agents",
     "description": "Take an AI agent from impressive demo to a system that survives identity, permissions, integrations, security review and production traffic.",
     "status": "planned"
   },
   {
-    "id": "course-004",
-    "number": "004",
+    "id": "course-005",
+    "number": "005",
     "title": "AI-Native Software Engineering",
     "description": "Work with coding agents as a discipline: specification, repository engineering, parallelism and verification.",
     "status": "planned"
   },
   {
-    "id": "course-005",
-    "number": "005",
+    "id": "course-006",
+    "number": "006",
     "title": "Shaping Production AI",
     "description": "The discovery half of the FDE job: turning a customer's ask into a system worth building.",
     "status": "planned"

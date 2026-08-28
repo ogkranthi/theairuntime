@@ -5,6 +5,8 @@ import remarkDirective from 'remark-directive';
 import { remarkCallouts } from './src/plugins/remark-callouts.mjs';
 import { rehypeWrapTables } from './src/plugins/rehype-wrap-tables.mjs';
 import { rehypeLessons } from './src/plugins/rehype-lessons.mjs';
+import { remarkMermaid } from './src/plugins/remark-mermaid.mjs';
+import { rehypeAsdSections } from './src/plugins/rehype-asd-sections.mjs';
 
 // learn.theairuntime.com is the home of AIR Course 001. It is a standalone
 // static site on its own subdomain, separate from the events platform on
@@ -22,8 +24,8 @@ export default defineConfig({
   markdown: {
     // `:::failure-lab`, `:::deliverable`, `:::takeaway`, `:::note` compile to
     // semantic <aside> callouts. See src/plugins/remark-callouts.mjs.
-    remarkPlugins: [remarkDirective, remarkCallouts],
-    rehypePlugins: [rehypeWrapTables, rehypeLessons],
+    remarkPlugins: [remarkDirective, remarkCallouts, remarkMermaid],
+    rehypePlugins: [rehypeWrapTables, rehypeLessons, rehypeAsdSections],
     shikiConfig: { theme: 'github-dark-default', wrap: false },
   },
   build: { format: 'directory' },
@@ -67,6 +69,16 @@ export default defineConfig({
     '/labs': '/learn/courses/long-running-agents/labs',
     '/stack': '/learn/courses/long-running-agents/stack',
     '/sources': '/learn/courses/long-running-agents/sources',
+    // Course 002 ships with the spec's top-level URLs; the site nests every
+    // course under /learn/courses/<slug>/, so honor both.
+    '/agentic-system-design': '/learn/courses/agentic-system-design',
+    '/agentic-system-design/canvas': '/learn/courses/agentic-system-design/canvas',
+    '/agentic-system-design/capstone': '/learn/courses/agentic-system-design/capstone',
+    '/agentic-system-design/glossary': '/learn/courses/agentic-system-design/glossary',
+    '/agentic-system-design/sources': '/learn/courses/agentic-system-design/sources',
+    '/agentic-system-design/practice': '/learn/courses/agentic-system-design/practice',
+    '/agentic-system-design/practice/[slug]': '/learn/courses/agentic-system-design/practice/[slug]',
+    '/agentic-system-design/modules/[slug]': '/learn/courses/agentic-system-design/modules/[slug]',
   },
   prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
 });

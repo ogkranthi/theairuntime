@@ -31,7 +31,7 @@ export const patterns: KnowledgeItem[] = [
   { slug: "bounded-agent-loop", title: "Bounded Agent Loop", summary: "Give every loop explicit step, time, and cost limits.", module: "12 · Deep agents", related: ["agent-harness", "trajectory-evaluation"] },
   { slug: "durable-human-wait", title: "Durable Human Wait", summary: "Persist state before pausing for an asynchronous human decision.", module: "07 · Human control", related: ["human-interrupt", "checkpoint"] },
   { slug: "context-quarantine", title: "Context Quarantine", summary: "Keep untrusted context isolated until it is inspected and promoted.", module: "08 · Context", related: ["artifact", "context-compaction"] },
-  { slug: "artifact-handoff", title: "Artifact Handoff", summary: "Pass durable artifacts—not hidden conversational state—between actors.", module: "08 · Context", related: ["artifact", "human-interrupt"] },
+  { slug: "artifact-handoff", title: "Artifact Handoff", summary: "Pass durable artifacts, not hidden conversational state, between actors.", module: "08 · Context", related: ["artifact", "human-interrupt"] },
   { slug: "verify-then-act", title: "Verify Then Act", summary: "Check authority, preconditions, and evidence before an irreversible action.", module: "10 · Security", related: ["artifact", "agent-harness"] },
   { slug: "state-outside-the-model", title: "State Outside the Model", summary: "Keep authoritative workflow state in a durable system of record.", module: "02 · State", related: ["checkpoint", "agent-harness"] },
   { slug: "budget-envelope", title: "Budget Envelope", summary: "Bound cost, time, tokens, and tool calls for every run.", module: "12 · Deep agents", related: ["agent-harness", "trajectory-evaluation"] },

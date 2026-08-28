@@ -1,0 +1,163 @@
+---
+/**
+ * Client renderer for the diagram shells emitted by remark-mermaid.
+ *
+ * The library is only fetched when a page actually contains a diagram, and the
+ * text definition inside each <details> stays authoritative: if the import,
+ * the parse, or the render fails, the page still explains the architecture.
+ */
+---
+
+<script>
+  const figures = document.querySelectorAll<HTMLElement>("[data-mermaid-figure]");
+  if (figures.length > 0) {
+    const render = async () => {
+      const styles = getComputedStyle(document.documentElement);
+      const token = (name: string, fallback: string) =>
+        styles.getPropertyValue(name).trim() || fallback;
+
+      const { default: mermaid } = await import("mermaid");
+      mermaid.initialize({
+        startOnLoad: false,
+        // securityLevel "strict" strips inline HTML and event handlers from the
+        // graph source, which is what keeps rendered course diagrams inert.
+        securityLevel: "strict",
+        // Draw at natural size and let the figure scroll. Fitting a wide
+        // architecture diagram to the column shrinks its labels to a few
+        // pixels, and an illegible diagram is worse than one you have to
+        // scroll. Expand opens it full-bleed for the same reason.
+        flowchart: { htmlLabels: false, useMaxWidth: false },
+        sequence: { useMaxWidth: false },
+        gantt: { useMaxWidth: false },
+        fontFamily: token("--font-body", "Inter, system-ui, sans-serif"),
+        theme: "base",
+        themeVariables: {
+          background: token("--bg-raise", "#FFFFFF"),
+          primaryColor: token("--bg-inset", "#F1F1EF"),
+          primaryTextColor: token("--fg", "#18181B"),
+          primaryBorderColor: token("--line", "#E5E5E1"),
+          secondaryColor: token("--bg-raise", "#FFFFFF"),
+          tertiaryColor: token("--bg", "#FAFAF9"),
+          lineColor: "#A1A1AA",
+          textColor: token("--fg", "#18181B"),
+          fontSize: "14px",
+          clusterBkg: token("--bg", "#FAFAF9"),
+          clusterBorder: token("--line", "#E5E5E1"),
+        },
+      });
+
+      let n = 0;
+      for (const figure of figures) {
+        const canvas = figure.querySelector<HTMLElement>("[data-mermaid-canvas]");
+        const source = figure.querySelector<HTMLElement>("[data-mermaid-source]")?.textContent;
+        if (!canvas || !source) continue;
+
+        n += 1;
+        try {
+          const { svg } = await mermaid.render(`asd-mermaid-${n}`, source);
+          canvas.innerHTML = svg;
+          canvas.dataset.state = "ready";
+          const expand = figure.querySelector<HTMLButtonElement>("[data-mermaid-expand]");
+          if (expand) {
+            expand.hidden = false;
+            expand.addEventListener("click", () => {
+              const open = figure.toggleAttribute("data-expanded");
+              expand.textContent = open ? "Collapse" : "Expand";
+              expand.setAttribute("aria-expanded", String(open));
+              if (open) figure.scrollIntoView({ block: "nearest" });
+            });
+          }
+        } catch (error) {
+          // The text definition below the canvas is the real fallback, so a
+          // failed diagram never blocks the lesson. Log it so a broken graph
+          // shows up in a console check rather than passing silently.
+          console.warn("[mermaid] diagram failed to render", error);
+          canvas.dataset.state = "failed";
+          canvas.innerHTML =
+            '<p class="mermaid-figure__pending">This diagram could not be drawn. The text definition below describes it in full.</p>';
+          figure.querySelector("details")?.setAttribute("open", "");
+        }
+      }
+    };
+
+    // Diagrams are supporting material, never the first paint. Defer until the
+    // browser is idle so lesson text is interactive first.
+    if ("requestIdleCallback" in window) {
+      (window as Window & typeof globalThis).requestIdleCallback(() => void render());
+    } else {
+      setTimeout(() => void render(), 200);
+    }
+  }
+</script>
+
+<style is:global>
+  .mermaid-figure {
+    margin: 2rem 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.25rem 1.25rem 0.85rem;
+  }
+  .mermaid-figure__canvas {
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    min-height: 3rem;
+  }
+  .mermaid-figure__canvas svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .mermaid-figure__pending {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--fg-muted);
+    margin: 0.5rem 0;
+  }
+  .mermaid-figure__bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+  .mermaid-figure__btn {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    color: var(--fg-muted);
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+  }
+  .mermaid-figure__btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .mermaid-figure[data-expanded] {
+    position: fixed;
+    inset: 3.5rem 1rem 1rem;
+    z-index: 40;
+    overflow: auto;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  }
+  .mermaid-figure[data-expanded] .mermaid-figure__canvas svg {
+    width: 100%;
+    max-width: none;
+  }
+  .mermaid-figure__fallback {
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 0.6rem;
+  }
+  .mermaid-figure__fallback summary {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--fg-muted);
+    cursor: pointer;
+  }
+  .mermaid-figure__fallback summary:hover { color: var(--accent); }
+  .mermaid-figure__fallback pre { margin: 0.75rem 0 0.25rem; }
+</style>

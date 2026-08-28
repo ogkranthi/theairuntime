@@ -1,0 +1,147 @@
+---
+import { getEntry, render } from "astro:content";
+import Base from "../../../../layouts/Base.astro";
+import CtaBlock from "../../../../components/CtaBlock.astro";
+import { ASD_BASE, COURSE } from "../../../../lib/asd";
+import "../../../../styles/asd.css";
+
+const glossary = await getEntry("asdReference", "glossary");
+if (!glossary) throw new Error("[agentic-system-design] glossary.md is missing");
+const { Content, headings } = await render(glossary);
+
+// The glossary is alphabetical, one h2 per letter.
+const letters = headings.filter((h) => h.depth === 2);
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<Base
+  title="Glossary | Agentic AI System Design"
+  description="Production-oriented definitions for agentic system design: durable execution, idempotency, the acknowledgment gap, authority boundaries, trajectory evals, tenant isolation, and the rest of the vocabulary."
+  pageSlug="asd-glossary"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: COURSE.short_title, item: `https://learn.theairuntime.com${ASD_BASE}/` },
+        { "@type": "ListItem", position: 2, name: "Glossary", item: canonical },
+      ],
+    },
+  ]}
+>
+  <div class="shell glossary">
+    <header class="ghead">
+      <p class="eyebrow">
+        <a href={`${ASD_BASE}/`}>Agentic AI System Design</a> / Glossary
+      </p>
+      <h1>Glossary</h1>
+      <p class="lead">
+        Definitions written for the person who has to operate the system, not for a marketing page.
+        Frameworks use several of these words differently, so state the local meaning in any design
+        document where it matters.
+      </p>
+
+      <nav class="gindex" aria-label="Jump to letter">
+        {letters.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+      </nav>
+
+      <label class="gfilter">
+        <span class="sr-only">Filter definitions</span>
+        <input type="search" placeholder="Filter definitions: idempotency, replay, tenant…" data-glossary-filter />
+      </label>
+      <p class="gfilter__count" role="status" aria-live="polite" data-glossary-count></p>
+    </header>
+
+    <article class="prose asd-prose asd-doc asd-doc--glossary" data-glossary>
+      <Content />
+    </article>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="asd-glossary" />
+</Base>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>("[data-glossary-filter]");
+  const body = document.querySelector<HTMLElement>("[data-glossary]");
+  const count = document.querySelector<HTMLElement>("[data-glossary-count]");
+
+  if (input && body && count) {
+    // Each definition is a paragraph opening with a bolded term; each letter is
+    // an h2. Hiding a letter whose terms all filtered out keeps the page honest.
+    const groups: { heading: HTMLElement; terms: HTMLElement[] }[] = [];
+    body.querySelectorAll<HTMLElement>("h2").forEach((heading) => {
+      const terms: HTMLElement[] = [];
+      let node = heading.nextElementSibling;
+      while (node && node.tagName !== "H2") {
+        if (node instanceof HTMLElement && node.tagName === "P") terms.push(node);
+        node = node.nextElementSibling;
+      }
+      groups.push({ heading, terms });
+    });
+
+    const total = groups.reduce((n, g) => n + g.terms.length, 0);
+    count.textContent = `${total} terms`;
+
+    input.addEventListener("input", () => {
+      const q = input.value.trim().toLowerCase();
+      let shown = 0;
+      groups.forEach((group) => {
+        let visible = 0;
+        group.terms.forEach((term) => {
+          const match = !q || (term.textContent ?? "").toLowerCase().includes(q);
+          term.hidden = !match;
+          if (match) visible += 1;
+        });
+        group.heading.hidden = visible === 0;
+        shown += visible;
+      });
+      count.textContent = q ? `${shown} of ${total} terms` : `${total} terms`;
+    });
+  }
+</script>
+
+<style>
+  .glossary { max-width: 56rem; }
+  .ghead { padding: 2.5rem 0 1.5rem; }
+  .ghead .eyebrow a { color: var(--accent); }
+  .ghead h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); letter-spacing: -0.03em; }
+  .lead { font-size: 1.1rem; color: var(--fg-muted); max-width: 64ch; }
+
+  .gindex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 1.75rem 0 1.25rem;
+  }
+  .gindex a {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    min-width: 2rem;
+    text-align: center;
+    padding: 0.3rem 0.45rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    color: var(--fg-muted);
+  }
+  .gindex a:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+  .gfilter { display: block; }
+  .gfilter input {
+    width: 100%;
+    max-width: 32rem;
+    font: inherit;
+    font-size: 0.95rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg-raise);
+    color: var(--fg);
+  }
+  .gfilter input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .gfilter__count {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+    margin: 0.6rem 0 0;
+  }
+</style>

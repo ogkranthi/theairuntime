@@ -1,0 +1,177 @@
+---
+import { render } from "astro:content";
+import Base from "../../../../../layouts/Base.astro";
+import CtaBlock from "../../../../../components/CtaBlock.astro";
+import DesignCanvas from "../../../../../components/asd/DesignCanvas.astro";
+import InterviewMode from "../../../../../components/asd/InterviewMode.astro";
+import MermaidRuntime from "../../../../../components/asd/MermaidRuntime.astro";
+import ScenarioGate from "../../../../../components/asd/ScenarioGate.astro";
+import { ASD_BASE, COURSE, getAsdScenarios, scenarioHref } from "../../../../../lib/asd";
+import "../../../../../styles/asd.css";
+
+export async function getStaticPaths() {
+  const scenarios = await getAsdScenarios();
+  return scenarios.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const scenarios = await getAsdScenarios();
+const i = scenarios.findIndex((s) => s.id === entry.id);
+const prev = i > 0 ? scenarios[i - 1] : undefined;
+const next = i < scenarios.length - 1 ? scenarios[i + 1] : undefined;
+const { Content } = await render(entry);
+
+const d = entry.data;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<Base
+  title={`${d.title} · AIR 002 Practice`}
+  description={`A ${d.estimated_minutes}-minute agentic system design drill covering ${d.focus.join(", ")}. Staged constraint reveals, RUNTIME checklist, and a self-scoring rubric.`}
+  pageSlug={`asd-practice-${d.slug}`}
+  ogType="article"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "LearningResource",
+      name: d.title,
+      url: canonical,
+      learningResourceType: "Practice problem",
+      educationalLevel: d.difficulty,
+      timeRequired: `PT${d.estimated_minutes}M`,
+      isPartOf: { "@type": "Course", name: COURSE.title, url: `https://learn.theairuntime.com${ASD_BASE}/` },
+      publisher: { "@type": "Organization", name: "The AI Runtime" },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: COURSE.short_title, item: `https://learn.theairuntime.com${ASD_BASE}/` },
+        { "@type": "ListItem", position: 2, name: "Practice", item: `https://learn.theairuntime.com${ASD_BASE}/practice/` },
+        { "@type": "ListItem", position: 3, name: d.title },
+      ],
+    },
+  ]}
+>
+  <div class="shell scenario">
+    <header class="shead">
+      <p class="eyebrow">
+        <a href={`${ASD_BASE}/`}>Agentic AI System Design</a> /
+        <a href={`${ASD_BASE}/practice/`}>Practice</a> /
+        <span>{d.id}</span>
+      </p>
+      <h1>{d.title}</h1>
+      <p class="shead__focus">
+        {d.focus.map((f) => <span class="chip">{f}</span>)}
+      </p>
+      <p class="shead__meta">
+        {d.difficulty} · {d.estimated_minutes} minutes · scenario {i + 1} of {scenarios.length}
+      </p>
+    </header>
+
+    <InterviewMode slug={d.slug} title={d.title} minutes={d.estimated_minutes} />
+
+    <article class="prose asd-prose" data-scenario-prose>
+      <Content />
+    </article>
+
+    <ScenarioGate />
+
+    <section class="scanvas">
+      <details>
+        <summary>
+          <span>Fill the design canvas for this scenario</span>
+          <span class="scanvas__cue">Open</span>
+        </summary>
+        <div class="scanvas__body">
+          <DesignCanvas scenarioKey={d.slug} scenarioTitle={d.title} embedded={true} />
+        </div>
+      </details>
+    </section>
+
+    <nav class="snav" aria-label="Scenario navigation">
+      {
+        prev ? (
+          <a href={scenarioHref(prev)} class="snav__a">
+            <span class="meta">Previous</span>
+            <span>&larr; {prev.data.title}</span>
+          </a>
+        ) : (
+          <a href={`${ASD_BASE}/practice/`} class="snav__a">
+            <span class="meta">Previous</span>
+            <span>&larr; All scenarios</span>
+          </a>
+        )
+      }
+      {
+        next ? (
+          <a href={scenarioHref(next)} class="snav__a snav__a--next">
+            <span class="meta">Next</span>
+            <span>{next.data.title} &rarr;</span>
+          </a>
+        ) : (
+          <a href={`${ASD_BASE}/capstone/`} class="snav__a snav__a--next">
+            <span class="meta">Next</span>
+            <span>The Atlas capstone &rarr;</span>
+          </a>
+        )
+      }
+    </nav>
+  </div>
+
+  <MermaidRuntime />
+
+  <CtaBlock slot="footer-cta" pageSlug={`asd-practice-${d.slug}`} />
+</Base>
+
+<style>
+  .scenario { max-width: 60rem; }
+  .shead { padding: 2.5rem 0 0; }
+  .shead .eyebrow a { color: var(--accent); }
+  .shead h1 { font-size: clamp(1.9rem, 4.5vw, 2.6rem); letter-spacing: -0.03em; max-width: 22ch; }
+  .shead__focus { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0 0 0.75rem; }
+  .shead__meta { font-family: var(--font-mono); font-size: var(--t-meta); color: var(--fg-muted); margin: 0; }
+
+  .scanvas { margin: 3rem 0 0; }
+  .scanvas details {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+  }
+  .scanvas summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    font-weight: 650;
+    list-style: none;
+  }
+  .scanvas summary::-webkit-details-marker { display: none; }
+  .scanvas summary:hover { color: var(--accent); }
+  .scanvas__cue {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .scanvas details[open] .scanvas__cue { visibility: hidden; }
+  .scanvas__body { padding: 0 1.25rem 1.5rem; border-top: 1px solid var(--line); }
+
+  .snav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .snav__a { display: block; max-width: 20rem; }
+  .snav__a:hover { text-decoration: none; }
+  .snav__a .meta { display: block; margin-bottom: 0.25rem; }
+  .snav__a span:last-child { font-weight: 600; }
+  .snav__a--next { margin-left: auto; text-align: right; }
+</style>

@@ -1,0 +1,101 @@
+---
+import { getEntry, render } from "astro:content";
+import Base from "../../../../layouts/Base.astro";
+import CtaBlock from "../../../../components/CtaBlock.astro";
+import Toc from "../../../../components/Toc.astro";
+import { ASD_BASE, COURSE } from "../../../../lib/asd";
+import "../../../../styles/asd.css";
+
+const map = await getEntry("asdReference", "primary-source-map");
+if (!map) throw new Error("[agentic-system-design] primary-source-map.md is missing");
+const { Content, headings } = await render(map);
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<Base
+  title="Primary sources | Agentic AI System Design"
+  description="Every implementation-sensitive claim in the course, mapped to the official documentation it comes from: Anthropic, OpenAI, LangGraph, Temporal, MCP, A2A, OWASP, NIST, and the Google SRE book."
+  pageSlug="asd-sources"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: COURSE.short_title, item: `https://learn.theairuntime.com${ASD_BASE}/` },
+        { "@type": "ListItem", position: 2, name: "Primary sources", item: canonical },
+      ],
+    },
+  ]}
+>
+  <div class="shell doc">
+    <div class="doc__main">
+      <header class="shead">
+        <p class="eyebrow">
+          <a href={`${ASD_BASE}/`}>Agentic AI System Design</a> / Sources
+        </p>
+        <h1>Primary sources</h1>
+        <p class="lead">
+          Anything an engineer would act on is cited to official documentation, not to a blog post
+          about the documentation. Framework behavior, protocol semantics, and provider limits move
+          faster than any course, so check the current version of a page before you build against
+          it.
+        </p>
+        <p class="shead__rule">
+          Where a vendor blog and the vendor's own docs disagree, the docs win. Where the docs are
+          silent, the course says so rather than guessing.
+        </p>
+        <p class="shead__meta">
+          Course version {COURSE.version} · sources last reviewed {COURSE.last_reviewed}
+        </p>
+      </header>
+
+      <article class="prose asd-prose asd-doc">
+        <Content />
+      </article>
+    </div>
+
+    <aside class="doc__rail">
+      <Toc headings={headings} />
+    </aside>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="asd-sources" />
+</Base>
+
+<style>
+  .doc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    padding-top: 2.5rem;
+  }
+  .doc__main { min-width: 0; max-width: 52rem; }
+  .doc__rail { display: none; }
+  @media (min-width: 1100px) {
+    .doc { grid-template-columns: minmax(0, 1fr) 16rem; gap: 3.5rem; }
+    .doc__rail {
+      display: block;
+      position: sticky;
+      top: 5rem;
+      align-self: start;
+      max-height: calc(100vh - 6rem);
+      overflow-y: auto;
+    }
+  }
+
+  .shead .eyebrow a { color: var(--accent); }
+  .shead h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); letter-spacing: -0.03em; }
+  .lead { font-size: 1.1rem; color: var(--fg-muted); max-width: var(--measure); }
+  .shead__rule {
+    border-left: 2px solid var(--accent-dim);
+    padding-left: 1rem;
+    max-width: var(--measure);
+  }
+  .shead__meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+</style>

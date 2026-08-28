@@ -1,0 +1,284 @@
+---
+import { render } from "astro:content";
+import Base from "../../../../../layouts/Base.astro";
+import CtaBlock from "../../../../../components/CtaBlock.astro";
+import Toc from "../../../../../components/Toc.astro";
+import CourseMap from "../../../../../components/asd/CourseMap.astro";
+import LessonHeader from "../../../../../components/asd/LessonHeader.astro";
+import MermaidRuntime from "../../../../../components/asd/MermaidRuntime.astro";
+import ProgressPanel from "../../../../../components/asd/ProgressPanel.astro";
+import Quiz from "../../../../../components/asd/Quiz.astro";
+import {
+  ASD_BASE,
+  COURSE,
+  formatMinutes,
+  getAsdModules,
+  moduleHref,
+  neighbors,
+  quizFor,
+} from "../../../../../lib/asd";
+import "../../../../../styles/asd.css";
+
+export async function getStaticPaths() {
+  const modules = await getAsdModules();
+  return modules.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const modules = await getAsdModules();
+const { prev, next } = neighbors(modules, entry);
+const { Content, headings } = await render(entry);
+
+const d = entry.data;
+const index = modules.findIndex((m) => m.id === entry.id) + 1;
+const questions = quizFor(d.slug);
+
+const bySlug = new Map(modules.map((m) => [m.data.slug, m]));
+const prerequisites = d.prerequisites
+  .map((slug) => bySlug.get(slug))
+  .filter((m): m is NonNullable<typeof m> => m !== undefined)
+  .map((m) => ({ slug: m.data.slug, title: m.data.title }));
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const description = `${d.build_milestone} Module ${d.id} of ${COURSE.short_title}, ${formatMinutes(d.duration_minutes)}.`;
+---
+
+<Base
+  title={`${d.title} · AIR Course 002`}
+  description={description}
+  pageSlug={`asd-${d.slug}`}
+  ogType="article"
+  wide={true}
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "LearningResource",
+      name: d.title,
+      description: d.build_milestone,
+      url: canonical,
+      learningResourceType: "Lesson",
+      educationalLevel: d.difficulty,
+      timeRequired: `PT${d.duration_minutes}M`,
+      teaches: d.objectives,
+      isPartOf: { "@type": "Course", name: COURSE.title, url: `https://learn.theairuntime.com${ASD_BASE}/` },
+      publisher: { "@type": "Organization", name: "The AI Runtime" },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Courses", item: "https://learn.theairuntime.com/learn/courses/" },
+        { "@type": "ListItem", position: 2, name: COURSE.short_title, item: `https://learn.theairuntime.com${ASD_BASE}/` },
+        { "@type": "ListItem", position: 3, name: `Module ${d.id}: ${d.title}` },
+      ],
+    },
+  ]}
+>
+  <div class="shell shell--wide lesson">
+    <nav class="lesson__left" aria-label="Course outline">
+      <details class="outline" data-outline>
+        <summary class="outline__summary">
+          <span>COURSE 002</span>
+          <span class="outline__toggle" aria-hidden="true"></span>
+        </summary>
+        <a class="outline__overview" href={`${ASD_BASE}/`}>Course overview</a>
+        <CourseMap modules={modules} current={d.slug} compact={true} />
+        <div class="outline__extras">
+          <a href={`${ASD_BASE}/practice/`}>Practice</a>
+          <a href={`${ASD_BASE}/canvas/`}>Canvas</a>
+          <a href={`${ASD_BASE}/glossary/`}>Glossary</a>
+          <a href={`${ASD_BASE}/sources/`}>Sources</a>
+        </div>
+      </details>
+    </nav>
+
+    <div class="lesson__main">
+      <LessonHeader
+        module={entry}
+        prerequisites={prerequisites}
+        position={{ index, total: modules.length }}
+      />
+
+      <article class="prose asd-prose">
+        <Content />
+      </article>
+
+      <Quiz moduleSlug={d.slug} questions={questions} />
+
+      <div class="lesson__done">
+        <ProgressPanel slug={d.slug} total={modules.length} />
+      </div>
+
+      <nav class="lesson__nav" aria-label="Module navigation">
+        {
+          prev ? (
+            <a href={moduleHref(prev)} class="lesson__nav-a">
+              <span class="meta">Previous</span>
+              <span>&larr; {prev.data.id} {prev.data.title}</span>
+            </a>
+          ) : (
+            <a href={`${ASD_BASE}/`} class="lesson__nav-a">
+              <span class="meta">Previous</span>
+              <span>&larr; Course overview</span>
+            </a>
+          )
+        }
+        {
+          next ? (
+            <a href={moduleHref(next)} class="lesson__nav-a lesson__nav-a--next">
+              <span class="meta">Next</span>
+              <span>{next.data.id} {next.data.title} &rarr;</span>
+            </a>
+          ) : (
+            <a href={`${ASD_BASE}/capstone/`} class="lesson__nav-a lesson__nav-a--next">
+              <span class="meta">Next</span>
+              <span>The Atlas capstone &rarr;</span>
+            </a>
+          )
+        }
+      </nav>
+    </div>
+
+    <aside class="lesson__right">
+      <div class="rail-box">
+        <ProgressPanel slug={d.slug} total={modules.length} />
+      </div>
+
+      <Toc headings={headings} />
+
+      <div class="rail-box">
+        <p class="rail-box__title">USE WITH THIS MODULE</p>
+        <ul class="rail-box__list">
+          <li><a href={`${ASD_BASE}/canvas/`}>Design canvas</a></li>
+          <li><a href={`${ASD_BASE}/reference/runtime-design-method/`}>RUNTIME method</a></li>
+          <li><a href={`${ASD_BASE}/reference/failure-taxonomy/`}>Failure taxonomy</a></li>
+          <li><a href={`${ASD_BASE}/glossary/`}>Glossary</a></li>
+          <li><a href={`${ASD_BASE}/practice/`}>Practice scenarios</a></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <MermaidRuntime />
+
+  <CtaBlock slot="footer-cta" pageSlug={`asd-${d.slug}`} />
+</Base>
+
+<script>
+  // The outline is a sticky rail on desktop and a disclosure on mobile, where
+  // seventeen modules ahead of the lesson would be a wall of navigation. HTML
+  // has no media-query for `open`, so track the breakpoint. With JavaScript off
+  // it stays collapsed everywhere, which keeps the lesson first either way.
+  const outline = document.querySelector<HTMLDetailsElement>("[data-outline]");
+  if (outline) {
+    const wide = window.matchMedia("(min-width: 1100px)");
+    const sync = () => {
+      outline.open = wide.matches;
+    };
+    sync();
+    wide.addEventListener("change", sync);
+  }
+</script>
+
+<style>
+  .lesson {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    padding-top: 2.5rem;
+  }
+  .lesson__main { min-width: 0; max-width: 50.5rem; }
+
+  .outline {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 0.75rem 1rem;
+  }
+  .outline__summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    padding: 0.25rem 0;
+  }
+  .outline__summary::-webkit-details-marker { display: none; }
+  .outline__toggle::after { content: "+"; color: var(--accent); font-size: 1rem; }
+  .outline[open] .outline__toggle::after { content: "\2212"; }
+  .outline__overview {
+    display: block;
+    font-size: var(--t-meta);
+    font-weight: 600;
+    margin: 0.6rem 0 1rem;
+  }
+  .outline__extras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+
+  .lesson__done { margin-top: 2.5rem; }
+  @media (min-width: 1100px) { .lesson__done { display: none; } }
+
+  .lesson__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .lesson__nav-a { display: block; max-width: 20rem; }
+  .lesson__nav-a:hover { text-decoration: none; }
+  .lesson__nav-a .meta { display: block; margin-bottom: 0.25rem; }
+  .lesson__nav-a span:last-child { font-weight: 600; }
+  .lesson__nav-a--next { margin-left: auto; text-align: right; }
+
+  .rail-box {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1rem 1.15rem;
+    margin-bottom: 1.25rem;
+  }
+  .rail-box__title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    margin: 0 0 0.6rem;
+  }
+  .rail-box__list { list-style: none; margin: 0; padding: 0; }
+  .rail-box__list li { margin: 0 0 0.45rem; font-size: var(--t-meta); }
+
+  .lesson__left { display: block; }
+  .lesson__right { display: none; }
+
+  @media (max-width: 1099px) {
+    .outline { padding: 0.5rem 1rem; }
+  }
+
+  @media (min-width: 1100px) {
+    .lesson { grid-template-columns: 16rem minmax(0, 1fr) 16.5rem; gap: 3rem; }
+    .lesson__left,
+    .lesson__right {
+      display: block;
+      position: sticky;
+      top: 5rem;
+      align-self: start;
+      max-height: calc(100vh - 6rem);
+      overflow-y: auto;
+    }
+  }
+</style>

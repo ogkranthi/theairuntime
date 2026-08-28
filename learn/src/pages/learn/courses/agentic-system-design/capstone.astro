@@ -1,0 +1,144 @@
+---
+import { getEntry, render } from "astro:content";
+import Base from "../../../../layouts/Base.astro";
+import CtaBlock from "../../../../components/CtaBlock.astro";
+import Toc from "../../../../components/Toc.astro";
+import MermaidRuntime from "../../../../components/asd/MermaidRuntime.astro";
+import { ASD_BASE, COURSE, getAsdModules, moduleHref } from "../../../../lib/asd";
+import "../../../../styles/asd.css";
+
+const brief = await getEntry("asdReference", "capstone-atlas");
+if (!brief) throw new Error("[agentic-system-design] capstone-atlas.md is missing");
+const { Content, headings } = await render(brief);
+
+const modules = await getAsdModules();
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<Base
+  title="The Atlas capstone | Agentic AI System Design"
+  description="Build Atlas, a counterparty due-diligence agent: authority boundaries, tool contracts, durable execution, human approval, evals, and operations, judged against the course rubric."
+  pageSlug="asd-capstone"
+  ogType="article"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "LearningResource",
+      name: "Atlas capstone",
+      description: "The capstone project for Agentic AI System Design.",
+      url: canonical,
+      learningResourceType: "Project",
+      isPartOf: { "@type": "Course", name: COURSE.title, url: `https://learn.theairuntime.com${ASD_BASE}/` },
+      publisher: { "@type": "Organization", name: "The AI Runtime" },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: COURSE.short_title, item: `https://learn.theairuntime.com${ASD_BASE}/` },
+        { "@type": "ListItem", position: 2, name: "Capstone", item: canonical },
+      ],
+    },
+  ]}
+>
+  <div class="shell">
+    <header class="chead">
+      <p class="eyebrow">
+        <a href={`${ASD_BASE}/`}>Agentic AI System Design</a> / Capstone
+      </p>
+      <h1>{COURSE.canonical_project}</h1>
+      <p class="lead">
+        The whole course builds one system. Atlas takes a counterparty due-diligence request,
+        researches it across trusted and untrusted sources, produces a cited risk packet, and routes
+        every material decision to an authenticated human. It is multi-tenant, long-running,
+        regulated, and full of actions you cannot take back, which is exactly why it is the
+        capstone.
+      </p>
+      <p class="chead__links">
+        <a class="btn" href={`${ASD_BASE}/reference/atlas-reference-implementation-spec/`}>Full implementation spec</a>
+        <a class="btn" href={`${ASD_BASE}/reference/course-rubric/`}>Scoring rubric</a>
+        <a class="btn" href={`${ASD_BASE}/canvas/`}>Design canvas</a>
+      </p>
+    </header>
+
+    <section class="section milestones">
+      <h2>The build, module by module</h2>
+      <p class="muted measure">
+        Every module contributes one milestone. If you are reading the course rather than building
+        it, treat each as a design decision to write down instead of code to ship.
+      </p>
+      <ol class="mlist">
+        {
+          modules.map((m) => (
+            <li>
+              <span class="mlist__n">{m.data.id}</span>
+              <span class="mlist__body">
+                <a href={moduleHref(m)}>{m.data.title}</a>
+                <span class="mlist__build">{m.data.build_milestone}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <div class="doc">
+      <div class="doc__main">
+        <article class="prose asd-prose asd-doc">
+          <Content />
+        </article>
+      </div>
+      <aside class="doc__rail">
+        <Toc headings={headings} />
+      </aside>
+    </div>
+  </div>
+
+  <MermaidRuntime />
+
+  <CtaBlock slot="footer-cta" pageSlug="asd-capstone" />
+</Base>
+
+<style>
+  .chead { padding: 2.5rem 0 1rem; }
+  .chead .eyebrow a { color: var(--accent); }
+  .chead h1 { font-size: clamp(2rem, 4.5vw, 2.9rem); letter-spacing: -0.03em; max-width: 20ch; }
+  .lead { font-size: 1.12rem; color: var(--fg-muted); max-width: 66ch; }
+  .chead__links { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+
+  .mlist { list-style: none; margin: 1.5rem 0 0; padding: 0; border-top: 1px solid var(--line); }
+  .mlist li {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: baseline;
+    padding: 0.8rem 0.4rem;
+    margin: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .mlist__n { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); }
+  .mlist__body a { font-weight: 650; }
+  .mlist__build { display: block; font-size: 0.87rem; color: var(--fg-muted); margin-top: 0.2rem; }
+
+  .doc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .doc__main { min-width: 0; max-width: 52rem; }
+  .doc__rail { display: none; }
+  @media (min-width: 1100px) {
+    .doc { grid-template-columns: minmax(0, 1fr) 16rem; gap: 3.5rem; }
+    .doc__rail {
+      display: block;
+      position: sticky;
+      top: 5rem;
+      align-self: start;
+      max-height: calc(100vh - 6rem);
+      overflow-y: auto;
+    }
+  }
+</style>

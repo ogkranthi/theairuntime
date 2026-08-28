@@ -7,7 +7,7 @@ interface Props {
   href?: string;
   caseStudyTags?: string[];
   skills?: string[];
-  stats?: { modules: number; cases: number; labs: number; hours: string };
+  stats?: { label: string; value: string }[];
 }
 const { number, title, description, status, href, caseStudyTags = [], skills = [], stats } = Astro.props;
 const statusLabel = status === "live" ? "LIVE" : status === "coming-next" ? "COMING NEXT" : "PLANNED";
@@ -40,9 +40,14 @@ const statusLabel = status === "live" ? "LIVE" : status === "coming-next" ? "COM
     )
   }
   {
-    stats && (
+    stats && stats.length > 0 && (
       <p class="ccard__stats">
-        {stats.modules} modules · {stats.cases} industry cases · {stats.labs} optional labs · {stats.hours}
+        {stats.map((s, i) => (
+          <>
+            {i > 0 && <span aria-hidden="true"> · </span>}
+            {s.value} {s.label}
+          </>
+        ))}
       </p>
     )
   }

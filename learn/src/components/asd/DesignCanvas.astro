@@ -1,0 +1,298 @@
+---
+import { CANVAS_SECTIONS, CANVAS_FIELD_COUNT } from "../../lib/asd-canvas";
+
+interface Props {
+  /**
+   * Namespace for the saved draft. One canvas per scenario, plus a default
+   * "atlas" copy for the capstone, all in the same browser.
+   */
+  scenarioKey?: string;
+  scenarioTitle?: string;
+  /** Rendered inside a scenario page rather than the standalone canvas page. */
+  embedded?: boolean;
+}
+
+const { scenarioKey = "atlas", scenarioTitle = "Atlas capstone", embedded = false } = Astro.props;
+---
+
+<section class:list={["canvas", { "canvas--embedded": embedded }]} data-canvas={scenarioKey} data-canvas-title={scenarioTitle}>
+  <header class="canvas__head">
+    <div>
+      <p class="canvas__eyebrow">DESIGN CANVAS</p>
+      <h2 class="canvas__title">{scenarioTitle}</h2>
+      <p class="canvas__sub">
+        Twelve sections, {CANVAS_FIELD_COUNT} fields. Everything you type is saved in this browser
+        as you go. Nothing is uploaded, and nobody else can read it.
+      </p>
+    </div>
+    <div class="canvas__status">
+      <p class="canvas__count"><span data-canvas-filled>0</span> / {CANVAS_FIELD_COUNT} filled</p>
+      <p class="canvas__saved" data-canvas-saved role="status" aria-live="polite"></p>
+    </div>
+  </header>
+
+  <div class="canvas__bar">
+    <button type="button" class="btn btn--solid" data-canvas-export="md">Export Markdown</button>
+    <button type="button" class="btn" data-canvas-export="json">Export JSON</button>
+    <button type="button" class="btn" data-canvas-print>Print</button>
+    <button type="button" class="btn canvas__reset" data-canvas-reset>Reset</button>
+  </div>
+
+  <form class="canvas__form" data-canvas-form>
+    {
+      CANVAS_SECTIONS.map((section) => (
+        <fieldset class="csec">
+          <legend class="csec__legend">
+            <span class="csec__n">{String(section.n).padStart(2, "0")}</span>
+            {section.title}
+          </legend>
+          <p class="csec__purpose">{section.purpose}</p>
+          <div class="csec__fields">
+            {section.fields.map((field) => (
+              <p class="cfield">
+                <label for={`c-${scenarioKey}-${field.key}`}>
+                  {field.label}
+                  {field.hint && <span class="cfield__hint">{field.hint}</span>}
+                </label>
+                <textarea
+                  id={`c-${scenarioKey}-${field.key}`}
+                  name={field.key}
+                  rows={field.rows ?? 1}
+                  data-label={field.label}
+                  data-section={section.title}
+                />
+              </p>
+            ))}
+          </div>
+        </fieldset>
+      ))
+    }
+  </form>
+</section>
+
+<script>
+  import { isAvailable, readCanvas, saveCanvas, update } from "../../scripts/asd-progress";
+
+  document.querySelectorAll<HTMLElement>("[data-canvas]").forEach((root) => {
+    const key = root.dataset.canvas ?? "atlas";
+    const title = root.dataset.canvasTitle ?? "Design canvas";
+    const form = root.querySelector<HTMLFormElement>("[data-canvas-form]");
+    const savedNote = root.querySelector<HTMLElement>("[data-canvas-saved]");
+    const filledNote = root.querySelector<HTMLElement>("[data-canvas-filled]");
+    if (!form) return;
+
+    const areas = [...form.querySelectorAll<HTMLTextAreaElement>("textarea")];
+
+    const collect = (): Record<string, string> => {
+      const out: Record<string, string> = {};
+      areas.forEach((a) => {
+        const value = a.value.trim();
+        if (value) out[a.name] = value;
+      });
+      return out;
+    };
+
+    const paintCount = () => {
+      if (filledNote) filledNote.textContent = String(areas.filter((a) => a.value.trim()).length);
+    };
+
+    const autogrow = (a: HTMLTextAreaElement) => {
+      a.style.height = "auto";
+      a.style.height = `${a.scrollHeight}px`;
+    };
+
+    // Restore.
+    const stored = readCanvas(key);
+    areas.forEach((a) => {
+      const value = stored[a.name];
+      if (value) a.value = value;
+      autogrow(a);
+    });
+    paintCount();
+
+    if (!isAvailable() && savedNote) {
+      savedNote.textContent = "Storage unavailable, so this draft lasts for this page view only.";
+    }
+
+    // Autosave, debounced. Typing should never feel like it is waiting on disk.
+    let timer: number | undefined;
+    form.addEventListener("input", (event) => {
+      const target = event.target;
+      if (target instanceof HTMLTextAreaElement) autogrow(target);
+      paintCount();
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        saveCanvas(key, collect());
+        if (savedNote && isAvailable()) {
+          savedNote.textContent = `Saved ${new Date().toLocaleTimeString()}`;
+        }
+      }, 500);
+    });
+
+    const download = (filename: string, mime: string, body: string) => {
+      const url = URL.createObjectURL(new Blob([body], { type: mime }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    const toMarkdown = () => {
+      const lines = [`# Agentic System Design Canvas`, ``, `**Design:** ${title}`, ``];
+      let currentSection = "";
+      areas.forEach((a) => {
+        const value = a.value.trim();
+        if (!value) return;
+        const section = a.dataset.section ?? "";
+        if (section !== currentSection) {
+          currentSection = section;
+          lines.push(`## ${section}`, ``);
+        }
+        lines.push(`**${a.dataset.label}:**`, ``, value, ``);
+      });
+      if (lines.length === 4) lines.push(`_Nothing filled in yet._`, ``);
+      return lines.join("\n");
+    };
+
+    root.querySelectorAll<HTMLButtonElement>("[data-canvas-export]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const stem = `asd-canvas-${key}`;
+        if (btn.dataset.canvasExport === "json") {
+          download(
+            `${stem}.json`,
+            "application/json",
+            JSON.stringify({ design: title, scenario: key, fields: collect() }, null, 2),
+          );
+        } else {
+          download(`${stem}.md`, "text/markdown", toMarkdown());
+        }
+      });
+    });
+
+    root.querySelector("[data-canvas-print]")?.addEventListener("click", () => window.print());
+
+    root.querySelector("[data-canvas-reset]")?.addEventListener("click", () => {
+      if (!window.confirm(`Clear every field of the ${title} canvas? This cannot be undone.`)) return;
+      areas.forEach((a) => {
+        a.value = "";
+        autogrow(a);
+      });
+      update((progress) => {
+        delete progress.canvasDrafts[key];
+      });
+      paintCount();
+      if (savedNote) savedNote.textContent = "Cleared";
+    });
+  });
+</script>
+
+<style>
+  .canvas__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .canvas__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin: 0 0 0.4rem;
+  }
+  .canvas__title { margin: 0 0 0.5rem; font-size: var(--t-h2); }
+  .canvas__sub { margin: 0; color: var(--fg-muted); font-size: var(--t-meta); max-width: 52ch; }
+  .canvas__status { font-family: var(--font-mono); font-size: 0.75rem; text-align: right; }
+  .canvas__count { margin: 0; color: var(--fg); }
+  .canvas__saved { margin: 0.3rem 0 0; color: var(--fg-muted); min-height: 1em; }
+
+  .canvas__bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 1.25rem 0 2rem;
+  }
+  .canvas__reset { color: var(--fg-muted); }
+
+  .csec {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.25rem 1.4rem 1.4rem;
+    margin: 0 0 1.25rem;
+  }
+  .csec__legend {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    font-weight: 650;
+    font-size: 1.05rem;
+    padding: 0;
+  }
+  .csec__n {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+  }
+  .csec__purpose {
+    margin: 0.6rem 0 1.1rem;
+    color: var(--fg-muted);
+    font-size: var(--t-meta);
+    max-width: 62ch;
+  }
+  .csec__fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.9rem; }
+  @media (min-width: 780px) {
+    .csec__fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cfield:has(textarea[rows="3"]),
+    .cfield:has(textarea[rows="8"]) { grid-column: 1 / -1; }
+  }
+  .cfield { margin: 0; }
+  .cfield label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+  .cfield__hint {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 400;
+    color: var(--fg-muted);
+    margin-top: 0.15rem;
+    line-height: 1.4;
+  }
+  .cfield textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.65rem;
+    resize: vertical;
+    overflow: hidden;
+  }
+  .cfield textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: var(--accent);
+  }
+
+  .canvas--embedded .csec { background: var(--bg); }
+
+  @media print {
+    .canvas__bar, .canvas__status { display: none; }
+    .csec { break-inside: avoid; border-color: #999; }
+    .cfield textarea { border-color: #999; background: #fff; }
+  }
+</style>

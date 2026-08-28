@@ -1,0 +1,153 @@
+/**
+ * Agentic AI System Design: lesson typography.
+ *
+ * The course carries its pedagogy in heading text ("SHIP: build the tool
+ * gateway", "RUN: poison the context", "Failure injection: the agent tax").
+ * rehype-asd-sections moves each label into data-label and tags the heading,
+ * so the styling here badges the label and gives each kind of work a distinct
+ * surface without any authoring markup in the markdown.
+ */
+
+.asd-prose {
+  max-width: var(--measure);
+}
+
+.asd-prose h2 {
+  margin-top: 3rem;
+  scroll-margin-top: 5rem;
+}
+.asd-prose h3 {
+  margin-top: 2rem;
+  scroll-margin-top: 5rem;
+}
+.asd-prose > p,
+.asd-prose > ul,
+.asd-prose > ol {
+  max-width: var(--measure);
+}
+
+/* The course writes slash-joined enumerations ("run/thread/memory/artifact")
+   that browsers treat as one word. Let them break rather than widen the page. */
+.asd-prose p,
+.asd-prose li,
+.asd-prose dd,
+.asd-prose th,
+.asd-prose td {
+  overflow-wrap: break-word;
+}
+
+/* --- labelled headings ---------------------------------------------------- */
+
+.asd-h__label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+/* Work headings get a rule so the reading eye can find the next task. */
+.asd-h--ship,
+.asd-h--run,
+.asd-h--design,
+.asd-h--failure,
+.asd-h--interview {
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+}
+
+/* Failure injections are the one section that should read as a warning label. */
+.asd-h--failure .asd-h__label {
+  color: var(--fg);
+  background: var(--bg-inset);
+  display: table;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.55rem;
+}
+
+/* The three fixed sections every lesson ends with. */
+.asd-h--design-brief,
+.asd-h--check,
+.asd-h--sources {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  border-top: 1px solid var(--line);
+  padding-top: 1.25rem;
+}
+
+/* "What you will design" opens the lesson and reads as a promise, not a header. */
+.asd-h--design-brief {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+.asd-h--design-brief + p {
+  font-size: 1.1rem;
+  color: var(--fg);
+  border-left: 2px solid var(--accent-dim);
+  padding-left: 1rem;
+}
+
+/* The open questions before the quiz. */
+.asd-h--check + ol {
+  counter-reset: q;
+  list-style: none;
+  padding: 0;
+}
+.asd-h--check + ol > li {
+  counter-increment: q;
+  position: relative;
+  padding-left: 2rem;
+  margin: 0 0 0.6rem;
+}
+.asd-h--check + ol > li::before {
+  content: counter(q);
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+  border-radius: 999px;
+  width: 1.4rem;
+  height: 1.4rem;
+  display: grid;
+  place-items: center;
+}
+
+/* Reference tables are dense; give them room and let them scroll. */
+.asd-prose table {
+  font-size: 0.88rem;
+}
+
+/* --- reference and glossary pages ---------------------------------------- */
+
+.asd-doc h2 {
+  margin-top: 2.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 5rem;
+}
+.asd-doc h3 {
+  margin-top: 1.75rem;
+  scroll-margin-top: 5rem;
+}
+
+/* Glossary bodies are one bolded term per paragraph. Make each a definition. */
+.asd-doc--glossary p > strong:first-child {
+  color: var(--fg);
+}
+.asd-doc--glossary > p {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+  margin: 0;
+  max-width: var(--measure);
+}

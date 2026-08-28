@@ -16,10 +16,10 @@ const studies = await getCollection("caseStudies", ({ data }) =>
 const studyBydId = new Map(studies.map((s) => [s.id, s]));
 
 const learningStages = [
-  { step: "01", title: "See the problem", modules: "00–02", copy: "Start with a tiny agent loop. Learn why memory, process state, and model context are not durable state." },
-  { step: "02", title: "Make it survive", modules: "03–07", copy: "Add checkpoints, safe side effects, worker ownership, recovery, and human approval—one failure at a time." },
-  { step: "03", title: "Make it governable", modules: "08–12", copy: "Control context, observe behavior, enforce security boundaries, evaluate the path, and build the harness." },
-  { step: "04", title: "Prove it", modules: "13–15", copy: "Compare real architectures, deploy the runtime, then run every failure together in the production gauntlet." },
+  { step: "01", title: "See the problem", modules: "00-02", copy: "Start with a tiny agent loop. Learn why memory, process state, and model context are not durable state." },
+  { step: "02", title: "Make it survive", modules: "03-07", copy: "Add checkpoints, safe side effects, worker ownership, recovery, and human approval, one failure at a time." },
+  { step: "03", title: "Make it governable", modules: "08-12", copy: "Control context, observe behavior, enforce security boundaries, evaluate the path, and build the harness." },
+  { step: "04", title: "Prove it", modules: "13-15", copy: "Compare real architectures, deploy the runtime, then run every failure together in the production gauntlet." },
 ];
 
 const technologies = [
