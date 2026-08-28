@@ -1,3 +1,13 @@
+# This file is the source of truth for the Worker.
+#
+# The Worker deploys through Cloudflare Workers Builds on every merge to main,
+# and a deploy from a Wrangler config overwrites bindings and plain text vars
+# that were set in the Cloudflare dashboard. Add bindings and [vars] here, not
+# in the dashboard, or the next merge will silently remove them.
+#
+# Secrets are the exception. Wrangler never deletes them, so set those with
+# `npx wrangler secret put NAME` or in the dashboard, and never in this file.
+
 name = "theairuntime"
 main = "src/worker.ts"
 compatibility_date = "2025-05-01"
@@ -55,12 +65,20 @@ run_worker_first = true
 # binding = "FDE_GYM_SESSIONS"
 # id = "<your-kv-namespace-id>"
 
-# Optional FDE Gym settings. Every one of these has a working default, so skip
-# the whole block unless you want to change something. These are Workers AI
-# model names, not credentials.
+# FDE Gym model selection. These are Workers AI model names, not credentials
+# and not an external API. The values below are the code defaults, so the block
+# is optional, but Cohort 0 should set them explicitly: a retired model id does
+# not fail loudly, it silently drops the session to the deterministic path while
+# health still reports aiConfigured true. Pinning them here makes the choice
+# visible in review and easy to change when a model is retired.
+#
+# The interviewer runs on every candidate message, so it is picked for latency.
+# The evaluator runs once and must return strict JSON, so it is picked for
+# native structured output.
+#
 # [vars]
-# FDE_GYM_INTERVIEW_MODEL = "@cf/meta/llama-3.1-8b-instruct"
-# FDE_GYM_EVALUATOR_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+# FDE_GYM_INTERVIEW_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+# FDE_GYM_EVALUATOR_MODEL = "@cf/zai-org/glm-5.3"
 # FDE_GYM_SESSION_TTL_SECONDS = "2592000"
 
 # The personalized report email is the only part that needs an outside service.

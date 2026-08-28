@@ -224,13 +224,28 @@ interviewer reveals curated scenario facts, and the evaluator applies the graph
 rules and the coverage model. It is honest about itself on the result screen and
 is useful for testing the flow, but it is not calibrated scoring.
 
-**Optional, skip unless you want to change something:**
+**Everything goes in `wrangler.toml`, not the Cloudflare dashboard.** The Worker
+deploys through Workers Builds on every merge to main, and a deploy from a
+Wrangler config overwrites bindings and plain text vars set in the dashboard.
+Secrets are the exception: Wrangler never deletes those, so `RESEND_API_KEY`
+belongs in `wrangler secret put` and never in the file.
 
-| Setting | Default | Notes |
+**Model selection.** These are Workers AI model names, not credentials.
+
+| Setting | Default | Why this one |
 |---|---|---|
-| `FDE_GYM_INTERVIEW_MODEL` | `@cf/meta/llama-3.1-8b-instruct` | a Workers AI model name, not a credential |
-| `FDE_GYM_EVALUATOR_MODEL` | `@cf/meta/llama-3.1-8b-instruct` | Cohort 0 should test whichever pair it ships with |
+| `FDE_GYM_INTERVIEW_MODEL` | `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | runs on every candidate message, so latency is part of realism |
+| `FDE_GYM_EVALUATOR_MODEL` | `@cf/zai-org/glm-5.3` | runs once and must return strict JSON, so it needs native structured output |
 | `FDE_GYM_SESSION_TTL_SECONDS` | 30 days | retention window for consented sessions |
+
+The block is optional because the code carries these defaults, but Cohort 0
+should pin them in `[vars]` anyway. A retired model id does not fail loudly:
+`callModel` catches the error and returns null, so the session drops to the
+deterministic path while `/api/fde-gym/health` still reports
+`aiConfigured: true`. Pinning the ids puts that choice in review and makes it
+one edit when a model is retired. Check them against
+[the Workers AI model list](https://developers.cloudflare.com/workers-ai/models/)
+before a cohort runs.
 
 **The one outside service** is the personalized report email, and only that
 feature depends on it. `npx wrangler secret put RESEND_API_KEY`, then set

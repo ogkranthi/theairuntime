@@ -1,7 +1,21 @@
 import type { FdeGymEnv, ModelMessage } from "./types";
 
-const DEFAULT_INTERVIEW_MODEL = "@cf/meta/llama-3.1-8b-instruct";
-const DEFAULT_EVALUATOR_MODEL = "@cf/meta/llama-3.1-8b-instruct";
+/**
+ * Workers AI model defaults, overridable with FDE_GYM_INTERVIEW_MODEL and
+ * FDE_GYM_EVALUATOR_MODEL.
+ *
+ * The two roles want different things. The interviewer runs on every candidate
+ * message, so latency is part of realism: a fast instruct model is the right
+ * trade. The evaluator runs once and must return strict JSON, so it gets a
+ * model with native structured output.
+ *
+ * A model id that no longer exists does not fail loudly. callModel catches and
+ * returns null, and the session silently drops to the deterministic path while
+ * the health route still reports aiConfigured: true. Check these against
+ * developers.cloudflare.com/workers-ai/models when a model is retired.
+ */
+const DEFAULT_INTERVIEW_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const DEFAULT_EVALUATOR_MODEL = "@cf/zai-org/glm-5.3";
 
 function responseText(value: unknown): string {
   if (typeof value === "string") return value.trim();
