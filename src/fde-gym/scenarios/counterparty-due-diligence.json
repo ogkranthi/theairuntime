@@ -1,0 +1,489 @@
+{
+  "id": "counterparty-due-diligence-v1",
+  "version": 1,
+  "title": "Counterparty Due Diligence",
+  "domain": "global banking",
+  "candidateCharter": "You will be evaluated on how well you understand the problem, design the system, reason about production constraints, and communicate your tradeoffs.",
+  "openings": {
+    "foundations": "A global bank performs about 5,000 counterparty reviews per month. Analysts use internal documents, external sources, and structured risk databases. Reviews can take several hours. Design an AI-assisted system that reduces analyst workload while preserving human oversight.",
+    "fde": "A global bank wants to use AI to improve counterparty due diligence. Design the system.",
+    "senior": "The head of compliance says, \"We need an AI agent to automate counterparty due diligence. Our target is 80 percent automation.\" You are the FDE leading the technical engagement. What do you do?"
+  },
+  "drills": [
+    {
+      "id": "reliability-action-safety",
+      "title": "Surviving retries and side effects",
+      "focusCompetencies": [
+        "execution_reliability",
+        "action_safety"
+      ],
+      "opening": "An enhanced due-diligence investigation can remain open for three days, can pause for analyst approval, and can update a downstream case system. Design the execution and action-safety architecture.",
+      "closingPrompt": "Give me your final recovery model. Focus on persisted state, retries, side effects, and human waiting."
+    }
+  ],
+  "facts": [
+    {
+      "id": "business-objective",
+      "knowledge": "known",
+      "triggers": [
+        "goal",
+        "objective",
+        "why",
+        "problem",
+        "outcome",
+        "success",
+        "business"
+      ],
+      "response": "The bank wants to reduce analyst effort and review turnaround time without weakening compliance controls. The business has proposed an 80 percent automation target, but compliance has not approved that target."
+    },
+    {
+      "id": "volume",
+      "knowledge": "known",
+      "triggers": [
+        "scale",
+        "volume",
+        "how many",
+        "throughput",
+        "reviews",
+        "users",
+        "qps",
+        "concurrency"
+      ],
+      "response": "The bank handles about 5,000 counterparty reviews per month. Work is bursty around onboarding deadlines, but this is not an internet-scale synchronous request path."
+    },
+    {
+      "id": "current-workflow",
+      "knowledge": "known",
+      "triggers": [
+        "current workflow",
+        "today",
+        "analyst",
+        "process",
+        "who uses",
+        "user journey",
+        "manual"
+      ],
+      "response": "An analyst gathers internal and external evidence, drafts a risk recommendation, and escalates higher-risk cases to a senior reviewer. The process spans several systems and involves substantial manual evidence collection."
+    },
+    {
+      "id": "authority",
+      "knowledge": "known",
+      "triggers": [
+        "decision",
+        "approve",
+        "approval",
+        "authority",
+        "autonomous",
+        "reject",
+        "onboard",
+        "human",
+        "who decides"
+      ],
+      "response": "The AI may gather evidence and recommend a risk classification. It does not have unilateral authority to approve or reject onboarding. High-risk cases require a senior human reviewer, and the exact autonomy policy is still under negotiation."
+    },
+    {
+      "id": "data-sources",
+      "knowledge": "known",
+      "triggers": [
+        "data source",
+        "documents",
+        "systems",
+        "information",
+        "inputs",
+        "where data",
+        "apis",
+        "database"
+      ],
+      "response": "Inputs include internal KYC documents, CRM records, policy documents, structured sanctions and risk systems, and external company research. Some sources are authoritative systems while others are supporting evidence."
+    },
+    {
+      "id": "permissions",
+      "knowledge": "known",
+      "triggers": [
+        "permission",
+        "access",
+        "acl",
+        "identity",
+        "security",
+        "tenant",
+        "jurisdiction",
+        "authorized"
+      ],
+      "response": "Document and system access depends on the user, case, and jurisdiction. The solution must preserve source permissions and must not treat model instructions as an authorization boundary."
+    },
+    {
+      "id": "duration",
+      "knowledge": "known",
+      "triggers": [
+        "duration",
+        "how long",
+        "latency",
+        "sla",
+        "synchronous",
+        "asynchronous",
+        "lifecycle",
+        "multi-day",
+        "long running",
+        "long-running"
+      ],
+      "response": "Most reviews take between 15 minutes and four hours. About 15 percent remain open for one to three days because of missing evidence, external checks, or human review."
+    },
+    {
+      "id": "latency-target",
+      "knowledge": "unknown",
+      "triggers": [
+        "p95",
+        "p99",
+        "latency target",
+        "response time",
+        "seconds",
+        "service level"
+      ],
+      "response": "The customer has not established a precise latency SLO. Interactive steps should feel responsive, but the core investigation is mostly asynchronous. The candidate should state a reasonable assumption and explain how it would be validated."
+    },
+    {
+      "id": "quality-threshold",
+      "knowledge": "unknown",
+      "triggers": [
+        "accuracy",
+        "false negative",
+        "false positive",
+        "quality threshold",
+        "precision",
+        "recall",
+        "acceptable error"
+      ],
+      "response": "Compliance has not yet established an acceptable false-negative threshold. Aggregate accuracy is not considered sufficient because rare high-risk cases carry disproportionate cost."
+    },
+    {
+      "id": "external-reliability",
+      "knowledge": "known",
+      "triggers": [
+        "external",
+        "timeout",
+        "failure",
+        "stale",
+        "freshness",
+        "outage",
+        "rate limit",
+        "source changes"
+      ],
+      "response": "External sources can time out, rate-limit requests, return conflicting data, or change after the investigation. Some checks may succeed even when the caller never receives a response."
+    },
+    {
+      "id": "auditability",
+      "knowledge": "known",
+      "triggers": [
+        "audit",
+        "explain",
+        "citation",
+        "provenance",
+        "reproduce",
+        "reconstruct",
+        "retention",
+        "lineage"
+      ],
+      "response": "Six months later, an auditor must be able to reconstruct which evidence, policy, model configuration, tool actions, and human overrides contributed to a recommendation, even if source documents have since changed."
+    },
+    {
+      "id": "existing-platform",
+      "knowledge": "known",
+      "triggers": [
+        "existing architecture",
+        "existing system",
+        "cloud",
+        "stack",
+        "platform",
+        "legacy",
+        "infrastructure"
+      ],
+      "response": "The bank already has case-management, identity, policy, and document systems. The design should integrate with them rather than replace every platform. The exact cloud provider is not architecture-defining for this interview."
+    },
+    {
+      "id": "launch-window",
+      "knowledge": "known",
+      "triggers": [
+        "timeline",
+        "deadline",
+        "launch",
+        "six weeks",
+        "mvp",
+        "team",
+        "engineers",
+        "rollout"
+      ],
+      "response": "The customer wants an initial production path in six weeks with a small implementation team. They will accept a staged rollout, but they want a credible path to measurable value."
+    },
+    {
+      "id": "cost",
+      "knowledge": "stakeholder",
+      "triggers": [
+        "cost",
+        "budget",
+        "economics",
+        "price",
+        "roi"
+      ],
+      "response": "A firm inference budget has not been approved. The business expects the system to save analyst time, so cost per investigation and human-review cost must be measured before expanding autonomy."
+    }
+  ],
+  "hiddenRequirements": [
+    {
+      "id": "agentic-boundary",
+      "criticality": "critical",
+      "competencies": [
+        "architecture_decomposition",
+        "planning_orchestration",
+        "reasoning_contracts"
+      ],
+      "strongSignals": [
+        "Separates probabilistic evidence gathering and synthesis from deterministic lifecycle, policy, authorization, and approval.",
+        "Explains why an agent is needed for specific open-ended steps.",
+        "Avoids treating multi-agent design as a maturity signal."
+      ],
+      "weakSignals": [
+        "One super-agent owns every system decision.",
+        "Adds many agents without independent context, authority, lifecycle, or ownership.",
+        "Cannot explain what would stop working if the agent were removed."
+      ]
+    },
+    {
+      "id": "durable-execution",
+      "criticality": "critical",
+      "competencies": [
+        "execution_reliability",
+        "state_data_architecture",
+        "human_system_interaction"
+      ],
+      "strongSignals": [
+        "Persists workflow and domain state outside model context.",
+        "Supports pause, resume, recovery, and human waiting.",
+        "Explains checkpoint boundaries and in-flight version behavior."
+      ],
+      "weakSignals": [
+        "Uses in-memory chat history as durable state.",
+        "Keeps a multi-day workflow in one request.",
+        "Says retries are sufficient without persisted progress."
+      ]
+    },
+    {
+      "id": "action-safety",
+      "criticality": "critical",
+      "competencies": [
+        "action_safety",
+        "agent_authority_safety",
+        "tool_boundaries"
+      ],
+      "strongSignals": [
+        "Uses narrow tool boundaries and downstream authorization.",
+        "Addresses idempotency, acknowledgement gaps, and reconciliation.",
+        "Keeps consequential authority outside model discretion."
+      ],
+      "weakSignals": [
+        "Agent directly invokes broad privileged APIs.",
+        "Assumes exactly-once external effects.",
+        "Relies on a prompt to prevent an unauthorized action."
+      ]
+    },
+    {
+      "id": "permission-aware-evidence",
+      "criticality": "critical",
+      "competencies": [
+        "data_identity_security",
+        "context_engineering",
+        "state_data_architecture"
+      ],
+      "strongSignals": [
+        "Carries user and case identity into retrieval and tools.",
+        "Preserves source ACLs and jurisdiction boundaries.",
+        "Treats indexes as derived access paths, not authoritative storage."
+      ],
+      "weakSignals": [
+        "Retrieves from a shared vector store without permission filtering.",
+        "Copies all documents into model context.",
+        "Treats the vector database as the source of truth."
+      ]
+    },
+    {
+      "id": "evaluation",
+      "criticality": "critical",
+      "competencies": [
+        "ai_quality_evaluation",
+        "system_operational_validation"
+      ],
+      "strongSignals": [
+        "Separates retrieval, reasoning, tool, and end-to-end evaluation.",
+        "Includes long-tail high-risk cases and release gates.",
+        "Uses shadow mode and staged autonomy."
+      ],
+      "weakSignals": [
+        "Uses one aggregate accuracy number.",
+        "Relies only on manual spot checks.",
+        "Launches directly into autonomous decisions."
+      ]
+    },
+    {
+      "id": "operational-trust",
+      "criticality": "critical",
+      "competencies": [
+        "operational_visibility",
+        "trust_explainability"
+      ],
+      "strongSignals": [
+        "Can reconstruct evidence, model and prompt versions, tool actions, state transitions, and human overrides.",
+        "Explains how an incorrect production outcome would be debugged.",
+        "Preserves evidence snapshots or version references."
+      ],
+      "weakSignals": [
+        "Adds an observability box without defining useful telemetry.",
+        "Asks the model to explain its hidden reasoning.",
+        "Cannot reproduce an older result after documents or models change."
+      ]
+    }
+  ],
+  "probes": [
+    {
+      "id": "why-agent",
+      "minimumLevel": "foundations",
+      "competencies": [
+        "architecture_decomposition",
+        "planning_orchestration"
+      ],
+      "question": "Which parts of this system genuinely need probabilistic reasoning, and which parts should remain deterministic?"
+    },
+    {
+      "id": "too-many-agents",
+      "minimumLevel": "fde",
+      "competencies": [
+        "architecture_decomposition",
+        "fde_judgment"
+      ],
+      "question": "Why do these need to be independent agents rather than one bounded reasoning component with deterministic orchestration?"
+    },
+    {
+      "id": "side-effect-gap",
+      "minimumLevel": "fde",
+      "competencies": [
+        "execution_reliability",
+        "action_safety"
+      ],
+      "question": "Assume the downstream operation succeeds, but the worker crashes before recording the response. Walk me through recovery."
+    },
+    {
+      "id": "context-600-pages",
+      "minimumLevel": "fde",
+      "competencies": [
+        "context_engineering",
+        "state_data_architecture"
+      ],
+      "question": "The investigation has accumulated 600 pages of evidence, 40 tool calls, and three analyst comments. What exactly enters the next model context?"
+    },
+    {
+      "id": "unknown-threshold",
+      "minimumLevel": "fde",
+      "competencies": [
+        "problem_discovery",
+        "ai_quality_evaluation",
+        "fde_judgment"
+      ],
+      "question": "Compliance has not defined an acceptable false-negative threshold. How do you proceed without inventing one?"
+    },
+    {
+      "id": "launch-six-weeks",
+      "minimumLevel": "fde",
+      "competencies": [
+        "system_operational_validation",
+        "fde_judgment"
+      ],
+      "question": "The customer wants this influencing onboarding decisions in six weeks. What would you require before expanding its authority?"
+    },
+    {
+      "id": "customer-roi-pushback",
+      "minimumLevel": "fde",
+      "competencies": [
+        "human_system_interaction",
+        "fde_judgment"
+      ],
+      "question": "The customer says human review destroys the ROI. Defend or revise your design."
+    },
+    {
+      "id": "senior-simplify",
+      "minimumLevel": "senior",
+      "competencies": [
+        "architecture_decomposition",
+        "fde_judgment"
+      ],
+      "question": "You have two engineers and six weeks. What do you remove, and what remains production-safe?"
+    },
+    {
+      "id": "senior-versioning",
+      "minimumLevel": "senior",
+      "competencies": [
+        "execution_reliability",
+        "trust_explainability",
+        "system_operational_validation"
+      ],
+      "question": "You deploy a new model and workflow tonight while 1,200 investigations remain in flight. What happens to them, and how do you reproduce yesterday's decisions later?"
+    },
+    {
+      "id": "senior-late-audit",
+      "minimumLevel": "senior",
+      "competencies": [
+        "trust_explainability",
+        "state_data_architecture"
+      ],
+      "lateConstraint": true,
+      "question": "One final constraint: six months later, an auditor must reconstruct exactly which evidence supported each conclusion even if the source documents changed. What changes?"
+    }
+  ],
+  "referenceArchitectures": [
+    {
+      "id": "workflow-centric",
+      "title": "Workflow-centric",
+      "summary": "A durable workflow owns lifecycle, retries, policy checkpoints, and human waiting. Bounded AI steps gather and synthesize evidence.",
+      "fitsWhen": "Control, auditability, and recovery dominate.",
+      "tradeoff": "More explicit orchestration logic and less open-ended autonomy."
+    },
+    {
+      "id": "agent-centric-guarded",
+      "title": "Agent-centric with strict guardrails",
+      "summary": "An orchestrator agent adapts the research path, while durable state, narrow read-only tools, policy, and completion criteria stay outside model discretion.",
+      "fitsWhen": "Investigation paths are highly variable and cannot be usefully enumerated.",
+      "tradeoff": "Higher evaluation and operational complexity."
+    },
+    {
+      "id": "hybrid",
+      "title": "Hybrid",
+      "summary": "A deterministic workflow owns the case lifecycle. One bounded reasoning component adapts research inside defined stages. Authority, evidence, and human escalation remain explicit.",
+      "fitsWhen": "The system needs both adaptable investigation and regulated control.",
+      "tradeoff": "Requires clear contracts between workflow and reasoning layers."
+    }
+  ],
+  "remediation": {
+    "execution_reliability": {
+      "title": "Surviving long-running execution",
+      "airResourcePath": "/learn/courses/long-running-agents/06-failure-handling/",
+      "nextDrillId": "reliability-action-safety"
+    },
+    "action_safety": {
+      "title": "Retries, side effects, and reconciliation",
+      "airResourcePath": "/learn/courses/long-running-agents/04-side-effects/",
+      "nextDrillId": "reliability-action-safety"
+    },
+    "context_engineering": {
+      "title": "Context is not durable state",
+      "airResourcePath": "/learn/courses/long-running-agents/08-context/",
+      "nextDrillId": "reliability-action-safety"
+    },
+    "ai_quality_evaluation": {
+      "title": "Evaluate the AI before expanding authority",
+      "airResourcePath": "/learn/courses/long-running-agents/11-evaluation/",
+      "nextDrillId": "reliability-action-safety"
+    },
+    "operational_visibility": {
+      "title": "Reconstruct what happened",
+      "airResourcePath": "/learn/courses/long-running-agents/09-observability/",
+      "nextDrillId": "reliability-action-safety"
+    }
+  }
+}

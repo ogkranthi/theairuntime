@@ -37,3 +37,17 @@ run_worker_first = true
 # [[kv_namespaces]]
 # binding = "INTAKE"
 # id = "<your-kv-namespace-id>"
+
+# FDE Gym interviewer and evaluator.
+# The repository already contains the same Workers AI binding as a commented
+# example. Enable only one [ai] table.
+#
+# [ai]
+# binding = "AI"
+
+# Cohort 0 interview retention. Create with:
+#   npx wrangler kv namespace create FDE_GYM_SESSIONS
+#
+# [[kv_namespaces]]
+# binding = "FDE_GYM_SESSIONS"
+# id = "<replace-with-real-id>"

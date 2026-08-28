@@ -1,0 +1,54 @@
+---
+import Base from "../../layouts/Base.astro";
+import FdeGymApp from "../../components/fde-gym/FdeGymApp";
+---
+
+<Base
+  title="FDE Gym | Agentic System Design Interview Simulator"
+  description="Practice realistic Forward Deployed Engineer Agentic System Design interviews with a structured architecture canvas and evidence-backed feedback."
+  pageSlug="fde-gym"
+  wide
+>
+  <div class="fg-page shell shell--wide">
+    <FdeGymApp client:only="react" />
+    <noscript>
+      <div class="noscript">
+        <h1>FDE Gym</h1>
+        <p>
+          Practice a Forward Deployed Engineer Agentic System Design interview:
+          a Staff FDE asks the questions, you build the architecture on a
+          structured canvas, and a separate evaluator returns an evidence-backed
+          result.
+        </p>
+        <p>
+          The interview and the canvas run interactively, so FDE Gym needs
+          JavaScript. Turn it on and reload to start. The rest of the
+          <a href="/learn/">library</a> reads without it.
+        </p>
+      </div>
+    </noscript>
+  </div>
+</Base>
+
+<style>
+  .fg-page {
+    padding-top: clamp(1rem, 3vw, 2rem);
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+  }
+
+  .noscript {
+    max-width: var(--measure);
+    border: 1px solid var(--line);
+    border-radius: var(--radius, 12px);
+    background: var(--bg-raise);
+    padding: 1.5rem;
+  }
+
+  .noscript h1 {
+    margin-bottom: 0.75rem;
+  }
+
+  .noscript p:last-child {
+    margin-bottom: 0;
+  }
+</style>

@@ -50,6 +50,8 @@ course repos and are linked from here. Nothing is gated.
 /learn/case-studies/       Industry case study library (src/content/case-studies/)
 /learn/concepts|patterns|systems/    Knowledge library
 /paths/, /career/, /practice/        Journeys, career intelligence, proof
+/fde-gym/                  FDE Gym, the Agentic System Design interview simulator
+/api/fde-gym/*             its Worker routes: start, message, finish, report, feedback, health
 /search/                   Static client-side index, "/" or Cmd+K from anywhere
 /about                     Who is behind this, contact
 /rss.xml                   Module feed
@@ -172,6 +174,59 @@ graph source kept as the accessible text definition, which is also what the
 client renderer reads. `rehype-asd-sections` tags the pedagogy the course keeps
 in its heading text (`SHIP:`, `RUN:`, `DESIGN:`, `Failure injection:`), drops
 the duplicate leading `<h1>`, and demotes any later `<h1>` to `<h2>`.
+
+
+## FDE Gym
+
+An Agentic System Design interview simulator at `/fde-gym/`. One Astro page,
+one React island, and five same-origin API routes on the existing Worker. It is
+the only React on the site: the island and React Flow load on `/fde-gym/` alone
+and add nothing to any other page.
+
+```
+learn/src/pages/fde-gym/index.astro        the page
+learn/src/components/fde-gym/              the island: setup, chat, canvas, result
+src/fde-gym/                               Worker routes, interviewer, evaluator, rules
+src/fde-gym/scenarios/                     scenario truth, never sent to the browser
+docs/fde-gym/                              product, scenario, privacy, deployment specs
+```
+
+The interviewer and the evaluator are separate model calls with separate
+prompts. The interviewer never scores. The evaluator runs only after finish, and
+the server, not the model, derives the verdict: when critical coverage is
+missing it returns `INCOMPLETE ASSESSMENT` rather than a fabricated pass or
+fail. Deterministic graph rules run alongside the model so a structural concern
+is visible even when the model is unavailable.
+
+### Required Cloudflare configuration
+
+FDE Gym is inert until these exist. The page loads and explains itself, but
+starting an interview returns a plain-language "not open yet" message.
+
+| Binding or variable | Required for | How |
+|---|---|---|
+| `FDE_GYM_SESSIONS` KV | starting any interview | `npx wrangler kv namespace create FDE_GYM_SESSIONS`, then bind it in `wrangler.toml` |
+| `[ai]` binding | real interviewer and evaluator output | uncomment the `[ai]` table in `wrangler.toml`. Note this also turns on generated answers for Ask the Library, which shares the binding |
+| `FDE_GYM_INTERVIEW_MODEL`, `FDE_GYM_EVALUATOR_MODEL` | model selection | dashboard variables. The code has fallbacks, but Cohort 0 should set and test both |
+| `RESEND_API_KEY`, `FDE_GYM_FROM_EMAIL` | the personalized report email | `npx wrangler secret put RESEND_API_KEY`, plus a dashboard variable for the from address |
+
+Without the AI binding the app runs a deterministic degraded mode: the
+interviewer still reveals curated scenario facts and the evaluator still applies
+the graph rules and coverage model. It is useful for testing the flow, and the
+result screen says so, but it is not calibrated scoring.
+
+`GET /api/fde-gym/health` reports which of these are configured. It returns
+booleans only, never model names, keys, addresses, or stored content.
+
+### Cohort 0
+
+Every participant gets the same fixed benchmark, and retention requires two
+explicit unchecked consents. Sessions are stored in KV with a TTL
+(`FDE_GYM_SESSION_TTL_SECONDS`, 30 days by default) and only after consent.
+Transcript content is never logged, and hidden scenario facts, rubric anchors
+and reference architectures stay server-side. `FDE_GYM_ALLOW_STATELESS_DEV` is a
+local-development escape hatch and must stay off in production. See
+[`docs/fde-gym/COHORT_0_PRIVACY.md`](../docs/fde-gym/COHORT_0_PRIVACY.md).
 
 
 ## Learner experience
