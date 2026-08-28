@@ -14,9 +14,16 @@ not_found_handling = "404-page"
 # everything it does not redirect, so normal asset serving is unchanged.
 run_worker_first = true
 
-# "Ask the Library" uses Cloudflare Workers AI. Until this binding is enabled,
-# /api/ask still returns the matched reads, just without a generated answer.
-# Uncomment to turn on AI answers (no API key needed, Workers AI is native):
+# Cloudflare Workers AI. Native to the platform: no API key, no account with a
+# model provider, nothing to paste. Uncommenting the two lines is the whole
+# setup. One [ai] table serves every feature that uses it.
+#
+# Two features share it:
+#   "Ask the Library" (/api/ask), which returns the matched reads either way and
+#     adds a generated answer once this is on.
+#   FDE Gym (/api/fde-gym/*), which runs a deterministic degraded interview
+#     without it and real interviewer and evaluator output with it.
+#
 # [ai]
 # binding = "AI"
 
@@ -38,16 +45,26 @@ run_worker_first = true
 # binding = "INTAKE"
 # id = "<your-kv-namespace-id>"
 
-# FDE Gym interviewer and evaluator.
-# The repository already contains the same Workers AI binding as a commented
-# example. Enable only one [ai] table.
-#
-# [ai]
-# binding = "AI"
-
-# Cohort 0 interview retention. Create with:
+# FDE Gym interview retention. This is the one binding FDE Gym cannot run
+# without: no KV, no interviews, and /fde-gym/ tells the visitor it is not open
+# yet. Cohort 0 sessions are stored here only after explicit consent, with a TTL
+# (FDE_GYM_SESSION_TTL_SECONDS, 30 days by default). To enable:
 #   npx wrangler kv namespace create FDE_GYM_SESSIONS
-#
+# then paste the returned id below and uncomment.
 # [[kv_namespaces]]
 # binding = "FDE_GYM_SESSIONS"
-# id = "<replace-with-real-id>"
+# id = "<your-kv-namespace-id>"
+
+# Optional FDE Gym settings. Every one of these has a working default, so skip
+# the whole block unless you want to change something. These are Workers AI
+# model names, not credentials.
+# [vars]
+# FDE_GYM_INTERVIEW_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+# FDE_GYM_EVALUATOR_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+# FDE_GYM_SESSION_TTL_SECONDS = "2592000"
+
+# The personalized report email is the only part that needs an outside service.
+# Without it the interview and the on-screen result work in full; only the
+# emailed report is unavailable, and the app says so rather than pretending it
+# sent one. To enable: npx wrangler secret put RESEND_API_KEY, then add
+# FDE_GYM_FROM_EMAIL (a verified sender) to the [vars] block above.
