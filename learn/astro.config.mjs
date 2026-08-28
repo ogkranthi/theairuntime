@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import remarkDirective from 'remark-directive';
@@ -15,6 +16,7 @@ import { rehypeAsdSections } from './src/plugins/rehype-asd-sections.mjs';
 export default defineConfig({
   site: 'https://learn.theairuntime.com',
   integrations: [
+    react(),
     mdx(),
     sitemap({
       // OG images are generated as routes; keep the binaries out of the sitemap.
