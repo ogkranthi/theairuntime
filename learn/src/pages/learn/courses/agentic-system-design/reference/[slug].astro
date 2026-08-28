@@ -1,0 +1,137 @@
+---
+import { render } from "astro:content";
+import Base from "../../../../../layouts/Base.astro";
+import CtaBlock from "../../../../../components/CtaBlock.astro";
+import Toc from "../../../../../components/Toc.astro";
+import MermaidRuntime from "../../../../../components/asd/MermaidRuntime.astro";
+import {
+  ASD_BASE,
+  COURSE,
+  PROMOTED_REFERENCE,
+  getAsdReference,
+  referenceHref,
+} from "../../../../../lib/asd";
+import "../../../../../styles/asd.css";
+
+export async function getStaticPaths() {
+  const docs = await getAsdReference();
+  return docs
+    .filter((doc) => !(doc.slug in PROMOTED_REFERENCE))
+    .map((doc) => ({ params: { slug: doc.slug }, props: { doc } }));
+}
+
+const { doc } = Astro.props;
+const docs = await getAsdReference();
+const siblings = docs.filter((d) => d.kind === doc.kind && d.slug !== doc.slug);
+const { Content, headings } = await render(doc.entry);
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<Base
+  title={`${doc.title} · AIR Course 002`}
+  description={doc.blurb}
+  pageSlug={`asd-ref-${doc.slug}`}
+  ogType="article"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "LearningResource",
+      name: doc.title,
+      description: doc.blurb,
+      url: canonical,
+      learningResourceType: doc.kind,
+      isPartOf: { "@type": "Course", name: COURSE.title, url: `https://learn.theairuntime.com${ASD_BASE}/` },
+      publisher: { "@type": "Organization", name: "The AI Runtime" },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: COURSE.short_title, item: `https://learn.theairuntime.com${ASD_BASE}/` },
+        { "@type": "ListItem", position: 2, name: "Reference", item: `https://learn.theairuntime.com${ASD_BASE}/reference/` },
+        { "@type": "ListItem", position: 3, name: doc.title },
+      ],
+    },
+  ]}
+>
+  <div class="shell doc">
+    <div class="doc__main">
+      <header class="dhead">
+        <p class="eyebrow">
+          <a href={`${ASD_BASE}/`}>Agentic AI System Design</a> /
+          <a href={`${ASD_BASE}/reference/`}>Reference</a> /
+          <span>{doc.kind}</span>
+        </p>
+        <h1>{doc.title}</h1>
+        <p class="dhead__blurb">{doc.blurb}</p>
+      </header>
+
+      <article class="prose asd-prose asd-doc">
+        <Content />
+      </article>
+
+      {
+        siblings.length > 0 && (
+          <nav class="dmore" aria-label="Related reference">
+            <p class="dmore__title">MORE {doc.kind.toUpperCase()}</p>
+            <ul>
+              {siblings.map((s) => <li><a href={referenceHref(s.slug)}>{s.title}</a></li>)}
+            </ul>
+          </nav>
+        )
+      }
+    </div>
+
+    <aside class="doc__rail">
+      <Toc headings={headings} />
+    </aside>
+  </div>
+
+  <MermaidRuntime />
+
+  <CtaBlock slot="footer-cta" pageSlug={`asd-ref-${doc.slug}`} />
+</Base>
+
+<style>
+  .doc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    padding-top: 2.5rem;
+  }
+  .doc__main { min-width: 0; max-width: 52rem; }
+  .doc__rail { display: none; }
+  @media (min-width: 1100px) {
+    .doc { grid-template-columns: minmax(0, 1fr) 16rem; gap: 3.5rem; }
+    .doc__rail {
+      display: block;
+      position: sticky;
+      top: 5rem;
+      align-self: start;
+      max-height: calc(100vh - 6rem);
+      overflow-y: auto;
+    }
+  }
+
+  .dhead .eyebrow a { color: var(--accent); }
+  .dhead h1 { font-size: clamp(1.9rem, 4.5vw, 2.6rem); letter-spacing: -0.03em; max-width: 22ch; }
+  .dhead__blurb {
+    font-size: 1.1rem;
+    color: var(--fg-muted);
+    max-width: var(--measure);
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .dmore { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+  .dmore__title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    margin: 0 0 0.75rem;
+  }
+  .dmore ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+  .dmore li { margin: 0; font-size: var(--t-meta); }
+</style>

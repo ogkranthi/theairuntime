@@ -1,0 +1,468 @@
+---
+import Base from "../../../../layouts/Base.astro";
+import CtaBlock from "../../../../components/CtaBlock.astro";
+import CourseMap from "../../../../components/asd/CourseMap.astro";
+import ProgressPanel from "../../../../components/asd/ProgressPanel.astro";
+import {
+  ASD_BASE,
+  COURSE,
+  QUIZ,
+  SCENARIOS,
+  formatMinutes,
+  getAsdModules,
+  moduleHref,
+} from "../../../../lib/asd";
+
+const modules = await getAsdModules();
+const totalMinutes = modules.reduce((sum, m) => sum + m.data.duration_minutes, 0);
+const first = modules[0];
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+const CAN_DO = [
+  {
+    title: "Decide whether it should be an agent at all",
+    body: "Separate the cases where model judgment earns its cost from the ones a deterministic workflow handles better, and say why in one paragraph a reviewer accepts.",
+  },
+  {
+    title: "Draw the authority boundary",
+    body: "State what the model may propose and what only the application, a policy engine, or an authenticated human may authorize. Autonomy stops being an adjective and becomes a matrix.",
+  },
+  {
+    title: "Write tool contracts that survive production",
+    body: "Typed inputs, caller identity, scopes, side effects, reversibility, timeouts, retry class, idempotency, and reconciliation for the acknowledgment gap.",
+  },
+  {
+    title: "Engineer context instead of stuffing prompts",
+    body: "Rank sources by authority and freshness, keep untrusted content on the far side of a boundary, budget tokens, and carry provenance to every claim.",
+  },
+  {
+    title: "Make a run survive crashes, deploys, and long waits",
+    body: "Durable execution, event history, replay-safe control code, signals and timers, and versioning for work that is still in flight when you ship.",
+  },
+  {
+    title: "Evaluate the trajectory, not just the final text",
+    body: "Golden and adversarial cases, component and trajectory metrics, model judges with calibration, and a release gate that actually blocks a bad version.",
+  },
+  {
+    title: "Operate it",
+    body: "SLIs and SLOs for agentic work, traces that cross asynchronous steps, cost and latency budgets, backpressure, and a runbook someone can follow at 3am.",
+  },
+  {
+    title: "Defend the design in 45 minutes",
+    body: "Run the same method under interview pressure, cover the eight areas in order, and tie two tradeoffs back to the requirements.",
+  },
+];
+
+const FORMAT = [
+  {
+    key: "LEARN",
+    title: "Learn the principle",
+    body: "Each module opens with the production problem, then the mechanism, then the tradeoffs. Concepts are grounded in primary sources, not vendor marketing.",
+  },
+  {
+    key: "SHIP",
+    title: "Ship the Atlas milestone",
+    body: "Every module adds one part to the same system. By module 16 you have a complete design and an implementation plan, not seventeen disconnected demos.",
+  },
+  {
+    key: "RUN",
+    title: "Run the failure injection",
+    body: "Each module names a specific way the design breaks and asks you to trigger it. A design that has never failed on purpose has not been tested.",
+  },
+  {
+    key: "DESIGN",
+    title: "Answer the interview drill",
+    body: "A prompt that forces the module's idea into a live design conversation, plus at least one tradeoff you can defend.",
+  },
+];
+
+const PREREQS = [
+  "You can read and write code in at least one language, and you have shipped something that other people used.",
+  "You understand HTTP APIs, a database, and what a queue is for.",
+  "You have called an LLM API and seen it do something useful and something wrong.",
+  "You do not need to have built an agent before. You do not need a specific framework.",
+];
+---
+
+<Base
+  title="Agentic AI System Design | AIR Course 002"
+  description={COURSE.description}
+  pageSlug="agentic-system-design"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "Course",
+      name: COURSE.title,
+      description: COURSE.description,
+      url: canonical,
+      provider: { "@type": "Organization", name: "The AI Runtime", url: "https://theairuntime.com" },
+      isAccessibleForFree: true,
+      educationalLevel: "Professional",
+      teaches: modules.map((m) => m.data.title),
+      hasCourseInstance: {
+        "@type": "CourseInstance",
+        courseMode: "online",
+        courseWorkload: `PT${Math.round(totalMinutes / 60)}H`,
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Courses", item: "https://learn.theairuntime.com/learn/courses/" },
+        { "@type": "ListItem", position: 2, name: COURSE.short_title },
+      ],
+    },
+  ]}
+>
+  <div class="shell">
+    <!-- 1. Hero -->
+    <section class="hero">
+      <p class="eyebrow">COURSE 002 · {COURSE.version} · LIVE</p>
+      <h1 class="hero__title">{COURSE.title}</h1>
+      <p class="hero__promise">{COURSE.description}</p>
+
+      <p class="hero__audience">
+        <span class="hero__key">FOR</span>
+        {COURSE.audience.join(" · ")}
+      </p>
+
+      <div class="hero__actions">
+        <a class="btn btn--solid" href={moduleHref(first)}>Start the course</a>
+        <a class="btn" href={`${ASD_BASE}/canvas/`}>Open the design canvas</a>
+        <a class="btn" href={`${ASD_BASE}/practice/`}>Practice under time</a>
+      </div>
+
+      <dl class="hero__facts">
+        <div><dt>Modules</dt><dd>{modules.length}</dd></div>
+        <div><dt>Reading and build time</dt><dd>{COURSE.estimated_hours} h</dd></div>
+        <div><dt>Practice scenarios</dt><dd>{SCENARIOS.length}</dd></div>
+        <div><dt>Quiz questions</dt><dd>{QUIZ.question_count}</dd></div>
+        <div><dt>Price</dt><dd>Free, no account</dd></div>
+      </dl>
+    </section>
+
+    <!-- 3. Thesis -->
+    <section class="section thesis">
+      <p class="eyebrow">THE THESIS</p>
+      <h2>A model is not a system. The system is what you are being paid to build.</h2>
+      <div class="thesis__cols">
+        <div>
+          <p class="thesis__key">What a demo proves</p>
+          <p>
+            That a model, given a clean prompt and a cooperative user, can produce a plausible
+            answer once. Demos run on the happy path, with one tenant, no adversary, no crash, no
+            approval queue, and no bill.
+          </p>
+        </div>
+        <div>
+          <p class="thesis__key">What production demands</p>
+          <p>
+            That the surrounding software owns authority, persistence, identity, and recovery: the
+            model proposes, the application authorizes. Everything hard about agentic systems lives
+            in that sentence, and this course is about the second half of it.
+          </p>
+        </div>
+      </div>
+      <p class="thesis__method">
+        The course teaches one method, <strong>RUNTIME</strong>, and applies it to every design:
+        Requirements and risk, User journey and authority, Nodes and topology, Tools and context,
+        Integrity and identity, Memory and durable execution, Evals and economics.
+        <a href={`${ASD_BASE}/reference/runtime-design-method/`}>Read the method</a>.
+      </p>
+    </section>
+
+    <!-- 2. What learners will be able to do -->
+    <section class="section">
+      <p class="eyebrow">AFTER THIS COURSE</p>
+      <h2>What you will be able to do</h2>
+      <div class="cando">
+        {
+          CAN_DO.map((item, i) => (
+            <article class="cando__item">
+              <p class="cando__n">{String(i + 1).padStart(2, "0")}</p>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 4. Atlas capstone preview -->
+    <section class="section atlas">
+      <div class="atlas__body">
+        <p class="eyebrow">THE SYSTEM YOU BUILD</p>
+        <h2>{COURSE.canonical_project}</h2>
+        <p class="atlas__lead">
+          One system runs through all seventeen modules. Atlas ingests a counterparty due-diligence
+          request, researches it across trusted and untrusted sources, produces a cited risk packet,
+          and routes material decisions to a human. It is deliberately unglamorous and deliberately
+          hard: multi-tenant, long-running, regulated, and full of actions you cannot take back.
+        </p>
+        <ul class="atlas__list">
+          <li>Every module adds one production concern to the same design.</li>
+          <li>Every failure injection breaks Atlas specifically, not a toy.</li>
+          <li>The capstone is Atlas, complete, with acceptance tests and a design defense.</li>
+        </ul>
+        <p class="atlas__links">
+          <a class="btn" href={`${ASD_BASE}/capstone/`}>See the capstone brief</a>
+          <a class="btn" href={`${ASD_BASE}/reference/atlas-reference-implementation-spec/`}>Read the Atlas spec</a>
+        </p>
+      </div>
+      <div class="atlas__side">
+        <ProgressPanel total={modules.length} variant="summary" />
+      </div>
+    </section>
+
+    <!-- 5. Curriculum -->
+    <section class="section" id="curriculum">
+      <p class="eyebrow">CURRICULUM</p>
+      <h2>{modules.length} modules, {formatMinutes(totalMinutes)} of directed work</h2>
+      <p class="muted measure">
+        Grouped by track. Each module is self-contained enough to read alone and sequenced so the
+        Atlas build compounds. Prerequisites are listed on every lesson.
+      </p>
+      <div class="curriculum">
+        <CourseMap modules={modules} />
+      </div>
+    </section>
+
+    <!-- 6. Format -->
+    <section class="section">
+      <p class="eyebrow">HOW EACH MODULE WORKS</p>
+      <h2>Learn, ship, run, design</h2>
+      <div class="format">
+        {
+          FORMAT.map((f) => (
+            <article class="format__item">
+              <p class="format__key">{f.key}</p>
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </article>
+          ))
+        }
+      </div>
+      <p class="muted measure">
+        Then a quiz with explanations, and the primary sources for every implementation-sensitive
+        claim in the module. Quiz scores and module completion are stored in your browser. There is
+        no account and nothing is uploaded.
+      </p>
+    </section>
+
+    <!-- 7 and 8. Prerequisites, time, completion -->
+    <section class="section two-up">
+      <div>
+        <p class="eyebrow">PREREQUISITES</p>
+        <h2>What you need first</h2>
+        <ul class="plain">
+          {PREREQS.map((p) => <li>{p}</li>)}
+        </ul>
+      </div>
+      <div>
+        <p class="eyebrow">TIME AND COMPLETION</p>
+        <h2>What finishing means</h2>
+        <p>
+          {COURSE.estimated_hours} hours end to end for the full build, or roughly
+          {" "}{formatMinutes(totalMinutes)} of reading and directed design if you skip the
+          implementation. Most people take four to eight weeks part time.
+        </p>
+        <p>
+          A module is complete when you can answer its check questions, pass its quiz, and describe
+          its Atlas milestone. The course is complete when you can defend the whole Atlas design in
+          a 45-minute interview, which is what the
+          {" "}<a href={`${ASD_BASE}/practice/`}>practice scenarios</a> and the
+          {" "}<a href={`${ASD_BASE}/reference/course-rubric/`}>rubric</a> are for.
+        </p>
+      </div>
+    </section>
+
+    <!-- 9. Sourcing standard -->
+    <section class="section sourcing">
+      <p class="eyebrow">SOURCING STANDARD</p>
+      <h2>Every implementation-sensitive claim maps to an official source</h2>
+      <p class="measure">
+        Framework behavior, protocol semantics, and provider limits change. This course cites
+        primary documentation for anything an engineer would act on, and the
+        {" "}<a href={`${ASD_BASE}/sources/`}>source map</a> lists them per module so you can check
+        the current version before you build. Where the docs disagree with a vendor blog post, the
+        docs win.
+      </p>
+      <p class="sourcing__meta">
+        Version {COURSE.version} · last reviewed {COURSE.last_reviewed} · content and quiz bank
+        validated at build time
+      </p>
+    </section>
+
+    <!-- 10. Back to AIR -->
+    <section class="section back">
+      <h2>The AI Runtime</h2>
+      <p class="measure">
+        This course is part of AIR, a publication and course library about building AI systems that
+        survive contact with production. Course 001 covers
+        {" "}<a href="/learn/courses/long-running-agents/">engineering long-running agents</a>, and
+        the <a href="/learn/">library</a> collects the patterns and case studies both courses draw
+        on.
+      </p>
+    </section>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="agentic-system-design" />
+</Base>
+
+<style>
+  .hero { padding: 3.5rem 0 3rem; }
+  .hero__title {
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    letter-spacing: -0.035em;
+    max-width: 16ch;
+    margin: 0.75rem 0 1.25rem;
+  }
+  .hero__promise {
+    font-size: 1.2rem;
+    color: var(--fg-muted);
+    max-width: 62ch;
+    margin: 0 0 1.25rem;
+  }
+  .hero__audience {
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    max-width: 62ch;
+    margin: 0 0 2rem;
+  }
+  .hero__key {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-right: 0.6rem;
+  }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 2.5rem; }
+  .hero__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 1.25rem 1.5rem;
+    margin: 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .hero__facts dt {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 0.3rem;
+  }
+  .hero__facts dd { margin: 0; font-size: 1.1rem; font-weight: 650; }
+
+  .thesis__cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  @media (min-width: 780px) { .thesis__cols { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.5rem; } }
+  .thesis__key {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+  .thesis__cols p:last-child { margin: 0; }
+  .thesis__method {
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+    color: var(--fg-muted);
+    font-size: var(--t-meta);
+    max-width: var(--measure);
+  }
+
+  .cando {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-top: 1.5rem;
+  }
+  @media (min-width: 720px) { .cando { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1040px) { .cando { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .cando__item { background: var(--bg-raise); padding: 1.4rem 1.35rem; }
+  .cando__n {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+  .cando__item h3 { font-size: 1rem; margin: 0 0 0.5rem; }
+  .cando__item p { margin: 0; font-size: 0.87rem; color: var(--fg-muted); }
+
+  .atlas {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+  @media (min-width: 900px) { .atlas { grid-template-columns: minmax(0, 1fr) 17rem; gap: 3rem; } }
+  .atlas__lead { max-width: var(--measure); }
+  .atlas__list { max-width: var(--measure); color: var(--fg-muted); }
+  .atlas__links { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .atlas__side { align-self: start; }
+
+  .curriculum {
+    margin-top: 2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.5rem 1.75rem;
+  }
+
+  .format {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    margin: 1.5rem 0 1.5rem;
+  }
+  @media (min-width: 780px) { .format { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1040px) { .format { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .format__item {
+    border-top: 2px solid var(--accent);
+    padding-top: 1rem;
+  }
+  .format__key {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+  .format__item h3 { font-size: 1rem; margin: 0 0 0.45rem; }
+  .format__item p { margin: 0; font-size: 0.87rem; color: var(--fg-muted); }
+
+  .two-up {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+  @media (min-width: 860px) { .two-up { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3.5rem; } }
+  .plain { list-style: none; padding: 0; margin: 0; }
+  .plain li {
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--line);
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .sourcing__meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+    margin-top: 1rem;
+  }
+  .back { border-top: 1px solid var(--line); padding-top: 2.5rem; }
+</style>

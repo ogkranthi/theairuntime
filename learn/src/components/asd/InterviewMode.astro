@@ -1,0 +1,512 @@
+---
+import { INTERVIEW_SHORTHAND } from "../../lib/asd-canvas";
+
+interface Props {
+  slug: string;
+  title: string;
+  minutes?: number;
+}
+
+const { slug, title, minutes = 45 } = Astro.props;
+
+/** The timeline from reference/interview-scorecard.md. */
+const TIMELINE = [
+  { at: 5, label: "Clarification complete" },
+  { at: 8, label: "Requirements and non-goals" },
+  { at: 13, label: "First architecture" },
+  { at: 25, label: "Core flow and state" },
+  { at: 34, label: "Deep dive" },
+  { at: 40, label: "Evals and operations" },
+  { at: 45, label: "Failures, tradeoffs, close" },
+];
+
+/** The required checks a passing answer must hit, verbatim in substance. */
+const CHECKS = [
+  "You stated what the model may not do.",
+  "At least one external effect has idempotency or reconciliation semantics.",
+  "Untrusted content is separated from trusted instruction.",
+  "Tenant and user identity reaches the data and the tools.",
+  "Long-running or retry behavior is addressed where it matters.",
+  "Evals include process and trajectory, not only final text.",
+  "One SLO or quantitative capacity estimate is stated.",
+  "Rollout and rollback are addressed.",
+  "Two tradeoffs are tied back to requirements.",
+];
+
+const RUBRIC = [
+  "Requirements and risk",
+  "User journey and authority",
+  "Architecture and topology",
+  "Tools, context, and data",
+  "State, memory, durability",
+  "Security, identity, isolation",
+  "Evaluation and testing",
+  "Observability, scale, cost",
+  "Tradeoffs and evolution",
+  "Communication",
+];
+---
+
+<section class="imode" data-interview={slug} data-interview-title={title} data-interview-minutes={minutes}>
+  <header class="imode__head">
+    <div>
+      <p class="imode__eyebrow">INTERVIEW MODE</p>
+      <h2 class="imode__title">Run this as a {minutes}-minute design interview</h2>
+      <p class="imode__sub">
+        Start the clock, design against the prompt, and take the constraint reveals as they land.
+        The model answer stays hidden until you finish, because reading it first turns practice into
+        recognition.
+      </p>
+    </div>
+
+    <div class="imode__clock" data-clock-panel>
+      <p class="imode__time" data-clock aria-live="off">{minutes}:00</p>
+      <p class="imode__phase" data-phase role="status" aria-live="polite">Not started</p>
+      <div class="imode__controls">
+        <button type="button" class="btn btn--solid" data-clock-toggle>Start</button>
+        <button type="button" class="btn" data-clock-reset>Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="imode__grid">
+    <div class="imode__col">
+      <h3 class="imode__h">Cover in this order</h3>
+      <ol class="imode__order">
+        {INTERVIEW_SHORTHAND.map((step) => <li>{step}</li>)}
+      </ol>
+
+      <h3 class="imode__h">Timeline</h3>
+      <ol class="imode__timeline">
+        {
+          TIMELINE.map((t) => (
+            <li data-at={t.at}>
+              <span class="imode__at">{t.at}m</span>
+              <span>{t.label}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <div class="imode__col">
+      <h3 class="imode__h">Scratch architecture</h3>
+      <p class="imode__note">
+        Draw the boxes in words. Saved in this browser only, never uploaded.
+      </p>
+      <textarea
+        class="imode__pad"
+        data-scratch
+        rows="14"
+        aria-label="Scratch architecture notes"
+        placeholder="Requirements and risk tier&#10;Authority matrix&#10;Topology&#10;Tools and contracts&#10;State and durability&#10;Security boundary&#10;Evals and SLOs&#10;Tradeoffs"
+      ></textarea>
+    </div>
+  </div>
+
+  <details class="imode__block">
+    <summary><span>Required checks</span><span class="imode__score" data-checks-score>0 / {CHECKS.length}</span></summary>
+    <ul class="imode__checks">
+      {
+        CHECKS.map((check, i) => (
+          <li>
+            <label>
+              <input type="checkbox" data-check={`c${i}`} />
+              <span>{check}</span>
+            </label>
+          </li>
+        ))
+      }
+    </ul>
+  </details>
+
+  <details class="imode__block">
+    <summary><span>Self-score</span><span class="imode__score" data-rubric-score>0 / 40</span></summary>
+    <p class="imode__note">
+      Score each dimension 0 to 4 against what you actually said out loud, not what you intended to
+      say. A 2 is a competent answer; a 4 is one you could defend to the team that operates it.
+    </p>
+    <ul class="imode__rubric">
+      {
+        RUBRIC.map((dim, i) => (
+          <li>
+            <label for={`r-${slug}-${i}`}>{dim}</label>
+            <input
+              id={`r-${slug}-${i}`}
+              type="number"
+              min="0"
+              max="4"
+              step="1"
+              inputmode="numeric"
+              data-rubric={dim}
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </details>
+
+  <div class="imode__finish">
+    <button type="button" class="btn btn--solid" data-interview-finish>Finish and reveal the model answer</button>
+    <button type="button" class="btn" data-interview-clear>Clear this attempt</button>
+    <p class="imode__saved" data-interview-saved role="status" aria-live="polite"></p>
+  </div>
+
+  <p class="imode__history" data-interview-history hidden></p>
+</section>
+
+<script>
+  import { isAvailable, read, recordInterviewAttempt, update } from "../../scripts/asd-progress";
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  document.querySelectorAll<HTMLElement>("[data-interview]").forEach((root) => {
+    const slug = root.dataset.interview ?? "";
+    const title = root.dataset.interviewTitle ?? "";
+    const total = Number(root.dataset.interviewMinutes ?? 45) * 60;
+
+    const clock = root.querySelector<HTMLElement>("[data-clock]");
+    const phase = root.querySelector<HTMLElement>("[data-phase]");
+    const toggle = root.querySelector<HTMLButtonElement>("[data-clock-toggle]");
+    const scratch = root.querySelector<HTMLTextAreaElement>("[data-scratch]");
+    const savedNote = root.querySelector<HTMLElement>("[data-interview-saved]");
+    const history = root.querySelector<HTMLElement>("[data-interview-history]");
+    const marks = [...root.querySelectorAll<HTMLElement>("[data-at]")];
+
+    let elapsed = 0;
+    let running = false;
+    let ticker: number | undefined;
+
+    const paintClock = () => {
+      const left = Math.max(0, total - elapsed);
+      if (clock) clock.textContent = `${pad(Math.floor(left / 60))}:${pad(left % 60)}`;
+      if (left === 0) root.dataset.overtime = "true";
+      const atMinute = Math.floor(elapsed / 60);
+      let currentLabel = "Not started";
+      marks.forEach((m) => {
+        const at = Number(m.dataset.at);
+        const passed = atMinute >= at;
+        m.dataset.state = passed ? "passed" : "";
+        if (!passed && currentLabel === "Not started") currentLabel = m.textContent?.trim() ?? "";
+      });
+      if (phase && running) phase.textContent = currentLabel === "Not started" ? "Wrap up" : currentLabel;
+    };
+
+    const stop = () => {
+      running = false;
+      window.clearInterval(ticker);
+      if (toggle) toggle.textContent = elapsed > 0 ? "Resume" : "Start";
+      if (phase && elapsed > 0) phase.textContent = "Paused";
+    };
+
+    toggle?.addEventListener("click", () => {
+      if (running) {
+        stop();
+        return;
+      }
+      running = true;
+      toggle.textContent = "Pause";
+      ticker = window.setInterval(() => {
+        elapsed += 1;
+        paintClock();
+      }, 1000);
+      paintClock();
+    });
+
+    root.querySelector("[data-clock-reset]")?.addEventListener("click", () => {
+      stop();
+      elapsed = 0;
+      delete root.dataset.overtime;
+      if (phase) phase.textContent = "Not started";
+      paintClock();
+    });
+
+    // --- attempt state -----------------------------------------------------
+
+    const checks = [...root.querySelectorAll<HTMLInputElement>("[data-check]")];
+    const rubric = [...root.querySelectorAll<HTMLInputElement>("[data-rubric]")];
+    const checksScore = root.querySelector<HTMLElement>("[data-checks-score]");
+    const rubricScore = root.querySelector<HTMLElement>("[data-rubric-score]");
+
+    const paintScores = () => {
+      if (checksScore) checksScore.textContent = `${checks.filter((c) => c.checked).length} / ${checks.length}`;
+      const sum = rubric.reduce((n, input) => n + (Number(input.value) || 0), 0);
+      if (rubricScore) rubricScore.textContent = `${sum} / 40`;
+    };
+    checks.forEach((c) => c.addEventListener("change", paintScores));
+    rubric.forEach((r) =>
+      r.addEventListener("input", () => {
+        const n = Number(r.value);
+        if (n > 4) r.value = "4";
+        if (n < 0) r.value = "0";
+        paintScores();
+      }),
+    );
+    paintScores();
+
+    // Scratch notes ride in the canvas store under their own key, so an
+    // interview attempt and a canvas draft never overwrite each other.
+    const scratchKey = `interview:${slug}`;
+    if (scratch) {
+      scratch.value = read().canvasDrafts[scratchKey]?.scratch ?? "";
+      let timer: number | undefined;
+      scratch.addEventListener("input", () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          update((progress) => {
+            progress.canvasDrafts[scratchKey] = { scratch: scratch.value };
+          });
+          if (savedNote && isAvailable()) savedNote.textContent = `Saved ${new Date().toLocaleTimeString()}`;
+        }, 500);
+      });
+    }
+
+    const showHistory = () => {
+      const attempts = read().interviewAttempts[slug] ?? [];
+      if (!history) return;
+      if (attempts.length === 0) {
+        history.hidden = true;
+        return;
+      }
+      const last = attempts[attempts.length - 1];
+      const sum = Object.values(last.scores).reduce((a, b) => a + b, 0);
+      history.hidden = false;
+      history.textContent = `Last attempt: ${new Date(last.at).toLocaleDateString()}, ${Math.round(
+        last.elapsedSeconds / 60,
+      )} min, self-score ${sum} / 40. ${attempts.length} attempt${attempts.length === 1 ? "" : "s"} recorded in this browser.`;
+    };
+    showHistory();
+
+    // --- reveal ------------------------------------------------------------
+
+    root.querySelector("[data-interview-finish]")?.addEventListener("click", () => {
+      stop();
+      const scores: Record<string, number> = {};
+      rubric.forEach((r) => {
+        scores[r.dataset.rubric ?? ""] = Number(r.value) || 0;
+      });
+      recordInterviewAttempt(slug, {
+        at: new Date().toISOString(),
+        elapsedSeconds: elapsed,
+        revealsOpened: document.querySelectorAll("[data-reveal][open]").length,
+        scores,
+        // The learner's own words stay in this browser; nothing is transmitted.
+        notes: scratch?.value ?? "",
+      });
+      document.querySelectorAll<HTMLElement>("[data-gated]").forEach((section) => {
+        section.removeAttribute("data-gated");
+      });
+      document.querySelector("[data-gate-notice]")?.remove();
+      showHistory();
+      document.getElementById("strong-answer-signals")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    root.querySelector("[data-interview-clear]")?.addEventListener("click", () => {
+      if (!window.confirm(`Clear your saved notes and scores for ${title}?`)) return;
+      checks.forEach((c) => (c.checked = false));
+      rubric.forEach((r) => (r.value = ""));
+      if (scratch) scratch.value = "";
+      update((progress) => {
+        delete progress.canvasDrafts[scratchKey];
+        delete progress.interviewAttempts[slug];
+      });
+      paintScores();
+      showHistory();
+      if (savedNote) savedNote.textContent = "Cleared";
+    });
+
+    paintClock();
+    if (!isAvailable() && savedNote) {
+      savedNote.textContent = "Storage unavailable, so notes last for this page view only.";
+    }
+  });
+</script>
+
+<style>
+  .imode {
+    border: 1px solid var(--fg);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.5rem;
+    margin: 2.5rem 0;
+  }
+  .imode__head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--line);
+  }
+  @media (min-width: 780px) {
+    .imode__head { grid-template-columns: minmax(0, 1fr) 12rem; }
+  }
+  .imode__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin: 0 0 0.4rem;
+  }
+  .imode__title { margin: 0 0 0.5rem; font-size: 1.35rem; }
+  .imode__sub { margin: 0; color: var(--fg-muted); font-size: var(--t-meta); max-width: 56ch; }
+
+  .imode__clock { text-align: left; }
+  @media (min-width: 780px) { .imode__clock { text-align: right; } }
+  .imode__time {
+    font-family: var(--font-mono);
+    font-size: 2.4rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    margin: 0;
+    line-height: 1;
+  }
+  .imode[data-overtime] .imode__time { color: var(--accent); }
+  .imode__phase {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+    margin: 0.4rem 0 0.75rem;
+    min-height: 1em;
+  }
+  .imode__controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  @media (min-width: 780px) { .imode__controls { justify-content: flex-end; } }
+
+  .imode__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem;
+    padding: 1.5rem 0;
+  }
+  @media (min-width: 780px) {
+    .imode__grid { grid-template-columns: 15rem minmax(0, 1fr); gap: 2.5rem; }
+  }
+  .imode__h {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin: 0 0 0.6rem;
+  }
+  .imode__col > .imode__h + * + .imode__h { margin-top: 1.5rem; }
+  .imode__order, .imode__timeline { margin: 0; padding: 0; list-style: none; }
+  .imode__order { counter-reset: step; }
+  .imode__order li {
+    counter-increment: step;
+    font-size: 0.85rem;
+    padding: 0.25rem 0 0.25rem 1.6rem;
+    position: relative;
+    margin: 0;
+  }
+  .imode__order li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+  }
+  .imode__timeline li {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    padding: 0.28rem 0;
+    margin: 0;
+    color: var(--fg-muted);
+  }
+  .imode__timeline li[data-state="passed"] { color: var(--fg); }
+  .imode__at { font-family: var(--font-mono); font-size: 0.72rem; }
+  .imode__timeline li[data-state="passed"] .imode__at { color: var(--accent); }
+
+  .imode__note { font-size: 0.78rem; color: var(--fg-muted); margin: 0 0 0.6rem; }
+  .imode__pad {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--code-fg);
+    background: var(--code-bg);
+    border: 1px solid var(--code-line);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    resize: vertical;
+  }
+  .imode__pad::placeholder { color: #8B8B93; }
+  .imode__pad:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .imode__block {
+    border-top: 1px solid var(--line);
+    padding: 0.9rem 0;
+  }
+  .imode__block summary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    list-style: none;
+  }
+  .imode__block summary > span:first-of-type { margin-right: auto; }
+  .imode__block summary::-webkit-details-marker { display: none; }
+  .imode__block summary::before { content: "+ "; color: var(--accent); font-family: var(--font-mono); }
+  .imode__block[open] summary::before { content: "\2212 "; }
+  .imode__score { font-family: var(--font-mono); font-size: 0.78rem; color: var(--fg-muted); }
+
+  .imode__checks { list-style: none; margin: 1rem 0 0; padding: 0; }
+  .imode__checks li { margin: 0 0 0.3rem; }
+  .imode__checks label {
+    display: flex;
+    gap: 0.7rem;
+    align-items: baseline;
+    font-size: 0.87rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .imode__checks label:hover { background: var(--bg-inset); }
+  .imode__checks input { accent-color: var(--accent); flex: none; }
+
+  .imode__rubric { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 0.4rem; }
+  @media (min-width: 700px) { .imode__rubric { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem 1.5rem; } }
+  .imode__rubric li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.85rem;
+    margin: 0;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .imode__rubric input {
+    width: 3.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--fg);
+  }
+
+  .imode__finish {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+    margin-top: 0.5rem;
+  }
+  .imode__saved, .imode__history {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+  .imode__history { margin-top: 0.75rem; }
+</style>

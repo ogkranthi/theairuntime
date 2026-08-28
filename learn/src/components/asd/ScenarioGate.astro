@@ -1,0 +1,179 @@
+---
+/**
+ * Turns a rendered practice scenario into a usable drill.
+ *
+ * Every scenario file has the same eight sections. Two of them need behavior
+ * that plain markdown cannot express:
+ *
+ *  - the staged constraint reveals should arrive one at a time, the way an
+ *    interviewer drops them, instead of all being visible at once;
+ *  - the strong-answer sections should stay closed until the learner has
+ *    attempted the design, because reading them first turns practice into
+ *    recognition.
+ *
+ * Both are progressive enhancements applied to already-rendered HTML. With
+ * JavaScript off, the whole scenario reads top to bottom as an ordinary
+ * document, which is the correct fallback.
+ */
+---
+
+<script>
+  const GATED = ["strong-answer-signals", "failure-follow-ups", "scoring-emphasis", "model-outline"];
+  const prose = document.querySelector<HTMLElement>("[data-scenario-prose]");
+
+  /** Every sibling after `start`, stopping at the next node matching `stop`. */
+  function sectionAfter(start: Element, stop: (el: Element) => boolean): Element[] {
+    const out: Element[] = [];
+    let node = start.nextElementSibling;
+    while (node && !stop(node)) {
+      out.push(node);
+      node = node.nextElementSibling;
+    }
+    return out;
+  }
+
+  if (prose) {
+    // --- staged reveals ----------------------------------------------------
+    const revealsHeading = prose.querySelector("#staged-constraint-reveals");
+    if (revealsHeading) {
+      const body = sectionAfter(revealsHeading, (el) => el.tagName === "H2");
+      const reveals = body.filter((el) => el.tagName === "H3");
+
+      reveals.forEach((h3, i) => {
+        const content = sectionAfter(h3, (el) => el.tagName === "H3" || el.tagName === "H2");
+        const details = document.createElement("details");
+        details.className = "reveal";
+        details.dataset.reveal = String(i + 1);
+
+        // The badge carries the number, so drop the "Reveal 1: " the source
+        // heading repeats and keep only what the constraint is about.
+        const label = (h3.textContent ?? "").replace(/^Reveal\s*\d+\s*[:.]\s*/i, "");
+        const summary = document.createElement("summary");
+        summary.append(
+          Object.assign(document.createElement("span"), { className: "reveal__n", textContent: `REVEAL ${i + 1}` }),
+          Object.assign(document.createElement("span"), { className: "reveal__label", textContent: label }),
+          Object.assign(document.createElement("span"), { className: "reveal__cue", textContent: "Show" }),
+        );
+        details.appendChild(summary);
+
+        const wrap = document.createElement("div");
+        wrap.className = "reveal__body";
+        content.forEach((el) => wrap.appendChild(el));
+        details.appendChild(wrap);
+
+        h3.replaceWith(details);
+        details.addEventListener("toggle", () => {
+          const cue = summary.querySelector(".reveal__cue");
+          if (cue) cue.textContent = details.open ? "Hide" : "Show";
+        });
+      });
+
+      if (reveals.length > 0) {
+        const hint = document.createElement("p");
+        hint.className = "reveal__hint";
+        hint.textContent =
+          "Open one at a time. Update your design after each before you look at the next, the way the constraint would actually land in the room.";
+        revealsHeading.after(hint);
+      }
+    }
+
+    // --- answer gate -------------------------------------------------------
+    const gatedHeadings = GATED.map((id) => prose.querySelector(`#${id}`)).filter(
+      (el): el is Element => el !== null,
+    );
+
+    gatedHeadings.forEach((heading) => {
+      const body = sectionAfter(heading, (el) => el.tagName === "H2");
+      const section = document.createElement("section");
+      section.dataset.gated = "true";
+      heading.before(section);
+      section.appendChild(heading);
+      body.forEach((el) => section.appendChild(el));
+    });
+
+    if (gatedHeadings.length > 0) {
+      const notice = document.createElement("div");
+      notice.className = "gate";
+      notice.dataset.gateNotice = "";
+      notice.innerHTML = `
+        <p class="gate__title">The rest is the answer key</p>
+        <p class="gate__body">Strong answer signals, failure follow-ups, scoring weights, and the model outline are hidden until you have made your own attempt. Use the interview panel above, then reveal.</p>
+        <button type="button" class="btn btn--solid" data-gate-open>Reveal the answer sections</button>`;
+      gatedHeadings[0].parentElement?.before(notice);
+
+      notice.querySelector("[data-gate-open]")?.addEventListener("click", () => {
+        document
+          .querySelectorAll<HTMLElement>("[data-gated]")
+          .forEach((section) => section.removeAttribute("data-gated"));
+        notice.remove();
+      });
+    }
+  }
+</script>
+
+<style is:global>
+  .reveal {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    margin: 0.75rem 0;
+    overflow: hidden;
+  }
+  .reveal[open] { border-color: var(--accent-dim); }
+  .reveal > summary {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 0.9rem;
+    padding: 0.85rem 1.15rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .reveal > summary::-webkit-details-marker { display: none; }
+  .reveal > summary:hover { background: var(--bg-inset); }
+  .reveal__n {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+  .reveal__label { font-weight: 650; font-size: 0.98rem; }
+  .reveal__cue {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .reveal__body {
+    padding: 0.25rem 1.15rem 1.15rem;
+    border-top: 1px solid var(--line);
+  }
+  .reveal__body > :first-child { margin-top: 1rem; }
+  .reveal__hint {
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    max-width: var(--measure);
+  }
+  @media (max-width: 620px) {
+    .reveal > summary { grid-template-columns: minmax(0, 1fr) auto; gap: 0.35rem 0.9rem; }
+    .reveal__n { grid-column: 1 / -1; }
+  }
+
+  [data-gated] { display: none; }
+
+  .gate {
+    border: 1px solid var(--fg);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.4rem 1.5rem;
+    margin: 2.5rem 0;
+  }
+  .gate__title { font-weight: 650; font-size: 1.1rem; margin: 0 0 0.5rem; }
+  .gate__body {
+    color: var(--fg-muted);
+    font-size: var(--t-meta);
+    max-width: 58ch;
+    margin: 0 0 1.1rem;
+  }
+</style>

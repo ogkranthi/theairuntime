@@ -1,0 +1,155 @@
+---
+import { ASD_BASE } from "../../lib/asd";
+
+interface Props {
+  /** Module slug being read, when this panel sits in a lesson rail. */
+  slug?: string;
+  total: number;
+  /** Standalone summary rendered on the course landing page. */
+  variant?: "rail" | "summary";
+}
+
+const { slug, total, variant = "rail" } = Astro.props;
+---
+
+<div
+  class:list={["prog", `prog--${variant}`]}
+  data-progress
+  data-slug={slug}
+  data-total={total}
+  data-base={ASD_BASE}
+>
+  <p class="prog__title">YOUR PROGRESS</p>
+
+  <div class="prog__bar" role="img" aria-label="Course progress" data-progress-bar>
+    <span data-progress-fill></span>
+  </div>
+  <p class="prog__count"><span data-progress-count>0</span> of {total} modules done</p>
+
+  {
+    slug && (
+      <button type="button" class="prog__toggle" data-progress-toggle aria-pressed="false">
+        Mark this module done
+      </button>
+    )
+  }
+
+  {
+    variant === "summary" && (
+      <p class="prog__resume" data-progress-resume hidden>
+        <a href="#" data-progress-resume-link>Continue where you left off</a>
+      </p>
+    )
+  }
+
+  <p class="prog__note" data-progress-note>Saved in this browser only. No account, no server.</p>
+</div>
+
+<script>
+  import { isAvailable, read, setLastVisited, setModuleComplete } from "../../scripts/asd-progress";
+
+  document.querySelectorAll<HTMLElement>("[data-progress]").forEach((root) => {
+    const slug = root.dataset.slug;
+    const base = root.dataset.base ?? "";
+    const total = Number(root.dataset.total ?? 0);
+    const fill = root.querySelector<HTMLElement>("[data-progress-fill]");
+    const count = root.querySelector<HTMLElement>("[data-progress-count]");
+    const bar = root.querySelector<HTMLElement>("[data-progress-bar]");
+    const toggle = root.querySelector<HTMLButtonElement>("[data-progress-toggle]");
+
+    const paint = () => {
+      const progress = read();
+      const done = progress.completedModules.length;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      if (fill) fill.style.width = `${pct}%`;
+      if (count) count.textContent = String(done);
+      bar?.setAttribute("aria-label", `${done} of ${total} modules complete, ${pct} percent`);
+
+      if (toggle && slug) {
+        const on = progress.completedModules.includes(slug);
+        toggle.dataset.on = on ? "true" : "false";
+        toggle.setAttribute("aria-pressed", String(on));
+        toggle.textContent = on ? "Done. Undo?" : "Mark this module done";
+      }
+
+      const resume = root.querySelector<HTMLElement>("[data-progress-resume]");
+      const link = root.querySelector<HTMLAnchorElement>("[data-progress-resume-link]");
+      if (resume && link && progress.lastVisitedModule) {
+        link.href = `${base}/modules/${progress.lastVisitedModule}/`;
+        resume.hidden = false;
+      }
+    };
+
+    toggle?.addEventListener("click", () => {
+      if (!slug) return;
+      setModuleComplete(slug, toggle.dataset.on !== "true");
+      paint();
+    });
+
+    if (slug) setLastVisited(slug);
+    if (!isAvailable()) {
+      const note = root.querySelector<HTMLElement>("[data-progress-note]");
+      if (note) note.textContent = "Storage is unavailable in this browser, so progress is not kept.";
+      if (toggle) toggle.disabled = true;
+    }
+    paint();
+  });
+</script>
+
+<style>
+  .prog__title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    margin: 0 0 0.7rem;
+  }
+  .prog__bar {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--bg-inset);
+    overflow: hidden;
+  }
+  .prog__bar span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 200ms ease-out;
+  }
+  .prog__count {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    margin: 0.5rem 0 0;
+  }
+  .prog__toggle {
+    width: 100%;
+    margin-top: 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--fg-muted);
+    cursor: pointer;
+  }
+  .prog__toggle:hover:not(:disabled) { border-color: var(--accent); color: var(--fg); }
+  .prog__toggle[data-on="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .prog__toggle:disabled { cursor: not-allowed; opacity: 0.6; }
+  .prog__resume { margin: 0.85rem 0 0; font-size: var(--t-meta); }
+  .prog__note { margin: 0.7rem 0 0; font-size: 0.7rem; color: var(--fg-muted); line-height: 1.5; }
+
+  .prog--summary {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-raise);
+    padding: 1.1rem 1.3rem;
+  }
+</style>

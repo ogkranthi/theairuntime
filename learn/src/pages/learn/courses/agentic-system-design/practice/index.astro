@@ -1,0 +1,145 @@
+---
+import Base from "../../../../../layouts/Base.astro";
+import CtaBlock from "../../../../../components/CtaBlock.astro";
+import { ASD_BASE, COURSE, getAsdScenarios, scenarioHref } from "../../../../../lib/asd";
+
+const scenarios = await getAsdScenarios();
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<Base
+  title="Practice scenarios | Agentic AI System Design"
+  description="Twelve timed agentic system design scenarios with staged constraint reveals, a RUNTIME checklist, and a self-scoring rubric."
+  pageSlug="asd-practice"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: COURSE.short_title, item: `https://learn.theairuntime.com${ASD_BASE}/` },
+        { "@type": "ListItem", position: 2, name: "Practice scenarios", item: canonical },
+      ],
+    },
+  ]}
+>
+  <div class="shell">
+    <section class="head">
+      <p class="eyebrow">
+        <a href={`${ASD_BASE}/`}>Agentic AI System Design</a> / Practice
+      </p>
+      <h1>Design it under a clock</h1>
+      <p class="lead">
+        {scenarios.length} scenarios drawn from real agentic products. Each one runs like an
+        interview: you get the prompt and the starting assumptions, you design, and the constraints
+        that break your first answer arrive one at a time. The strong-answer signals stay hidden
+        until you finish, because reading them first turns practice into recognition.
+      </p>
+      <p class="muted measure">
+        Everything you type stays in this browser. There is no account, no upload, and no grading
+        service. The <a href={`${ASD_BASE}/reference/interview-scorecard/`}>scorecard</a> and the
+        {" "}<a href={`${ASD_BASE}/reference/course-rubric/`}>rubric</a> are how you grade yourself.
+      </p>
+    </section>
+
+    <section class="section">
+      <ol class="slist">
+        {
+          scenarios.map((s, i) => (
+            <li class="scard">
+              <p class="scard__id">{String(i + 1).padStart(2, "0")}</p>
+              <div class="scard__body">
+                <h2 class="scard__title">
+                  <a href={scenarioHref(s)}>{s.data.title}</a>
+                </h2>
+                <p class="scard__focus">
+                  {s.data.focus.map((f) => <span class="chip">{f}</span>)}
+                </p>
+              </div>
+              <p class="scard__meta">
+                <span class="scard__diff" data-difficulty={s.data.difficulty}>{s.data.difficulty}</span>
+                <span>{s.data.estimated_minutes} min</span>
+              </p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="section how">
+      <h2>How to use these</h2>
+      <ol class="how__list">
+        <li>
+          <strong>Read the prompt and the assumptions, then start the timer.</strong>
+          Do not scroll ahead. The point is to design without knowing which constraint lands next.
+        </li>
+        <li>
+          <strong>Clarify before you draw.</strong>
+          Five minutes of requirements and risk beats twenty minutes of boxes. Name the risk tier
+          and what the model may never decide.
+        </li>
+        <li>
+          <strong>Open one reveal at a time.</strong>
+          Update the design after each before you look at the next, the way the constraint would
+          actually land in the room.
+        </li>
+        <li>
+          <strong>Finish, then reveal.</strong>
+          Score yourself against the required checks first, then read the strong-answer signals and
+          the model outline. The gap between them is your study list.
+        </li>
+      </ol>
+      <p class="muted measure">
+        If a scenario exposes a concept you cannot explain, the
+        {" "}<a href={`${ASD_BASE}/reference/concept-coverage-matrix/`}>concept coverage matrix</a>
+        {" "}maps every idea in the course back to the module that teaches it.
+      </p>
+    </section>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="asd-practice" />
+</Base>
+
+<style>
+  .head { padding: 3rem 0 1rem; }
+  .head .eyebrow a { color: var(--accent); }
+  .head h1 { font-size: clamp(2.1rem, 5vw, 3rem); letter-spacing: -0.03em; max-width: 18ch; }
+  .lead { font-size: 1.15rem; color: var(--fg-muted); max-width: 64ch; }
+
+  .slist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .scard {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 0.5rem 1.25rem;
+    padding: 1.15rem 0.5rem;
+    margin: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .scard:hover { background: var(--bg-raise); }
+  .scard__id { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); margin: 0; }
+  .scard__title { font-size: 1.1rem; margin: 0 0 0.5rem; }
+  .scard__title a { color: var(--fg); }
+  .scard__title a:hover { color: var(--accent); text-decoration: none; }
+  .scard__focus { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0; }
+  .scard__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--fg-muted);
+    margin: 0;
+    white-space: nowrap;
+  }
+  .scard__diff { border: 1px solid var(--line); border-radius: 999px; padding: 0.1rem 0.55rem; }
+  .scard__diff[data-difficulty="Advanced"] { border-color: var(--accent-dim); color: var(--accent); }
+
+  @media (max-width: 620px) {
+    .scard { grid-template-columns: 2.5rem minmax(0, 1fr); }
+    .scard__meta { grid-column: 2; }
+  }
+
+  .how__list { max-width: var(--measure); padding-left: 1.2rem; }
+  .how__list li { margin: 0 0 0.9rem; }
+  .how__list strong { display: block; }
+</style>

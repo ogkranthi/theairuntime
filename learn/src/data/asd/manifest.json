@@ -1,0 +1,173 @@
+{
+  "course": {
+    "slug": "agentic-ai-system-design",
+    "title": "Agentic AI System Design: From Prompt to Production",
+    "short_title": "Agentic System Design",
+    "description": "Build, evaluate, secure, scale, and explain production-grade AI agent systems.",
+    "audience": [
+      "AI Engineer candidates",
+      "Software engineers",
+      "Forward-deployed engineers",
+      "Solutions architects"
+    ],
+    "estimated_hours": "35-45",
+    "canonical_project": "Atlas: Counterparty Due-Diligence Agent",
+    "version": "0.1.0",
+    "last_reviewed": "2026-08-26",
+    "modules": [
+      {
+        "id": "00",
+        "slug": "orientation-runtime-method",
+        "title": "How to Design an Agentic System",
+        "track": "Orientation",
+        "duration_minutes": 75,
+        "difficulty": "Core",
+        "build": "Create the first Atlas design canvas and risk profile."
+      },
+      {
+        "id": "01",
+        "slug": "should-this-be-an-agent",
+        "title": "Should This Be an Agent?",
+        "track": "Foundations",
+        "duration_minutes": 90,
+        "difficulty": "Core",
+        "build": "Write an agent-versus-workflow decision memo for Atlas."
+      },
+      {
+        "id": "02",
+        "slug": "agent-loop-and-control-boundaries",
+        "title": "The Agent Loop and Its Control Boundaries",
+        "track": "Foundations",
+        "duration_minutes": 120,
+        "difficulty": "Core",
+        "build": "Implement a bounded tool-calling loop with typed state and stop conditions."
+      },
+      {
+        "id": "03",
+        "slug": "tool-contracts-and-side-effects",
+        "title": "Tool Contracts, Side Effects, and the Acknowledgment Gap",
+        "track": "Foundations",
+        "duration_minutes": 120,
+        "difficulty": "Core",
+        "build": "Add typed, risk-rated tools with idempotency and error semantics."
+      },
+      {
+        "id": "04",
+        "slug": "context-engineering-and-grounding",
+        "title": "Context Engineering, Retrieval, and Grounding",
+        "track": "Context & Data",
+        "duration_minutes": 120,
+        "difficulty": "Core",
+        "build": "Build an ACL-aware context assembler with provenance and citations."
+      },
+      {
+        "id": "05",
+        "slug": "state-sessions-and-memory",
+        "title": "State, Sessions, and Memory",
+        "track": "Context & Data",
+        "duration_minutes": 120,
+        "difficulty": "Core",
+        "build": "Separate run state, thread state, and governed long-term memory."
+      },
+      {
+        "id": "06",
+        "slug": "orchestration-patterns",
+        "title": "Orchestration Patterns and State Machines",
+        "track": "Orchestration",
+        "duration_minutes": 135,
+        "difficulty": "Core",
+        "build": "Convert Atlas into an explicit graph with routing, parallel work, and join conditions."
+      },
+      {
+        "id": "07",
+        "slug": "durable-long-running-agents",
+        "title": "Durable and Long-Running Agents",
+        "track": "Runtime",
+        "duration_minutes": 150,
+        "difficulty": "Advanced",
+        "build": "Make Atlas survive crashes, waits, retries, and deploys without repeating unsafe effects."
+      },
+      {
+        "id": "08",
+        "slug": "human-in-the-loop-and-authority",
+        "title": "Human-in-the-Loop and Bounded Authority",
+        "track": "Runtime",
+        "duration_minutes": 105,
+        "difficulty": "Core",
+        "build": "Add a durable approval queue with approve, edit, reject, and escalation paths."
+      },
+      {
+        "id": "09",
+        "slug": "multi-agent-mcp-a2a",
+        "title": "Multi-Agent Design, MCP, and A2A",
+        "track": "Interoperability",
+        "duration_minutes": 120,
+        "difficulty": "Advanced",
+        "build": "Expose one Atlas capability through MCP and evaluate whether an A2A boundary is justified."
+      },
+      {
+        "id": "10",
+        "slug": "security-identity-isolation-governance",
+        "title": "Security, Identity, Isolation, and Governance",
+        "track": "Trust",
+        "duration_minutes": 150,
+        "difficulty": "Core",
+        "build": "Threat-model Atlas and add policy enforcement, tenant isolation, and adversarial tests."
+      },
+      {
+        "id": "11",
+        "slug": "agent-evaluation-and-testing",
+        "title": "Agent Evaluation and Testing",
+        "track": "Quality",
+        "duration_minutes": 150,
+        "difficulty": "Core",
+        "build": "Create a regression dataset and score components, trajectories, outcomes, and safety."
+      },
+      {
+        "id": "12",
+        "slug": "observability-slos-and-incidents",
+        "title": "Observability, SLOs, and Incident Response",
+        "track": "Operations",
+        "duration_minutes": 120,
+        "difficulty": "Core",
+        "build": "Instrument Atlas traces, metrics, logs, dashboards, and an incident replay workflow."
+      },
+      {
+        "id": "13",
+        "slug": "latency-cost-scale",
+        "title": "Latency, Cost, Throughput, and Scale",
+        "track": "Operations",
+        "duration_minutes": 135,
+        "difficulty": "Advanced",
+        "build": "Load-test Atlas and introduce routing, caching, queues, backpressure, and cost budgets."
+      },
+      {
+        "id": "14",
+        "slug": "deployment-enterprise-readiness",
+        "title": "Deployment, Change Management, and Enterprise Readiness",
+        "track": "Operations",
+        "duration_minutes": 120,
+        "difficulty": "Advanced",
+        "build": "Ship a versioned canary release with rollback, data controls, and operational ownership."
+      },
+      {
+        "id": "15",
+        "slug": "system-design-interview",
+        "title": "The 45-Minute Agentic System-Design Interview",
+        "track": "Interview",
+        "duration_minutes": 120,
+        "difficulty": "Core",
+        "build": "Deliver and self-score a complete Atlas system-design answer."
+      },
+      {
+        "id": "16",
+        "slug": "capstone-atlas",
+        "title": "Capstone: Atlas in Production",
+        "track": "Capstone",
+        "duration_minutes": 480,
+        "difficulty": "Capstone",
+        "build": "Build, demo, evaluate, and defend the complete production system."
+      }
+    ]
+  }
+}

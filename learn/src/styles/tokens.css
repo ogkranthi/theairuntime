@@ -466,7 +466,15 @@ details.checkpoint > p { padding: 0.85rem 1.15rem; margin: 0; color: var(--fg-mu
 .btn--solid:hover { text-decoration: none; }
 
 /* ---------- code copy button ---------- */
-.code-wrap { position: relative; }
+/* The copy-button wrapper is inserted around every <pre> at runtime, so it has
+   no scoped class of its own. It is often a grid or flex child, and without an
+   explicit minimum it inherits the code block's min-content width and widens
+   the page instead of letting the <pre> scroll. */
+.code-wrap {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+}
 .code-copy {
   position: absolute;
   top: 0.5rem;

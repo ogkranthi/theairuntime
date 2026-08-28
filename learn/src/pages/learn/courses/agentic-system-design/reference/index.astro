@@ -1,0 +1,116 @@
+---
+import Base from "../../../../../layouts/Base.astro";
+import CtaBlock from "../../../../../components/CtaBlock.astro";
+import { ASD_BASE, COURSE, getAsdReference, referenceHref } from "../../../../../lib/asd";
+
+const docs = await getAsdReference();
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+const ORDER = ["Method", "Canvas", "Template", "Reference", "Assessment", "Capstone"];
+const groups = ORDER.map((kind) => ({
+  kind,
+  docs: docs.filter((d) => d.kind === kind),
+})).filter((g) => g.docs.length > 0);
+
+const KIND_BLURB: Record<string, string> = {
+  Method: "The design process the whole course applies.",
+  Canvas: "The worksheet you fill for every system.",
+  Template: "Fill-in artifacts a real design review expects to see.",
+  Reference: "Look-up material: vocabulary, coverage, and sources.",
+  Assessment: "How work in this course is judged, including by you.",
+  Capstone: "The specification and brief for the system you build.",
+};
+---
+
+<Base
+  title="Reference library | Agentic AI System Design"
+  description="Templates, methods, rubrics, and reference material for designing production agentic systems: RUNTIME, the design canvas, tool contracts, threat models, eval plans, and runbooks."
+  pageSlug="asd-reference"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: COURSE.short_title, item: `https://learn.theairuntime.com${ASD_BASE}/` },
+        { "@type": "ListItem", position: 2, name: "Reference", item: canonical },
+      ],
+    },
+  ]}
+>
+  <div class="shell">
+    <header class="rhead">
+      <p class="eyebrow">
+        <a href={`${ASD_BASE}/`}>Agentic AI System Design</a> / Reference
+      </p>
+      <h1>The reference library</h1>
+      <p class="lead">
+        The artifacts this course keeps coming back to. Every template here is the one a design
+        review, a security review, or an on-call rotation would actually ask you for, stripped to
+        the fields that change a decision.
+      </p>
+    </header>
+
+    {
+      groups.map((group) => (
+        <section class="section">
+          <h2 class="rkind">{group.kind}</h2>
+          <p class="muted">{KIND_BLURB[group.kind]}</p>
+          <ul class="rlist">
+            {group.docs.map((doc) => (
+              <li>
+                <a href={referenceHref(doc.slug)}>
+                  <span class="rlist__title">{doc.title}</span>
+                  <span class="rlist__blurb">{doc.blurb}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="asd-reference" />
+</Base>
+
+<style>
+  .rhead { padding: 2.5rem 0 1rem; }
+  .rhead .eyebrow a { color: var(--accent); }
+  .rhead h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); letter-spacing: -0.03em; }
+  .lead { font-size: 1.12rem; color: var(--fg-muted); max-width: 64ch; }
+
+  .rkind {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.35rem;
+  }
+  .rlist {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  @media (min-width: 780px) { .rlist { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .rlist li { margin: 0; }
+  .rlist a {
+    display: block;
+    height: 100%;
+    background: var(--bg-raise);
+    padding: 1.1rem 1.25rem;
+    color: var(--fg);
+  }
+  .rlist a:hover { background: var(--bg-inset); text-decoration: none; }
+  .rlist__title { display: block; font-weight: 650; margin-bottom: 0.3rem; }
+  .rlist a:hover .rlist__title { color: var(--accent); }
+  .rlist__blurb { display: block; font-size: 0.85rem; color: var(--fg-muted); }
+</style>

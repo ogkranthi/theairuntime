@@ -1,0 +1,1468 @@
+{
+  "version": 1,
+  "course": "agentic-ai-system-design",
+  "question_count": 51,
+  "questions": [
+    {
+      "id": "00-q1",
+      "module": "orientation-runtime-method",
+      "type": "single",
+      "prompt": "Which statement best defines a production agent in this course?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A model with a long system prompt and several tools"
+        },
+        {
+          "id": "b",
+          "text": "A probabilistic decision component surrounded by deterministic control, trusted boundaries, durable state, and operations"
+        },
+        {
+          "id": "c",
+          "text": "Any chatbot that can call an API"
+        },
+        {
+          "id": "d",
+          "text": "A multi-agent team with named roles"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "The model is one component. The application owns validation, authorization, persistence, effects, observation, and recovery."
+    },
+    {
+      "id": "00-q2",
+      "module": "orientation-runtime-method",
+      "type": "multi",
+      "prompt": "Which requirements directly imply a durable workflow?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A case may wait 30 days for a document"
+        },
+        {
+          "id": "b",
+          "text": "The landing page needs a light theme"
+        },
+        {
+          "id": "c",
+          "text": "A human approval may arrive after a deployment"
+        },
+        {
+          "id": "d",
+          "text": "The model should use structured output"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "c"
+      ],
+      "explanation": "Long waits and late external signals require persisted execution state. Structured output is important but does not by itself require a durable workflow."
+    },
+    {
+      "id": "00-q3",
+      "module": "orientation-runtime-method",
+      "type": "single",
+      "prompt": "What should an engineer do first when given 'build an onboarding agent'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Select an agent framework"
+        },
+        {
+          "id": "b",
+          "text": "Choose the largest model"
+        },
+        {
+          "id": "c",
+          "text": "Define the user outcome, authority, risk, constraints, and non-goals"
+        },
+        {
+          "id": "d",
+          "text": "Create a vector database"
+        }
+      ],
+      "correct_option_ids": [
+        "c"
+      ],
+      "explanation": "Architecture follows the user outcome and consequence of failure, not a preferred framework."
+    },
+    {
+      "id": "01-q1",
+      "module": "should-this-be-an-agent",
+      "type": "single",
+      "prompt": "Which use case most strongly justifies a bounded agent rather than a fixed workflow?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Apply a known tax rate to an invoice"
+        },
+        {
+          "id": "b",
+          "text": "Research an ambiguous entity across changing sources and decide which evidence gap to investigate next"
+        },
+        {
+          "id": "c",
+          "text": "Validate a JSON schema"
+        },
+        {
+          "id": "d",
+          "text": "Sort records by timestamp"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Dynamic action selection under uncertainty is a good reason for bounded autonomy. Deterministic rules should remain deterministic code."
+    },
+    {
+      "id": "01-q2",
+      "module": "should-this-be-an-agent",
+      "type": "multi",
+      "prompt": "Which factors should reduce the amount of autonomy granted?",
+      "options": [
+        {
+          "id": "a",
+          "text": "High consequence of a wrong action"
+        },
+        {
+          "id": "b",
+          "text": "Irreversible or hard-to-reconcile effects"
+        },
+        {
+          "id": "c",
+          "text": "Clear deterministic rules"
+        },
+        {
+          "id": "d",
+          "text": "A desire to use more agents in the diagram"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "High consequence, irreversible effects, and clear deterministic logic all favor stronger workflow or human control."
+    },
+    {
+      "id": "01-q3",
+      "module": "should-this-be-an-agent",
+      "type": "single",
+      "prompt": "What is the best initial Atlas design?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Six autonomous specialist agents with unrestricted tools"
+        },
+        {
+          "id": "b",
+          "text": "A deterministic workflow with one bounded research loop where adaptivity adds value"
+        },
+        {
+          "id": "c",
+          "text": "One model prompt that performs the entire case"
+        },
+        {
+          "id": "d",
+          "text": "A human-only process with no measurement"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Start with the minimum autonomy that produces measurable benefit and expand only after evaluation."
+    },
+    {
+      "id": "02-q1",
+      "module": "agent-loop-and-control-boundaries",
+      "type": "single",
+      "prompt": "After a model returns a proposed tool call, what should happen next?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Execute it immediately because the tool was in the prompt"
+        },
+        {
+          "id": "b",
+          "text": "Validate schema, authorize against identity/state/policy, enforce budgets, then execute through a gateway"
+        },
+        {
+          "id": "c",
+          "text": "Ask the model whether the call is safe"
+        },
+        {
+          "id": "d",
+          "text": "Store it in long-term memory"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Tool availability in a prompt is not authorization. The application controls execution."
+    },
+    {
+      "id": "02-q2",
+      "module": "agent-loop-and-control-boundaries",
+      "type": "multi",
+      "prompt": "Which are valid bounded-loop stop conditions?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Required outcome reached"
+        },
+        {
+          "id": "b",
+          "text": "Maximum steps, time, or spend reached"
+        },
+        {
+          "id": "c",
+          "text": "No-progress detector fires"
+        },
+        {
+          "id": "d",
+          "text": "The model says it wants more tools indefinitely"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "A production loop has explicit success, budget, and no-progress termination or escalation."
+    },
+    {
+      "id": "02-q3",
+      "module": "agent-loop-and-control-boundaries",
+      "type": "single",
+      "prompt": "Why should a model return a reason code in addition to a free-form rationale?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Reason codes are always perfectly truthful"
+        },
+        {
+          "id": "b",
+          "text": "Reason codes make routing, policy, measurement, and regression analysis more deterministic"
+        },
+        {
+          "id": "c",
+          "text": "They eliminate the need for traces"
+        },
+        {
+          "id": "d",
+          "text": "They grant the model more authority"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Controlled categories are measurable and enforceable. They do not make model reasoning inherently truthful."
+    },
+    {
+      "id": "03-q1",
+      "module": "tool-contracts-and-side-effects",
+      "type": "single",
+      "prompt": "A payment API times out after the charge may have succeeded. What is the safest next step?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Retry immediately with a new request ID"
+        },
+        {
+          "id": "b",
+          "text": "Ask the model to guess whether it succeeded"
+        },
+        {
+          "id": "c",
+          "text": "Reconcile against the payment system using the idempotency/external request identity before retrying"
+        },
+        {
+          "id": "d",
+          "text": "Mark the charge failed without checking"
+        }
+      ],
+      "correct_option_ids": [
+        "c"
+      ],
+      "explanation": "This is an uncertain effect in the acknowledgment gap. Reconciliation prevents duplicate side effects."
+    },
+    {
+      "id": "03-q2",
+      "module": "tool-contracts-and-side-effects",
+      "type": "multi",
+      "prompt": "What belongs in a production tool contract?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Typed input and output"
+        },
+        {
+          "id": "b",
+          "text": "Identity, scope, and authorization requirements"
+        },
+        {
+          "id": "c",
+          "text": "Timeout, retry, idempotency, and reconciliation semantics"
+        },
+        {
+          "id": "d",
+          "text": "Only a natural-language description for the model"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "A tool is an operational contract, not merely a prompt description."
+    },
+    {
+      "id": "03-q3",
+      "module": "tool-contracts-and-side-effects",
+      "type": "single",
+      "prompt": "Which statement about 'exactly once' is most accurate?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A workflow runtime can guarantee every external effect happens exactly once"
+        },
+        {
+          "id": "b",
+          "text": "External systems still require idempotency or reconciliation even if the workflow observes one completion"
+        },
+        {
+          "id": "c",
+          "text": "Retries are unnecessary when using a workflow engine"
+        },
+        {
+          "id": "d",
+          "text": "Exactly once can be achieved by asking the model not to repeat"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Durable runtimes coordinate observations, but external activities may execute more than once."
+    },
+    {
+      "id": "04-q1",
+      "module": "context-engineering-and-grounding",
+      "type": "single",
+      "prompt": "Where should ACL filtering occur for enterprise retrieval?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Only in the system prompt after all documents are retrieved"
+        },
+        {
+          "id": "b",
+          "text": "Before inaccessible evidence reaches the model, with defense in depth at the data layer"
+        },
+        {
+          "id": "c",
+          "text": "Only after the final answer is generated"
+        },
+        {
+          "id": "d",
+          "text": "Inside long-term memory"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "The model should never receive evidence the current principal is not authorized to access."
+    },
+    {
+      "id": "04-q2",
+      "module": "context-engineering-and-grounding",
+      "type": "multi",
+      "prompt": "Which metadata supports claim-level grounding?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Source identity and exact locator"
+        },
+        {
+          "id": "b",
+          "text": "Publication/effective/retrieval times"
+        },
+        {
+          "id": "c",
+          "text": "Content and policy versions"
+        },
+        {
+          "id": "d",
+          "text": "A generic statement that the answer used RAG"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "Grounding needs traceable, versioned evidence, not a generic architecture label."
+    },
+    {
+      "id": "04-q3",
+      "module": "context-engineering-and-grounding",
+      "type": "single",
+      "prompt": "A retrieved webpage instructs the agent to ignore policy. How should the system treat it?",
+      "options": [
+        {
+          "id": "a",
+          "text": "As a higher-priority instruction because it is external evidence"
+        },
+        {
+          "id": "b",
+          "text": "As untrusted data that cannot alter authority or tool policy"
+        },
+        {
+          "id": "c",
+          "text": "As a reason to reveal more context"
+        },
+        {
+          "id": "d",
+          "text": "As long-term memory"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Retrieved content may inform factual work but cannot become trusted system instruction."
+    },
+    {
+      "id": "05-q1",
+      "module": "state-sessions-and-memory",
+      "type": "single",
+      "prompt": "Which store should preserve a large uploaded source document?",
+      "options": [
+        {
+          "id": "a",
+          "text": "The model's hidden state"
+        },
+        {
+          "id": "b",
+          "text": "A governed artifact store with references in run state"
+        },
+        {
+          "id": "c",
+          "text": "A metric label"
+        },
+        {
+          "id": "d",
+          "text": "A reason code"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Large evidence belongs in artifact storage; run state should hold stable references and status."
+    },
+    {
+      "id": "05-q2",
+      "module": "state-sessions-and-memory",
+      "type": "multi",
+      "prompt": "Which properties should a long-term memory write include?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Provenance and actor"
+        },
+        {
+          "id": "b",
+          "text": "Scope, purpose, and tenant"
+        },
+        {
+          "id": "c",
+          "text": "Expiry or deletion behavior"
+        },
+        {
+          "id": "d",
+          "text": "Automatic trust because a model extracted it"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "Memory is governed data. Model extraction does not make a fact trustworthy."
+    },
+    {
+      "id": "05-q3",
+      "module": "state-sessions-and-memory",
+      "type": "single",
+      "prompt": "How is durable workflow state different from long-term memory?",
+      "options": [
+        {
+          "id": "a",
+          "text": "They are identical"
+        },
+        {
+          "id": "b",
+          "text": "Workflow state preserves execution and waits; long-term memory retains selected information across tasks"
+        },
+        {
+          "id": "c",
+          "text": "Memory handles retries while workflow state stores preferences"
+        },
+        {
+          "id": "d",
+          "text": "Only long-term memory is persisted"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Durability and memory solve different problems and have different correctness/lifecycle requirements."
+    },
+    {
+      "id": "06-q1",
+      "module": "orchestration-patterns",
+      "type": "single",
+      "prompt": "When is parallel fan-out appropriate?",
+      "options": [
+        {
+          "id": "a",
+          "text": "When branches are independent and the join policy is explicit"
+        },
+        {
+          "id": "b",
+          "text": "Whenever more agents look impressive"
+        },
+        {
+          "id": "c",
+          "text": "When one branch depends on the result of another"
+        },
+        {
+          "id": "d",
+          "text": "Only for side-effecting writes"
+        }
+      ],
+      "correct_option_ids": [
+        "a"
+      ],
+      "explanation": "Independent safe work can run concurrently; dependencies and join requirements must remain explicit."
+    },
+    {
+      "id": "06-q2",
+      "module": "orchestration-patterns",
+      "type": "multi",
+      "prompt": "What should a join policy define?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Mandatory versus optional results"
+        },
+        {
+          "id": "b",
+          "text": "Timeout/degraded behavior"
+        },
+        {
+          "id": "c",
+          "text": "Escalation for missing branches"
+        },
+        {
+          "id": "d",
+          "text": "A guarantee that every branch succeeds"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "Production joins account for partial failure rather than assuming universal success."
+    },
+    {
+      "id": "06-q3",
+      "module": "orchestration-patterns",
+      "type": "single",
+      "prompt": "What most strongly justifies a separate specialist agent?",
+      "options": [
+        {
+          "id": "a",
+          "text": "It can be given a memorable persona"
+        },
+        {
+          "id": "b",
+          "text": "It has a distinct trust, lifecycle, ownership, or scaling boundary"
+        },
+        {
+          "id": "c",
+          "text": "The prompt is longer than one page"
+        },
+        {
+          "id": "d",
+          "text": "The framework supports handoffs"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Separate agents should reflect a real system boundary, not role-play."
+    },
+    {
+      "id": "07-q1",
+      "module": "durable-long-running-agents",
+      "type": "single",
+      "prompt": "Why should a model call be recorded as an activity result in a durable workflow?",
+      "options": [
+        {
+          "id": "a",
+          "text": "To make the model deterministic"
+        },
+        {
+          "id": "b",
+          "text": "So workflow replay restores the recorded result instead of making a new model decision"
+        },
+        {
+          "id": "c",
+          "text": "To eliminate model cost"
+        },
+        {
+          "id": "d",
+          "text": "To put all prompts in metrics"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Replaying control flow should not silently re-invoke a nondeterministic model."
+    },
+    {
+      "id": "07-q2",
+      "module": "durable-long-running-agents",
+      "type": "multi",
+      "prompt": "Which belong outside replayable workflow code?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Network calls"
+        },
+        {
+          "id": "b",
+          "text": "Unrecorded current time or randomness"
+        },
+        {
+          "id": "c",
+          "text": "Model calls"
+        },
+        {
+          "id": "d",
+          "text": "Pure state transitions based on recorded history"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "External and nondeterministic work belongs in activities or runtime-provided recorded APIs."
+    },
+    {
+      "id": "07-q3",
+      "module": "durable-long-running-agents",
+      "type": "single",
+      "prompt": "A workflow waits two days for approval. What resource should it consume while waiting?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A dedicated worker thread"
+        },
+        {
+          "id": "b",
+          "text": "A model context window"
+        },
+        {
+          "id": "c",
+          "text": "Persisted state/timer or signal registration, not an active worker"
+        },
+        {
+          "id": "d",
+          "text": "A database transaction held open"
+        }
+      ],
+      "correct_option_ids": [
+        "c"
+      ],
+      "explanation": "Durable waits persist state and resume on an external event without holding compute."
+    },
+    {
+      "id": "08-q1",
+      "module": "human-in-the-loop-and-authority",
+      "type": "single",
+      "prompt": "What must an approval be bound to?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Only the case ID"
+        },
+        {
+          "id": "b",
+          "text": "The exact action/artifact version, scope, actor, policy, and expiry"
+        },
+        {
+          "id": "c",
+          "text": "The model's most recent hidden state"
+        },
+        {
+          "id": "d",
+          "text": "A generic 'approved' conversation message"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "A later edit or changed action must not inherit approval intended for an older version."
+    },
+    {
+      "id": "08-q2",
+      "module": "human-in-the-loop-and-authority",
+      "type": "multi",
+      "prompt": "Which are expected HITL outcomes?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Approve"
+        },
+        {
+          "id": "b",
+          "text": "Edit"
+        },
+        {
+          "id": "c",
+          "text": "Reject or request more information"
+        },
+        {
+          "id": "d",
+          "text": "Silently execute if the reviewer does not respond"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "Human review needs explicit paths, timeout/expiry, escalation, and durable state."
+    },
+    {
+      "id": "08-q3",
+      "module": "human-in-the-loop-and-authority",
+      "type": "single",
+      "prompt": "Why is a UI approve button alone insufficient?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Buttons are not visually modern"
+        },
+        {
+          "id": "b",
+          "text": "The workflow also needs authenticated identity, policy, durable pause/resume, version binding, and audit"
+        },
+        {
+          "id": "c",
+          "text": "The model cannot see the button"
+        },
+        {
+          "id": "d",
+          "text": "Every approval should be autonomous"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "HITL is an end-to-end authority and state transition, not a front-end decoration."
+    },
+    {
+      "id": "09-q1",
+      "module": "multi-agent-mcp-a2a",
+      "type": "single",
+      "prompt": "What is the safest interpretation of an MCP server advertising a tool?",
+      "options": [
+        {
+          "id": "a",
+          "text": "The tool is automatically trusted and authorized"
+        },
+        {
+          "id": "b",
+          "text": "The capability is discoverable; the host must still decide trust, user consent, identity, and policy"
+        },
+        {
+          "id": "c",
+          "text": "The model may grant itself access"
+        },
+        {
+          "id": "d",
+          "text": "All returned content becomes system instruction"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Capability discovery does not grant authority."
+    },
+    {
+      "id": "09-q2",
+      "module": "multi-agent-mcp-a2a",
+      "type": "multi",
+      "prompt": "Which conditions may justify an A2A or independent-agent boundary?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Separate organizational ownership"
+        },
+        {
+          "id": "b",
+          "text": "Independent lifecycle and availability"
+        },
+        {
+          "id": "c",
+          "text": "Distinct trust/data boundary"
+        },
+        {
+          "id": "d",
+          "text": "A desire to rename a deterministic function as an agent"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "Protocol boundaries add cost and failure modes and should map to real independence."
+    },
+    {
+      "id": "09-q3",
+      "module": "multi-agent-mcp-a2a",
+      "type": "single",
+      "prompt": "How does a handoff differ from using an agent as a tool?",
+      "options": [
+        {
+          "id": "a",
+          "text": "They are always identical"
+        },
+        {
+          "id": "b",
+          "text": "A handoff transfers responsibility for the ongoing task; an agent-as-tool returns a bounded result to the caller"
+        },
+        {
+          "id": "c",
+          "text": "A handoff is read-only"
+        },
+        {
+          "id": "d",
+          "text": "Agents-as-tools require no schemas"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Responsibility, state, and user interaction differ between delegation styles."
+    },
+    {
+      "id": "10-q1",
+      "module": "security-identity-isolation-governance",
+      "type": "single",
+      "prompt": "What is the strongest defense against a model generating another tenant's record ID?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A prompt that says not to"
+        },
+        {
+          "id": "b",
+          "text": "Tenant scope enforced by identity and the data/tool layer"
+        },
+        {
+          "id": "c",
+          "text": "A larger model"
+        },
+        {
+          "id": "d",
+          "text": "A longer conversation summary"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Security must hold even when model output is wrong or malicious."
+    },
+    {
+      "id": "10-q2",
+      "module": "security-identity-isolation-governance",
+      "type": "multi",
+      "prompt": "Which controls belong in a sandbox for generated code?",
+      "options": [
+        {
+          "id": "a",
+          "text": "No ambient production credentials"
+        },
+        {
+          "id": "b",
+          "text": "Network egress policy"
+        },
+        {
+          "id": "c",
+          "text": "CPU, memory, time, process, filesystem limits"
+        },
+        {
+          "id": "d",
+          "text": "Trust every package requested by the model"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "Isolation and least privilege constrain code even when generated content is malicious."
+    },
+    {
+      "id": "10-q3",
+      "module": "security-identity-isolation-governance",
+      "type": "single",
+      "prompt": "Why is tool-output normalization important?",
+      "options": [
+        {
+          "id": "a",
+          "text": "It makes all external content trustworthy"
+        },
+        {
+          "id": "b",
+          "text": "It limits untrusted free text and preserves typed facts, provenance, and policy boundaries"
+        },
+        {
+          "id": "c",
+          "text": "It removes the need for access control"
+        },
+        {
+          "id": "d",
+          "text": "It guarantees the tool is correct"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Normalization reduces instruction confusion but does not eliminate the need to validate or distrust external data."
+    },
+    {
+      "id": "11-q1",
+      "module": "agent-evaluation-and-testing",
+      "type": "single",
+      "prompt": "Why can a correct final answer still be a failed agent run?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Correct answers are never useful"
+        },
+        {
+          "id": "b",
+          "text": "The trajectory may include unauthorized tools, repeated effects, excessive cost, or policy violations"
+        },
+        {
+          "id": "c",
+          "text": "Only latency matters"
+        },
+        {
+          "id": "d",
+          "text": "The model judge may prefer different wording"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Production correctness includes process, policy, safety, and operations, not only output text."
+    },
+    {
+      "id": "11-q2",
+      "module": "agent-evaluation-and-testing",
+      "type": "multi",
+      "prompt": "Which datasets should an agent evaluation program maintain?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Representative golden set"
+        },
+        {
+          "id": "b",
+          "text": "Edge, adversarial, and incident sets"
+        },
+        {
+          "id": "c",
+          "text": "A fresh holdout"
+        },
+        {
+          "id": "d",
+          "text": "Only the examples used to tune the prompt"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "A single tuned golden set creates overfitting and misses attacks and production failures."
+    },
+    {
+      "id": "11-q3",
+      "module": "agent-evaluation-and-testing",
+      "type": "single",
+      "prompt": "What is the preferred grader for a schema invariant?",
+      "options": [
+        {
+          "id": "a",
+          "text": "A vague 1-10 model score"
+        },
+        {
+          "id": "b",
+          "text": "An exact deterministic check"
+        },
+        {
+          "id": "c",
+          "text": "A popularity vote"
+        },
+        {
+          "id": "d",
+          "text": "No grader because schemas are reliable"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Use the least ambiguous grader available; reserve model judges for genuinely semantic qualities."
+    },
+    {
+      "id": "12-q1",
+      "module": "observability-slos-and-incidents",
+      "type": "single",
+      "prompt": "Which identifier should connect a multi-day Atlas execution across workers and callbacks?",
+      "options": [
+        {
+          "id": "a",
+          "text": "One process-local request ID"
+        },
+        {
+          "id": "b",
+          "text": "A durable run/workflow identity propagated or linked across asynchronous spans"
+        },
+        {
+          "id": "c",
+          "text": "The model name"
+        },
+        {
+          "id": "d",
+          "text": "A metric label containing the full prompt"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Long-running causal correlation must survive process and service boundaries."
+    },
+    {
+      "id": "12-q2",
+      "module": "observability-slos-and-incidents",
+      "type": "multi",
+      "prompt": "Which conditions can be part of a valid-completion SLI?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Workflow finished within deadline"
+        },
+        {
+          "id": "b",
+          "text": "Mandatory evidence satisfied or explicitly waived"
+        },
+        {
+          "id": "c",
+          "text": "Approval policy and artifact schema satisfied"
+        },
+        {
+          "id": "d",
+          "text": "The endpoint returned HTTP 200"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "HTTP success is insufficient when business, evidence, and authority invariants define success."
+    },
+    {
+      "id": "12-q3",
+      "module": "observability-slos-and-incidents",
+      "type": "single",
+      "prompt": "Where should raw sensitive prompts usually be stored for debugging?",
+      "options": [
+        {
+          "id": "a",
+          "text": "In every metric label"
+        },
+        {
+          "id": "b",
+          "text": "As governed artifacts or restricted samples referenced from metadata-only traces"
+        },
+        {
+          "id": "c",
+          "text": "In public logs"
+        },
+        {
+          "id": "d",
+          "text": "In the model's long-term memory"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Prompts and outputs can contain customer data and require controlled access, retention, and redaction."
+    },
+    {
+      "id": "13-q1",
+      "module": "latency-cost-scale",
+      "type": "single",
+      "prompt": "What is the best first latency optimization?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Switch every task to the smallest model"
+        },
+        {
+          "id": "b",
+          "text": "Remove unnecessary work and context, then parallelize independent work"
+        },
+        {
+          "id": "c",
+          "text": "Increase retry count"
+        },
+        {
+          "id": "d",
+          "text": "Disable validation"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Reduce the work before choosing lower-capability paths or weakening controls."
+    },
+    {
+      "id": "13-q2",
+      "module": "latency-cost-scale",
+      "type": "multi",
+      "prompt": "Which controls reduce retry-storm risk?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Exponential backoff and jitter"
+        },
+        {
+          "id": "b",
+          "text": "Retry budgets and circuit breakers"
+        },
+        {
+          "id": "c",
+          "text": "Coordinated rate-limit/concurrency control"
+        },
+        {
+          "id": "d",
+          "text": "Immediate unlimited retries"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "Retries must be bounded and coordinated to avoid multiplying load during dependency failure."
+    },
+    {
+      "id": "13-q3",
+      "module": "latency-cost-scale",
+      "type": "single",
+      "prompt": "Why might a cheaper model increase total cost?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cheaper models always have higher token prices"
+        },
+        {
+          "id": "b",
+          "text": "Poorer decisions can cause more calls, tool errors, retries, and human correction"
+        },
+        {
+          "id": "c",
+          "text": "Caching is impossible with smaller models"
+        },
+        {
+          "id": "d",
+          "text": "Queues only support large models"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Optimize total system economics using measured task quality, not model price alone."
+    },
+    {
+      "id": "14-q1",
+      "module": "deployment-enterprise-readiness",
+      "type": "single",
+      "prompt": "What should identify the behavior of a production agent release?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Only the model name"
+        },
+        {
+          "id": "b",
+          "text": "A release bundle covering workflow, prompts, model policy, retrieval, tools, policy, schemas, and eval dataset versions"
+        },
+        {
+          "id": "c",
+          "text": "The deployment timestamp only"
+        },
+        {
+          "id": "d",
+          "text": "The most recent chat transcript"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Production behavior is created by the entire versioned system."
+    },
+    {
+      "id": "14-q2",
+      "module": "deployment-enterprise-readiness",
+      "type": "multi",
+      "prompt": "What makes shadow execution safe?",
+      "options": [
+        {
+          "id": "a",
+          "text": "No production effects"
+        },
+        {
+          "id": "b",
+          "text": "Scoped credentials and explicit shadow trace marking"
+        },
+        {
+          "id": "c",
+          "text": "Governed data handling and cost limits"
+        },
+        {
+          "id": "d",
+          "text": "Using all production write permissions just in case"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "Shadow runs compare behavior without allowing the candidate release to mutate production."
+    },
+    {
+      "id": "14-q3",
+      "module": "deployment-enterprise-readiness",
+      "type": "single",
+      "prompt": "A long-running workflow is active during rollback. What is the correct approach?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Silently replay old history with arbitrary new behavior"
+        },
+        {
+          "id": "b",
+          "text": "Use an explicit policy: finish on original version, migrate at a safe point, suspend, or start a linked new run"
+        },
+        {
+          "id": "c",
+          "text": "Delete its history"
+        },
+        {
+          "id": "d",
+          "text": "Ask the model to choose a code version"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "In-flight behavior must be deliberate and replay-compatible."
+    },
+    {
+      "id": "15-q1",
+      "module": "system-design-interview",
+      "type": "single",
+      "prompt": "What should the first architecture diagram accomplish?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Show every database index"
+        },
+        {
+          "id": "b",
+          "text": "Establish component responsibilities, trust boundaries, and the end-to-end flow"
+        },
+        {
+          "id": "c",
+          "text": "List every framework feature"
+        },
+        {
+          "id": "d",
+          "text": "Prove the candidate knows Kubernetes"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "Start coarse and add detail only where constraints require it."
+    },
+    {
+      "id": "15-q2",
+      "module": "system-design-interview",
+      "type": "multi",
+      "prompt": "Which clarifying questions usually change an agent architecture?",
+      "options": [
+        {
+          "id": "a",
+          "text": "What action/decision authority does the system have?"
+        },
+        {
+          "id": "b",
+          "text": "What is the worst credible failure?"
+        },
+        {
+          "id": "c",
+          "text": "Are runs interactive, long-running, or both?"
+        },
+        {
+          "id": "d",
+          "text": "What color should the diagram be?"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "Authority, risk, and runtime shape determine core architecture."
+    },
+    {
+      "id": "15-q3",
+      "module": "system-design-interview",
+      "type": "single",
+      "prompt": "Which is the strongest tradeoff statement?",
+      "options": [
+        {
+          "id": "a",
+          "text": "I use LangGraph because it is popular"
+        },
+        {
+          "id": "b",
+          "text": "I choose one orchestrator because shared state and policy dominate; I would split a specialist when it needs a separate trust or lifecycle boundary"
+        },
+        {
+          "id": "c",
+          "text": "Every approach has pros and cons"
+        },
+        {
+          "id": "d",
+          "text": "Microservices are always scalable"
+        }
+      ],
+      "correct_option_ids": [
+        "b"
+      ],
+      "explanation": "A strong tradeoff ties a choice to a requirement, names the cost, and states a trigger for change."
+    },
+    {
+      "id": "16-q1",
+      "module": "capstone-atlas",
+      "type": "single",
+      "prompt": "Which Atlas action must remain outside autonomous model authority?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Selecting the next allowed evidence search"
+        },
+        {
+          "id": "b",
+          "text": "Producing a draft packet"
+        },
+        {
+          "id": "c",
+          "text": "Making the final onboarding approval or rejection decision"
+        },
+        {
+          "id": "d",
+          "text": "Identifying a missing document"
+        }
+      ],
+      "correct_option_ids": [
+        "c"
+      ],
+      "explanation": "The capstone deliberately keeps the material business decision with an authorized human/system."
+    },
+    {
+      "id": "16-q2",
+      "module": "capstone-atlas",
+      "type": "multi",
+      "prompt": "Which demonstrations make the Atlas capstone more than a happy-path demo?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Crash and resume without duplicate effect"
+        },
+        {
+          "id": "b",
+          "text": "Prompt-injection and cross-tenant tests"
+        },
+        {
+          "id": "c",
+          "text": "Authenticated approval bound to an immutable artifact"
+        },
+        {
+          "id": "d",
+          "text": "A model typing a long answer"
+        }
+      ],
+      "correct_option_ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "explanation": "The capstone proves control, trust, durability, and human authority through failure."
+    },
+    {
+      "id": "16-q3",
+      "module": "capstone-atlas",
+      "type": "single",
+      "prompt": "What should happen when the autonomous cost budget is exhausted before mandatory checks finish?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Hide the missing checks and publish"
+        },
+        {
+          "id": "b",
+          "text": "Silently exceed the budget"
+        },
+        {
+          "id": "c",
+          "text": "Stop optional work and surface an explicit incomplete/escalation state"
+        },
+        {
+          "id": "d",
+          "text": "Delete the case"
+        }
+      ],
+      "correct_option_ids": [
+        "c"
+      ],
+      "explanation": "Budgets must not convert incomplete work into false certainty."
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
 import { LEDGER_LABELS, getModules, pad } from "../../lib/course";
+import { COURSE, getAsdModules, getAsdScenarios, REFERENCE_DOCS } from "../../lib/asd";
 
 const require = createRequire(import.meta.url);
 
@@ -19,53 +20,104 @@ const MUTED = "#71717A";
 const ACCENT = "#EA580C";
 const LINE = "#E5E7EB";
 
+type LedgerRow = { label: string; state: "done" | "current" | "todo" };
+
 type Page = {
   slug: string;
   eyebrow: string;
   title: string;
-  /** Module number to mark with the arrow, or null for non-module pages. */
+  /** Module number shown above the title, or null for non-module pages. */
   current: number | null;
+  /** Five-row ledger under the rule. Each course supplies its own. */
+  ledger: LedgerRow[];
 };
+
+/** Five rows centred on `current`, clamped to the available range. */
+function window5(labels: string[], current: number | null): LedgerRow[] {
+  const start = current === null ? 0 : Math.min(Math.max(current - 2, 0), Math.max(labels.length - 5, 0));
+  return labels.slice(start, start + 5).map((label, i) => {
+    const n = start + i;
+    return {
+      label,
+      state: current === null ? "todo" : n === current ? "current" : n < current ? "done" : "todo",
+    };
+  });
+}
 
 export async function getStaticPaths() {
   const modules = await getModules();
+  const asdModules = await getAsdModules();
+  const asdScenarios = await getAsdScenarios();
+
+  const c001Labels = modules.map((m) => `${pad(m.data.module)}  ${LEDGER_LABELS[m.data.module]}`);
+  const asdLabels = asdModules.map((m) => `${m.data.id}  ${m.data.title}`);
+
+  const asdPage = (slug: string, eyebrow: string, title: string): Page => ({
+    slug,
+    eyebrow,
+    title,
+    current: null,
+    ledger: window5(asdLabels, null),
+  });
+
+  const c001 = (slug: string, eyebrow: string, title: string): Page => ({
+    slug,
+    eyebrow,
+    title,
+    current: null,
+    ledger: window5(c001Labels, null),
+  });
 
   const pages: Page[] = [
-    { slug: "home", eyebrow: "FDE ENGINEERING", title: "Learn AI Engineering Like an FDE", current: null },
-    { slug: "courses", eyebrow: "FDE ENGINEERING · COURSES", title: "The catalog", current: null },
-    { slug: "long-running-agents", eyebrow: "COURSE 001 · FDE ENGINEERING", title: "Engineering Long-Running AI Agents", current: null },
-    { slug: "case-studies", eyebrow: "FDE ENGINEERING · CASE STUDIES", title: "Systems, not demos", current: null },
-    { slug: "skills", eyebrow: "FDE ENGINEERING · SKILLS MAP", title: "What an FDE actually knows", current: null },
-    { slug: "resources", eyebrow: "FDE ENGINEERING · RESOURCES", title: "Curated, not collected", current: null },
-    { slug: "labs", eyebrow: "COURSE 001 · FAILURE LABS", title: "Break it on purpose", current: null },
-    { slug: "stack", eyebrow: "COURSE 001 · TECHNOLOGIES", title: "Boring on purpose", current: null },
-    { slug: "sources", eyebrow: "COURSE 001 · PRIMARY SOURCES", title: "Read the originals", current: null },
-    { slug: "about", eyebrow: "FDE ENGINEERING · ABOUT", title: "Between the demo and production", current: null },
-    { slug: "404", eyebrow: "FDE ENGINEERING", title: "No checkpoint at that step", current: null },
+    c001("home", "FDE ENGINEERING", "Learn AI Engineering Like an FDE"),
+    c001("courses", "FDE ENGINEERING · COURSES", "The catalog"),
+    c001("long-running-agents", "COURSE 001 · FDE ENGINEERING", "Engineering Long-Running AI Agents"),
+    c001("case-studies", "FDE ENGINEERING · CASE STUDIES", "Systems, not demos"),
+    c001("skills", "FDE ENGINEERING · SKILLS MAP", "What an FDE actually knows"),
+    c001("resources", "FDE ENGINEERING · RESOURCES", "Curated, not collected"),
+    c001("labs", "COURSE 001 · FAILURE LABS", "Break it on purpose"),
+    c001("stack", "COURSE 001 · TECHNOLOGIES", "Boring on purpose"),
+    c001("sources", "COURSE 001 · PRIMARY SOURCES", "Read the originals"),
+    c001("about", "FDE ENGINEERING · ABOUT", "Between the demo and production"),
+    c001("404", "FDE ENGINEERING", "No checkpoint at that step"),
     ...modules.map((m) => ({
       slug: m.id,
       eyebrow: `COURSE 001 · MODULE ${pad(m.data.module)}`,
       title: m.data.title,
       current: m.data.module,
+      ledger: window5(c001Labels, m.data.module),
     })),
+
+    // Course 002. Its ledger is the module list, so a shared lesson card shows
+    // where in the Atlas build the reader has landed.
+    asdPage("agentic-system-design", "COURSE 002 · FDE ENGINEERING", COURSE.title),
+    asdPage("asd-canvas", "COURSE 002 · DESIGN CANVAS", "Twelve sections, no hand-waving"),
+    asdPage("asd-capstone", "COURSE 002 · CAPSTONE", COURSE.canonical_project),
+    asdPage("asd-glossary", "COURSE 002 · GLOSSARY", "Say what you mean in a design review"),
+    asdPage("asd-sources", "COURSE 002 · PRIMARY SOURCES", "Cited to the docs, not the blog post"),
+    asdPage("asd-practice", "COURSE 002 · PRACTICE", "Design it under a clock"),
+    asdPage("asd-reference", "COURSE 002 · REFERENCE", "The artifacts a real review asks for"),
+    ...asdModules.map((m, i) => ({
+      slug: `asd-${m.data.slug}`,
+      eyebrow: `COURSE 002 · MODULE ${m.data.id} · ${m.data.track.toUpperCase()}`,
+      title: m.data.title,
+      current: null,
+      ledger: window5(asdLabels, i),
+    })),
+    ...asdScenarios.map((s) =>
+      asdPage(`asd-practice-${s.data.slug}`, "COURSE 002 · PRACTICE SCENARIO", s.data.title),
+    ),
+    ...REFERENCE_DOCS.map((doc) =>
+      asdPage(`asd-ref-${doc.slug}`, `COURSE 002 · ${doc.kind.toUpperCase()}`, doc.title),
+    ),
   ];
 
   return pages.map((page) => ({ params: { slug: page.slug }, props: { page } }));
 }
 
-/** Five ledger rows centred on the current module, clamped to the real range. */
-function ledgerRows(current: number | null) {
-  const start = current === null ? 0 : Math.min(Math.max(current - 2, 0), 15 - 4);
-  return Array.from({ length: 5 }, (_, i) => start + i).map((n) => ({
-    n,
-    label: LEDGER_LABELS[n] as string,
-    state: current === null ? "todo" : n === current ? "current" : n < current ? "done" : "todo",
-  }));
-}
-
 export async function GET({ props }: { props: { page: Page } }) {
   const { page } = props;
-  const rows = ledgerRows(page.current);
+  const rows = page.ledger;
 
   const tree = {
     type: "div",
@@ -161,7 +213,7 @@ export async function GET({ props }: { props: { page: Page } }) {
                       },
                     },
                   },
-                  { type: "div", props: { style: { display: "flex" }, children: `${pad(r.n)}  ${r.label}` } },
+                  { type: "div", props: { style: { display: "flex" }, children: r.label } },
                 ],
               },
             })),

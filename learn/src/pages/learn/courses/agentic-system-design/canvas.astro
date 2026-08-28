@@ -1,0 +1,135 @@
+---
+import Base from "../../../../layouts/Base.astro";
+import CtaBlock from "../../../../components/CtaBlock.astro";
+import DesignCanvas from "../../../../components/asd/DesignCanvas.astro";
+import { ASD_BASE, COURSE, getAsdScenarios, scenarioHref } from "../../../../lib/asd";
+import { INTERVIEW_SHORTHAND } from "../../../../lib/asd-canvas";
+
+const scenarios = await getAsdScenarios();
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<Base
+  title="Design canvas | Agentic AI System Design"
+  description="A twelve-section worksheet that turns a vague agent idea into a defensible production design. Autosaves in your browser, exports to Markdown or JSON."
+  pageSlug="asd-canvas"
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: COURSE.short_title, item: `https://learn.theairuntime.com${ASD_BASE}/` },
+        { "@type": "ListItem", position: 2, name: "Design canvas", item: canonical },
+      ],
+    },
+  ]}
+>
+  <div class="shell canvaspage">
+    <header class="chead">
+      <p class="eyebrow">
+        <a href={`${ASD_BASE}/`}>Agentic AI System Design</a> / Canvas
+      </p>
+      <h1>The Agentic System Design Canvas</h1>
+      <p class="lead">
+        Twelve sections that force the decisions an agent design usually skips: what the model may
+        never decide, which effects cannot be repeated, what survives a crash, and which number
+        blocks a release. Fill it for Atlas, for a practice scenario, or for the system you are
+        actually being asked to build at work.
+      </p>
+
+      <div class="chead__cols">
+        <div>
+          <p class="chead__key">HOW TO USE IT</p>
+          <p>
+            Work top to bottom the first time. Sections 1 to 3 determine everything after them: if
+            the outcome and the risk tier are vague, the topology and the controls will be too.
+            Leave a field blank rather than filling it with a placeholder, because the blanks are
+            the honest map of what you still have to find out.
+          </p>
+        </div>
+        <div>
+          <p class="chead__key">UNDER TIME PRESSURE</p>
+          <ol class="chead__order">
+            {INTERVIEW_SHORTHAND.map((step) => <li>{step}</li>)}
+          </ol>
+        </div>
+      </div>
+
+      <p class="chead__privacy">
+        This canvas saves to your browser's local storage as you type. Nothing is uploaded, nothing
+        is transmitted, and no account exists. Clearing site data clears the canvas, so export
+        anything you want to keep.
+      </p>
+    </header>
+
+    <DesignCanvas scenarioKey="atlas" scenarioTitle="Atlas capstone" />
+
+    <section class="section others">
+      <h2>Per-scenario copies</h2>
+      <p class="muted measure">
+        Each practice scenario keeps its own canvas, so a design for one system never overwrites
+        another. Open a scenario and expand the canvas at the bottom of the page.
+      </p>
+      <ul class="others__list">
+        {scenarios.map((s) => <li><a href={scenarioHref(s)}>{s.data.title}</a></li>)}
+      </ul>
+    </section>
+  </div>
+
+  <CtaBlock slot="footer-cta" pageSlug="asd-canvas" />
+</Base>
+
+<style>
+  .canvaspage { max-width: 62rem; }
+  .chead { padding: 2.5rem 0 2rem; }
+  .chead .eyebrow a { color: var(--accent); }
+  .chead h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); letter-spacing: -0.03em; max-width: 20ch; }
+  .lead { font-size: 1.12rem; color: var(--fg-muted); max-width: 66ch; }
+
+  .chead__cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    margin: 2rem 0 1.5rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  @media (min-width: 820px) { .chead__cols { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 3rem; } }
+  .chead__key {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+  .chead__cols p:last-child { margin: 0; font-size: 0.95rem; }
+  .chead__order { margin: 0; padding-left: 1.2rem; font-size: 0.9rem; color: var(--fg-muted); }
+  .chead__order li { margin: 0 0 0.2rem; }
+  .chead__privacy {
+    font-size: var(--t-meta);
+    color: var(--fg-muted);
+    max-width: var(--measure);
+    margin: 0;
+  }
+
+  .others__list {
+    list-style: none;
+    padding: 0;
+    margin: 1.25rem 0 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  @media (min-width: 780px) { .others__list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 2rem; } }
+  .others__list li {
+    margin: 0;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.92rem;
+  }
+
+  @media print {
+    .chead__cols, .others, .chead__privacy, .lead { display: none; }
+  }
+</style>
