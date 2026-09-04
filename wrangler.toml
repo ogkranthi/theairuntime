@@ -54,19 +54,16 @@ binding = "AI"
 # binding = "INTAKE"
 # id = "<your-kv-namespace-id>"
 
-# THE ONE REMAINING STEP TO OPEN FDE GYM.
+# FDE Gym interview retention. Cohort 0 sessions land here only after explicit
+# consent, and expire on the FDE_GYM_SESSION_TTL_SECONDS window documented
+# below. Without this binding there are no interviews: /fde-gym/ loads,
+# explains itself, and tells the visitor it is not open yet.
 #
-# Everything else it needs is enabled above. Without this binding there are no
-# interviews: /fde-gym/ loads, explains itself, and tells the visitor it is not
-# open yet. Run
-#   npx wrangler kv namespace create FDE_GYM_SESSIONS
-# then paste the returned id below and uncomment these three lines.
-#
-# Cohort 0 sessions land here only after explicit consent, and expire on the
-# FDE_GYM_SESSION_TTL_SECONDS window set above.
-# [[kv_namespaces]]
-# binding = "FDE_GYM_SESSIONS"
-# id = "8cb02842b8d44f07886395524b17128a"
+# The namespace id is public and account-scoped, which is why it lives in the
+# repository rather than in a secret.
+[[kv_namespaces]]
+binding = "FDE_GYM_SESSIONS"
+id = "8cb02842b8d44f07886395524b17128a"
 
 # FDE Gym model selection. These are Workers AI model names, not credentials
 # and not an external API. src/fde-gym/model.ts already carries exactly these
