@@ -198,22 +198,60 @@ missing it returns `INCOMPLETE ASSESSMENT` rather than a fabricated pass or
 fail. Deterministic graph rules run alongside the model so a structural concern
 is visible even when the model is unavailable.
 
-### Required Cloudflare configuration
+### Cloudflare configuration
 
-FDE Gym is inert until these exist. The page loads and explains itself, but
-starting an interview returns a plain-language "not open yet" message.
+Everything lives in `wrangler.toml`, which carries each binding commented out
+with instructions. There is no model provider account and no API key: Workers AI
+is native to the platform, and the model names are settings with working
+defaults rather than credentials.
 
-| Binding or variable | Required for | How |
+**To open FDE Gym, two edits:**
+
+```bash
+npx wrangler kv namespace create FDE_GYM_SESSIONS
+```
+
+1. Paste the returned id into the `FDE_GYM_SESSIONS` block in `wrangler.toml`
+   and uncomment it. This is the only hard requirement. Without it, `/fde-gym/`
+   loads and explains itself but starting an interview returns a plain-language
+   "not open yet" message.
+2. Uncomment the `[ai]` table. No key, no signup. One `[ai]` table serves the
+   whole Worker, so this also turns on generated answers for Ask the Library,
+   which shares the binding.
+
+Without the AI binding the app still runs, in a deterministic degraded mode: the
+interviewer reveals curated scenario facts, and the evaluator applies the graph
+rules and the coverage model. It is honest about itself on the result screen and
+is useful for testing the flow, but it is not calibrated scoring.
+
+**Everything goes in `wrangler.toml`, not the Cloudflare dashboard.** The Worker
+deploys through Workers Builds on every merge to main, and a deploy from a
+Wrangler config overwrites bindings and plain text vars set in the dashboard.
+Secrets are the exception: Wrangler never deletes those, so `RESEND_API_KEY`
+belongs in `wrangler secret put` and never in the file.
+
+**Model selection.** These are Workers AI model names, not credentials.
+
+| Setting | Default | Why this one |
 |---|---|---|
-| `FDE_GYM_SESSIONS` KV | starting any interview | `npx wrangler kv namespace create FDE_GYM_SESSIONS`, then bind it in `wrangler.toml` |
-| `[ai]` binding | real interviewer and evaluator output | uncomment the `[ai]` table in `wrangler.toml`. Note this also turns on generated answers for Ask the Library, which shares the binding |
-| `FDE_GYM_INTERVIEW_MODEL`, `FDE_GYM_EVALUATOR_MODEL` | model selection | dashboard variables. The code has fallbacks, but Cohort 0 should set and test both |
-| `RESEND_API_KEY`, `FDE_GYM_FROM_EMAIL` | the personalized report email | `npx wrangler secret put RESEND_API_KEY`, plus a dashboard variable for the from address |
+| `FDE_GYM_INTERVIEW_MODEL` | `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | runs on every candidate message, so latency is part of realism |
+| `FDE_GYM_EVALUATOR_MODEL` | `@cf/zai-org/glm-5.3` | runs once and must return strict JSON, so it needs native structured output |
+| `FDE_GYM_SESSION_TTL_SECONDS` | 30 days | retention window for consented sessions |
 
-Without the AI binding the app runs a deterministic degraded mode: the
-interviewer still reveals curated scenario facts and the evaluator still applies
-the graph rules and coverage model. It is useful for testing the flow, and the
-result screen says so, but it is not calibrated scoring.
+The block is optional because the code carries these defaults, but Cohort 0
+should pin them in `[vars]` anyway. A retired model id does not fail loudly:
+`callModel` catches the error and returns null, so the session drops to the
+deterministic path while `/api/fde-gym/health` still reports
+`aiConfigured: true`. Pinning the ids puts that choice in review and makes it
+one edit when a model is retired. Check them against
+[the Workers AI model list](https://developers.cloudflare.com/workers-ai/models/)
+before a cohort runs.
+
+**The one outside service** is the personalized report email, and only that
+feature depends on it. `npx wrangler secret put RESEND_API_KEY`, then set
+`FDE_GYM_FROM_EMAIL` to a verified sender. Without it the interview and the
+on-screen result work in full and the app says the emailed report is
+unavailable rather than claiming it sent one.
 
 `GET /api/fde-gym/health` reports which of these are configured. It returns
 booleans only, never model names, keys, addresses, or stored content.
