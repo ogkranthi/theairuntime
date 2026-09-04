@@ -187,6 +187,12 @@ export default function ResultScreen({
                 ? "Sending..."
                 : "Subscribe and send my report"}
             </button>
+            {!subscribe ? (
+              <p className="fg-fineprint">
+                The report is delivered through the subscription, so the box
+                has to stay checked for there to be anything to send.
+              </p>
+            ) : null}
           </>
         )}
 

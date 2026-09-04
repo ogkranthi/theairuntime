@@ -235,7 +235,7 @@ belongs in `wrangler secret put` and never in the file.
 | Setting | Default | Why this one |
 |---|---|---|
 | `FDE_GYM_INTERVIEW_MODEL` | `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | runs on every candidate message, so latency is part of realism |
-| `FDE_GYM_EVALUATOR_MODEL` | `@cf/zai-org/glm-5.3` | runs once and must return strict JSON, so it needs native structured output |
+| `FDE_GYM_EVALUATOR_MODEL` | `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | runs once and must return strict JSON, which it earns through the prompt |
 | `FDE_GYM_SESSION_TTL_SECONDS` | 30 days | retention window for consented sessions |
 
 The block is optional because the code carries these defaults, but Cohort 0
@@ -246,6 +246,17 @@ deterministic path while `/api/fde-gym/health` still reports
 one edit when a model is retired. Check them against
 [the Workers AI model list](https://developers.cloudflare.com/workers-ai/models/)
 before a cohort runs.
+
+**Check plan availability, not just that the id exists.** The Workers AI
+catalogue is gated by plan, and the models with native structured output are
+the gated ones. The evaluator ran on `@cf/zai-org/glm-5.3` until production
+answered `5035: Model @cf/zai-org/glm-5.3 is not available on the Workers Free
+plan` on every finish, which cost every candidate their verdict while the
+interviewer beside it worked normally. Both defaults are now models the free
+plan can run, and a failed call retries once on `@cf/meta/llama-3.1-8b-instruct-fast`
+before the session degrades, so a single bad id costs latency instead of
+everyone's result. `lastModelError` on the health route names the model and the
+runtime's own error text when something does fail.
 
 **The one outside service** is the personalized report email, and only that
 feature depends on it. `npx wrangler secret put RESEND_API_KEY`, then set

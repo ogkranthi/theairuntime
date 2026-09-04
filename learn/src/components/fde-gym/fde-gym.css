@@ -733,8 +733,13 @@
   font-size: 0.7rem;
 }
 
+/* Text fields only. `.fg-report-gate input` also matched the subscribe
+   checkbox, which then took width 100%, a 0.7rem pad and a panel background
+   and rendered as a full width block with its label shoved off the row. A
+   checkbox is not a text field, so say so in the selector. */
 .fg-composer textarea,
-.fg-report-gate input,
+.fg-report-gate input[type="email"],
+.fg-report-gate input[type="text"],
 .fg-feedback textarea,
 .fg-feedback select {
   width: 100%;
@@ -910,7 +915,7 @@
   margin-top: 1rem;
 }
 
-.fg-report-gate label,
+.fg-report-gate > label,
 .fg-feedback > label {
   display: grid;
   gap: 0.35rem;
@@ -919,8 +924,14 @@
   font-size: 0.78rem;
 }
 
+/* The consent row is a control the candidate has to read and agree to before
+   the button unlocks, so it keeps the readable body colour rather than the
+   muted field-label treatment the wrapping labels get. */
 .fg-report-gate .fg-check {
   display: flex;
+  margin: 0.85rem 0;
+  color: var(--fg);
+  font-size: 0.82rem;
 }
 
 .fg-report-gate .fg-primary {

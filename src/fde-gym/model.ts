@@ -6,16 +6,32 @@ import type { FdeGymEnv, ModelMessage } from "./types";
  *
  * The two roles want different things. The interviewer runs on every candidate
  * message, so latency is part of realism: a fast instruct model is the right
- * trade. The evaluator runs once and must return strict JSON, so it gets a
- * model with native structured output.
+ * trade. The evaluator runs once and must return strict JSON, so on paper it
+ * wants a model with native structured output.
  *
- * A model id that no longer exists does not fail loudly. callModel catches and
- * returns null, and the session silently drops to the deterministic path while
- * the health route still reports aiConfigured: true. Check these against
- * developers.cloudflare.com/workers-ai/models when a model is retired.
+ * On paper. In practice the model catalogue is gated by plan, and the models
+ * with native structured output are the gated ones. @cf/zai-org/glm-5.3 was the
+ * evaluator default until production answered with
+ *
+ *   5035: Model @cf/zai-org/glm-5.3 is not available on the Workers Free plan
+ *
+ * on every finish, which cost every candidate their real verdict while the
+ * interviewer beside it worked. Both defaults are now models this account can
+ * actually run, and the evaluator earns its JSON through the prompt and
+ * parseJsonObject rather than through a schema the plan does not include.
+ *
+ * FALLBACK_MODEL is the safety net for the next time a default becomes
+ * unreachable, whether retired, renamed, or moved behind a plan. A failed call
+ * retries once on it before the session gives up and degrades, so an id going
+ * bad costs a little latency instead of everyone's result.
+ *
+ * A bad model id does not fail loudly on its own. callModel catches, returns
+ * null, and the session drops to the deterministic path while health still
+ * reports aiConfigured: true, so check lastModelFailure and not just the flag.
  */
 const DEFAULT_INTERVIEW_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
-const DEFAULT_EVALUATOR_MODEL = "@cf/zai-org/glm-5.3";
+const DEFAULT_EVALUATOR_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const FALLBACK_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast";
 
 /**
  * Pull the text out of a message content field.
@@ -102,8 +118,21 @@ export async function callModel(
       ? env.FDE_GYM_INTERVIEW_MODEL || DEFAULT_INTERVIEW_MODEL
       : env.FDE_GYM_EVALUATOR_MODEL || DEFAULT_EVALUATOR_MODEL;
 
+  const first = await runModel(env, role, model, messages, maxTokens);
+  if (first !== null) return first;
+  if (model === FALLBACK_MODEL) return null;
+  return await runModel(env, role, FALLBACK_MODEL, messages, maxTokens);
+}
+
+async function runModel(
+  env: FdeGymEnv,
+  role: "interviewer" | "evaluator",
+  model: string,
+  messages: ModelMessage[],
+  maxTokens: number,
+): Promise<string | null> {
   try {
-    const result = await env.AI.run(model, {
+    const result = await env.AI!.run(model, {
       messages,
       max_tokens: maxTokens,
       temperature: role === "interviewer" ? 0.35 : 0.1,

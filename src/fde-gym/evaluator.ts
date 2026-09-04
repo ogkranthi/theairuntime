@@ -343,11 +343,20 @@ function evidenceSufficient(
       "execution_reliability",
       "action_safety",
     ];
-    const ok = focus.every((id) => covered([id]));
+    // Name the competencies, not the mechanism. "drill focus" told the
+    // candidate nothing: it is the name of the rule that judged them, and the
+    // one thing the incomplete notice has to answer is which areas came up
+    // short.
+    const coveredGroups: string[] = [];
+    const missingGroups: string[] = [];
+    for (const id of focus) {
+      if (covered([id])) coveredGroups.push(LABELS[id].toLowerCase());
+      else missingGroups.push(LABELS[id].toLowerCase());
+    }
     return {
-      sufficient: ok,
-      coveredGroups: ok ? ["drill focus"] : [],
-      missingGroups: ok ? [] : ["drill focus"],
+      sufficient: missingGroups.length === 0,
+      coveredGroups,
+      missingGroups,
     };
   }
 
