@@ -219,12 +219,12 @@ function promptForEvaluator(
     "",
     "Return strict JSON only with this shape:",
     JSON.stringify({
-      technicalScore: 0,
-      fdeJudgmentScore: 0,
+      technicalScore: 72,
+      fdeJudgmentScore: 65,
       competencies: [
         {
           id: "execution_reliability",
-          score: 0,
+          score: 7,
           status: "demonstrated|partial|missed|insufficient",
           summary: "specific judgment",
           evidenceRefs: ["turn-1", "node-1"],
@@ -242,6 +242,7 @@ function promptForEvaluator(
         "one sentence the candidate should remember in the next interview",
     }),
     "",
+    "technicalScore and fdeJudgmentScore are integers from 0 to 100, on the same scale as a hiring bar where 75 is a pass for a mid-level FDE. Each competency score is a separate 0 to 10 scale. Do not report a 0 to 10 value in the two headline scores.",
     "Technical score is 80 percent of the overall result. FDE judgment and technical communication are 20 percent.",
   ].join("\n");
 }
@@ -249,6 +250,7 @@ function promptForEvaluator(
 function baselineCompetencies(
   session: InterviewSession,
   findings: RuleFinding[],
+  modelRan: boolean,
 ): CompetencyEvaluation[] {
   const criticalByCompetency = new Map<CompetencyId, number>();
   for (const item of findings) {
@@ -269,8 +271,15 @@ function baselineCompetencies(
       label: LABELS[id],
       score,
       status: hasEvidence ? "partial" : "insufficient",
+      // These rows fill the gaps the evaluator leaves, which happens for two
+      // different reasons. Saying "model evaluation was unavailable" on a
+      // session the evaluator did judge is simply false, and it was landing on
+      // the result screen next to competencies the same evaluator had written
+      // real prose for.
       summary: hasEvidence
-        ? "The session contains some relevant evidence, but model evaluation was unavailable."
+        ? modelRan
+          ? "The evaluator did not return a judgment for this competency, though the session contains relevant evidence."
+          : "The session contains some relevant evidence, but model evaluation was unavailable."
         : "This competency was not sufficiently evidenced in the session.",
       evidenceRefs: evidence,
     };
@@ -282,7 +291,7 @@ function parseCompetencies(
   session: InterviewSession,
   findings: RuleFinding[],
 ): CompetencyEvaluation[] {
-  const baseline = baselineCompetencies(session, findings);
+  const baseline = baselineCompetencies(session, findings, raw !== null);
   if (!raw || !Array.isArray(raw.competencies)) return baseline;
 
   const validIds = validEvidenceIds(session);
@@ -408,6 +417,27 @@ function verdictFor(
   return "FAIL";
 }
 
+/**
+ * A headline score, or the deterministic baseline when the model answers on the
+ * wrong scale.
+ *
+ * The two headline fields are 0 to 100 and the per-competency scores are 0 to
+ * 10, and the first evaluator to run in production read the shape example and
+ * returned 7. clampScore accepted it, so a candidate whose competency prose
+ * described a solid design was published a 7 out of 100.
+ *
+ * A single digit is not separable from a scale error here: 7 and 70 are a fail
+ * and a near pass, and nothing in the payload says which was meant. So this
+ * does not rescale and it does not guess. It declines the number and uses the
+ * evidence-derived baseline, which is bounded at 20 to 90 and cannot invent a
+ * pass the transcript did not earn.
+ */
+function headlineScore(value: unknown, fallback: number): number {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 10) return fallback;
+  return clampScore(number, fallback);
+}
+
 function fallbackScores(
   session: InterviewSession,
   findings: RuleFinding[],
@@ -512,8 +542,8 @@ export async function evaluateSession(
   const raw = parseJsonObject<RawEvaluation>(rawText);
   const competencies = parseCompetencies(raw, session, findings);
   const fallback = fallbackScores(session, findings);
-  const technical = clampScore(raw?.technicalScore, fallback.technical);
-  const judgment = clampScore(raw?.fdeJudgmentScore, fallback.judgment);
+  const technical = headlineScore(raw?.technicalScore, fallback.technical);
+  const judgment = headlineScore(raw?.fdeJudgmentScore, fallback.judgment);
   const score = Math.round(technical * 0.8 + judgment * 0.2);
   const coverage = evidenceSufficient(session, competencies, scenario);
   const strongest = selectStrongest(raw?.strongestId, competencies);
