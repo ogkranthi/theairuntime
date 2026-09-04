@@ -66,7 +66,7 @@ binding = "AI"
 # FDE_GYM_SESSION_TTL_SECONDS window set above.
 # [[kv_namespaces]]
 # binding = "FDE_GYM_SESSIONS"
-# id = "<your-kv-namespace-id>"
+# id = "8cb02842b8d44f07886395524b17128a"
 
 # FDE Gym model selection. These are Workers AI model names, not credentials
 # and not an external API. src/fde-gym/model.ts already carries exactly these
