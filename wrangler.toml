@@ -71,10 +71,17 @@ id = "8cb02842b8d44f07886395524b17128a"
 #
 #   interviewer  @cf/meta/llama-3.3-70b-instruct-fp8-fast
 #     runs on every candidate message, so it is picked for latency
-#   evaluator    @cf/zai-org/glm-5.3
-#     runs once and must return strict JSON, so it is picked for native
-#     structured output
+#   evaluator    @cf/meta/llama-3.3-70b-instruct-fp8-fast
+#     runs once and must return strict JSON. The models with native
+#     structured output are gated behind a paid Workers plan, so the
+#     evaluator earns its JSON through the prompt instead.
 #   session TTL  30 days
+#
+# This account is on the Workers Free plan, and the Workers AI catalogue is
+# gated by plan. @cf/zai-org/glm-5.3 was the evaluator until production
+# answered "5035: Model @cf/zai-org/glm-5.3 is not available on the Workers
+# Free plan" on every finish. Check plan availability, not just that a model
+# id exists, before changing either value.
 #
 # Deliberately left commented. This Worker has no [vars] table today, and its
 # environment variables (SUBSTACK_ORIGIN, LEAD_WEBHOOK_URL, the AIRTABLE_* and
@@ -95,7 +102,7 @@ id = "8cb02842b8d44f07886395524b17128a"
 #
 # [vars]
 # FDE_GYM_INTERVIEW_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
-# FDE_GYM_EVALUATOR_MODEL = "@cf/zai-org/glm-5.3"
+# FDE_GYM_EVALUATOR_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 # FDE_GYM_SESSION_TTL_SECONDS = "2592000"
 
 # The personalized report email is the only part that needs an outside service.
