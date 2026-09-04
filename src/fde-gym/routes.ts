@@ -1,5 +1,6 @@
 import { COUNTERPARTY_DUE_DILIGENCE } from "./scenario";
 import { evaluateSession } from "./evaluator";
+import { lastModelFailure } from "./model";
 import { openingTurn, runInterviewer } from "./interviewer";
 import { semanticGraphRevisions } from "./rules";
 import {
@@ -557,6 +558,12 @@ async function handleFeedback(
 }
 
 function health(env: FdeGymEnv): Response {
+  // aiConfigured only means the binding exists. A bound but failing model still
+  // produces working sessions on the deterministic path, so the binding alone
+  // is not evidence that interviews are real. lastModelError is what separates
+  // the two, and it carries a model name and the runtime's error, never prompt
+  // or transcript content.
+  const failure = lastModelFailure();
   return jsonResponse({
     ok: true,
     aiConfigured: Boolean(env.AI),
@@ -566,6 +573,7 @@ function health(env: FdeGymEnv): Response {
         env.FDE_GYM_REPORT_WEBHOOK_URL,
     ),
     statelessDevAllowed: statelessDevAllowed(env),
+    lastModelError: failure,
   });
 }
 
