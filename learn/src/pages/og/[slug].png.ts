@@ -81,6 +81,7 @@ export async function getStaticPaths() {
     c001("about", "FDE ENGINEERING · ABOUT", "Between the demo and production"),
     c001("404", "FDE ENGINEERING", "No checkpoint at that step"),
     c001("fde-gym", "FDE GYM", "Design it under interview pressure"),
+    c001("coach", "AGENT SYSTEM DESIGN COACH", "Design your first AI agent"),
     ...modules.map((m) => ({
       slug: m.id,
       eyebrow: `COURSE 001 · MODULE ${pad(m.data.module)}`,

@@ -105,6 +105,27 @@ id = "8cb02842b8d44f07886395524b17128a"
 # FDE_GYM_EVALUATOR_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 # FDE_GYM_SESSION_TTL_SECONDS = "2592000"
 
+# Agent System Design Coach (/coach/, /api/coach/*).
+#
+# ONE REQUIRED SECRET. The lesson keeps the learner's place in a signed token
+# rather than a database, and that signature is what enforces the per lesson
+# ceiling on model calls. The endpoint is unauthenticated by design, and the
+# Workers AI daily allowance is shared with FDE Gym through the single [ai]
+# binding above, so without the ceiling one visitor could spend the day's
+# allowance and take FDE Gym down with it.
+#
+#   npx wrangler secret put COACH_TOKEN_SECRET
+#
+# Any long random string. Rotating it only invalidates lessons in progress.
+#
+# Until it is set, /api/coach/* answers 503 and the page says the lesson is not
+# open yet rather than offering a button that fails. `GET /api/coach/health`
+# reports tokenConfigured.
+#
+# The coach reuses FDE_GYM_SESSIONS for two ephemeral, non-personal things: a
+# per IP start counter with a one hour TTL, and aggregate funnel counters under
+# `coach:stat:`. No lesson content and nothing per person is ever written.
+
 # The personalized report email is the only part that needs an outside service.
 # Without it the interview and the on-screen result work in full; only the
 # emailed report is unavailable, and the app says so rather than pretending it

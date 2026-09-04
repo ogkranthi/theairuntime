@@ -1,0 +1,52 @@
+---
+import Base from "../../layouts/Base.astro";
+import CoachApp from "../../components/coach/CoachApp";
+---
+
+<Base
+  title="Agent System Design Coach | Design your first AI agent"
+  description="A 10 minute guided lesson. Work through one scenario with an AI architect and learn the six decisions that make an agent useful in production."
+  pageSlug="coach"
+>
+  <div class="coach-page shell">
+    <CoachApp client:only="react" />
+    <noscript>
+      <div class="noscript">
+        <h1>Design your first AI agent</h1>
+        <p>
+          Most agent tutorials start with frameworks. This one starts with the
+          decisions that make an agent useful in production: the outcome, where
+          AI judgment belongs, tools, evidence, human control, and evaluation.
+        </p>
+        <p>
+          The lesson is a guided conversation, so it needs JavaScript. Turn it on
+          and reload to start. The rest of the
+          <a href="/learn/">library</a> reads without it.
+        </p>
+      </div>
+    </noscript>
+  </div>
+</Base>
+
+<style>
+  .coach-page {
+    padding-bottom: clamp(2rem, 5vw, 4rem);
+  }
+
+  .noscript {
+    max-width: var(--measure);
+    margin: 2rem auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius, 10px);
+    background: var(--bg-raise);
+    padding: 1.5rem;
+  }
+
+  .noscript h1 {
+    margin-bottom: 0.75rem;
+  }
+
+  .noscript p:last-child {
+    margin-bottom: 0;
+  }
+</style>

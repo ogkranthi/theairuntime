@@ -1,0 +1,206 @@
+---
+import Base from "../../layouts/Base.astro";
+
+const roadmap = [
+  {
+    number: "01",
+    title: "Design your first agent",
+    body: "Outcome, reasoning, tools, evidence, human control, evaluation.",
+    status: "Available now",
+    href: "/coach/",
+  },
+  {
+    number: "02",
+    title: "Make the agent reliable",
+    body: "What happens when a run takes hours, a tool half succeeds, or the process restarts in the middle.",
+    status: "Next",
+  },
+  {
+    number: "03",
+    title: "State and memory",
+    body: "What has to survive a restart, and what should be allowed to be forgotten.",
+    status: "Planned",
+  },
+  {
+    number: "04",
+    title: "Tools and authorization",
+    body: "Who the agent is acting as, and what it is allowed to do on their behalf.",
+    status: "Planned",
+  },
+  {
+    number: "05",
+    title: "Human control",
+    body: "Approval, escalation, and the difference between oversight and a rubber stamp.",
+    status: "Planned",
+  },
+  {
+    number: "06",
+    title: "Evaluation and verification",
+    body: "Proving the system did the job, not that the model sounded right.",
+    status: "Planned",
+  },
+];
+---
+
+<Base
+  title="Coming next | Agent System Design Coach"
+  description="The lesson roadmap for the Agent System Design Coach, and where to go in the meantime."
+  pageSlug="coach"
+>
+  <div class="next shell">
+    <p class="eyebrow">AGENT SYSTEM DESIGN COACH</p>
+    <h1>Coming next</h1>
+    <p class="lede">
+      Lesson 01 covers the decisions that make an agent useful when everything
+      goes right. The rest of the series covers what happens when it does not.
+      Lesson 02 is being written.
+    </p>
+
+    <ol class="roadmap">
+      {
+        roadmap.map((item) => (
+          <li>
+            <span class="roadmap__num">{item.number}</span>
+            <div>
+              <h2>
+                {item.href ? <a href={item.href}>{item.title}</a> : item.title}
+              </h2>
+              <p>{item.body}</p>
+            </div>
+            <span class="roadmap__status">{item.status}</span>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="onward">
+      <h2>In the meantime</h2>
+      <p>
+        The full treatment of everything above is already written up as course
+        material, and it goes considerably deeper than a 10 minute lesson.
+      </p>
+      <ul>
+        <li>
+          <a href="/learn/courses/agentic-system-design/"
+            >Course 002: Agentic AI System Design</a
+          >, seventeen modules from "should this be an agent" through to a
+          capstone.
+        </li>
+        <li>
+          <a href="/learn/courses/long-running-agents/"
+            >Course 001: Engineering Long-Running AI Agents</a
+          >, which is lesson 02's subject in full, with fourteen failure labs.
+        </li>
+        <li>
+          <a href="/fde-gym/">FDE Gym</a>, if you would rather be assessed than
+          taught.
+        </li>
+      </ul>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .next {
+    max-width: 46rem;
+    padding-top: clamp(1.5rem, 4vw, 3rem);
+    padding-bottom: clamp(3rem, 8vw, 6rem);
+  }
+
+  .eyebrow {
+    margin: 0 0 0.5rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+
+  h1 {
+    margin: 0 0 1rem;
+  }
+
+  .lede {
+    max-width: var(--measure);
+    color: var(--fg-muted);
+    line-height: 1.65;
+  }
+
+  .roadmap {
+    margin: 2.5rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+  }
+
+  .roadmap li {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: baseline;
+    border-bottom: 1px solid var(--line);
+    padding: 1.1rem 0;
+  }
+
+  .roadmap__num {
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  .roadmap h2 {
+    margin: 0 0 0.3rem;
+    font-size: 1.05rem;
+  }
+
+  .roadmap p {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .roadmap__status {
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .onward {
+    margin-top: 3rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    background: var(--bg-raise);
+  }
+
+  .onward h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.15rem;
+  }
+
+  .onward p,
+  .onward li {
+    color: var(--fg-muted);
+    line-height: 1.6;
+  }
+
+  .onward ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  .onward li {
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .roadmap li {
+      grid-template-columns: 2.2rem minmax(0, 1fr);
+    }
+
+    .roadmap__status {
+      grid-column: 2;
+    }
+  }
+</style>

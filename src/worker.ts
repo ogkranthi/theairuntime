@@ -8,9 +8,13 @@
  *                         Forwards to Substack and optionally mirrors to a webhook.
  *   /api/fde-gym/*,       the FDE Gym interview simulator on the learn host.
  *                         See src/fde-gym/routes.ts and docs/fde-gym/.
+ *   /api/coach/*,         the Agent System Design Coach lesson on the learn
+ *                         host. See src/coach/routes.ts.
  */
 
 import { handleFdeGymRequest, type FdeGymEnv } from './fde-gym/routes';
+import { handleCoachRequest } from './coach/routes';
+import type { CoachEnv } from './coach/types';
 
 interface Env {
   ASSETS: Fetcher;
@@ -728,11 +732,15 @@ async function handleIntake(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith('/api/fde-gym/')) {
       return handleFdeGymRequest(request, env as Env & FdeGymEnv);
+    }
+
+    if (url.pathname.startsWith('/api/coach/')) {
+      return handleCoachRequest(request, env as Env & CoachEnv, ctx);
     }
 
     if (url.pathname === '/api/subscribe') {
