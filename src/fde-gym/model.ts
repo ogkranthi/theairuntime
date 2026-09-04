@@ -17,12 +17,75 @@ import type { FdeGymEnv, ModelMessage } from "./types";
 const DEFAULT_INTERVIEW_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const DEFAULT_EVALUATOR_MODEL = "@cf/zai-org/glm-5.3";
 
-function responseText(value: unknown): string {
-  if (typeof value === "string") return value.trim();
+/**
+ * Pull the text out of a message content field.
+ *
+ * Older instruct models put a plain string here. Newer chat models, and every
+ * reasoning model, put an array of typed parts instead, so a string check
+ * alone silently reads nothing.
+ */
+function partText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value.map(partText).join("");
   if (!value || typeof value !== "object") return "";
+  const part = value as Record<string, unknown>;
+  if (typeof part.text === "string") return part.text;
+  if (typeof part.content === "string") return part.content;
+  return "";
+}
+
+/**
+ * Normalize a Workers AI response into the assistant's text.
+ *
+ * Workers AI does not return one envelope. It returns the shape the underlying
+ * model family uses, and which one you get changes with the model id:
+ *
+ *   { response: "..." }                        older @cf/meta instruct models
+ *   { result: { response: "..." } }            the REST envelope, if it leaks
+ *   { choices: [{ message: { content } }] }    OpenAI compatible chat models,
+ *                                              which is what both defaults
+ *                                              above return today
+ *
+ * Reading only `response` and `result` is what produced the failure this
+ * function was rewritten for: the call succeeded, a well formed envelope came
+ * back, this returned "", and every session dropped to the deterministic path
+ * while health still reported aiConfigured true. Read every shape, and treat a
+ * shape we do not recognize as the failure it is rather than as empty text.
+ *
+ * Reasoning models also carry `reasoning_content` alongside `content`. That is
+ * deliberately not read: the interviewer's chain of thought is not the turn,
+ * and the evaluator's is not the JSON.
+ */
+function responseText(value: unknown, depth = 0): string {
+  if (typeof value === "string") return value.trim();
+  if (!value || typeof value !== "object" || depth > 3) return "";
   const record = value as Record<string, unknown>;
-  if (typeof record.response === "string") return record.response.trim();
+
+  const choices = record.choices;
+  if (Array.isArray(choices) && choices.length > 0) {
+    const first = choices[0];
+    if (first && typeof first === "object") {
+      const choice = first as Record<string, unknown>;
+      const message = choice.message;
+      if (message && typeof message === "object") {
+        const text = partText((message as Record<string, unknown>).content).trim();
+        if (text) return text;
+      }
+      const direct = partText(choice.text).trim();
+      if (direct) return direct;
+    }
+  }
+
+  const response = partText(record.response).trim();
+  if (response) return response;
+
+  if (typeof record.output_text === "string") return record.output_text.trim();
+
   if (typeof record.result === "string") return record.result.trim();
+  if (record.result && typeof record.result === "object") {
+    return responseText(record.result, depth + 1);
+  }
+
   return "";
 }
 
