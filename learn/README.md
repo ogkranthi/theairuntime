@@ -258,6 +258,48 @@ before the session degrades, so a single bad id costs latency instead of
 everyone's result. `lastModelError` on the health route names the model and the
 runtime's own error text when something does fail.
 
+## Agent System Design Coach
+
+`/coach/` is a 10 minute guided lesson for someone who has not designed an agent
+before. Six authored stages, one scenario, free text answers, and a coach that
+probes once then teaches. It is the on-ramp; FDE Gym is the assessment.
+
+Server: `src/coach/` in the root Worker, mounted at `/api/coach/*` beside FDE
+Gym. Client: `learn/src/components/coach/`, page at `learn/src/pages/coach/`.
+
+**The lesson is authored, not generated.** Every stage in `src/coach/lesson.ts`
+carries its own opening question, its own single probe, and its own teaching
+point. The model makes the conversation responsive to what the learner actually
+wrote; it does not supply the curriculum. With the model unreachable the lesson
+still delivers all six stages in order, which is why the shared Workers AI
+allowance running out degrades the experience rather than causing an outage.
+
+**The server owns the stage.** The model returns an `action`, but `machine.ts`
+decides whether to honour it and enforces one probe per stage. A compromised or
+confused reply can change the wording of a turn and never the shape of the
+lesson. Learner text stays in user turns and never enters the system prompt.
+
+**One required secret:**
+
+```
+npx wrangler secret put COACH_TOKEN_SECRET
+```
+
+Any long random string. The learner's place travels in a signed token instead of
+a database, and that signature enforces the per lesson ceiling on model calls.
+The endpoint is unauthenticated by design and the `[ai]` binding is shared with
+FDE Gym, so without the ceiling one visitor could spend the daily allowance for
+both. Until it is set, `/api/coach/*` returns 503 and the page says the lesson
+is not open yet. `GET /api/coach/health` reports `tokenConfigured`.
+
+**Counting, without analytics.** The learn site keeps no analytics in the
+browser and this does not change that: no cookie, no identifier, nothing per
+person. The Worker increments aggregate counters under `coach:stat:` in the
+FDE Gym KV namespace so a funnel is readable, which is the only question V1 has
+to answer.
+
+Tests: `npm test` at the repo root covers the stage machine and the token.
+
 **The one outside service** is the personalized report email, and only that
 feature depends on it. `npx wrangler secret put RESEND_API_KEY`, then set
 `FDE_GYM_FROM_EMAIL` to a verified sender. Without it the interview and the

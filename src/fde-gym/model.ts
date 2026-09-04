@@ -105,18 +105,25 @@ function responseText(value: unknown, depth = 0): string {
   return "";
 }
 
+/**
+ * Who is asking. The coach shares this client rather than getting its own so it
+ * inherits the envelope handling and the plan fallback above, both of which were
+ * written to fix production failures that a second implementation would repeat.
+ */
+export type ModelRole = "interviewer" | "evaluator" | "coach";
+
 export async function callModel(
   env: FdeGymEnv,
-  role: "interviewer" | "evaluator",
+  role: ModelRole,
   messages: ModelMessage[],
   maxTokens: number,
 ): Promise<string | null> {
   if (!env.AI) return null;
 
   const model =
-    role === "interviewer"
-      ? env.FDE_GYM_INTERVIEW_MODEL || DEFAULT_INTERVIEW_MODEL
-      : env.FDE_GYM_EVALUATOR_MODEL || DEFAULT_EVALUATOR_MODEL;
+    role === "evaluator"
+      ? env.FDE_GYM_EVALUATOR_MODEL || DEFAULT_EVALUATOR_MODEL
+      : env.FDE_GYM_INTERVIEW_MODEL || DEFAULT_INTERVIEW_MODEL;
 
   const first = await runModel(env, role, model, messages, maxTokens);
   if (first !== null) return first;
@@ -126,7 +133,7 @@ export async function callModel(
 
 async function runModel(
   env: FdeGymEnv,
-  role: "interviewer" | "evaluator",
+  role: ModelRole,
   model: string,
   messages: ModelMessage[],
   maxTokens: number,
@@ -135,7 +142,7 @@ async function runModel(
     const result = await env.AI!.run(model, {
       messages,
       max_tokens: maxTokens,
-      temperature: role === "interviewer" ? 0.35 : 0.1,
+      temperature: role === "evaluator" ? 0.1 : 0.35,
     });
     const text = responseText(result) || null;
     if (text === null) {
@@ -167,7 +174,7 @@ async function runModel(
  * and candidate text never reach it.
  */
 export interface ModelFailure {
-  role: "interviewer" | "evaluator";
+  role: ModelRole;
   model: string;
   message: string;
   at: string;
@@ -182,7 +189,7 @@ function describeShape(value: unknown): string {
 }
 
 function recordFailure(
-  role: "interviewer" | "evaluator",
+  role: ModelRole,
   model: string,
   message: string,
 ): void {

@@ -1,0 +1,331 @@
+/* Agent System Design Coach.
+   The conversation is the product, so the page is a reading column and almost
+   nothing else. No bubbles, no avatars, no progress rings. Coach turns read as
+   editorial prose, the learner's answers sit in a quiet inset, and the one
+   piece of ornament is the accent rule on a principle, because that is the
+   sentence the lesson exists to deliver. */
+
+.coach {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: clamp(1.25rem, 4vw, 2.5rem) 0 clamp(3rem, 8vw, 6rem);
+}
+
+.coach__eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.coach h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 5vw, 2.75rem);
+  line-height: 1.1;
+}
+
+.coach__lede {
+  max-width: var(--measure);
+  color: var(--fg-muted);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+.coach__meta {
+  margin: 1.25rem 0 1.75rem;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.coach__aside {
+  margin-top: 1.5rem;
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+}
+
+/* Buttons. Solid for the one action that moves the lesson, quiet for recovery. */
+.coach__primary,
+.coach__secondary {
+  display: inline-block;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1.1rem;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.coach__primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.coach__primary:hover {
+  text-decoration: none;
+}
+
+.coach__secondary {
+  background: transparent;
+  color: var(--accent);
+}
+
+.coach__primary[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.coach__head {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1.25rem;
+}
+
+.coach__head h1 {
+  font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+}
+
+.coach__step {
+  margin: 0;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.coach__step span {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--fg);
+}
+
+/* The conversation. */
+.coach__log {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.coach__turn {
+  margin: 0;
+}
+
+.coach__turn p {
+  margin: 0 0 0.7rem;
+  line-height: 1.65;
+}
+
+.coach__turn p:last-child {
+  margin-bottom: 0;
+}
+
+.coach__who {
+  margin-bottom: 0.4rem !important;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* The question the stage turns on, set a little larger than the reply that
+   precedes it so the eye lands on what it has to answer. */
+.coach__turn--ask > p:not(.coach__who) {
+  font-size: 1.0625rem;
+}
+
+.coach__turn--principle {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+}
+
+.coach__label {
+  margin-bottom: 0.4rem !important;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.09em;
+}
+
+.coach__turn--learner {
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  padding: 0.9rem 1.1rem;
+}
+
+.coach__thinking {
+  margin: 0;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+/* Composer. Selectors are typed on purpose: a bare descendant selector in FDE
+   Gym caught a checkbox as well as a text field and stretched it across the
+   panel. */
+.coach__composer {
+  margin-top: 2rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.25rem;
+}
+
+.coach__composer > label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.coach__composer textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  background: var(--bg-raise);
+  color: var(--fg);
+  font: inherit;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.coach__composer textarea:focus-visible,
+.coach__primary:focus-visible,
+.coach__secondary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.coach__actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.coach__fineprint {
+  flex: 1 1 16rem;
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.75rem;
+}
+
+/* Errors keep the lesson, so the retry is next to the message rather than
+   replacing the page. */
+.coach__error {
+  margin-top: 1.25rem;
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1.1rem;
+  background: var(--bg-raise);
+}
+
+.coach__error p {
+  margin: 0 0 0.7rem;
+}
+
+.coach__error p:last-child {
+  margin-bottom: 0;
+}
+
+.coach__note {
+  margin-top: 1.25rem;
+  color: var(--fg-muted);
+  font-size: 0.8rem;
+}
+
+/* Closing summary. */
+.coach__summary {
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.75rem;
+}
+
+.coach__summary h2 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.25rem;
+}
+
+.coach__summary h2:first-child {
+  margin-top: 0;
+}
+
+.coach__summary dl {
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+
+.coach__summary dl > div {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.85rem 0;
+}
+
+.coach__summary dt {
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.coach__summary dd {
+  margin: 0;
+  color: var(--fg-muted);
+  line-height: 1.6;
+}
+
+.coach__takeaway {
+  margin: 2rem 0 0;
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+.coach__next {
+  margin-top: 2.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  background: var(--bg-raise);
+}
+
+.coach__next p {
+  margin: 0 0 1.1rem;
+  max-width: var(--measure);
+  color: var(--fg-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .coach__step {
+    text-align: left;
+  }
+
+  .coach__summary dl > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.3rem;
+  }
+
+  .coach__actions {
+    align-items: stretch;
+  }
+
+  .coach__actions .coach__primary {
+    width: 100%;
+  }
+}
