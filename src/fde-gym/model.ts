@@ -45,10 +45,67 @@ export async function callModel(
       max_tokens: maxTokens,
       temperature: role === "interviewer" ? 0.35 : 0.1,
     });
-    return responseText(result) || null;
-  } catch {
+    const text = responseText(result) || null;
+    if (text === null) {
+      recordFailure(role, model, `empty response, shape: ${describeShape(result)}`);
+    }
+    return text;
+  } catch (error) {
+    recordFailure(
+      role,
+      model,
+      error instanceof Error ? error.message : String(error),
+    );
     return null;
   }
+}
+
+/**
+ * Why the last model call failed, for /api/fde-gym/health.
+ *
+ * A failing model call is not an outage here: the session drops to the
+ * deterministic path and keeps working. That is the right behavior and the
+ * wrong thing to be silent about, because the symptom is a session that reads
+ * plausibly while health still reports aiConfigured true. Without this, the
+ * only way to tell a working model from a broken one is to notice that the
+ * interviewer repeats itself.
+ *
+ * Module scope, so it lives as long as the isolate and costs nothing. It holds
+ * the model name and the runtime's own error text. Prompt content, transcript
+ * and candidate text never reach it.
+ */
+export interface ModelFailure {
+  role: "interviewer" | "evaluator";
+  model: string;
+  message: string;
+  at: string;
+}
+
+let lastFailure: ModelFailure | null = null;
+
+function describeShape(value: unknown): string {
+  if (value === null || value === undefined) return String(value);
+  if (typeof value !== "object") return typeof value;
+  return Object.keys(value as Record<string, unknown>).slice(0, 6).join(",") || "empty object";
+}
+
+function recordFailure(
+  role: "interviewer" | "evaluator",
+  model: string,
+  message: string,
+): void {
+  lastFailure = {
+    role,
+    model,
+    message: message.slice(0, 300),
+    at: new Date().toISOString(),
+  };
+  // Surfaces in the Worker log tail. Model name and error only.
+  console.warn(`[fde-gym] ${role} model call failed on ${model}: ${lastFailure.message}`);
+}
+
+export function lastModelFailure(): ModelFailure | null {
+  return lastFailure;
 }
 
 export function parseJsonObject<T>(text: string | null): T | null {
