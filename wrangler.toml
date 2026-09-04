@@ -25,17 +25,16 @@ not_found_handling = "404-page"
 run_worker_first = true
 
 # Cloudflare Workers AI. Native to the platform: no API key, no account with a
-# model provider, nothing to paste. Uncommenting the two lines is the whole
-# setup. One [ai] table serves every feature that uses it.
+# model provider, nothing to paste. One [ai] table serves the whole Worker, so
+# turning it on turns it on for every feature that uses it:
 #
-# Two features share it:
-#   "Ask the Library" (/api/ask), which returns the matched reads either way and
-#     adds a generated answer once this is on.
-#   FDE Gym (/api/fde-gym/*), which runs a deterministic degraded interview
-#     without it and real interviewer and evaluator output with it.
+#   FDE Gym (/api/fde-gym/*) gets real interviewer and evaluator output instead
+#     of the deterministic degraded interview.
+#   "Ask the Library" (/api/ask) adds a generated answer on top of the matched
+#     reads it returns either way.
 #
-# [ai]
-# binding = "AI"
+[ai]
+binding = "AI"
 
 # Student cohort waitlist storage. Until this is bound, /api/waitlist returns
 # 503 and the cohort form falls back to PUBLIC_COHORT_JOIN_URL. To enable:
@@ -55,26 +54,47 @@ run_worker_first = true
 # binding = "INTAKE"
 # id = "<your-kv-namespace-id>"
 
-# FDE Gym interview retention. This is the one binding FDE Gym cannot run
-# without: no KV, no interviews, and /fde-gym/ tells the visitor it is not open
-# yet. Cohort 0 sessions are stored here only after explicit consent, with a TTL
-# (FDE_GYM_SESSION_TTL_SECONDS, 30 days by default). To enable:
+# THE ONE REMAINING STEP TO OPEN FDE GYM.
+#
+# Everything else it needs is enabled above. Without this binding there are no
+# interviews: /fde-gym/ loads, explains itself, and tells the visitor it is not
+# open yet. Run
 #   npx wrangler kv namespace create FDE_GYM_SESSIONS
-# then paste the returned id below and uncomment.
+# then paste the returned id below and uncomment these three lines.
+#
+# Cohort 0 sessions land here only after explicit consent, and expire on the
+# FDE_GYM_SESSION_TTL_SECONDS window set above.
 # [[kv_namespaces]]
 # binding = "FDE_GYM_SESSIONS"
 # id = "<your-kv-namespace-id>"
 
 # FDE Gym model selection. These are Workers AI model names, not credentials
-# and not an external API. The values below are the code defaults, so the block
-# is optional, but Cohort 0 should set them explicitly: a retired model id does
-# not fail loudly, it silently drops the session to the deterministic path while
-# health still reports aiConfigured true. Pinning them here makes the choice
-# visible in review and easy to change when a model is retired.
+# and not an external API. src/fde-gym/model.ts already carries exactly these
+# values as its defaults, so nothing needs to be set for them to take effect:
 #
-# The interviewer runs on every candidate message, so it is picked for latency.
-# The evaluator runs once and must return strict JSON, so it is picked for
-# native structured output.
+#   interviewer  @cf/meta/llama-3.3-70b-instruct-fp8-fast
+#     runs on every candidate message, so it is picked for latency
+#   evaluator    @cf/zai-org/glm-5.3
+#     runs once and must return strict JSON, so it is picked for native
+#     structured output
+#   session TTL  30 days
+#
+# Deliberately left commented. This Worker has no [vars] table today, and its
+# environment variables (SUBSTACK_ORIGIN, LEAD_WEBHOOK_URL, the AIRTABLE_* and
+# PUBLIC_* set) live in the dashboard. Introducing a [vars] table here makes
+# this file authoritative for plain text vars, and the documented behavior is
+# that a deploy then overrides what the dashboard holds. Adding one to name
+# three values that are already the defaults is not worth the chance of
+# clearing the rest.
+#
+# If you do want them pinned in review, move every dashboard var into this
+# block in the same commit, or add keep_vars = true above and confirm the
+# merge behavior on a preview deploy first.
+#
+# A retired model id does not fail loudly: the call throws, the session drops
+# to the deterministic path, and health still reports aiConfigured true. Check
+# both ids against developers.cloudflare.com/workers-ai/models before a cohort
+# runs, and change them in src/fde-gym/model.ts.
 #
 # [vars]
 # FDE_GYM_INTERVIEW_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
@@ -84,5 +104,6 @@ run_worker_first = true
 # The personalized report email is the only part that needs an outside service.
 # Without it the interview and the on-screen result work in full; only the
 # emailed report is unavailable, and the app says so rather than pretending it
-# sent one. To enable: npx wrangler secret put RESEND_API_KEY, then add
-# FDE_GYM_FROM_EMAIL (a verified sender) to the [vars] block above.
+# sent one. To enable: npx wrangler secret put RESEND_API_KEY, then set
+# FDE_GYM_FROM_EMAIL (a verified sender) as a dashboard variable, alongside the
+# other environment variables this Worker already keeps there.
