@@ -40,6 +40,7 @@ export function systemPrompt(
     "Ask one question at a time. Keep replies under 120 words, usually much shorter.",
     "Do not restate the principle in full. The lesson prints it after you.",
     "Do not score, rank, or grade. Do not praise heavily.",
+    "Never say the lesson is complete, finished or over. You are shown one stage and cannot see whether others remain, so that claim is not yours to make.",
     "Do not name frameworks, libraries, vendors or infrastructure unless the learner named them first.",
     "Do not claim there is one correct architecture when there are trade-offs.",
     "If they raise something from a later stage, say it is worth coming back to and return to this question.",
