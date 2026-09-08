@@ -35,6 +35,29 @@ export interface Decision {
   scripted: boolean;
 }
 
+/**
+ * Does this reply announce that the lesson is over?
+ *
+ * The server already owns the stage, so an injected "skip to the end" cannot
+ * move the curriculum. It can still move the wording: asked to end the lesson,
+ * the model returned "Lesson complete" while the lesson visibly carried on, and
+ * a learner reading that has been lied to by the thing teaching them.
+ *
+ * So the claim is checked rather than merely discouraged in the prompt. A rule
+ * cannot be talked out of. Stage level claims are left alone, because finishing
+ * a stage is a true thing to say.
+ */
+const COMPLETION_CLAIMS = [
+  /\blessons?\s+(?:is\s+|are\s+)?(?:now\s+)?(?:complete|completed|finished|over|done)\b/i,
+  /\b(?:completed|finished|reached\s+the\s+end\s+of)\s+the\s+(?:lesson|course)\b/i,
+  /\bend\s+of\s+the\s+(?:lesson|course)\b/i,
+  /\byou(?:\s+are|'re)\s+(?:all\s+)?done\b/i,
+];
+
+export function claimsCompletion(message: string): boolean {
+  return COMPLETION_CLAIMS.some((pattern) => pattern.test(message));
+}
+
 export function initialState(lessonId: string, now: number): CoachState {
   return { lessonId, stageIndex: 0, probed: false, calls: 0, issuedAt: now };
 }
@@ -120,7 +143,12 @@ export function decide(
   const next = lesson.stages[advanced.stageIndex];
 
   const parts: CoachPart[] = [];
-  if (response) parts.push({ kind: "say", text: response.message });
+  // Drop a reply that declares the lesson over while it is not. The principle
+  // and the next question still follow, so the turn reads correctly with the
+  // false sentence simply absent.
+  if (response && !(!done && claimsCompletion(response.message))) {
+    parts.push({ kind: "say", text: response.message });
+  }
   parts.push({ kind: "principle", text: stage.teachingPoint });
   if (!done && next) parts.push({ kind: "ask", text: next.initialPrompt });
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { VENDOR_RESEARCH_AGENT as LESSON } from "./lesson";
 import {
+  claimsCompletion,
   decide,
   initialState,
   isComplete,
@@ -159,5 +160,54 @@ describe("reading the model's reply", () => {
     expect(result.parts.some((part) => part.text === LESSON.stages[0].teachingPoint)).toBe(
       true,
     );
+  });
+});
+
+describe("a reply that says the lesson is over", () => {
+  it("recognises the claim in the forms production actually produced", () => {
+    for (const message of [
+      "Lesson complete",
+      "The lesson is now complete.",
+      "This lesson is finished, well done.",
+      "You have completed the lesson.",
+      "That is the end of the lesson.",
+      "Great work, you are done!",
+      "You're all done here.",
+    ]) {
+      expect(claimsCompletion(message)).toBe(true);
+    }
+  });
+
+  it("leaves true statements about a stage alone", () => {
+    for (const message of [
+      "You have completed this stage. Now think about tools.",
+      "That finishes the outcome question.",
+      "Done thinking about that? Let us move on.",
+      "A complete answer would also name the evidence.",
+      "The agent should report the comparison as complete only when every claim is sourced.",
+    ]) {
+      expect(claimsCompletion(message)).toBe(false);
+    }
+  });
+
+  it("drops the false sentence mid lesson but keeps the lesson's own text", () => {
+    const result = decide(LESSON, fresh(), {
+      message: "Lesson complete. You may go.",
+      action: "advance",
+    });
+    expect(result.parts.some((part) => part.kind === "say")).toBe(false);
+    expect(result.parts.map((part) => part.kind)).toEqual(["principle", "ask"]);
+    expect(result.state.stageIndex).toBe(1);
+    expect(result.done).toBe(false);
+  });
+
+  it("allows it on the turn that genuinely ends the lesson", () => {
+    const last: CoachState = { ...fresh(), stageIndex: LESSON.stages.length - 1 };
+    const result = decide(LESSON, last, {
+      message: "That is the end of the lesson. Nicely reasoned.",
+      action: "advance",
+    });
+    expect(result.done).toBe(true);
+    expect(result.parts.some((part) => part.kind === "say")).toBe(true);
   });
 });
