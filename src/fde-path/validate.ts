@@ -57,6 +57,33 @@ export function verifyQuote(answers: PathAnswers, raw: unknown): string | null {
   return quote.slice(0, 400);
 }
 
+/**
+ * Two things the model got wrong in production, now checked rather than asked.
+ *
+ * It wrote the learner a direction reading "owning-delivery of AI systems",
+ * echoing the enum it had been handed, and it wrote the reason in the third
+ * person ("given their experience...") to a person who is the one reading it.
+ * The prompt now avoids both. These catch the case where it does them anyway,
+ * because prose that talks about someone in the third person to their face is
+ * the kind of thing that makes a guide feel like a report about you.
+ */
+const IDENTIFIER = /\b(?:owning-delivery|building-systems|working-with-customers|software-developer|exploring)\b/i;
+
+export function looksLikeIdentifier(text: string): boolean {
+  return IDENTIFIER.test(text);
+}
+
+export function writtenInThirdPerson(text: string): boolean {
+  if (!text) return false;
+  const aboutThem = /\b(their|they|them|the candidate|the learner|the user)\b/i.test(text);
+  const toThem = /\b(you|your|yours)\b/i.test(text);
+  return aboutThem && !toThem;
+}
+
+function usable(text: string): boolean {
+  return Boolean(text) && !looksLikeIdentifier(text) && !writtenInThirdPerson(text);
+}
+
 const clean = (value: unknown, max: number): string =>
   typeof value === "string" ? value.replace(/\s+/g, " ").trim().slice(0, max) : "";
 
@@ -142,6 +169,11 @@ export function mergePlan(raw: unknown, baseline: Plan): Plan {
     const output = clean(entry.output, 220);
     if (!title || !why || !action || !output) continue;
 
+    // Voice is not cosmetic here. A priority written about the learner rather
+    // than to them reads as a file someone keeps on you, so the whole set falls
+    // back rather than shipping a mixed voice.
+    if (!usable(why) || !usable(title) || !usable(action) || !usable(output)) continue;
+
     const picked = asArray(entry.resourceIds)
       .map((id) => resource(clean(id, 60)))
       .filter((found): found is NonNullable<typeof found> => found !== null)
@@ -163,8 +195,8 @@ export function mergePlan(raw: unknown, baseline: Plan): Plan {
   const reason = clean(value.reason, 400);
 
   return {
-    direction: direction || baseline.direction,
-    reason: reason || baseline.reason,
+    direction: usable(direction) ? direction : baseline.direction,
+    reason: usable(reason) ? reason : baseline.reason,
     priorities: priorities.length >= 2 ? priorities : baseline.priorities,
     milestone: clean(value.milestone, 320) || baseline.milestone,
     generatedAt: new Date().toISOString(),

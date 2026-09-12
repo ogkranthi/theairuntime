@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { deterministicMapping, deterministicPlan } from "./planner";
 import type { PathAnswers } from "./types";
-import { mergeMapping, mergePlan, validateFollowUps, verifyQuote } from "./validate";
+import {
+  looksLikeIdentifier,
+  mergeMapping,
+  mergePlan,
+  validateFollowUps,
+  verifyQuote,
+  writtenInThirdPerson,
+} from "./validate";
 
 const answers: PathAnswers = {
   context: "software-developer",
@@ -226,5 +233,71 @@ describe("follow-up questions", () => {
     for (const bad of [null, undefined, "text", 42, {}]) {
       expect(validateFollowUps(bad)).toEqual([]);
     }
+  });
+});
+
+describe("how the plan is written", () => {
+  it("spots an enum id that leaked into prose", () => {
+    // Exactly what production returned before the prompt sent labels.
+    expect(looksLikeIdentifier("owning-delivery of AI systems")).toBe(true);
+    expect(looksLikeIdentifier("Owning a delivery end to end")).toBe(false);
+  });
+
+  it("spots prose written about the learner rather than to them", () => {
+    expect(
+      writtenInThirdPerson(
+        "given their experience with building a reconciliation service, this could suit them",
+      ),
+    ).toBe(true);
+    expect(writtenInThirdPerson("You have built and operated things.")).toBe(false);
+    // Third person about other people is fine. It is only the learner that matters.
+    expect(writtenInThirdPerson("You will need to explain it to them and their team.")).toBe(false);
+    expect(writtenInThirdPerson("")).toBe(false);
+  });
+
+  it("falls back rather than handing back an identifier as a direction", () => {
+    const merged = mergePlan(
+      { direction: "owning-delivery of AI systems", reason: "You have run services before." },
+      basePlan,
+    );
+    expect(merged.direction).toBe(basePlan.direction);
+    expect(merged.reason).toBe("You have run services before.");
+  });
+
+  it("falls back rather than talking about the learner in the third person", () => {
+    const merged = mergePlan(
+      {
+        direction: "Owning delivery on AI systems",
+        reason: "given their experience, this could suit them",
+      },
+      basePlan,
+    );
+    expect(merged.reason).toBe(basePlan.reason);
+  });
+
+  it("drops a priority written in the wrong voice", () => {
+    const merged = mergePlan(
+      {
+        priorities: [
+          {
+            title: "Explore the profession",
+            why: "to help them understand the role and its requirements",
+            action: "read about it",
+            output: "notes",
+            resourceIds: ["career-index"],
+          },
+          {
+            title: "Write one system up",
+            why: "Nobody outside your team can read your work.",
+            action: "Use the Field Report structure.",
+            output: "A published write up.",
+            resourceIds: ["field-report"],
+          },
+        ],
+      },
+      basePlan,
+    );
+    // One survivor is below the two-priority floor, so the catalog plan stands.
+    expect(merged.priorities).toEqual(basePlan.priorities);
   });
 });
