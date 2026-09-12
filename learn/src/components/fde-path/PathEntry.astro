@@ -1,0 +1,53 @@
+---
+/**
+ * The entry point into Find my FDE path.
+ *
+ * Renders as "Find my FDE path" for everyone, then relabels itself to
+ * "Continue my path" when this browser already holds a journey. That check runs
+ * on the client because the saved journey lives in localStorage and nowhere
+ * else, and the label has to be right for a returning visitor without giving
+ * the page a personalised cache entry.
+ */
+interface Props {
+  /** Visual weight. The homepage hero and the paths header use "solid". */
+  variant?: "solid" | "plain";
+  /** Label before any journey is saved. */
+  label?: string;
+  class?: string;
+}
+
+const { variant = "solid", label = "Find my FDE path", class: className = "" } = Astro.props;
+---
+
+<a
+  href="/paths/find-my-path/"
+  class:list={["path-entry", variant === "solid" ? "btn btn--solid" : "", className]}
+  data-path-entry
+>
+  <span data-path-entry-label>{label}</span> →
+</a>
+
+<script is:inline>
+  (function () {
+    try {
+      var raw = localStorage.getItem("air-fde-path");
+      if (!raw) return;
+      var saved = JSON.parse(raw);
+      if (!saved || typeof saved !== "object") return;
+      var answers = saved.answers || {};
+      var started =
+        saved.chosenStepId ||
+        saved.plan ||
+        saved.mapping ||
+        answers.context ||
+        (typeof answers.example === "string" && answers.example.trim());
+      if (!started) return;
+      var labels = document.querySelectorAll("[data-path-entry-label]");
+      for (var i = 0; i < labels.length; i += 1) {
+        labels[i].textContent = "Continue my path";
+      }
+    } catch (error) {
+      // No storage, or nothing readable in it. The default label is correct.
+    }
+  })();
+</script>

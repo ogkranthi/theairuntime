@@ -17,6 +17,7 @@
     "src/worker.ts",
     "src/fde-gym/**/*.ts",
     "src/fde-gym/**/*.json",
-    "src/coach/**/*.ts"
+    "src/coach/**/*.ts",
+    "src/fde-path/**/*.ts"
   ]
 }
