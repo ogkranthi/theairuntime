@@ -1,0 +1,41 @@
+---
+import Base from "../../layouts/Base.astro";
+import FdePathApp from "../../components/fde-path/FdePathApp";
+---
+
+<Base
+  title="Find my FDE path | FDE Commons"
+  description="Understand the AI Forward Deployed Engineer role, see how your experience connects, and choose a useful first step."
+  pageSlug="find-my-path"
+>
+  <FdePathApp client:load />
+
+  <noscript>
+    <div class="path-noscript">
+      <p>
+        The reading above works without JavaScript. The guided part, where you
+        describe your own experience and get a plan back, needs it turned on.
+      </p>
+      <p>
+        If you would rather not, <a href="/career/roles/">role boundaries</a> and
+        the <a href="/career/">profession overview</a> cover the same ground as
+        plain reading.
+      </p>
+    </div>
+  </noscript>
+</Base>
+
+<style>
+  .path-noscript {
+    max-width: 720px;
+    margin: 2rem auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius, 10px);
+    padding: 1.25rem;
+    background: var(--bg-raise);
+  }
+
+  .path-noscript p:last-child {
+    margin-bottom: 0;
+  }
+</style>

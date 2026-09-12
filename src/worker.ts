@@ -10,10 +10,14 @@
  *                         See src/fde-gym/routes.ts and docs/fde-gym/.
  *   /api/coach/*,         the Agent System Design Coach lesson on the learn
  *                         host. See src/coach/routes.ts.
+ *   /api/fde-path/*,      Find my FDE path, the guided career start on the
+ *                         learn host. See src/fde-path/routes.ts.
  */
 
 import { handleFdeGymRequest, type FdeGymEnv } from './fde-gym/routes';
 import { handleCoachRequest } from './coach/routes';
+import { handleFdePathRequest } from './fde-path/routes';
+import type { FdePathEnv } from './fde-path/types';
 import type { CoachEnv } from './coach/types';
 
 interface Env {
@@ -741,6 +745,10 @@ export default {
 
     if (url.pathname.startsWith('/api/coach/')) {
       return handleCoachRequest(request, env as Env & CoachEnv, ctx);
+    }
+
+    if (url.pathname.startsWith('/api/fde-path/')) {
+      return handleFdePathRequest(request, env as Env & FdePathEnv);
     }
 
     if (url.pathname === '/api/subscribe') {

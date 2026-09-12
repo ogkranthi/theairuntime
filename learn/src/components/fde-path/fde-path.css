@@ -1,0 +1,857 @@
+/* Find my FDE path.
+   Scoped to .fde-path so the rest of the site keeps its orange-only palette.
+   Colour carries meaning here and is never decoration: orange is the action you
+   are being asked to take, blue is something you told us, teal is something you
+   could do next, and neutral is a question nobody has answered. */
+
+.fde-path {
+  --path-bg: #fafaf9;
+  --path-surface: #ffffff;
+  --path-ink: #17253c;
+  --path-muted: #536176;
+  --path-line: #e3e7eb;
+  --path-orange: #c2410c;
+  --path-orange-soft: #fff0e5;
+  --path-blue: #1d4ed8;
+  --path-blue-soft: #eff6ff;
+  --path-teal: #0f766e;
+  --path-teal-soft: #f0fdfa;
+  --path-radius: 12px;
+  --path-content: 720px;
+  --path-shell: 1040px;
+
+  max-width: var(--path-shell);
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+  color: var(--path-ink);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+@media (min-width: 700px) {
+  .fde-path {
+    padding: 2rem 2rem 5rem;
+  }
+}
+
+.fde-path h1 {
+  margin: 0 0 0.75rem;
+  color: var(--path-ink);
+  font-size: clamp(1.625rem, 4.5vw, 2.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.fde-path h2 {
+  color: var(--path-ink);
+  font-size: 1.15rem;
+  line-height: 1.3;
+}
+
+.fde-path p {
+  max-width: var(--path-content);
+}
+
+.path-lede {
+  margin: 0 0 1.5rem;
+  color: var(--path-muted);
+}
+
+.path-note,
+.path-why {
+  color: var(--path-muted);
+  font-size: 0.9375rem;
+}
+
+.path-tag {
+  margin: 0 0 0.35rem;
+  color: var(--path-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+}
+
+/* Progress. One row where there is space, one line where there is not. */
+.path-progress {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--path-line);
+  padding-bottom: 0.75rem;
+}
+
+.path-progress__mobile {
+  margin: 0;
+  color: var(--path-ink);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.path-progress ol {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 860px) {
+  .path-progress__mobile {
+    display: none;
+  }
+
+  .path-progress ol {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+}
+
+.path-progress li button,
+.path-progress li > span {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--path-radius);
+  padding: 0 0.75rem;
+  background: transparent;
+  color: var(--path-muted);
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.path-progress li button {
+  cursor: pointer;
+}
+
+.path-progress li button:hover {
+  background: var(--path-bg);
+  color: var(--path-ink);
+}
+
+.path-progress li span span,
+.path-progress li button span {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+.path-progress li.is-current > span {
+  background: var(--path-orange-soft);
+  color: var(--path-orange);
+  font-weight: 600;
+}
+
+.path-progress li.is-open button {
+  color: var(--path-ink);
+}
+
+/* Buttons. One primary per screen. */
+.path-btn,
+.path-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: var(--path-radius);
+  padding: 0.5rem 1.1rem;
+  font: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.path-btn {
+  border: 1px solid var(--path-line);
+  background: var(--path-surface);
+  color: var(--path-ink);
+}
+
+.path-btn--primary {
+  border-color: var(--path-orange);
+  background: var(--path-orange);
+  color: #fff;
+}
+
+.path-btn:disabled,
+.path-link:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.path-link {
+  border: 0;
+  padding-left: 0;
+  padding-right: 0.75rem;
+  background: none;
+  color: var(--path-blue);
+  text-decoration: underline;
+}
+
+.path-btn:focus-visible,
+.path-link:focus-visible,
+.fde-path summary:focus-visible,
+.fde-path input:focus-visible,
+.fde-path textarea:focus-visible,
+.path-progress button:focus-visible,
+.path-answered button:focus-visible {
+  outline: 2px solid var(--path-orange);
+  outline-offset: 2px;
+}
+
+.path-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.path-actions {
+  margin-top: 2.5rem;
+}
+
+/* Stage 1. The engagement, in four nodes. */
+.path-flow {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.5rem 0 2rem;
+}
+
+@media (min-width: 780px) {
+  .path-flow {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+.path-flow__node {
+  position: relative;
+  border: 1px solid var(--path-line);
+  border-radius: var(--path-radius);
+  padding: 1rem;
+  background: var(--path-surface);
+}
+
+.path-flow__node h2 {
+  margin: 0.35rem 0 0.4rem;
+  font-size: 1rem;
+}
+
+.path-flow__node p {
+  margin: 0;
+  color: var(--path-muted);
+  font-size: 0.875rem;
+}
+
+.path-flow__num {
+  color: var(--path-orange);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+/* The connector reroutes rather than shrinking: down the stack on a phone,
+   across the row on a wide screen. */
+.path-flow__node::after {
+  content: "";
+  position: absolute;
+  background: var(--path-ink);
+  opacity: 0.25;
+}
+
+.path-flow__node:last-child::after {
+  display: none;
+}
+
+.path-flow__node::after {
+  left: 50%;
+  bottom: -0.75rem;
+  width: 1px;
+  height: 0.75rem;
+}
+
+@media (min-width: 780px) {
+  .path-flow__node::after {
+    left: auto;
+    right: -1.5rem;
+    bottom: auto;
+    top: 2rem;
+    width: 1.5rem;
+    height: 1px;
+  }
+}
+
+.path-example {
+  border-left: 3px solid var(--path-blue);
+  border-radius: 0 var(--path-radius) var(--path-radius) 0;
+  padding: 1rem 1.25rem;
+  background: var(--path-blue-soft);
+}
+
+.path-example p {
+  margin: 0 0 0.5rem;
+}
+
+.path-example p:last-child {
+  margin-bottom: 0;
+}
+
+.path-h2 {
+  margin: 2.5rem 0 0.75rem;
+}
+
+.path-reads details {
+  border: 1px solid var(--path-line);
+  border-radius: var(--path-radius);
+  margin-bottom: 0.5rem;
+  background: var(--path-surface);
+}
+
+.path-reads summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.path-reads details > div {
+  border-top: 1px solid var(--path-line);
+  padding: 0.75rem 1rem 1rem;
+}
+
+.path-reads p {
+  color: var(--path-muted);
+  font-size: 0.9375rem;
+}
+
+.path-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.path-links li {
+  border-top: 1px solid var(--path-line);
+  padding: 0.6rem 0;
+}
+
+.path-links span {
+  display: block;
+  color: var(--path-muted);
+  font-size: 0.875rem;
+}
+
+/* Stages 2 to 5. */
+.path-stage {
+  max-width: var(--path-content);
+}
+
+.path-card {
+  border: 1px solid var(--path-line);
+  border-radius: var(--path-radius);
+  padding: 1.25rem;
+  background: var(--path-surface);
+}
+
+.path-card fieldset {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.path-card legend,
+.path-card h2 {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  font-size: 1.15rem;
+  font-weight: 650;
+}
+
+.path-answered {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.path-answered button {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--path-radius);
+  padding: 0.4rem 0.6rem;
+  background: var(--path-bg);
+  color: var(--path-ink);
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.path-answered span {
+  color: var(--path-muted);
+  font-size: 0.8125rem;
+}
+
+.path-answered em {
+  color: var(--path-blue);
+  font-style: normal;
+  text-decoration: underline;
+}
+
+.path-choices {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.path-choice {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid var(--path-line);
+  border-radius: var(--path-radius);
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+}
+
+.path-choice input {
+  flex: 0 0 auto;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+}
+
+.path-choice:has(input:checked) {
+  border-color: var(--path-blue);
+  background: var(--path-blue-soft);
+}
+
+.path-field {
+  display: block;
+  margin: 0 0 1rem;
+}
+
+.path-field > span {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--path-muted);
+  font-size: 0.9375rem;
+}
+
+.path-field input[type="text"],
+.path-field textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--path-line);
+  border-radius: var(--path-radius);
+  padding: 0.6rem 0.7rem;
+  background: var(--path-surface);
+  color: var(--path-ink);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.path-notice {
+  border-left: 3px solid var(--path-blue);
+  border-radius: 0 var(--path-radius) var(--path-radius) 0;
+  padding: 0.75rem 1rem;
+  background: var(--path-blue-soft);
+  font-size: 0.9375rem;
+}
+
+/* Stage 3 sections, colour coded by what kind of claim each one makes. */
+.path-section {
+  margin: 1.5rem 0;
+  border-radius: var(--path-radius);
+  padding: 1rem 1.25rem;
+}
+
+.path-section h2 {
+  margin: 0 0 0.75rem;
+}
+
+.path-section--carry {
+  border-left: 3px solid var(--path-blue);
+  background: var(--path-blue-soft);
+}
+
+.path-section--develop {
+  border-left: 3px solid var(--path-teal);
+  background: var(--path-teal-soft);
+}
+
+.path-section--unknown {
+  border-left: 3px solid var(--path-line);
+  background: var(--path-bg);
+}
+
+.path-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.path-items > li {
+  border-top: 1px solid var(--path-line);
+  padding: 0.85rem 0;
+}
+
+.path-items > li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.path-items p {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.path-items--plain > li {
+  color: var(--path-muted);
+  font-size: 0.9375rem;
+}
+
+.path-bridge {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .path-bridge {
+    grid-template-columns: minmax(0, 1fr) 2rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+.path-bridge__from,
+.path-bridge__to {
+  margin: 0 !important;
+  border-radius: var(--path-radius);
+  padding: 0.5rem 0.7rem;
+  background: var(--path-surface);
+  font-size: 0.9375rem;
+}
+
+.path-bridge__to {
+  border: 1px solid var(--path-teal);
+  color: var(--path-teal);
+  font-weight: 650;
+}
+
+.path-bridge__arrow {
+  position: relative;
+  display: block;
+  height: 1rem;
+}
+
+.path-bridge__arrow::before {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  width: 1px;
+  height: 1rem;
+  background: var(--path-ink);
+  opacity: 0.3;
+}
+
+@media (min-width: 640px) {
+  .path-bridge__arrow {
+    height: auto;
+  }
+
+  .path-bridge__arrow::before {
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+  }
+}
+
+.path-evidence {
+  margin-bottom: 0.5rem;
+}
+
+.path-evidence summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--path-blue);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.path-evidence blockquote {
+  margin: 0 0 0.5rem;
+  border-left: 2px solid var(--path-blue);
+  padding: 0.35rem 0.75rem;
+  color: var(--path-ink);
+  font-size: 0.9375rem;
+}
+
+.path-cap {
+  color: var(--path-teal);
+  font-weight: 650;
+}
+
+.path-empty {
+  color: var(--path-muted);
+  font-size: 0.9375rem;
+}
+
+.path-confirm {
+  margin-top: 2rem;
+  border-top: 1px solid var(--path-line);
+  padding-top: 1.25rem;
+}
+
+/* Stage 4. */
+.path-direction {
+  margin-bottom: 1.5rem;
+  border-left: 3px solid var(--path-orange);
+  border-radius: 0 var(--path-radius) var(--path-radius) 0;
+  padding: 1rem 1.25rem;
+  background: var(--path-orange-soft);
+}
+
+.path-direction h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.3rem;
+}
+
+.path-direction p {
+  margin: 0;
+}
+
+.path-priorities {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.path-priorities > li {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: 0.75rem;
+  border-top: 1px solid var(--path-line);
+  padding: 1.25rem 0;
+}
+
+.path-priorities__num {
+  color: var(--path-orange);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.path-priorities h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.1rem;
+}
+
+.path-detail {
+  margin: 0.75rem 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.path-detail > div {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 560px) {
+  .path-detail > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+  }
+
+  .path-priorities > li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.path-detail dt {
+  color: var(--path-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.path-detail dd {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.path-resources {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.path-resources li {
+  border-left: 3px solid var(--path-teal);
+  margin-bottom: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  background: var(--path-teal-soft);
+}
+
+.path-resources a {
+  color: var(--path-teal);
+  font-weight: 650;
+}
+
+.path-resources span {
+  display: block;
+  color: var(--path-muted);
+  font-size: 0.875rem;
+}
+
+.path-milestone {
+  margin-top: 1rem;
+  border: 1px dashed var(--path-line);
+  border-radius: var(--path-radius);
+  padding: 1rem 1.25rem;
+}
+
+.path-milestone p:last-child {
+  margin: 0;
+  color: var(--path-muted);
+}
+
+/* Stage 5. */
+.path-steps {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.path-step {
+  display: grid;
+  grid-template-columns: 1.4rem minmax(0, 1fr);
+  gap: 0.75rem;
+  border: 1px solid var(--path-line);
+  border-radius: var(--path-radius);
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  background: var(--path-surface);
+  cursor: pointer;
+}
+
+.path-step--on {
+  border-color: var(--path-teal);
+  background: var(--path-teal-soft);
+}
+
+.path-step input {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0.3rem 0 0;
+}
+
+.path-step h2 {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 1.05rem;
+}
+
+.path-nextstep {
+  border-left: 3px solid var(--path-teal);
+  border-radius: 0 var(--path-radius) var(--path-radius) 0;
+  padding: 1rem 1.25rem;
+  background: var(--path-teal-soft);
+}
+
+.path-nextstep h2 {
+  margin: 0 0 0.5rem;
+}
+
+.path-done {
+  color: var(--path-teal);
+  font-weight: 650;
+}
+
+/* Status. */
+.path-loading {
+  margin-top: 1rem;
+  color: var(--path-muted);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.path-error {
+  margin-top: 1rem;
+  border: 1px solid var(--path-orange);
+  border-radius: var(--path-radius);
+  padding: 0.75rem 1rem;
+  background: var(--path-orange-soft);
+}
+
+.path-error p {
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
+}
+
+.path-error p:last-child {
+  margin-bottom: 0;
+}
+
+.path-foot {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 3rem;
+  border-top: 1px solid var(--path-line);
+  padding-top: 1rem;
+  color: var(--path-muted);
+  font-size: 0.875rem;
+}
+
+.path-foot p {
+  margin: 0;
+}
+
+.path-sig {
+  margin-left: auto !important;
+}
+
+.path-sig a {
+  color: var(--path-ink);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-decoration: none;
+}
+
+.path-sig a:hover {
+  color: var(--path-orange);
+}
+
+.path-main:focus {
+  outline: none;
+}
+
+.path-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .path-btn,
+  .path-choice,
+  .path-step {
+    transition: background-color 150ms ease, border-color 150ms ease;
+  }
+}

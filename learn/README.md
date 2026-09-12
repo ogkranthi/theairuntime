@@ -258,6 +258,44 @@ before the session degrades, so a single bad id costs latency instead of
 everyone's result. `lastModelError` on the health route names the model and the
 runtime's own error text when something does fail.
 
+## Find my FDE path
+
+`/paths/find-my-path/` is the guided start: understand the role, describe your
+experience, review what carries over, read a short plan, choose one first step.
+It is the primary entry from the homepage and the first option on `/paths/`.
+
+Server: `src/fde-path/` in the root Worker at `/api/fde-path/*`. Client:
+`learn/src/components/fde-path/`, route at `learn/src/pages/paths/find-my-path.astro`.
+
+**The catalog is the floor, not the fallback.** `planner.ts` builds a complete
+mapping and plan from the learner's structured answers and the curated catalog
+alone. That is the self-guided path a learner can choose at the consent gate, it
+is what runs when a model call fails, and it is the baseline every AI result is
+merged onto. The journey never depends on the model being available.
+
+**Evidence is verified.** Each connection shows "Based on your answer" over a
+quote. `validate.ts` checks that quote appears in what the learner actually
+typed, and drops the connection when it does not. A paraphrase is rejected the
+same as an invention, because the label promises their words.
+
+**The model cannot widen the catalog.** Capabilities and resources are resolved
+from `catalog.ts` by id. An unrecognised id is dropped, so the plan can never
+contain a link the model wrote.
+
+**Nothing is scored.** No readiness percentage, no verdict, no probability of
+being hired. Confirming the mapping confirms how the learner described their own
+experience, which is not an assessment of skill, and the screen says so.
+
+**Nothing leaves the browser without an explicit choice.** The consent gate is
+shown before the first personal-context AI request and the choice is stored
+locally with a timestamp and notice version. Storage is `air-fde-path`,
+versioned and migrated field by field like `asd-progress.ts`.
+
+The role guide at stage 1 server-renders and every expandable is a native
+`details`, so the reading works with JavaScript off.
+
+Tests: `npm test` covers the planner, the quote verifier, and the merge rules.
+
 ## Agent System Design Coach
 
 `/coach/` is a 10 minute guided lesson for someone who has not designed an agent
