@@ -1,3 +1,6 @@
+import { validateCoachStart } from "../security/start";
+import { withSessionSecurity } from "../security/boundary";
+import { readLimitedText } from "../security/body";
 import { callModel, parseJsonObject } from "../fde-gym/model";
 import { cleanText, jsonResponse } from "../fde-gym/utils";
 import { lessonById, VENDOR_RESEARCH_AGENT } from "./lesson";
@@ -19,13 +22,12 @@ const START_BODY_LIMIT = 2_000;
 const MESSAGE_BODY_LIMIT = 20_000;
 const LEARNER_MESSAGE_LIMIT = 2_000;
 const STAGE_TURN_LIMIT = 6;
-const STARTS_PER_HOUR = 12;
 
 export interface ExecutionContextLike {
   waitUntil(promise: Promise<unknown>): void;
 }
 
-export async function handleCoachRequest(
+async function routeCoachRequest(
   request: Request,
   env: CoachEnv,
   ctx?: ExecutionContextLike,
@@ -41,6 +43,7 @@ export async function handleCoachRequest(
       aiConfigured: Boolean(env.AI),
       tokenConfigured: Boolean(env.COACH_TOKEN_SECRET),
       countersConfigured: Boolean(env.FDE_GYM_SESSIONS),
+      securityConfigured: Boolean(env.AI_SECURITY),
       lessons: Object.keys({ [VENDOR_RESEARCH_AGENT.id]: true }),
     });
   }
@@ -55,17 +58,14 @@ export async function handleCoachRequest(
     if (pathname === "/api/coach/start") return await handleStart(request, env, ctx);
     if (pathname === "/api/coach/message") return await handleMessage(request, env, ctx);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "That request could not be read.";
-    return jsonResponse({ error: message }, { status: 400 });
+    return jsonResponse({ error: "That request could not be processed." }, { status: 400 });
   }
 
   return jsonResponse({ error: "Not found" }, { status: 404 });
 }
 
 async function readJson(request: Request, limit: number): Promise<Record<string, unknown>> {
-  const text = await request.text();
-  if (text.length > limit) throw new Error("That request was too large.");
+  const text = await readLimitedText(request, limit);
   if (!text) return {};
   try {
     const parsed = JSON.parse(text);
@@ -77,15 +77,7 @@ async function readJson(request: Request, limit: number): Promise<Record<string,
   }
 }
 
-/**
- * A configuration gap, reported as one.
- *
- * Deliberately fatal rather than falling back to an unsigned token: the
- * signature is the only thing enforcing the per lesson model call ceiling, and
- * a lesson that quietly runs without one is an open AI endpoint. 503 rather
- * than 400 because nothing is wrong with the request. The client asks health
- * first and never shows a start button it cannot honour.
- */
+/** A missing signing key must never produce an unsigned token. */
 const NOT_CONFIGURED = "The coach is not open yet.";
 
 function unconfigured(): Response {
@@ -101,17 +93,7 @@ async function handleStart(
   if (!secret) return unconfigured();
   const body = await readJson(request, START_BODY_LIMIT);
 
-  const lesson =
-    lessonById(cleanText(body.lessonId, 100) || VENDOR_RESEARCH_AGENT.id) ??
-    null;
-  if (!lesson) throw new Error("That lesson does not exist.");
-
-  if (!(await allowStart(env, request))) {
-    return jsonResponse(
-      { error: "That is a lot of lessons at once. Try again in a little while." },
-      { status: 429 },
-    );
-  }
+  const lesson = validateCoachStart(body);
 
   const state = initialState(lesson.id, Date.now());
   count(env, ctx, `${lesson.id}:started`);
@@ -272,41 +254,7 @@ function summaryOf(lesson: Lesson) {
   };
 }
 
-/**
- * Best effort start throttle.
- *
- * KV has no atomic increment and is eventually consistent, so this is a speed
- * bump rather than a limit, and it is not the real defense. The real one is the
- * signed per lesson call ceiling: this only raises the cost of minting fresh
- * lessons to get more ceilings.
- */
-async function allowStart(env: CoachEnv, request: Request): Promise<boolean> {
-  const store = env.FDE_GYM_SESSIONS;
-  const ip = request.headers.get("cf-connecting-ip");
-  if (!store || !ip) return true;
-
-  const key = `coach:rl:${ip}:${Math.floor(Date.now() / 3_600_000)}`;
-  try {
-    const seen = Number((await store.get(key)) ?? "0");
-    if (Number.isFinite(seen) && seen >= STARTS_PER_HOUR) return false;
-    await store.put(key, String((Number.isFinite(seen) ? seen : 0) + 1), {
-      expirationTtl: 3_600,
-    });
-  } catch {
-    return true;
-  }
-  return true;
-}
-
-/**
- * Aggregate funnel counters.
- *
- * The learn site's stated position is no account, no server, no analytics in the
- * browser, and this keeps that promise: no cookie, no identifier, nothing per
- * person. It counts how many lessons reached each stage, which is the only
- * question V1 has to answer. Lost updates under concurrency are acceptable for
- * a funnel shape.
- */
+/** Best-effort funnel counts. Admission and quotas never depend on these. */
 function count(env: CoachEnv, ctx: ExecutionContextLike | undefined, event: string): void {
   const store = env.FDE_GYM_SESSIONS;
   if (!store || !ctx) return;
@@ -321,4 +269,12 @@ function count(env: CoachEnv, ctx: ExecutionContextLike | undefined, event: stri
       }
     })(),
   );
+}
+
+export async function handleCoachRequest(request: Request, env: CoachEnv, ctx?: ExecutionContextLike): Promise<Response> {
+  const path = new URL(request.url).pathname;
+  if (request.method !== "POST" || !["/api/coach/start", "/api/coach/message"].includes(path)) {
+    return routeCoachRequest(request, env, ctx);
+  }
+  return withSessionSecurity(request, env, "coach", (forwarded, scoped) => routeCoachRequest(forwarded, scoped, ctx));
 }

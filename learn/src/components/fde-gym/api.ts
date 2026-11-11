@@ -5,11 +5,27 @@ import type {
   StartOptions,
 } from "./types";
 
+const pendingRequests = new Map<string, string>();
+let startClient: string | undefined;
+
 async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const payload = JSON.stringify(body);
+  const identity = path + payload;
+  let key = pendingRequests.get(identity);
+  if (!key) {
+    key = crypto.randomUUID();
+    if (pendingRequests.size >= 8) pendingRequests.delete(pendingRequests.keys().next().value!);
+    pendingRequests.set(identity, key);
+  }
+  const headers: Record<string, string> = { "content-type": "application/json", "idempotency-key": key };
+  if (path.endsWith("/start")) {
+    startClient ??= crypto.randomUUID() + crypto.randomUUID();
+    headers["x-session-client"] = startClient;
+  }
   const response = await fetch(path, {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
+    headers,
+    body: payload,
   });
 
   const data = (await response.json().catch(() => ({}))) as {
@@ -19,6 +35,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   if (!response.ok) {
     throw new Error(data.error || `Request failed with status ${response.status}.`);
   }
+  pendingRequests.delete(identity);
   return data;
 }
 
@@ -47,7 +64,10 @@ export async function sendInterviewMessage(input: {
     phase: string;
     shouldEnd: boolean;
     degraded: boolean;
-  }>("/api/fde-gym/message", input);
+  }>("/api/fde-gym/message", {
+    session: input.session, candidateMessage: input.candidateMessage,
+    graph: input.graph, requestHint: input.requestHint,
+  });
 }
 
 export async function finishInterview(input: {
@@ -58,7 +78,7 @@ export async function finishInterview(input: {
   return postJson<{
     session: InterviewSession;
     summary: ResultSummary;
-  }>("/api/fde-gym/finish", input);
+  }>("/api/fde-gym/finish", { session: input.session, graph: input.graph });
 }
 
 export async function requestReport(input: {
@@ -66,16 +86,21 @@ export async function requestReport(input: {
   email: string;
   subscribe: boolean;
 }) {
-  return postJson<{
+  const result = await postJson<{
     ok: true;
     subscribed: boolean;
     emailed: boolean;
     webhookDelivered?: boolean;
   }>("/api/fde-gym/report", input);
+  if (result.ok !== true || (result.emailed !== true && result.webhookDelivered !== true)) {
+    throw new Error("Report delivery could not be confirmed. Your interview result remains available.");
+  }
+  return result;
 }
 
 export async function sendFeedback(input: {
   sessionId: string;
+  accessToken?: string;
   realismComparedToChatGPT: 1 | 2 | 3 | 4 | 5;
   wouldReturnTomorrow: boolean;
   comments?: string;

@@ -24,11 +24,12 @@ Browser
   +-- POST /api/fde-gym/feedback
              |
              +-- existing Cloudflare Worker
+             +-- SQLite AI_SECURITY metadata admission
              +-- scenario truth
              +-- interviewer model call
              +-- evaluator model call
              +-- deterministic graph rules
-             +-- Cohort 0 KV session record with TTL
+             +-- immutable Cohort 0 KV snapshots with absolute expiry
              +-- Substack subscription
              +-- optional Resend email
 ```
@@ -43,19 +44,23 @@ labels, and custom types. The rest of Learn should not be converted to React.
 
 ## Session model
 
-The browser carries a sanitized session object for rendering and sends it with
-each API call. For Cohort 0, the `FDE_GYM_SESSIONS` KV record is canonical and
-is stored only after explicit research consent. It expires through a configured
-TTL.
+The browser carries a sanitized session object with a private bearer capability
+and revision. The existing `FDE_GYM_SESSIONS` KV namespace retains consented
+session snapshots and replay responses until the original absolute expiry.
+`AI_SECURITY`, one SQLite-backed Durable Object, owns the canonical snapshot
+pointer, revisions, operation reservations, turn counts, and AI attempt quotas.
+The object receives security metadata only, never raw conversations or email.
 
-The Worker reloads that canonical record before every interview, finish,
-report, and feedback operation. A missing or expired record is not silently
-reconstructed from browser data.
+The Worker authenticates the capability, reads the immutable committed head,
+reserves the expected revision atomically, and executes AI or delivery outside
+the object. It saves the result in KV before committing the next head pointer.
+Missing state cannot be reconstructed from browser data or by rerunning AI.
 
-An explicit `FDE_GYM_ALLOW_STATELESS_DEV=true` escape hatch supports isolated
-local UI and API development. It must remain disabled in Cohort 0 production.
-Detailed email reports are unavailable in stateless mode because the full
-evaluation never returns to the browser.
+The old `FDE_GYM_ALLOW_STATELESS_DEV` flag is ignored. Local security tests use
+Miniflare with SQLite and stub providers. All stateful POSTs require an
+`Idempotency-Key`; existing clients supply it. See
+[the security runbook](../security/COACH_GYM_HARDENING.md) for quotas, retry and
+failure behavior, costs, deployment requirements, and rollback limits.
 
 The server validates and clamps all client-carried data. Never trust a
 client-provided score, coverage state, fact reveal, or evaluation.

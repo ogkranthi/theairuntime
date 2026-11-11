@@ -22,7 +22,7 @@ export default function ResultScreen({
   const [email, setEmail] = useState("");
   const [subscribe, setSubscribe] = useState(true);
   const [reportState, setReportState] = useState<
-    "idle" | "sending" | "sent"
+    "idle" | "sending" | "accepted"
   >("idle");
   const [error, setError] = useState("");
   const [realism, setRealism] = useState<1 | 2 | 3 | 4 | 5>(4);
@@ -39,7 +39,7 @@ export default function ResultScreen({
         email,
         subscribe,
       });
-      setReportState("sent");
+      setReportState("accepted");
     } catch (cause) {
       setReportState("idle");
       setError(
@@ -55,6 +55,7 @@ export default function ResultScreen({
     try {
       await sendFeedback({
         sessionId: session.id,
+        accessToken: session.accessToken,
         realismComparedToChatGPT: realism,
         wouldReturnTomorrow: returnTomorrow,
         comments: comments.trim() || undefined,
@@ -131,12 +132,13 @@ export default function ResultScreen({
       </div>
 
       <div className="fg-report-gate">
-        {reportState === "sent" ? (
+        {reportState === "accepted" ? (
           <div className="fg-report-sent">
-            <p className="fg-eyebrow">REPORT SENT</p>
-            <h2>Check your inbox</h2>
+            <p className="fg-eyebrow">REPORT REQUEST ACCEPTED</p>
+            <h2>Delivery is being processed</h2>
             <p>
-              The report includes competency evidence, a personalized
+              The delivery service accepted your request. Inbox delivery is not
+              yet confirmed. The report includes competency evidence, a personalized
               mini-lesson, three defensible architectures, and your prescribed
               next drill.
             </p>
