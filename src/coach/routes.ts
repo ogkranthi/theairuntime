@@ -1,3 +1,4 @@
+import { withSessionSecurity } from "../security/boundary";
 import { readLimitedText } from "../security/body";
 import { callModel, parseJsonObject } from "../fde-gym/model";
 import { cleanText, jsonResponse } from "../fde-gym/utils";
@@ -20,13 +21,12 @@ const START_BODY_LIMIT = 2_000;
 const MESSAGE_BODY_LIMIT = 20_000;
 const LEARNER_MESSAGE_LIMIT = 2_000;
 const STAGE_TURN_LIMIT = 6;
-const STARTS_PER_HOUR = 12;
 
 export interface ExecutionContextLike {
   waitUntil(promise: Promise<unknown>): void;
 }
 
-export async function handleCoachRequest(
+async function routeCoachRequest(
   request: Request,
   env: CoachEnv,
   ctx?: ExecutionContextLike,
@@ -42,6 +42,7 @@ export async function handleCoachRequest(
       aiConfigured: Boolean(env.AI),
       tokenConfigured: Boolean(env.COACH_TOKEN_SECRET),
       countersConfigured: Boolean(env.FDE_GYM_SESSIONS),
+      securityConfigured: Boolean(env.AI_SECURITY),
       lessons: Object.keys({ [VENDOR_RESEARCH_AGENT.id]: true }),
     });
   }
@@ -95,13 +96,6 @@ async function handleStart(
     lessonById(cleanText(body.lessonId, 100) || VENDOR_RESEARCH_AGENT.id) ??
     null;
   if (!lesson) throw new Error("That lesson does not exist.");
-
-  if (!(await allowStart(env, request))) {
-    return jsonResponse(
-      { error: "That is a lot of lessons at once. Try again in a little while." },
-      { status: 429 },
-    );
-  }
 
   const state = initialState(lesson.id, Date.now());
   count(env, ctx, `${lesson.id}:started`);
@@ -262,37 +256,7 @@ function summaryOf(lesson: Lesson) {
   };
 }
 
-/**
- * Best effort start throttle. KV is eventually consistent and has no atomic
- * increment, so neither this counter nor signed state enforces a hard quota.
- */
-async function allowStart(env: CoachEnv, request: Request): Promise<boolean> {
-  const store = env.FDE_GYM_SESSIONS;
-  const ip = request.headers.get("cf-connecting-ip");
-  if (!store || !ip) return true;
-
-  const key = `coach:rl:${ip}:${Math.floor(Date.now() / 3_600_000)}`;
-  try {
-    const seen = Number((await store.get(key)) ?? "0");
-    if (Number.isFinite(seen) && seen >= STARTS_PER_HOUR) return false;
-    await store.put(key, String((Number.isFinite(seen) ? seen : 0) + 1), {
-      expirationTtl: 3_600,
-    });
-  } catch {
-    return true;
-  }
-  return true;
-}
-
-/**
- * Aggregate funnel counters.
- *
- * The learn site's stated position is no account, no server, no analytics in the
- * browser, and this keeps that promise: no cookie, no identifier, nothing per
- * person. It counts how many lessons reached each stage, which is the only
- * question V1 has to answer. Lost updates under concurrency are acceptable for
- * a funnel shape.
- */
+/** Best-effort funnel counts. Admission and quotas never depend on these. */
 function count(env: CoachEnv, ctx: ExecutionContextLike | undefined, event: string): void {
   const store = env.FDE_GYM_SESSIONS;
   if (!store || !ctx) return;
@@ -307,4 +271,12 @@ function count(env: CoachEnv, ctx: ExecutionContextLike | undefined, event: stri
       }
     })(),
   );
+}
+
+export async function handleCoachRequest(request: Request, env: CoachEnv, ctx?: ExecutionContextLike): Promise<Response> {
+  const path = new URL(request.url).pathname;
+  if (request.method !== "POST" || !["/api/coach/start", "/api/coach/message"].includes(path)) {
+    return routeCoachRequest(request, env, ctx);
+  }
+  return withSessionSecurity(request, env, "coach", (forwarded, scoped) => routeCoachRequest(forwarded, scoped, ctx));
 }

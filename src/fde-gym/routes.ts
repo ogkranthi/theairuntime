@@ -1,3 +1,5 @@
+import { LIMITS } from "../security/types";
+import { withSessionSecurity } from "../security/boundary";
 import { readLimitedText } from "../security/body";
 import { COUNTERPARTY_DUE_DILIGENCE } from "./scenario";
 import { evaluateSession } from "./evaluator";
@@ -35,45 +37,16 @@ import {
   updateCoverageFromCandidateTurn,
 } from "./utils";
 
-const SESSION_KEY_PREFIX = "fde-gym:session:";
 const CONSENT_VERSION = "cohort-0-v1";
-export const MAX_CANDIDATE_TURNS = 40;
-const DEFAULT_TTL_SECONDS = 60 * 60 * 24 * 30;
+export const MAX_CANDIDATE_TURNS = LIMITS.gymTurns;
 
 const validModes: FdeMode[] = ["practice", "mock"];
 const validLevels: FdeLevel[] = ["foundations", "fde", "senior"];
 const validDurations: FdeDuration[] = [15, 30];
 
-function sessionKey(id: string) {
-  return `${SESSION_KEY_PREFIX}${id}`;
-}
-
-function ttlSeconds(env: FdeGymEnv): number {
-  return clampInt(
-    env.FDE_GYM_SESSION_TTL_SECONDS ?? DEFAULT_TTL_SECONDS,
-    60,
-    60 * 60 * 24 * 90,
-  );
-}
-
-async function persistSession(
-  env: FdeGymEnv,
-  session: InterviewSession,
-): Promise<void> {
-  if (!env.FDE_GYM_SESSIONS || !session.researchConsent.accepted) return;
-
-  await env.FDE_GYM_SESSIONS.put(
-    sessionKey(session.id),
-    JSON.stringify(session),
-    {
-      expirationTtl: Math.max(60, Math.ceil(((session.expiresAt ?? 0) - Date.now()) / 1000)),
-      metadata: {
-        status: session.status,
-        scenarioId: session.scenarioId,
-        consentVersion: session.researchConsent.version,
-      },
-    },
-  );
+async function persistSession(env: FdeGymEnv, session: InterviewSession): Promise<void> {
+  if (!env.securityExecution) throw new Error("Session security is unavailable.");
+  env.securityExecution.saveSession(session);
 }
 
 async function canonicalSession(
@@ -81,8 +54,9 @@ async function canonicalSession(
   clientSession: InterviewSession,
 ): Promise<InterviewSession> {
   if (!env.FDE_GYM_SESSIONS) throw new Error("Session storage is unavailable.");
-  const stored = await env.FDE_GYM_SESSIONS.get(sessionKey(clientSession.id));
-  const session = stored ? JSON.parse(stored) as InterviewSession : null;
+  const session = env.securityExecution?.canonicalSession
+    ? structuredClone(env.securityExecution.canonicalSession)
+    : null;
   if (!session?.accessToken || !clientSession.accessToken ||
       !(await sameCapability(session.accessToken, clientSession.accessToken))) {
     throw new SessionAccessError();
@@ -289,8 +263,10 @@ async function handleStart(request: Request, env: FdeGymEnv): Promise<Response> 
   }
 
   const session = startSession(body);
-  session.accessToken = crypto.randomUUID() + crypto.randomUUID();
-  session.expiresAt = Date.now() + ttlSeconds(env) * 1000;
+  session.id = env.securityExecution!.sessionId;
+  session.accessToken = env.securityExecution!.accessToken;
+  session.expiresAt = env.securityExecution!.expiresAt;
+  session.revision = 0;
   await persistSession(env, session);
   return jsonResponse({
     session: normalizeSessionForClient(session),
@@ -565,6 +541,7 @@ function health(env: FdeGymEnv): Response {
     ok: true,
     aiConfigured: Boolean(env.AI),
     retentionConfigured: Boolean(env.FDE_GYM_SESSIONS),
+    securityConfigured: Boolean(env.AI_SECURITY),
     emailConfigured: Boolean(
       (env.RESEND_API_KEY && env.FDE_GYM_FROM_EMAIL) ||
         env.FDE_GYM_REPORT_WEBHOOK_URL,
@@ -574,7 +551,7 @@ function health(env: FdeGymEnv): Response {
   });
 }
 
-export async function handleFdeGymRequest(
+async function routeFdeGymRequest(
   request: Request,
   env: FdeGymEnv,
 ): Promise<Response> {
@@ -606,3 +583,12 @@ export async function handleFdeGymRequest(
 
 export type { FdeGymEnv } from "./types";
 export { renderReportHtml };
+
+export async function handleFdeGymRequest(request: Request, env: FdeGymEnv): Promise<Response> {
+  const path = new URL(request.url).pathname;
+  if (request.method !== "POST" || path === "/api/fde-gym/health" ||
+      !["start", "message", "finish", "report", "feedback"].some(action => path === `/api/fde-gym/${action}`)) {
+    return routeFdeGymRequest(request, env);
+  }
+  return withSessionSecurity(request, env, "gym", routeFdeGymRequest);
+}

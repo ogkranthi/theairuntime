@@ -1,4 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { securityRuntime } from "../security/test-runtime";
+import { admissionRpc, digest } from "../security/boundary";
 import { callModel } from "./model";
 import { handleFdeGymRequest, MAX_CANDIDATE_TURNS } from "./routes";
 import type { FdeGymEnv, InterviewSession } from "./types";
@@ -12,9 +14,9 @@ const env: FdeGymEnv = {
     put: async (key, value) => { sessions.set(key, value); },
   },
 };
-function post(path: string, body: unknown, target = env) {
+function post(path: string, body: unknown, target = env, key = crypto.randomUUID()) {
   return handleFdeGymRequest(new Request(`https://learn.theairuntime.com/api/fde-gym/${path}`, {
-    method: "POST", body: JSON.stringify(body),
+    method: "POST", body: JSON.stringify(body), headers: { "idempotency-key": key },
   }), target);
 }
 async function start() {
@@ -22,10 +24,20 @@ async function start() {
   expect(response.status).toBe(200);
   return ((await response.json()) as { session: InterviewSession }).session;
 }
-function save(session: InterviewSession) {
-  sessions.set(`fde-gym:session:${session.id}`, JSON.stringify(session));
+async function save(session: InterviewSession) {
+  const head = await admissionRpc<{ head: string }>(env, "head", { sessionId: session.id, capability: await digest(session.accessToken!) });
+  const record = JSON.parse(sessions.get(head.head)!);
+  record.canonical = session;
+  sessions.set(head.head, JSON.stringify(record));
 }
-beforeEach(() => { sessions.clear(); ai.run.mockClear(); });
+let runtime: Awaited<ReturnType<typeof securityRuntime>>;
+beforeAll(async () => { runtime = await securityRuntime(); }, 30_000);
+afterAll(async () => { await runtime?.mf.dispose(); });
+beforeEach(() => {
+  sessions.clear(); ai.run.mockClear();
+  const id = runtime.namespace.idFromName(crypto.randomUUID());
+  env.AI_SECURITY = { idFromName: () => id, get: () => runtime.namespace.get(id as never) };
+});
 
 describe("Gym session security", () => {
   it("requires canonical storage even if the old development bypass is set", async () => {
@@ -48,14 +60,16 @@ describe("Gym session security", () => {
   });
   it("rejects unauthorized feedback without mutating the session", async () => {
     const session = await start();
-    const before = sessions.get(`fde-gym:session:${session.id}`);
+    const before = JSON.stringify([...sessions]);
     expect((await post("feedback", { sessionId: session.id })).status).toBe(403);
-    expect(sessions.get(`fde-gym:session:${session.id}`)).toBe(before);
+    expect(JSON.stringify([...sessions])).toBe(before);
     expect((await post("feedback", { sessionId: session.id, accessToken: session.accessToken })).status).toBe(200);
   });
   it("rejects expired sessions even when KV still returns the record", async () => {
     const session = await start();
-    save({ ...session, expiresAt: Date.now() - 1 });
+    await env.AI_SECURITY!.get(env.AI_SECURITY!.idFromName("ignored")).fetch("https://security/__clock", {
+      method: "POST", body: JSON.stringify({ now: session.expiresAt! }),
+    });
     for (const path of ["message", "finish", "report", "feedback"]) {
       expect((await post(path, { session, sessionId: session.id, accessToken: session.accessToken,
         candidateMessage: "hello", email: "person@example.com", subscribe: true })).status).toBe(403);
@@ -64,23 +78,24 @@ describe("Gym session security", () => {
   });
   it("uses the server clock despite a reset client timer", async () => {
     const session = await start();
-    save({ ...session, startedAt: new Date(Date.now() - 31 * 60_000).toISOString() });
+    await save({ ...session, startedAt: new Date(Date.now() - 31 * 60_000).toISOString() });
     expect((await post("message", { session, candidateMessage: "hello", elapsedSeconds: 0 })).status).toBe(409);
     expect(ai.run).not.toHaveBeenCalled();
   });
   it("enforces the canonical turn limit despite a forged client transcript", async () => {
     const session = await start();
     const turn = { id: "turn", role: "candidate" as const, content: "hello", atSeconds: 0 };
-    save({ ...session, transcript: Array.from({ length: MAX_CANDIDATE_TURNS }, () => turn) });
+    await save({ ...session, transcript: Array.from({ length: MAX_CANDIDATE_TURNS }, () => turn) });
     expect((await post("message", { session: { ...session, transcript: [] }, candidateMessage: "hello" })).status).toBe(409);
     expect(ai.run).not.toHaveBeenCalled();
   });
   it("does not extend retention when feedback is saved", async () => {
     const session = await start();
     const expiresAt = Date.now() + 120_000;
-    save({ ...session, expiresAt });
+    await save({ ...session, expiresAt });
     await post("feedback", { sessionId: session.id, accessToken: session.accessToken });
-    expect(JSON.parse(sessions.get(`fde-gym:session:${session.id}`)!).expiresAt).toBe(expiresAt);
+    const head = await admissionRpc<{ head: string }>(env, "head", { sessionId: session.id, capability: await digest(session.accessToken!) });
+    expect(JSON.parse(sessions.get(head.head)!).canonical.expiresAt).toBe(expiresAt);
   });
   it("rejects concurrent unauthorized requests before any model call", async () => {
     const session = await start();
@@ -97,10 +112,10 @@ describe("Gym session security", () => {
     const updated = (await message.json() as { session: InterviewSession }).session;
     const first = await post("finish", { session: updated }, offline);
     expect(first.status).toBe(200);
-    const before = sessions.get(`fde-gym:session:${session.id}`);
+    const before = JSON.stringify([...sessions]);
     const duplicate = await post("finish", { session: updated }, offline);
     expect(duplicate.status).toBe(200);
-    expect(sessions.get(`fde-gym:session:${session.id}`)).toBe(before);
+    expect(JSON.stringify([...sessions])).toBe(before);
     expect(ai.run).not.toHaveBeenCalled();
   });
   it("returns coarse health without provider error details", async () => {

@@ -1,5 +1,25 @@
 # API contracts
 
+## Security envelope
+
+All stateful Gym POSTs now require a private UUID `Idempotency-Key` header.
+The session returned by start includes `accessToken`, `revision`, and absolute
+`expiresAt`; message, finish, and report must send that session. Feedback must
+send `sessionId` and `accessToken`. Session IDs alone grant no access. Start
+requires research consent as before. Legacy sessions must restart.
+
+Message and finish revisions advance atomically. Exact retries reuse the original
+key and JSON payload. Finish, report, and feedback are one submission per session;
+changing keys does not authorize another external delivery. Changed payloads
+return 409. Server time, turn limits, per-session attempts, and a shared daily
+AI budget are enforced by `AI_SECURITY`. Quota exhaustion uses deterministic
+fallbacks; unavailable session admission fails closed.
+
+See [the security runbook](../security/COACH_GYM_HARDENING.md) for full retention,
+retry, uncertain-delivery, deployment, and rollback behavior. The runbook takes
+precedence over older stateless or mutable-KV descriptions below.
+
+
 All routes are same-origin and return JSON with `cache-control: no-store`.
 
 ## POST /api/fde-gym/start

@@ -1,3 +1,4 @@
+import type { SecurityEnv } from "../security/types";
 export type FdeMode = "practice" | "mock";
 export type FdeLevel = "foundations" | "fde" | "senior";
 export type FdeDuration = 15 | 30;
@@ -108,6 +109,7 @@ export interface ResearchConsent {
 }
 
 export interface InterviewSession {
+  revision?: number;
   /** Bearer capability. Keep private, like the session transcript. */
   accessToken?: string;
   expiresAt?: number;
@@ -341,7 +343,7 @@ export interface KvBinding {
   ) => Promise<void>;
 }
 
-export interface FdeGymEnv {
+export interface FdeGymEnv extends SecurityEnv {
   AI?: WorkersAiBinding;
   FDE_GYM_SESSIONS?: KvBinding;
   FDE_GYM_INTERVIEW_MODEL?: string;

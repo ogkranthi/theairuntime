@@ -1,3 +1,4 @@
+export { AiSecurityCoordinator } from "./security/coordinator";
 /**
  * Cloudflare Worker entry for events.theairuntime.com
  *

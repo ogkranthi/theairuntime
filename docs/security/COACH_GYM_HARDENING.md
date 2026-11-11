@@ -1,91 +1,277 @@
-# Coach and Gym security hardening
+# Coach and Gym security boundary
 
-This PR is a draft and must not merge until the atomic enforcement decision is
-resolved. No production infrastructure or secrets were accessed or changed.
+PR #150 adds one SQLite-backed Durable Object class, `AiSecurityCoordinator`,
+exported by the existing Worker. The `AI_SECURITY` binding addresses the single
+object named `coach-gym-v1`. It coordinates Coach and Gym only. Models and report
+integrations still run in the Worker, outside the object. No D1, separate service,
+login system, UI, production secret, or agent framework is introduced.
 
-## Implemented
+This is reviewed source and proposed configuration, not a production deployment.
+The binding and `v1-ai-security` migration have not been applied to any account.
 
-- Gym starts mint a random bearer capability separate from the session ID.
-  Message, finish, report, and feedback operations authenticate against the
-  canonical stored session. The capability travels in the existing session
-  response; the feedback request now includes it too. It must stay private.
-- Legacy Gym sessions without a capability or absolute expiry must restart.
-  There is no adoption endpoint accepting just a historical session ID.
-- Gym requires server storage even when the retired stateless development flag
-  is present. Client transcripts, timing, evaluation, and consent cannot become
-  canonical state when storage is missing.
-- Retention has an absolute expiry, checked on every authenticated operation.
-  Saving a session does not reset its lifetime. KV's minimum TTL can leave an
-  expired record present briefly, but the application still refuses access.
-- The server clock determines interview elapsed time. New messages stop after
-  the configured 15 or 30 minutes, or 40 canonical candidate turns. Finishing
-  remains available until retention expiry so users can retrieve their result.
-- Coach tokens reject future issuance and the exact three-hour expiry boundary.
-- Both request readers bound streamed UTF-8 bytes before buffering the whole
-  request, including requests without Content-Length.
-- Public Gym health exposes only unavailable, degraded, or unknown model status.
-  This is isolate-local evidence, not a model probe or a fleet health guarantee.
-  Public route catches no longer serialize arbitrary exception messages.
+## Guarantees and storage
 
-## Approval gate: smallest viable atomic enforcement
+The object stores session IDs, hashed capabilities, revisions, turn/attempt
+counts, deadlines, request fingerprints, reservation nonces/status, and immutable
+KV result pointers. It receives no learner messages, prompts, model output,
+architecture graphs, email addresses, or transcripts. IP start buckets use a
+SHA-256 hash rotated by hour. These are pseudonymous counters, not anonymous
+identity guarantees. They expire after an hour and are cleaned by the hourly
+alarm. A missing Cloudflare client IP shares the conservative `unknown` bucket.
 
-The current architecture has KV and Workers AI. KV does not have compare-and-swap
-or atomic counters, and can return stale values. A KV read followed by a write
-cannot prevent concurrent replay, duplicate AI calls, or cumulative quota bypass.
-HMAC signatures prove token integrity; they do not prove a token is unused.
+Gym conversations remain in the existing consented KV namespace. Each committed
+operation has an immutable snapshot and response under `security:result:`;
+the coordinator's head pointer selects canonical state. The old mutable
+`fde-gym:session:` key is never trusted or adopted. A stale or missing KV value
+cannot authorize another mutation or model call. Applications return 503 and
+retry the same saved pointer instead of regenerating a missing result.
 
-Proposed minimum: one SQLite-backed Durable Object class and binding for the
-Coach/Gym security boundary. No D1 database, login system, UI, or agent framework
-is needed. Include the class, binding, and migration in the same PR only after
-approval. Applying that migration and deploying remain separately out of scope.
+Coach KV entries retain only the generated reply and signed next state for
+idempotent response recovery, not raw learner turns or their stage history.
+Generated replies can reflect or quote learner input. This is a new, bounded
+three-hour response cache; it is not a promise of zero server retention.
+The browser retains at most eight failed request payload/key pairs in memory.
+It adds no persistent browser storage or new analytics.
 
-The object would:
+Session metadata and operation records expire at the original session deadline:
+three hours for Coach, and the existing Gym retention setting (30 days by
+default, bounded to 60 seconds through 90 days). Hourly indexed cleanup removes
+expired rows, including counters after the last session is gone. Access checks
+reject expired records immediately, without waiting for cleanup or KV deletion.
+KV has a minimum 60-second TTL, so a late write can remain briefly after logical
+expiry but cannot be served. Cloudflare storage backups/PITR have separate
+platform retention; cleanup is not a claim of immediate backup erasure.
 
-1. Authoritatively store session IDs, absolute expiry, revisions, consumed turns,
-   and operation reservations. Continue using KV for consented Gym retention and
-   aggregate counters, never as the source of admission decisions.
-2. Reserve a turn and AI attempt before external work. Reject an old revision,
-   a concurrently reserved turn, and duplicate submissions. Persist reservations
-   before calling the model so a process restart cannot spend the same budget
-   twice. Never automatically retry uncertain external work.
-3. Enforce explicit per-session, per-IP start, and shared daily Coach/Gym attempt
-   limits. Count every physical model attempt, including fallbacks and failures.
-   Token/output limits remain per call; an attempt quota is not a dollar quota.
-4. Scope idempotency to a session and operation. Return a saved result for an
-   exact retry, reject changed payloads with a reused key, and bound retention
-   of idempotency records and abandoned reservations.
-5. Fail closed for AI admission if atomic storage is unavailable, while retaining
-   existing deterministic fallback behavior where possible.
+## Admission and execution
 
-One global object is the smallest coordinator for a shared daily budget at
-current cohort scale. It adds a central availability dependency and throughput
-limit; splitting session objects from a quota object can follow if needed.
-The final limits and crash/retry policy must be stated in code and covered by
-concurrent request and restart tests before this draft becomes ready.
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant W as Existing Worker
+    participant D as SQLite Durable Object
+    participant P as AI or delivery provider
+    participant K as Existing KV
+    C->>W: POST with private session and Idempotency-Key
+    W->>D: Reserve revision and operation (hashes only)
+    D-->>W: Durable reservation nonce and deadline
+    W->>D: Reserve each AI attempt slot
+    D-->>W: Durable quota grant
+    W->>P: Run AI outside the object
+    W->>K: Save immutable result and Gym canonical snapshot
+    W->>D: Commit result pointer and next revision
+    D-->>W: Durable commit
+    W-->>C: Saved result
+```
 
-## Residual risks while the gate is pending
+Report operations omit the AI-attempt step. Their one durable reservation covers
+subscription, optional lead webhook, email, and report webhook initiation.
 
-- Coach signed state is still replayable, including concurrent replay. Its
-  logical model counter does not enforce a cumulative session or daily budget.
-- Gym authorized concurrent or stale submissions can still race through KV.
-  Sequential completed finishes reuse evaluation, but concurrent finishes can
-  duplicate AI work. Report retries can repeat delivery and subscription work.
-- The Gym turn ceiling is checked against canonical state but is not atomic
-  under concurrency. Start throttling and cumulative AI quotas remain incomplete.
-- Anonymous capabilities grant access to whoever possesses them. They provide
-  session authority, not identity, account recovery, or protection after token
-  theft. No new authentication system was introduced.
-- Existing Workers AI allowance and calls from unrelated AIR endpoints are not
-  a quota mechanism for this security boundary.
+Every admission/check/write sequence runs synchronously in
+`storage.transactionSync()`. The storage output gate makes reservations durable
+before returning a grant. There is no in-memory mutex or KV read-modify-write
+quota. A primary model call and its fallback require distinct one-use slots;
+every permitted `AI.run()` invocation is counted, including calls that fail or
+return unusable output. Lost admission responses conservatively consume quota.
+No attempt is refunded. The code never retries an uncertain admission RPC.
 
-## Validation
+A successful message or finish commits the next session revision. Gym canonical
+state is read through the committed immutable head, with a head comparison at
+admission to catch concurrent feedback/report updates. Client transcripts,
+evaluations, graphs, revisions, timing, and consent cannot replace canonical
+state. Coach tokens now include a signed random session ID and revision; old
+signed positions cannot roll the session back. Legacy tokens/sessions must
+restart. Gym bearer capabilities remain separate from session IDs.
 
-Regression tests cover capability checks on every Gym mutation/report path,
-concurrent unauthorized requests, absolute expiry while KV retains a record,
-client clock resets, forged client transcripts at the turn cap, retention not
-sliding on writes, authorized degraded journeys, sequential duplicate finish,
-coarse public health, future/exact-boundary Coach expiry, and streamed byte caps.
-Existing token tampering and curriculum tests continue to run.
+## Quotas and bounds
 
-Authorized concurrent replay and duplicate AI/report work still need the atomic
-implementation above and must not be reported as fixed by these tests.
+Values are centralized in `src/security/types.ts` and are intentionally explicit
+reviewed constants, not new dashboard variables.
+
+| Limit | Value | Reason/behavior |
+| --- | --- | --- |
+| Shared Coach/Gym AI attempts | 500 per UTC admission day | Conservative cohort cap shared by both apps; every primary and fallback counts |
+| Coach session AI attempts | 14 | Physical attempts, not 14 model turns; authored teaching continues when exhausted |
+| Gym session AI attempts | 82 | Up to 40 interviewer turns and one evaluator, each with at most one fallback |
+| Attempts per operation | 2 | One primary plus one distinct fallback slot; no reusable grants |
+| Coach learner turns | 12 | Six authored stages, each with at most one probe |
+| Gym candidate turns | 40 | Canonical count is enforced atomically as well as in the route |
+| Gym interview duration | 15 or 30 minutes | Server deadline; finishing remains possible until retention expiry |
+| Starts | 12 per IP/hour and 200 shared per UTC day | Atomic across both apps; shared NATs share the IP bucket |
+| Admitted operations | 64 per session, including start/errors | Bounds idempotency metadata and repeated invalid submissions |
+| Reservation lease | 120 seconds, no renewal or reassignment | Expired or uncertain work cannot be executed by a replacement Worker |
+
+Quotas count application-level `AI.run()` admissions, not provider-internal
+retries, tokens, neurons, dollars, or completed inferences. A grant issued just
+before midnight can start work just after midnight and belongs to its admission
+day. Existing per-call output limits remain 400 tokens for Coach, 500 for the
+Gym interviewer, and 2600 for the evaluator; payload and transcript bounds limit
+input size. These are not an exact billing cap.
+
+When AI is absent, attempts are exhausted, or an attempt RPC fails, the existing
+scripted Coach/Gym paths remain available if session admission and commit work.
+If the binding, admission, or commit is unavailable, stateful operations return
+503/409 rather than bypassing security. Commons static content remains available.
+
+## Idempotency and uncertain outcomes
+
+All stateful Coach/Gym POSTs require a private `Idempotency-Key` header containing
+16-128 letters, digits, underscores, or hyphens. The updated clients send UUIDs
+and preserve failed requests' keys in memory for retries. Gym omits its ignored
+browser timer from message/finish payloads so elapsed UI time cannot change a
+retry's identity. API callers must reuse
+the same key and exact JSON payload, including property order, to recover a
+message result. The same key with changed input returns 409. Start retries also
+bind the request to the Cloudflare client IP. Keys/results have session lifetime,
+not indefinite retention.
+
+Message keys are scoped to their session. Finish, report, and feedback have a
+single operation slot each per session, regardless of the supplied key. An exact
+repeat returns the saved result; changed content returns 409. This prevents a
+fresh request key or changed recipient from authorizing another report delivery.
+Invalid report email/consent is rejected before reserving the delivery slot.
+Report and feedback update the canonical head without advancing the interview
+revision, so the existing result screen can submit both. Feedback is one
+submission per interview. There is no client-visible operation lock token.
+
+| Failure point | Safe behavior |
+| --- | --- |
+| Duplicate while original runs | 409; it receives no execution grant |
+| AI grant response lost | Slot remains spent; no duplicate invocation of that slot |
+| Primary provider fails | One separately admitted fallback may run; both attempts count |
+| KV head missing before Gym mutation | 503 before reservation; retry may succeed when KV becomes visible |
+| Worker completes and saves result, but commit request/response is lost | Exact retry can commit the existing pointer within the lease or replay an already committed result; no external work repeats |
+| Worker/provider outcome unknown and no saved result exists | 409; no retry execution, quota refund, or lease takeover |
+| Lease expires | Session is blocked for new work; late attempts/commits are fenced; restart is required |
+| Committed result temporarily absent from KV | 503; retry the same key, never regenerate the response |
+| Session expires | 403 even if KV or SQL cleanup has not removed records |
+| Object/runtime restarts | Reservations, slots, counters, and revisions survive in SQLite |
+
+A client that discards its in-memory key can lose the ability to recover a
+message response and may need to restart. An uncertain initial start can require
+a page reload to discard that start's retry key. A model operation taking over
+120 seconds can be conservatively abandoned even if it later completes.
+
+Reports provide at-most-once application initiation, not exactly-once delivery.
+After a report reservation, every configured external integration is initiated
+at most once. If a response is lost, the provider may have delivered; no automatic
+retry, recipient change, or fresh key resends it. A failed or unconfigured report
+can therefore remain undelivered for that session. The existing Resend
+idempotency header remains defense in depth. Provider-internal duplication and
+provider-side transport behavior cannot be guaranteed by this application.
+
+## Infrastructure and costs
+
+The existing TOML adds:
+
+```toml
+[[durable_objects.bindings]]
+name = "AI_SECURITY"
+class_name = "AiSecurityCoordinator"
+
+[[migrations]]
+tag = "v1-ai-security"
+new_sqlite_classes = ["AiSecurityCoordinator"]
+```
+
+`new_sqlite_classes` is Cloudflare's supported migration format for existing
+Workers and works with this repository's Wrangler 4 configuration and unchanged
+`2025-05-01` compatibility date. It creates a new SQLite class; it does not attempt
+to convert a deployed KV-backed Durable Object. There is no new `[vars]` block,
+no change to existing KV/AI/assets bindings, and no new secret. Current Cloudflare
+docs also describe a newer declarative `exports` format; this PR deliberately
+uses the still-supported migration array and does not mix the two formats.
+
+SQLite-backed Durable Objects are available on Workers Free. Current published
+allowances include 100,000 DO requests/day, 13,000 GB-s/day, 5 million SQLite rows
+read/day, 100,000 rows written/day, and 5 GB stored. Exceeding Free limits fails
+operations, which this boundary handles closed. On Paid, DO requests include
+1 million/month then $0.15/million; duration includes 400,000 GB-s/month then
+$12.50/million GB-s; SQLite includes 25 billion rows read/month, 50 million written,
+and 5 GB-month, followed by $0.001/million reads, $1/million writes, and
+$0.20/GB-month. A Paid Workers subscription has its own minimum charge.
+
+Expected cohort overhead is small but not zero. Each normal Coach operation
+uses admission + commit (two DO requests), plus one request per AI attempt; Gym
+also reads the authoritative head (three plus attempts). Starts use two requests.
+There is an hourly cleanup alarm while metadata/counters exist. For example,
+20 starts and roughly 400 mutations/day with 500 AI attempts are about 1,500
+DO requests/day (about 45,000/month), before retries and abusive traffic.
+That request volume fits the published Free request allowance; SQL index/write
+amplification, other applications' usage, and cleanup still need measurement.
+No account billing or current remaining allowance was inspected.
+
+AI, Worker requests, retained KV snapshots/reads/writes, and email delivery retain
+their separate costs. Immutable Gym snapshots and reply replay caches add KV
+storage proportional to session length and retention. At the maximum 200 starts
+and 64 operations per session, deterministic/error requests can exceed Free
+KV/SQL write allowances even when AI is capped at 500. Denied and replay requests
+also cost DO reads/requests. This is not an account-wide spending cap or a DDoS
+control. Keeping AI execution outside the object avoids holding it active for
+model latency, but actual object lifecycle/duration and billing should be observed.
+
+References checked against Cloudflare's official documentation source:
+
+- [Durable Object pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/)
+- [Published pricing table](https://github.com/cloudflare/cloudflare-docs/blob/production/src/content/partials/durable-objects/durable-objects-pricing.mdx)
+- [SQLite storage and creation](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/)
+- [Supported migration array](https://developers.cloudflare.com/durable-objects/reference/durable-object-class-migrations-legacy/)
+
+## Deployment and rollback runbook (not executed)
+
+1. Review the complete PR and quota values. Do not merge while review is pending:
+   this repository's main-branch Workers Builds pipeline deploys on merge.
+2. Run `npm ci`, `npm test`, `npm run check:worker`,
+   `npx astro check --root learn`, `npm run build`, and
+   `npx wrangler@4.160.1 deploy --dry-run --outdir /tmp/air-worker-review`.
+   The tests use local workerd/SQLite and stub providers, never production AI,
+   retained sessions, email, bindings, or credentials.
+3. An authorized operator should check plan allowances and existing environment
+   configuration privately. Keep existing secrets in Cloudflare. The current KV,
+   AI, assets, and dashboard variables must be preserved. No secret export into
+   Codex is needed.
+4. If a preview is approved, use a distinct Worker/DO namespace and separate KV
+   with stub providers. Do not attach previews to production sessions or quotas.
+5. Only after separate deployment approval, deploy through the established
+   pipeline. Applying `v1-ai-security` creates the one SQLite class/binding; no
+   manual database provisioning or data import is required. Migration creation
+   is not a gradual/canary migration. Do not rename the singleton object name.
+6. Verify coarse health/configuration, start/message/finish flows, duplicate
+   requests, and deterministic fallback in the approved environment. Existing
+   sessions require restart; there is no insecure adoption path or data migration.
+   Never test report delivery with an unsuspecting recipient.
+
+For rollback, retain the class export, binding, namespace/object name, and
+migration history. Roll back to a compatible hardened version or disable only
+the affected Coach/Gym routes while repairing. Reverting to the pre-hardening
+Worker would restore its replay and authorization vulnerabilities and is not a
+safe security rollback. Removing/resetting the binding fails new boundary code
+closed, but removing it also prevents normal session operations. Do not delete
+or recreate the object, delete migration history, or use SQLite PITR to reset
+quotas/reservations: restoring older metadata can erase spent attempts or report
+tombstones and re-enable duplicate work. Such data recovery needs a separately
+reviewed procedure with these endpoints disabled. Other Commons and AIR routes
+can remain served while this boundary is unavailable.
+
+## Scope and verification
+
+The shared `callModel()` implementation and Worker routing logic are unchanged.
+Only Coach and Gym wrap `AI.run()` with attempt admission. FDE Path
+(`/api/fde-path/*`) and Ask the Library (`/api/ask`) still use the same Workers AI
+account outside this boundary and can consume its allowance. Other Workers and
+Cloudflare account users can do so too. They are explicitly not covered by the
+500-attempt quota. Extending protection to them is a separate scoped change.
+
+Tests exercise actual SQLite-backed workerd objects through Miniflare, including
+an actual runtime stop/restart with persisted storage. Test-only clock, counter,
+and inspection methods live solely in the test harness and are not exported by
+the production Worker. Provider calls run as Worker-side spies/stubs. Coverage
+includes concurrent revisions, token replay, duplicate keys, changed payloads,
+start/session/daily limits, midnight rollover, expiry, lost grants/commits, KV
+failure, provider failure, report deduplication, cleanup, and metadata privacy.
+
+Commons pages, paths, learning content, search, navigation, events/lab host
+routing, subscription/intake implementations, shared model behavior, and public
+URLs are unchanged. Regression checks cover representative Commons asset routes,
+events/lab routing, FDE Path availability, and the shared model client. Full
+Astro/Commons builds and type checks validate compilation. This confirms source
+and local behavior; it is not a claim of production verification or a live test.

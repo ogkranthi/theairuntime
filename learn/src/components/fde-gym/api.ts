@@ -5,11 +5,21 @@ import type {
   StartOptions,
 } from "./types";
 
+const pendingRequests = new Map<string, string>();
+
 async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const payload = JSON.stringify(body);
+  const identity = path + payload;
+  let key = pendingRequests.get(identity);
+  if (!key) {
+    key = crypto.randomUUID();
+    if (pendingRequests.size >= 8) pendingRequests.delete(pendingRequests.keys().next().value!);
+    pendingRequests.set(identity, key);
+  }
   const response = await fetch(path, {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
+    headers: { "content-type": "application/json", "idempotency-key": key },
+    body: payload,
   });
 
   const data = (await response.json().catch(() => ({}))) as {
@@ -19,6 +29,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   if (!response.ok) {
     throw new Error(data.error || `Request failed with status ${response.status}.`);
   }
+  pendingRequests.delete(identity);
   return data;
 }
 
@@ -47,7 +58,10 @@ export async function sendInterviewMessage(input: {
     phase: string;
     shouldEnd: boolean;
     degraded: boolean;
-  }>("/api/fde-gym/message", input);
+  }>("/api/fde-gym/message", {
+    session: input.session, candidateMessage: input.candidateMessage,
+    graph: input.graph, requestHint: input.requestHint,
+  });
 }
 
 export async function finishInterview(input: {
@@ -58,7 +72,7 @@ export async function finishInterview(input: {
   return postJson<{
     session: InterviewSession;
     summary: ResultSummary;
-  }>("/api/fde-gym/finish", input);
+  }>("/api/fde-gym/finish", { session: input.session, graph: input.graph });
 }
 
 export async function requestReport(input: {

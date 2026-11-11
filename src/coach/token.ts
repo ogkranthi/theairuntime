@@ -112,7 +112,10 @@ export async function verifyState(
     return null;
   }
 
+  if (value.sessionId !== undefined && (typeof value.sessionId !== "string" || value.sessionId.length > 100 ||
+      !Number.isInteger(value.revision) || Number(value.revision) < 0)) return null;
   return {
+    ...(value.sessionId !== undefined ? { sessionId: value.sessionId as string, revision: value.revision as number } : {}),
     lessonId: value.lessonId,
     stageIndex,
     probed: value.probed,

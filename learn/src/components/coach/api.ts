@@ -36,11 +36,21 @@ export interface StageTurn {
   text: string;
 }
 
+const pendingRequests = new Map<string, string>();
+
 async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const payload = JSON.stringify(body);
+  const identity = path + payload;
+  let key = pendingRequests.get(identity);
+  if (!key) {
+    key = crypto.randomUUID();
+    if (pendingRequests.size >= 8) pendingRequests.delete(pendingRequests.keys().next().value!);
+    pendingRequests.set(identity, key);
+  }
   const response = await fetch(path, {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
+    headers: { "content-type": "application/json", "idempotency-key": key },
+    body: payload,
   });
 
   const data = (await response.json().catch(() => ({}))) as { error?: string } & T;
@@ -49,6 +59,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
       data.error || "I could not continue the lesson just now.",
     );
   }
+  pendingRequests.delete(identity);
   return data;
 }
 
