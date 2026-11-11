@@ -1,3 +1,4 @@
+import { readLimitedText } from "../security/body";
 import { COUNTERPARTY_DUE_DILIGENCE } from "./scenario";
 import { evaluateSession } from "./evaluator";
 import { lastModelFailure } from "./model";
@@ -36,6 +37,7 @@ import {
 
 const SESSION_KEY_PREFIX = "fde-gym:session:";
 const CONSENT_VERSION = "cohort-0-v1";
+export const MAX_CANDIDATE_TURNS = 40;
 const DEFAULT_TTL_SECONDS = 60 * 60 * 24 * 30;
 
 const validModes: FdeMode[] = ["practice", "mock"];
@@ -64,7 +66,7 @@ async function persistSession(
     sessionKey(session.id),
     JSON.stringify(session),
     {
-      expirationTtl: ttlSeconds(env),
+      expirationTtl: Math.max(60, Math.ceil(((session.expiresAt ?? 0) - Date.now()) / 1000)),
       metadata: {
         status: session.status,
         scenarioId: session.scenarioId,
@@ -78,19 +80,35 @@ async function canonicalSession(
   env: FdeGymEnv,
   clientSession: InterviewSession,
 ): Promise<InterviewSession> {
-  if (!env.FDE_GYM_SESSIONS) return clientSession;
-
-  const stored = await env.FDE_GYM_SESSIONS.get(
-    sessionKey(clientSession.id),
-  );
-  if (!stored) {
-    throw new Error("This interview session was not found or has expired.");
+  if (!env.FDE_GYM_SESSIONS) throw new Error("Session storage is unavailable.");
+  const stored = await env.FDE_GYM_SESSIONS.get(sessionKey(clientSession.id));
+  const session = stored ? JSON.parse(stored) as InterviewSession : null;
+  if (!session?.accessToken || !clientSession.accessToken ||
+      !(await sameCapability(session.accessToken, clientSession.accessToken))) {
+    throw new SessionAccessError();
   }
-  return JSON.parse(stored) as InterviewSession;
+  if (!session.expiresAt || Date.now() >= session.expiresAt) {
+    throw new SessionAccessError();
+  }
+  return session;
 }
 
-function statelessDevAllowed(env: FdeGymEnv): boolean {
-  return env.FDE_GYM_ALLOW_STATELESS_DEV === "true";
+class SessionAccessError extends Error {}
+
+async function sameCapability(expected: string, supplied: string): Promise<boolean> {
+  if (typeof supplied !== "string" || supplied.length > 100) return false;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", encoder.encode(expected),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
+  const data = encoder.encode("gym-session-capability");
+  const signature = await crypto.subtle.sign("HMAC", key, data);
+  const suppliedKey = await crypto.subtle.importKey("raw", encoder.encode(supplied),
+    { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
+  return crypto.subtle.verify("HMAC", suppliedKey, signature, data);
+}
+
+function serverElapsed(session: InterviewSession): number {
+  return Math.max(session.elapsedSeconds, Math.floor((Date.now() - Date.parse(session.startedAt)) / 1000));
 }
 
 function sanitizeLevel(value: unknown): FdeLevel {
@@ -187,13 +205,7 @@ function safeSession(value: unknown): InterviewSession {
 }
 
 async function readBody<T>(request: Request, maxBytes = 300_000): Promise<T> {
-  const declaredLength = Number(request.headers.get("content-length") ?? "0");
-  if (declaredLength > maxBytes) throw new Error("Request is too large.");
-
-  const text = await request.text();
-  if (new TextEncoder().encode(text).byteLength > maxBytes) {
-    throw new Error("Request is too large.");
-  }
+  const text = await readLimitedText(request, maxBytes);
   try {
     return JSON.parse(text) as T;
   } catch {
@@ -255,11 +267,9 @@ async function handleStart(request: Request, env: FdeGymEnv): Promise<Response> 
   }
 
   const body = await readBody<StartRequest>(request, 30_000);
-  if (!env.FDE_GYM_SESSIONS && !statelessDevAllowed(env)) {
+  if (!env.FDE_GYM_SESSIONS) {
     // A visitor sees this on the setup screen, so it stays in plain language.
-    // The precise cause (the FDE_GYM_SESSIONS binding is absent, and stateless
-    // mode is a local-development escape hatch only) is reported by
-    // /api/fde-gym/health, which is where an operator looks.
+    // Storage is required for canonical state and session capabilities.
     return jsonResponse(
       {
         error:
@@ -279,6 +289,8 @@ async function handleStart(request: Request, env: FdeGymEnv): Promise<Response> 
   }
 
   const session = startSession(body);
+  session.accessToken = crypto.randomUUID() + crypto.randomUUID();
+  session.expiresAt = Date.now() + ttlSeconds(env) * 1000;
   await persistSession(env, session);
   return jsonResponse({
     session: normalizeSessionForClient(session),
@@ -307,6 +319,11 @@ async function handleMessage(
     );
   }
 
+  if (serverElapsed(session) >= session.durationMinutes * 60 ||
+      session.transcript.filter(turn => turn.role === "candidate").length >= MAX_CANDIDATE_TURNS) {
+    return jsonResponse({ error: "This interview has reached its limit. Finish to see your result." }, { status: 409 });
+  }
+
   const candidateMessage = cleanText(body.candidateMessage, 3000);
   if (!candidateMessage) {
     return jsonResponse(
@@ -315,11 +332,7 @@ async function handleMessage(
     );
   }
 
-  const elapsedSeconds = clampInt(
-    body.elapsedSeconds,
-    session.elapsedSeconds,
-    session.durationMinutes * 60 + 600,
-  );
+  const elapsedSeconds = serverElapsed(session);
   const graph: ArchitectureGraph = safeGraph(body.graph);
   const revisions = semanticGraphRevisions(
     session.graph,
@@ -418,11 +431,7 @@ async function handleFinish(
     });
   }
 
-  const elapsedSeconds = clampInt(
-    body.elapsedSeconds,
-    session.elapsedSeconds,
-    session.durationMinutes * 60 + 600,
-  );
+  const elapsedSeconds = serverElapsed(session);
   const graph = safeGraph(body.graph);
   session.revisions.push(
     ...semanticGraphRevisions(session.graph, graph, elapsedSeconds),
@@ -539,14 +548,7 @@ async function handleFeedback(
     | 5;
   const comments = cleanText(body.comments, 2000);
 
-  if (!env.FDE_GYM_SESSIONS || !sessionId) {
-    return jsonResponse({ ok: true, retained: false });
-  }
-
-  const stored = await env.FDE_GYM_SESSIONS.get(sessionKey(sessionId));
-  if (!stored) return jsonResponse({ ok: true, retained: false });
-
-  const session = safeSession(JSON.parse(stored));
+  const session = await canonicalSession(env, { id: sessionId, accessToken: body.accessToken } as InterviewSession);
   session.feedback = {
     realismComparedToChatGPT: realism,
     wouldReturnTomorrow: Boolean(body.wouldReturnTomorrow),
@@ -558,11 +560,6 @@ async function handleFeedback(
 }
 
 function health(env: FdeGymEnv): Response {
-  // aiConfigured only means the binding exists. A bound but failing model still
-  // produces working sessions on the deterministic path, so the binding alone
-  // is not evidence that interviews are real. lastModelError is what separates
-  // the two, and it carries a model name and the runtime's error, never prompt
-  // or transcript content.
   const failure = lastModelFailure();
   return jsonResponse({
     ok: true,
@@ -572,8 +569,8 @@ function health(env: FdeGymEnv): Response {
       (env.RESEND_API_KEY && env.FDE_GYM_FROM_EMAIL) ||
         env.FDE_GYM_REPORT_WEBHOOK_URL,
     ),
-    statelessDevAllowed: statelessDevAllowed(env),
-    lastModelError: failure,
+    statelessDevAllowed: false,
+    modelStatus: !env.AI ? "unavailable" : failure ? "degraded" : "unknown",
   });
 }
 
@@ -600,9 +597,10 @@ export async function handleFdeGymRequest(
 
     return jsonResponse({ error: "FDE Gym route not found." }, { status: 404 });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unexpected FDE Gym error.";
-    return jsonResponse({ error: message }, { status: 400 });
+    if (error instanceof SessionAccessError) {
+      return jsonResponse({ error: "This interview is unavailable. Start a new interview." }, { status: 403 });
+    }
+    return jsonResponse({ error: "This request could not be processed." }, { status: 400 });
   }
 }
 

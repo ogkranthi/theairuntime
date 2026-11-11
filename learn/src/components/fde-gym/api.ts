@@ -76,6 +76,7 @@ export async function requestReport(input: {
 
 export async function sendFeedback(input: {
   sessionId: string;
+  accessToken?: string;
   realismComparedToChatGPT: 1 | 2 | 3 | 4 | 5;
   wouldReturnTomorrow: boolean;
   comments?: string;

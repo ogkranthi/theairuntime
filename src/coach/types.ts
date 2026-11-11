@@ -56,13 +56,7 @@ export interface CoachResponse {
   detectedConcepts?: string[];
 }
 
-/**
- * Lesson position, carried by the client and signed by the server.
- *
- * Client held so there is no database and no account, signed so it cannot be
- * edited. `calls` is the reason the signature matters: it is the per-session
- * ceiling on model calls, and an unsigned copy would let anyone lift it.
- */
+/** Client-held signed position. Signing prevents edits, not replay. */
 export interface CoachState {
   lessonId: string;
   stageIndex: number;

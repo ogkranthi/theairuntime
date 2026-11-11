@@ -55,6 +55,7 @@ export default function ResultScreen({
     try {
       await sendFeedback({
         sessionId: session.id,
+        accessToken: session.accessToken,
         realismComparedToChatGPT: realism,
         wouldReturnTomorrow: returnTomorrow,
         comments: comments.trim() || undefined,

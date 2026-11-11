@@ -9,15 +9,7 @@ import type { CoachResponse, CoachState, Lesson } from "./types";
  * skipping, or inventing a stage.
  */
 
-/**
- * Per lesson ceiling on model calls.
- *
- * Six stages with at most one probe each is twelve turns, plus a little slack.
- * The endpoint is unauthenticated by design, the Workers AI daily allowance is
- * shared with FDE Gym through one [ai] binding, and this cap is what stops one
- * visitor from spending the whole day's allowance. It is enforceable only
- * because the state carrying it is signed.
- */
+/** Logical lesson ceiling. Atomic consumption is needed to prevent replay. */
 export const MAX_MODEL_CALLS = 14;
 
 export type CoachPartKind = "say" | "principle" | "ask";

@@ -108,11 +108,12 @@ id = "8cb02842b8d44f07886395524b17128a"
 # Agent System Design Coach (/coach/, /api/coach/*).
 #
 # ONE REQUIRED SECRET. The lesson keeps the learner's place in a signed token
-# rather than a database, and that signature is what enforces the per lesson
-# ceiling on model calls. The endpoint is unauthenticated by design, and the
+# rather than a database. Signatures prevent edits but do not prevent replay,
+# so they do not enforce cumulative model-call quotas. The endpoint is unauthenticated by design, and the
 # Workers AI daily allowance is shared with FDE Gym through the single [ai]
 # binding above, so without the ceiling one visitor could spend the day's
-# allowance and take FDE Gym down with it.
+# allowance and take FDE Gym down with it. Atomic enforcement requires a
+# separate approved storage binding; KV counters are only best effort.
 #
 #   npx wrangler secret put COACH_TOKEN_SECRET
 #

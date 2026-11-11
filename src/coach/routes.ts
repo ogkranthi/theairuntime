@@ -1,3 +1,4 @@
+import { readLimitedText } from "../security/body";
 import { callModel, parseJsonObject } from "../fde-gym/model";
 import { cleanText, jsonResponse } from "../fde-gym/utils";
 import { lessonById, VENDOR_RESEARCH_AGENT } from "./lesson";
@@ -55,17 +56,14 @@ export async function handleCoachRequest(
     if (pathname === "/api/coach/start") return await handleStart(request, env, ctx);
     if (pathname === "/api/coach/message") return await handleMessage(request, env, ctx);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "That request could not be read.";
-    return jsonResponse({ error: message }, { status: 400 });
+    return jsonResponse({ error: "That request could not be processed." }, { status: 400 });
   }
 
   return jsonResponse({ error: "Not found" }, { status: 404 });
 }
 
 async function readJson(request: Request, limit: number): Promise<Record<string, unknown>> {
-  const text = await request.text();
-  if (text.length > limit) throw new Error("That request was too large.");
+  const text = await readLimitedText(request, limit);
   if (!text) return {};
   try {
     const parsed = JSON.parse(text);
@@ -77,15 +75,7 @@ async function readJson(request: Request, limit: number): Promise<Record<string,
   }
 }
 
-/**
- * A configuration gap, reported as one.
- *
- * Deliberately fatal rather than falling back to an unsigned token: the
- * signature is the only thing enforcing the per lesson model call ceiling, and
- * a lesson that quietly runs without one is an open AI endpoint. 503 rather
- * than 400 because nothing is wrong with the request. The client asks health
- * first and never shows a start button it cannot honour.
- */
+/** A missing signing key must never produce an unsigned token. */
 const NOT_CONFIGURED = "The coach is not open yet.";
 
 function unconfigured(): Response {
@@ -273,12 +263,8 @@ function summaryOf(lesson: Lesson) {
 }
 
 /**
- * Best effort start throttle.
- *
- * KV has no atomic increment and is eventually consistent, so this is a speed
- * bump rather than a limit, and it is not the real defense. The real one is the
- * signed per lesson call ceiling: this only raises the cost of minting fresh
- * lessons to get more ceilings.
+ * Best effort start throttle. KV is eventually consistent and has no atomic
+ * increment, so neither this counter nor signed state enforces a hard quota.
  */
 async function allowStart(env: CoachEnv, request: Request): Promise<boolean> {
   const store = env.FDE_GYM_SESSIONS;

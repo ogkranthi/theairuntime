@@ -108,6 +108,9 @@ export interface ResearchConsent {
 }
 
 export interface InterviewSession {
+  /** Bearer capability. Keep private, like the session transcript. */
+  accessToken?: string;
+  expiresAt?: number;
   id: string;
   version: 1;
   scenarioId: string;
@@ -307,6 +310,7 @@ export interface ReportRequest {
 
 export interface FeedbackRequest {
   sessionId: string;
+  accessToken?: string;
   realismComparedToChatGPT: 1 | 2 | 3 | 4 | 5;
   wouldReturnTomorrow: boolean;
   comments?: string;
@@ -343,7 +347,7 @@ export interface FdeGymEnv {
   FDE_GYM_INTERVIEW_MODEL?: string;
   FDE_GYM_EVALUATOR_MODEL?: string;
   FDE_GYM_SESSION_TTL_SECONDS?: string;
-  /** Local-only escape hatch. Never enable for Cohort 0 production. */
+  /** Deprecated and ignored. Canonical storage is always required. */
   FDE_GYM_ALLOW_STATELESS_DEV?: string;
   RESEND_API_KEY?: string;
   FDE_GYM_FROM_EMAIL?: string;
