@@ -6,7 +6,17 @@ All stateful Gym POSTs now require a private UUID `Idempotency-Key` header.
 The session returned by start includes `accessToken`, `revision`, and absolute
 `expiresAt`; message, finish, and report must send that session. Feedback must
 send `sessionId` and `accessToken`. Session IDs alone grant no access. Start
-requires research consent as before. Legacy sessions must restart.
+requires literal `true` research consent and confidentiality acknowledgement.
+Before start admission, the Worker rejects invalid or unsupported options without
+spending any start quota or creating a reservation. Omitted non-consent options
+keep their defaults. Legacy sessions must restart.
+
+Start requests additionally require a private random `X-Session-Client` header
+(32-128 URL-safe characters). Reuse it with the same start key and payload for
+retries; generate a fresh random scope for a different client. The browser clients
+keep a token made from two UUIDs in page memory. Neither a shared IP nor a reused
+idempotency key grants access to another client's start credentials. The scope is
+a private bearer receipt, not an account identity.
 
 Message and finish revisions advance atomically. Exact retries reuse the original
 key and JSON payload. Finish, report, and feedback are one submission per session;
@@ -139,6 +149,12 @@ All routes are same-origin and return JSON with `cache-control: no-store`.
 `INCOMPLETE ASSESSMENT` is a valid verdict when critical coverage is missing.
 
 ## POST /api/fde-gym/report
+
+A successful response confirms provider acceptance, not inbox delivery. The
+client requires `ok: true` and `emailed: true` or `webhookDelivered: true` before
+showing "REPORT REQUEST ACCEPTED" with delivery still unconfirmed. Unknown,
+pending, malformed, or negative outcomes stay in the error state and cannot
+trigger another external delivery.
 
 ### Request
 

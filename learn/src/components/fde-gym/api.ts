@@ -6,6 +6,7 @@ import type {
 } from "./types";
 
 const pendingRequests = new Map<string, string>();
+let startClient: string | undefined;
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
   const payload = JSON.stringify(body);
@@ -16,9 +17,14 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
     if (pendingRequests.size >= 8) pendingRequests.delete(pendingRequests.keys().next().value!);
     pendingRequests.set(identity, key);
   }
+  const headers: Record<string, string> = { "content-type": "application/json", "idempotency-key": key };
+  if (path.endsWith("/start")) {
+    startClient ??= crypto.randomUUID() + crypto.randomUUID();
+    headers["x-session-client"] = startClient;
+  }
   const response = await fetch(path, {
     method: "POST",
-    headers: { "content-type": "application/json", "idempotency-key": key },
+    headers,
     body: payload,
   });
 
@@ -80,12 +86,16 @@ export async function requestReport(input: {
   email: string;
   subscribe: boolean;
 }) {
-  return postJson<{
+  const result = await postJson<{
     ok: true;
     subscribed: boolean;
     emailed: boolean;
     webhookDelivered?: boolean;
   }>("/api/fde-gym/report", input);
+  if (result.ok !== true || (result.emailed !== true && result.webhookDelivered !== true)) {
+    throw new Error("Report delivery could not be confirmed. Your interview result remains available.");
+  }
+  return result;
 }
 
 export async function sendFeedback(input: {

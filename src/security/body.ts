@@ -1,7 +1,9 @@
+export class BodyTooLargeError extends Error {}
+
 /** Bound actual bytes, including chunked requests without Content-Length. */
 export async function readLimitedText(request: Request, maxBytes: number): Promise<string> {
   const declared = Number(request.headers.get("content-length") ?? "0");
-  if (declared > maxBytes) throw new Error("Request is too large.");
+  if (declared > maxBytes) throw new BodyTooLargeError("Request is too large.");
   if (!request.body) return "";
   const reader = request.body.getReader();
   const decoder = new TextDecoder();
@@ -14,7 +16,7 @@ export async function readLimitedText(request: Request, maxBytes: number): Promi
       bytes += value.byteLength;
       if (bytes > maxBytes) {
         await reader.cancel();
-        throw new Error("Request is too large.");
+        throw new BodyTooLargeError("Request is too large.");
       }
       text += decoder.decode(value, { stream: true });
     }

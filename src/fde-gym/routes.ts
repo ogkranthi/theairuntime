@@ -1,3 +1,4 @@
+import { validateGymStart } from "../security/start";
 import { LIMITS } from "../security/types";
 import { withSessionSecurity } from "../security/boundary";
 import { readLimitedText } from "../security/body";
@@ -240,7 +241,7 @@ async function handleStart(request: Request, env: FdeGymEnv): Promise<Response> 
     return jsonResponse({ error: "Method not allowed." }, { status: 405 });
   }
 
-  const body = await readBody<StartRequest>(request, 30_000);
+  const body = validateGymStart(await readBody<Record<string, unknown>>(request, 30_000));
   if (!env.FDE_GYM_SESSIONS) {
     // A visitor sees this on the setup screen, so it stays in plain language.
     // Storage is required for canonical state and session capabilities.
@@ -252,16 +253,6 @@ async function handleStart(request: Request, env: FdeGymEnv): Promise<Response> 
       { status: 503 },
     );
   }
-  if (!body.researchConsent || !body.confidentialityAcknowledged) {
-    return jsonResponse(
-      {
-        error:
-          "Cohort 0 requires research consent and acknowledgement that confidential information must not be entered.",
-      },
-      { status: 400 },
-    );
-  }
-
   const session = startSession(body);
   session.id = env.securityExecution!.sessionId;
   session.accessToken = env.securityExecution!.accessToken;
@@ -490,7 +481,7 @@ async function handleReport(
     return jsonResponse(
       {
         error:
-          "The report could not be delivered because email delivery is not configured or failed. Your result remains available in this session.",
+          "Report delivery could not be confirmed. Your result remains available in this session.",
         subscribed,
         emailed: false,
       },

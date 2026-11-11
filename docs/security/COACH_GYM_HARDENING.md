@@ -82,6 +82,22 @@ state. Coach tokens now include a signed random session ID and revision; old
 signed positions cannot roll the session back. Legacy tokens/sessions must
 restart. Gym bearer capabilities remain separate from session IDs.
 
+## Start validation before admission
+
+Pure validators shared by the boundary and session constructors validate Coach
+lesson IDs and Gym options before contacting the object. Gym consent and
+confidentiality acknowledgements must be literal `true`; unsupported enum values,
+durations, drills, types, and unknown fields are rejected. Omitted non-consent
+options retain their established defaults. Malformed JSON/objects, oversized
+requests, and missing private client scopes also fail before admission. These
+rejections create no reservations, KV writes, IP counters, or shared daily start
+charges. Conflicting idempotency requests and quota denials also leave counters
+unchanged through SQLite transaction rollback.
+
+A valid start that is admitted but then encounters infrastructure failure remains
+counted conservatively. An uncertain accepted operation is not refunded or
+re-executed. This preserves the existing failure and quota guarantees.
+
 ## Quotas and bounds
 
 Values are centralized in `src/security/types.ts` and are intentionally explicit
@@ -120,9 +136,17 @@ and preserve failed requests' keys in memory for retries. Gym omits its ignored
 browser timer from message/finish payloads so elapsed UI time cannot change a
 retry's identity. API callers must reuse
 the same key and exact JSON payload, including property order, to recover a
-message result. The same key with changed input returns 409. Start retries also
-bind the request to the Cloudflare client IP. Keys/results have session lifetime,
-not indefinite retention.
+message result. The same key with changed input returns 409. Start requests also
+require a private `X-Session-Client` token (32-128 letters, digits, underscores,
+or hyphens). Each API client creates a fresh random token from two UUIDs and
+retains it only in page memory. Start operation IDs hash the application, private
+client scope, and idempotency key; SQLite receives only hashes. Two different
+clients reusing a request key get separate sessions, including behind a shared
+NAT or with no client IP header. IP addresses are used only for throttling, never
+as credential-replay authority. One client's exact retry can move IP addresses
+without changing its result. The private scope plus key is a bearer start receipt,
+not a login or identity guarantee; sharing or stealing both allows replay.
+Keys/results have session lifetime, not indefinite retention.
 
 Message keys are scoped to their session. Finish, report, and feedback have a
 single operation slot each per session, regardless of the supplied key. An exact
@@ -152,6 +176,13 @@ a page reload to discard that start's retry key. A model operation taking over
 120 seconds can be conservatively abandoned even if it later completes.
 
 Reports provide at-most-once application initiation, not exactly-once delivery.
+The API client requires `ok: true` and an explicit boolean acknowledgement from
+email or report webhook before resolving. HTTP success alone, malformed JSON,
+subscription success alone, pending requests, and uncertain outcomes never show
+the accepted state. The existing result panel says "REPORT REQUEST ACCEPTED" and
+qualifies that inbox delivery is not confirmed, even after provider acceptance.
+It never labels provider acceptance as "REPORT SENT" or "Check your inbox".
+
 After a report reservation, every configured external integration is initiated
 at most once. If a response is lost, the provider may have delivered; no automatic
 retry, recipient change, or fresh key resends it. A failed or unconfigured report
@@ -221,10 +252,13 @@ References checked against Cloudflare's official documentation source:
 1. Review the complete PR and quota values. Do not merge while review is pending:
    this repository's main-branch Workers Builds pipeline deploys on merge.
 2. Run `npm ci`, `npm test`, `npm run check:worker`,
-   `npx astro check --root learn`, `npm run build`, and
+   `npx astro check --root learn`, `npm run build`, `npm run test:report-status`, and
    `npx wrangler@4.160.1 deploy --dry-run --outdir /tmp/air-worker-review`.
    The tests use local workerd/SQLite and stub providers, never production AI,
-   retained sessions, email, bindings, or credentials.
+   retained sessions, email, bindings, or credentials. The optional rendered
+   report regression requires Node 22+ and local Chromium (`CHROMIUM_BIN` can
+   override its path),
+   stubs every API call, and blocks background DNS. It adds no npm dependencies.
 3. An authorized operator should check plan allowances and existing environment
    configuration privately. Keep existing secrets in Cloudflare. The current KV,
    AI, assets, and dashboard variables must be preserved. No secret export into

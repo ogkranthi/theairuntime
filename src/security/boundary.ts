@@ -1,8 +1,9 @@
+import { validateCoachStart, validateGymStart } from "./start";
 import { cleanText, isValidEmail, normalizeSessionForClient } from "../fde-gym/utils";
 import type { FdeGymEnv, InterviewSession } from "../fde-gym/types";
 import type { CoachEnv } from "../coach/types";
 import { signState, verifyState } from "../coach/token";
-import { readLimitedText } from "./body";
+import { BodyTooLargeError, readLimitedText } from "./body";
 import { AdmissionError, type Admission, type SecurityEnv, type SecurityExecution } from "./types";
 
 type Env = FdeGymEnv & CoachEnv;
@@ -69,14 +70,22 @@ export async function withSessionSecurity(
     let accessToken: string | undefined;
     let canonical: InterviewSession | undefined;
     if (action === "start") {
+      // Invalid client input must not consume a start bucket or create metadata.
+      if (kind === "coach") validateCoachStart(body);
+      else validateGymStart(body);
+      const client = request.headers.get("x-session-client");
+      if (!client || !/^[a-zA-Z0-9_-]{32,128}$/.test(client)) {
+        throw new AdmissionError(400, "A private X-Session-Client token is required to start a session.");
+      }
+      const scope = await digest(JSON.stringify([client, key]));
       accessToken = kind === "gym" ? crypto.randomUUID() + crypto.randomUUID() : undefined;
       const sessionId = crypto.randomUUID();
       capability = await digest(accessToken ?? `coach:${sessionId}`);
       const hour = Math.floor(Date.now() / 3_600_000);
       const actor = await digest(`${hour}:${request.headers.get("cf-connecting-ip") ?? "unknown"}`);
       lease = await admissionRpc<Admission>(env, "start", {
-        kind, sessionId, capability, operationId: `start:${kind}:${await digest(key)}`,
-        fingerprint: await digest(`${key}:${request.headers.get("cf-connecting-ip") ?? "unknown"}:${fingerprint}`), actor,
+        kind, sessionId, capability, operationId: `start:${kind}:${scope}`,
+        fingerprint: await digest(JSON.stringify([client, key, fingerprint])), actor,
         ttlMs: Math.min(90 * 86_400, Math.max(60, Number(env.FDE_GYM_SESSION_TTL_SECONDS) || 30 * 86_400)) * 1000,
         duration: Number(body.durationMinutes) === 15 ? 15 : 30,
       });
@@ -180,8 +189,8 @@ export async function withSessionSecurity(
     });
     return responseOf(record);
   } catch (error) {
-    const status = error instanceof AdmissionError ? error.status : error instanceof SyntaxError ? 400 : 503;
-    const message = error instanceof AdmissionError ? error.message : status === 400 ? "Invalid request." : "This request could not be completed safely. Retry the original request or restart.";
+    const status = error instanceof AdmissionError ? error.status : error instanceof BodyTooLargeError ? 413 : error instanceof SyntaxError ? 400 : 503;
+    const message = error instanceof AdmissionError ? error.message : status === 413 ? "Request is too large." : status === 400 ? "Invalid request." : "This request could not be completed safely. Retry the original request or restart.";
     return Response.json({ error: message }, { status, headers: { "cache-control": "no-store" } });
   }
 }

@@ -11,7 +11,8 @@
     "check:worker": "tsc --noEmit -p tsconfig.worker.json",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:report-status": "node scripts/test-report-status.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

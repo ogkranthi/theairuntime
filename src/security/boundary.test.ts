@@ -13,6 +13,7 @@ let env: FdeGymEnv & CoachEnv;
 let store: Map<string, string>;
 let ai: ReturnType<typeof vi.fn>;
 let control: (path: string, body?: unknown) => Promise<any>;
+const CLIENT = crypto.randomUUID() + crypto.randomUUID();
 const SECRET = "local-test-signing-key";
 const coachReply = { response: JSON.stringify({ message: "Consider the evidence and tradeoffs.", action: "advance" }) };
 beforeAll(async () => { runtime = await securityRuntime(); }, 30_000);
@@ -31,9 +32,9 @@ beforeEach(() => {
     return response.json();
   };
 });
-async function post(kind: "coach" | "gym", action: string, body: unknown, key = crypto.randomUUID()) {
+async function post(kind: "coach" | "gym", action: string, body: unknown, key = crypto.randomUUID(), client = CLIENT, ip?: string) {
   const request = new Request(`https://learn.theairuntime.com/api/${kind === "gym" ? "fde-gym" : "coach"}/${action}`, {
-    method: "POST", headers: { "idempotency-key": key }, body: JSON.stringify(body),
+    method: "POST", headers: { "idempotency-key": key, "x-session-client": client, ...(ip ? { "cf-connecting-ip": ip } : {}) }, body: JSON.stringify(body),
   });
   const response = kind === "coach" ? await handleCoachRequest(request, env) : await handleFdeGymRequest(request, env);
   return { status: response.status, body: await response.json() as any };
@@ -76,6 +77,102 @@ describe("Worker security boundary", () => {
     expect(retry).toEqual(first);
     expect((await control("__inspect")).sessions).toHaveLength(1);
     expect(ai).not.toHaveBeenCalled();
+  });
+  it.each([
+    ["coach", { lessonId: "missing-lesson" }],
+    ["coach", { lessonId: "__proto__" }], ["coach", { lessonId: "constructor" }], ["coach", { lessonId: "toString" }], ["coach", { lessonId: "" }],
+    ["coach", { lessonId: 12 }], ["coach", { unknown: true }],
+    ["gym", {}], ["gym", { researchConsent: false, confidentialityAcknowledged: true }],
+    ["gym", { researchConsent: "true", confidentialityAcknowledged: true }],
+    ["gym", { researchConsent: true, confidentialityAcknowledged: "false" }],
+    ...[{ mode: "unknown" }, { level: "unknown" }, { durationMinutes: 60 },
+      { durationMinutes: "15" }, { drillId: "unknown" }, { drillId: 123 }, { extra: true }]
+      .map(options => ["gym", { researchConsent: true, confidentialityAcknowledged: true, ...options }]),
+  ] as const)("rejects invalid %s starts without contacting admission", async (kind, payload) => {
+    const binding = env.AI_SECURITY!;
+    const fetch = vi.fn((url: string, init: RequestInit) => binding.get(binding.idFromName("ignored")).fetch(url, init));
+    env.AI_SECURITY = { idFromName: name => binding.idFromName(name), get: () => ({ fetch }) as unknown as ReturnType<typeof binding.get> };
+    expect((await post(kind as "coach" | "gym", "start", payload)).status).toBe(400);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(await control("__inspect")).toEqual({ sessions: [], operations: [], counters: [] });
+    expect(store.size).toBe(0);
+    expect(ai).not.toHaveBeenCalled();
+  });
+  it.each(["coach", "gym"] as const)("does not pin a %s start key rejected before admission", async kind => {
+    const key = crypto.randomUUID();
+    const invalid = kind === "coach" ? { lessonId: "missing" } : { researchConsent: false, confidentialityAcknowledged: true };
+    expect((await post(kind, "start", invalid, key)).status).toBe(400);
+    expect(await control("__inspect")).toEqual({ sessions: [], operations: [], counters: [] });
+    const valid = kind === "coach" ? {} : { researchConsent: true, confidentialityAcknowledged: true };
+    expect((await post(kind, "start", valid, key)).status).toBe(200);
+    const metadata = await control("__inspect");
+    expect(metadata.sessions).toHaveLength(1);
+    expect(metadata.operations).toHaveLength(1);
+    expect(metadata.counters.find((counter: any) => counter.id.startsWith("starts:day:")).value).toBe(1);
+  });
+  it("does not let a flood of rejected starts consume the final daily slot", async () => {
+    const day = Math.floor(Date.now() / 86_400_000);
+    await control("__counter", { id: `starts:day:${day}`, value: LIMITS.startsPerDay - 1, expires: Date.now() + 86_400_000 });
+    const before = await control("__inspect");
+    const rejected = await Promise.all(Array.from({ length: 24 }, (_, index) =>
+      index % 2 ? post("coach", "start", { lessonId: "missing" }) : post("gym", "start", {})));
+    expect(rejected.every(result => result.status === 400)).toBe(true);
+    expect(await control("__inspect")).toEqual(before);
+    const admitted = await Promise.all([post("coach", "start", {}), post("gym", "start", { researchConsent: true, confidentialityAcknowledged: true })]);
+    expect(admitted.map(result => result.status).sort()).toEqual([200, 429]);
+    const after = await control("__inspect");
+    expect(after.sessions).toHaveLength(1);
+    expect(after.counters.find((counter: any) => counter.id === `starts:day:${day}`).value).toBe(LIMITS.startsPerDay);
+  });
+  it.each(["coach", "gym"] as const)("isolates %s credentials for concurrent clients with colliding keys behind one IP", async kind => {
+    const key = crypto.randomUUID();
+    const clients = [crypto.randomUUID() + crypto.randomUUID(), crypto.randomUUID() + crypto.randomUUID()];
+    const payload = kind === "gym" ? { researchConsent: true, confidentialityAcknowledged: true } : {};
+    const results = await Promise.all(clients.map(client => post(kind, "start", payload, key, client, "192.0.2.1")));
+    expect(results.map(result => result.status)).toEqual([200, 200]);
+    const credentials = results.map(result => kind === "gym" ? result.body.session.accessToken : result.body.token);
+    expect(credentials[0]).not.toBe(credentials[1]);
+    for (let i = 0; i < clients.length; i++) {
+      expect(await post(kind, "start", payload, key, clients[i], "192.0.2.1")).toEqual(results[i]);
+    }
+    const metadata = await control("__inspect");
+    expect(metadata.sessions).toHaveLength(2);
+    expect(metadata.counters.find((counter: any) => counter.id.startsWith("starts:day:")).value).toBe(2);
+    for (const client of clients) expect(JSON.stringify(metadata)).not.toContain(client);
+  });
+  it.each(["coach", "gym"] as const)("grants only one execution for simultaneous identical %s starts", async kind => {
+    const key = crypto.randomUUID();
+    const payload = kind === "gym" ? { researchConsent: true, confidentialityAcknowledged: true } : {};
+    const results = await Promise.all(Array.from({ length: 8 }, () => post(kind, "start", payload, key)));
+    const accepted = results.filter(result => result.status === 200);
+    expect(accepted.length).toBeGreaterThan(0);
+    expect(results.every(result => result.status === 200 || result.status === 409)).toBe(true);
+    expect(accepted.every(result => JSON.stringify(result.body) === JSON.stringify(accepted[0].body))).toBe(true);
+    const metadata = await control("__inspect");
+    expect(metadata.sessions).toHaveLength(1);
+    expect(metadata.operations).toHaveLength(1);
+    expect(metadata.counters.find((counter: any) => counter.id.startsWith("starts:day:")).value).toBe(1);
+  });
+  it("rejects malformed and oversized starts and missing client scopes before admission", async () => {
+    for (const kind of ["coach", "gym"] as const) {
+      for (const [text, status] of [["{", 400], ["[]", 400], ["null", 400], ["x".repeat(31_000), 413]] as const) {
+        const request = new Request(`https://example.com/api/${kind === "gym" ? "fde-gym" : "coach"}/start`, {
+          method: "POST", headers: { "idempotency-key": crypto.randomUUID(), "x-session-client": CLIENT }, body: text,
+        });
+        expect((await (kind === "gym" ? handleFdeGymRequest(request, env) : handleCoachRequest(request, env))).status).toBe(status);
+      }
+      const payload = kind === "gym" ? { researchConsent: true, confidentialityAcknowledged: true } : {};
+      expect((await post(kind, "start", payload, crypto.randomUUID(), "")).status).toBe(400);
+    }
+    expect(await control("__inspect")).toEqual({ sessions: [], operations: [], counters: [] });
+  });
+  it("keeps one client's retry private across an IP change and rejects changed input", async () => {
+    const key = crypto.randomUUID();
+    const first = await post("coach", "start", {}, key, CLIENT, "192.0.2.1");
+    expect(await post("coach", "start", {}, key, CLIENT, "192.0.2.2")).toEqual(first);
+    const before = await control("__inspect");
+    expect((await post("coach", "start", { lessonId: "vendor-research-agent" }, key, CLIENT, "192.0.2.2")).status).toBe(409);
+    expect(await control("__inspect")).toEqual(before);
   });
   it("rejects legacy Coach tokens and missing idempotency headers", async () => {
     const response = await handleCoachRequest(new Request("https://example.com/api/coach/start", { method: "POST", body: "{}" }), env);

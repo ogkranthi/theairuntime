@@ -16,7 +16,7 @@ const env: FdeGymEnv = {
 };
 function post(path: string, body: unknown, target = env, key = crypto.randomUUID()) {
   return handleFdeGymRequest(new Request(`https://learn.theairuntime.com/api/fde-gym/${path}`, {
-    method: "POST", body: JSON.stringify(body), headers: { "idempotency-key": key },
+    method: "POST", body: JSON.stringify(body), headers: { "idempotency-key": key, "x-session-client": "test-client-private-token-at-least-32-characters" },
   }), target);
 }
 async function start() {

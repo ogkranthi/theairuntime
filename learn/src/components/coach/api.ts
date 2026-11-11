@@ -37,6 +37,7 @@ export interface StageTurn {
 }
 
 const pendingRequests = new Map<string, string>();
+let startClient: string | undefined;
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
   const payload = JSON.stringify(body);
@@ -47,9 +48,14 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
     if (pendingRequests.size >= 8) pendingRequests.delete(pendingRequests.keys().next().value!);
     pendingRequests.set(identity, key);
   }
+  const headers: Record<string, string> = { "content-type": "application/json", "idempotency-key": key };
+  if (path.endsWith("/start")) {
+    startClient ??= crypto.randomUUID() + crypto.randomUUID();
+    headers["x-session-client"] = startClient;
+  }
   const response = await fetch(path, {
     method: "POST",
-    headers: { "content-type": "application/json", "idempotency-key": key },
+    headers,
     body: payload,
   });
 

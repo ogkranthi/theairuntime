@@ -189,5 +189,5 @@ export const LESSONS: Record<string, Lesson> = {
 };
 
 export function lessonById(id: string): Lesson | null {
-  return LESSONS[id] ?? null;
+  return Object.prototype.hasOwnProperty.call(LESSONS, id) ? LESSONS[id] : null;
 }

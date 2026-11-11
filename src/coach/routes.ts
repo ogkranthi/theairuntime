@@ -1,3 +1,4 @@
+import { validateCoachStart } from "../security/start";
 import { withSessionSecurity } from "../security/boundary";
 import { readLimitedText } from "../security/body";
 import { callModel, parseJsonObject } from "../fde-gym/model";
@@ -92,10 +93,7 @@ async function handleStart(
   if (!secret) return unconfigured();
   const body = await readJson(request, START_BODY_LIMIT);
 
-  const lesson =
-    lessonById(cleanText(body.lessonId, 100) || VENDOR_RESEARCH_AGENT.id) ??
-    null;
-  if (!lesson) throw new Error("That lesson does not exist.");
+  const lesson = validateCoachStart(body);
 
   const state = initialState(lesson.id, Date.now());
   count(env, ctx, `${lesson.id}:started`);
