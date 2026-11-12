@@ -140,7 +140,7 @@ export default function FdeCoach() {
     {!active ? <>
       <div className="fde-welcome"><div className="fde-welcome__copy"><p className="fde-kicker"><span className="fde-spark" aria-hidden="true">✳</span> YOUR NEXT CHAPTER STARTS HERE</p>
         <h1>Your AI Coach for <span>Forward Deployed</span> Engineering</h1>
-        <p className="fde-intro">Learn system design, build real skills, and prepare for FDE roles. One conversation at a time.</p></div><SystemIllustration/></div>
+        <p className="fde-intro">Learn system design, build real skills, and prepare for FDE roles. One conversation at a time.</p><p className="fde-mode-notice" id="fde-guidance-notice">Curated guidance, not personalized AI.</p></div><SystemIllustration/></div>
       <div className="fde-starters" aria-label="Choose your starting point">{starters.map(item => <button type="button" className={`fde-starter fde-starter--${item.tone}`} key={item.id} onClick={() => choose(item.id)}>
         <span className="fde-starter__icon"><GoalIcon kind={item.id}/></span><span><strong>{item.title}</strong><span className="fde-starter__description">{item.description}</span></span><span className="fde-starter__arrow"><Arrow small/></span></button>)}</div>
     </> : <>
@@ -168,7 +168,7 @@ export default function FdeCoach() {
       {scripted && mode === "lesson" && !done ? <p className="fde-disclosure">The written lesson is active. Replies follow the authored material rather than your exact wording.</p> : null}
       {!done ? <form className="fde-composer" onSubmit={event => { event.preventDefault(); submit(); }}>
         <label className="fde-sr-only" htmlFor="fde-message">{mode === "lesson" ? "Your answer to the lesson" : "Ask your FDE Coach"}</label>
-        <textarea id="fde-message" ref={input} rows={2} maxLength={2000} value={draft} readOnly={busy || Boolean(pending)} aria-describedby={error ? "fde-input-help fde-request-error" : "fde-input-help"}
+        <textarea id="fde-message" ref={input} rows={2} maxLength={2000} value={draft} readOnly={busy || Boolean(pending)} aria-describedby={["fde-input-help", !active && "fde-guidance-notice", error && "fde-request-error"].filter(Boolean).join(" ")}
           placeholder={mode === "lesson" ? "Answer the current lesson question..." : "Ask your FDE Coach anything..."}
           onChange={event => setDraft(event.currentTarget.value)} onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}
           onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !composing.current && !event.nativeEvent.isComposing && event.nativeEvent.keyCode !== 229) { event.preventDefault(); submit(); } }}/>
@@ -177,7 +177,7 @@ export default function FdeCoach() {
       </form> : <div className="fde-completed"><span>Guided lesson complete. Your recap is above.</span><button type="button" onClick={reset}>Explore another direction <Arrow small/></button></div>}
       {!active ? <div className="fde-prompts" aria-label="Try a question">{prompts.map(prompt => <button key={prompt.id} type="button" onClick={() => choose(prompt.id)}>{prompt.title}<Arrow small/></button>)}</div>
         : mode === "guide" && last ? <div className="fde-followups" aria-label="Suggested next steps">{last.followups.map(goal => <button key={goal} type="button" onClick={() => choose(goal)}>{goalLabel(goal)} <Arrow small/></button>)}</div> : null}
-      <p className="fde-help" id="fde-input-help">{mode === "lesson" ? "Use fictional or non-sensitive examples. Enter sends; Shift+Enter adds a line." : "Curated guidance today. Personalized AI chat is not connected yet."}{draft.length > 1800 ? ` ${draft.length}/2000 characters.` : ""}</p>
+      <p className="fde-help" id="fde-input-help">{mode === "lesson" ? "Use fictional or non-sensitive examples. Enter sends; Shift+Enter adds a line." : "General questions receive curated guidance, not personalized AI."}{draft.length > 1800 ? ` ${draft.length}/2000 characters.` : ""}</p>
     </div>
     {!active ? <p className="fde-welcome__foot">A place to learn, practice, and build proof. <a href="/commons/">Explore the Commons <Arrow small/></a></p> : null}
   </section>;

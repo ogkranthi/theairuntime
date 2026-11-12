@@ -95,6 +95,13 @@ try {
     await viewport(width,height);await visit();await overflow(`welcome ${width}`);
     assert.equal(await evaluate("document.querySelectorAll('.fde-starter').length"),3);
     assert.ok(await evaluate("document.querySelector('#fde-message').getBoundingClientRect().top < innerHeight"),`composer visible at ${width}`);
+    assert.ok(await evaluate("(()=>{const n=document.querySelector('.fde-mode-notice');const r=n.getBoundingClientRect();return n.textContent.includes('not personalized AI') && r.top >= 0 && r.bottom < innerHeight})()"),`Capability notice visible before starting at ${width}`);
+    assert.ok(await evaluate("document.querySelector('#fde-message').getAttribute('aria-describedby').includes('fde-guidance-notice')"));
+    if(width<620) {
+      assert.ok(await evaluate("parseFloat(getComputedStyle(document.querySelector('.fde-intro')).fontSize) >= 15"));
+      assert.ok(await evaluate("parseFloat(getComputedStyle(document.querySelector('.fde-starter__description')).fontSize) >= 12.5"));
+      assert.equal(await evaluate("getComputedStyle(document.querySelector('.fde-illustration')).display"),"none");
+    } else if(width===1440) assert.ok(await evaluate("document.querySelector('.fde-illustration').getBoundingClientRect().width >= 340"));
     if(width===390||width===1440) await capture(`${width===390?'mobile':'desktop'}-welcome.png`);
     const before = apiCalls.length;
     await click('.fde-starter--orange');
@@ -102,15 +109,51 @@ try {
     assert.equal(apiCalls.length,before,"Curated chat must not call an AI endpoint");
     assert.ok(await evaluate("document.querySelector('.fde-transcript').textContent.includes('Curated guidance')"));
     assert.ok(await evaluate("document.querySelector('.fde-starters') === null"),"Welcome cards stay out of active chat");
+    if(width<620) {
+      assert.ok(await evaluate("parseFloat(getComputedStyle(document.querySelector('.fde-turn__body > p:not(.fde-turn__who)')).fontSize) >= 15"));
+      assert.ok(await evaluate("parseFloat(getComputedStyle(document.querySelector('.fde-help')).fontSize) >= 13"));
+      assert.ok(await evaluate("Array.from(document.querySelectorAll('.fde-send,.fde-reset,.fde-followups button')).every(n=>n.getBoundingClientRect().height>=44 && n.getBoundingClientRect().width>=44)"));
+    }
     if(width===390||width===1440) await capture(`${width===390?'mobile':'desktop'}-conversation.png`);
   }
   checks.push("Four responsive widths, exactly three starters, visible composer, honest resource chat, no new AI requests");
+  checks.push("Curated-only capability notice appears above actions at every width and describes the textbox");
+  checks.push("Readable mobile introduction, card descriptions, conversation body and persistent disclosure; 44px chat controls");
+  checks.push("Original desktop illustration is at least 340px wide and remains hidden on mobile");
+  await viewport(720,500);await visit();await overflow("desktop 200-percent zoom equivalent");
+  await click('.fde-starter--orange');await overflow("conversation 200-percent zoom equivalent");
+  assert.ok(await evaluate("document.querySelector('.fde-send').getBoundingClientRect().bottom <= innerHeight + 1"));
+  checks.push("Desktop reflow at a 720px CSS viewport, equivalent to 200-percent zoom on 1440px, keeps composer reachable");
   await viewport(390,844);await visit();
   await click('.coach-resources summary');assert.ok(await evaluate("document.querySelector('.coach-resources').open"));
   await cmd("Input.dispatchKeyEvent",{type:"keyDown",key:"Escape",code:"Escape"});await cmd("Input.dispatchKeyEvent",{type:"keyUp",key:"Escape",code:"Escape"});
   assert.equal(await evaluate("document.querySelector('.coach-resources').open"),false);
   assert.ok(await evaluate("document.activeElement.matches('.coach-resources summary')"));
   checks.push("Resource menu supports Escape and returns focus");
+  const ax = await cmd("Accessibility.getFullAXTree");
+  const textbox = ax.nodes.find(node=>node.role?.value==='textbox');
+  assert.equal(textbox?.name?.value,"Ask your FDE Coach");
+  assert.ok(textbox?.description?.value.includes("not personalized AI"),"Screen reader receives the capability disclosure");
+  await cmd("Input.dispatchKeyEvent",{type:"keyDown",key:"Tab",code:"Tab"});await cmd("Input.dispatchKeyEvent",{type:"keyUp",key:"Tab",code:"Tab"});
+  assert.ok(await evaluate("document.activeElement.matches('.fde-starter')"));
+  await cmd("Input.dispatchKeyEvent",{type:"keyDown",key:"Enter",code:"Enter",windowsVirtualKeyCode:13,text:"\r"});await cmd("Input.dispatchKeyEvent",{type:"keyUp",key:"Enter",code:"Enter",windowsVirtualKeyCode:13});
+  await until("Boolean(document.querySelector('.fde-coach--active'))","keyboard starter");
+  await evaluate("document.querySelector('.fde-transcript').focus()");
+  assert.ok(await evaluate("document.activeElement.matches('.fde-transcript') && getComputedStyle(document.activeElement).outlineStyle !== 'none'"));
+  checks.push("Accessible textbox name and capability description; keyboard-only starter and visible transcript focus");
+  const contrastRatios = await evaluate(`(() => {
+    const luminance = color => {
+      const rgb=color.match(/[0-9.]+/g).slice(0,3).map(Number).map(n=>{const s=n/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4});
+      return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
+    };
+    const body=getComputedStyle(document.body).backgroundColor;
+    return ['.fde-help','.fde-turn__body > p:not(.fde-turn__who)'].map(selector=>{
+      const foreground=luminance(getComputedStyle(document.querySelector(selector)).color), background=luminance(body);
+      return (Math.max(foreground,background)+.05)/(Math.min(foreground,background)+.05);
+    });
+  })()`);
+  assert.ok(contrastRatios.every(ratio=>ratio>=4.5),"Main mobile text and capability disclosure meet AA contrast");
+  checks.push("Mobile conversation body and persistent capability disclosure meet 4.5:1 text contrast");
   for (let i=0;i<3;i++){await visit();const before=apiCalls.length;await click(`.fde-starter:nth-child(${i+1})`);assert.ok(await evaluate("document.querySelectorAll('.fde-resource-list a').length > 0"));assert.equal(apiCalls.length,before);await resourceLinks();}
   for (let i=0;i<4;i++){await visit();const before=apiCalls.length;await click(`.fde-prompts button:nth-child(${i+1})`);assert.ok(await evaluate("document.querySelectorAll('.fde-resource-list a').length > 0"));assert.equal(apiCalls.length,before);await resourceLinks();}
   checks.push("All three starters and four quick prompts respond without API calls; every suggested resource resolves");

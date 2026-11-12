@@ -4,6 +4,12 @@ Branch: `feat/chat-first-fde-coach`, based on main `3976ef2b02247cda10fd1ef07c7b
 
 The welcome screen and conversation share one React island in the existing Learn Astro site. There are exactly three starter actions, a single composer, an original architecture SVG, and a compact Resources menu. The original Commons homepage is preserved byte for byte at `/commons/`. Existing courses, paths, assessments, Gym, diagrams, and continuation URLs remain available.
 
+## Targeted polish review
+
+Orange card, composer, and arrow accents are stronger without changing shared brand tokens. The original desktop system-design illustration is larger with clearer connectors and node outlines. Mobile introduction, starter descriptions, conversation text, resource links, and capability disclosure use larger type. A visible notice before the three starters says **Curated guidance, not personalized AI.** The composer has an accessible description of that limitation, and the same boundary remains visible during general conversation.
+
+The existing learning routes, content, API transport, backend, and infrastructure are unchanged by this polish. No security code was copied from #150.
+
 ## Screenshots
 
 | View | Welcome | Conversation |
@@ -18,7 +24,7 @@ These are actual Chromium captures of built pages, with authored resource guidan
 - The three starters, four quick prompts, and free-text topic routing show clearly labeled, authored guidance and links to existing learning content. They make no API calls.
 - Personalized chat, architecture analysis, uploads, personal learning plans, generated project rewrites, history, and persistent progress are not implemented or simulated.
 - Only explicit selection of the guided lesson, or `/coach/?lesson=agent-system-design`, uses the existing `/api/coach/health`, `/start`, and `/message` protocol. Authored fallback is labeled as a written lesson. All existing principles, six stages, recap, design summary, and continuation link are rendered.
-- Client requests time out after 20 seconds, never retry automatically, and can be canceled by starting a new conversation. A manual retry preserves the original token, answer, and context without adding a second learner turn. Server guarantees remain those of main; PR #150 is a separate dependency for secure AI expansion. Its changes are not included here. Reconcile the client API contract when that PR lands.
+- Client requests time out after 20 seconds, never retry automatically, and can be canceled by starting a new conversation. A manual retry preserves the original token, answer, and context without adding a second learner turn. Server guarantees remain those of main; PR #150 is a separate dependency for secure AI expansion. Its changes are not included here. The current transport is not compatible with #150 unchanged. See the [reviewed security integration specification](SECURITY_INTEGRATION.md) for required request keys, private client scopes, whole-response timeouts, unresolved retry identity, restart behavior, and integration tests. Those changes remain unimplemented here.
 - Conversations live only in component memory. No local history, analytics events, third-party requests, infrastructure, new AI endpoints, or production changes were added.
 
 ## Validation
@@ -30,12 +36,14 @@ Passed:
 - `npm run check --prefix learn`: 0 errors, 0 warnings, 4 existing hints.
 - `npm run build`: root site, Pagefind, and Learn site, 42 root pages and 148 Learn pages. Existing large-chunk warning remains.
 - `npx --yes wrangler@4.160.1 deploy --dry-run --outdir /tmp/air-ui151-worker`: Worker bundle only, exited without deployment. Existing configured binding names were inspected, not contacted or changed.
-- `node scripts/test-fde-coach-ui.mjs`: 18 browser checks, no JavaScript exceptions or external requests. See [machine-readable results](browser-checks.json).
+- `node scripts/test-fde-coach-ui.mjs`: 26 browser checks, no JavaScript exceptions or external requests. See [machine-readable results](browser-checks.json).
 - `git diff --check`.
+
+The polish adds visible pre-action capability disclosure, accessible textbox descriptions, readable mobile text, 44px chat controls, a larger desktop illustration, keyboard-only starter activation and transcript focus, text contrast checks, and desktop reflow at a 720px CSS viewport (equivalent to 200-percent zoom on a 1440px viewport). This is viewport-based reflow coverage, not a physical-browser zoom certification.
 
 Browser coverage includes exact 360/390/768/1440 viewport widths, no horizontal overflow, all starters and quick prompts, resource URLs, visible composer, menu Escape and focus return, IME-safe Enter, Shift+Enter, textarea growth, resized visual viewport, real local lesson protocol with no AI binding, loading, failed response, exact manual retry, complete authored lesson, reduced motion, and meaningful no-JavaScript links. The script serves built assets and the actual existing Coach handler locally, using a synthetic signing secret only.
 
-Broader repository check limitation: plain root `npx astro check` includes nested generated Learn bundles and exhausted the default Node heap. A source-only root check, excluding generated output and dependency directories with a temporary tsconfig, completed with 309 existing errors. The same check on clean main produced exactly the same 309 diagnostic locations, codes, and messages; there were no feature-only diagnostics. These cross-project collection/type issues are outside this UI change. The scoped Learn check and Worker check pass.
+Broader repository check limitation: the earlier plain root `npx astro check` included nested generated Learn bundles and exhausted the default Node heap. The current source-only root check, excluding generated output and dependency directories with a temporary tsconfig, completed with 308 existing errors. The same check on clean main produced exactly the same 308 diagnostic locations, codes, and messages; there were no feature-only diagnostics. These cross-project collection/type issues are outside this UI change. The scoped Learn check and Worker check pass.
 
 Physical iOS/Android keyboards, VoiceOver/TalkBack, and Safari have not been tested. Chromium visual-viewport resizing is coverage for layout behavior, not physical-device certification. AI model execution and real Cloudflare admission are deliberately outside these local UI tests.
 
