@@ -1,0 +1,181 @@
+{
+  "version": "6d8512a4df48acb2",
+  "resources": [
+    {
+      "id": "asd-00",
+      "title": "How to Design an Agentic System",
+      "href": "/learn/courses/agentic-system-design/modules/orientation-runtime-method/",
+      "excerpt": "By the end of this module, you will have a one-page architecture brief for Atlas and a repeatable method for any agentic-system-design question. Most agent demos begin with a model and a few tools. Production design begins somewhere else: a user outcome, a failure consequence, and a boundary around what the system is allowed to do. “Build an onboarding agent” is not a design requirement. It hides the questions that determine the architecture: - Is the agent gathering evidence, recommending a decision, or making it? - Which source is authoritati",
+      "source": "learn/src/content/asd-modules/00-orientation-runtime-method.md",
+      "contentHash": "f3c51bd0c2e6fe86ca7c240f9bfdaf4e7ea0c7d5ecbf39613e5b8e687d97bc61"
+    },
+    {
+      "id": "asd-01",
+      "title": "Should This Be an Agent?",
+      "href": "/learn/courses/agentic-system-design/modules/should-this-be-an-agent/",
+      "excerpt": "You will decide which parts of Atlas require model-driven agency, which belong in deterministic workflows, and which should not be automated. The first architecture question is not “Which agent framework?” It is: > Does this task benefit from a model choosing the next action at runtime? Many systems called agents are better implemented as ordinary software with one or two model calls. A workflow is easier to test, cheaper to run, easier to secure, and more predictable. Agency is useful when the path cannot be fully enumerated in advance and the",
+      "source": "learn/src/content/asd-modules/01-should-this-be-an-agent.md",
+      "contentHash": "7ce463432c01027ef23f735a85455a271686dba1d804a0ecf7bffd63c53d2ac1"
+    },
+    {
+      "id": "asd-02",
+      "title": "The Agent Loop and Its Control Boundaries",
+      "href": "/learn/courses/agentic-system-design/modules/agent-loop-and-control-boundaries/",
+      "excerpt": "You will implement a bounded tool-calling loop with explicit state, typed decisions, budgets, and terminal conditions. A tool-using agent repeatedly: 1. assembles context; 2. asks a model for the next decision; 3. validates the decision; 4. executes an allowed tool or returns an answer; 5. records the result; 6. decides whether to continue. A minimal conceptual loop: The production work is hidden in the nouns: state, context builder, output schema, policy, tool gateway, reducer, budgets, and terminal conditions. The model is good at interpretin",
+      "source": "learn/src/content/asd-modules/02-agent-loop-and-control-boundaries.md",
+      "contentHash": "9ab9e90cb3c9ef58ac737486cf152c025d5b9de4651380a515fab0a8c348da82"
+    },
+    {
+      "id": "asd-03",
+      "title": "Tool Contracts, Side Effects, and the Acknowledgment Gap",
+      "href": "/learn/courses/agentic-system-design/modules/tool-contracts-and-side-effects/",
+      "excerpt": "You will turn tools from arbitrary functions into governed production capabilities with typed contracts, identity, risk levels, retries, idempotency, and auditable effects. When a model calls a tool, natural language becomes a software action. The tool layer is where an agent gains access to data and the ability to change the world. A production tool is more than a name and description. Its contract should state: - purpose; - typed inputs and outputs; - preconditions; - caller identity; - authorization scopes; - data classification; - side effe",
+      "source": "learn/src/content/asd-modules/03-tool-contracts-and-side-effects.md",
+      "contentHash": "f3e1ae2dd8307944222ae0a4e55a1a1c6c50b91a464aba572a2d37390b250367"
+    },
+    {
+      "id": "asd-04",
+      "title": "Context Engineering, Retrieval, and Grounding",
+      "href": "/learn/courses/agentic-system-design/modules/context-engineering-and-grounding/",
+      "excerpt": "You will build an authorized, provenance-aware context assembler that gives Atlas the smallest useful set of instructions and evidence for the current decision. An agent does not reason over “everything it knows.” It reasons over the information placed into a particular model call. That context may include: - system and developer instructions; - the current user request; - selected state; - tool definitions; - retrieved enterprise knowledge; - external evidence; - memory; - prior tool results; - examples; - output schemas. Context engineering i",
+      "source": "learn/src/content/asd-modules/04-context-engineering-and-grounding.md",
+      "contentHash": "98888090aeefa32ce7367be22ea6371e5d0ad7f836498a2deaaeda6e3f9b381d"
+    },
+    {
+      "id": "asd-05",
+      "title": "State, Sessions, and Memory",
+      "href": "/learn/courses/agentic-system-design/modules/state-sessions-and-memory/",
+      "excerpt": "You will separate operational state, conversation state, durable workflow history, long-term memory, enterprise knowledge, and audit history. Teams often use one word for several distinct systems: - the messages in a chat; - the current run’s scratch state; - a checkpoint used to resume execution; - facts retained across sessions; - retrieved enterprise documents; - a workflow event history; - an audit log. Combining them creates incorrect retention, access, and recovery behavior. Exists for one API request: - authenticated caller; - request ID",
+      "source": "learn/src/content/asd-modules/05-state-sessions-and-memory.md",
+      "contentHash": "5e3314b9453d56f9ddb0cec8e8dbe12134fe25de1355424746288a5b63608629"
+    },
+    {
+      "id": "asd-06",
+      "title": "Orchestration Patterns and State Machines",
+      "href": "/learn/courses/agentic-system-design/modules/orchestration-patterns/",
+      "excerpt": "You will convert Atlas from a single loop into an explicit graph that mixes deterministic stages, model-driven choices, safe parallel work, joins, and controlled revision. Orchestration determines: - what step can run; - what state it reads; - what state it may change; - what may run in parallel; - how results join; - when work retries; - when execution pauses; - when the system is done. The model may choose among allowed paths. The orchestrator owns the graph. One step feeds the next. Use when: - the sequence is fixed; - each stage has a clear",
+      "source": "learn/src/content/asd-modules/06-orchestration-patterns.md",
+      "contentHash": "4b7a95f8e4e90baba14fe044850b06bddcdcef1b9f106cb9c25c3f0df544c104"
+    },
+    {
+      "id": "asd-07",
+      "title": "Durable and Long-Running Agents",
+      "href": "/learn/courses/agentic-system-design/modules/durable-long-running-agents/",
+      "excerpt": "You will make Atlas survive worker crashes, API failures, deploys, long waits, duplicate delivery, and human responses that arrive days later. A process that runs for seconds can sometimes restart from the beginning. A case that runs for minutes, hours, or weeks cannot safely rely on process memory. Long-running agents need to preserve: - progress; - external effects; - pending timers; - pending approvals; - source waits; - budgets; - cancellation; - version compatibility; - audit history. The runtime must distinguish thinking again from doing ",
+      "source": "learn/src/content/asd-modules/07-durable-long-running-agents.md",
+      "contentHash": "8bafb444685bed0e3b1d7c1676e99caae1ffc150bd353ec0a6563d5479d610fe"
+    },
+    {
+      "id": "asd-08",
+      "title": "Human-in-the-Loop and Bounded Authority",
+      "href": "/learn/courses/agentic-system-design/modules/human-in-the-loop-and-authority/",
+      "excerpt": "You will add durable human review to Atlas and design authority based on risk, reversibility, evidence, and separation of duties. A system prompt that says “ask for approval before important actions” is not an approval system. A production approval requires: - a persisted proposed action; - the exact inputs and expected effect; - supporting evidence; - the reason approval is required; - the requesting workflow and user; - an authenticated reviewer; - approve, edit, reject, and escalate outcomes; - expiry and reminder policy; - an audit record; ",
+      "source": "learn/src/content/asd-modules/08-human-in-the-loop-and-authority.md",
+      "contentHash": "9b0801af3226f23c38f47230091addcc8d9f84d503728cc29c6c5cb35497bc81"
+    },
+    {
+      "id": "asd-09",
+      "title": "Multi-Agent Design, MCP, and A2A",
+      "href": "/learn/courses/agentic-system-design/modules/multi-agent-mcp-a2a/",
+      "excerpt": "You will decide when Atlas needs multiple agents, distinguish handoffs from agents-as-tools, expose a bounded capability through MCP, and evaluate whether a remote-agent boundary through A2A is justified. A multi-agent diagram can look sophisticated while hiding basic questions: - Why can one agent not complete the task? - What context is isolated? - What authority differs? - What can run independently? - How are results verified? - Who owns global state? - What happens when agents disagree? - How are cost and latency bounded? - How is identity",
+      "source": "learn/src/content/asd-modules/09-multi-agent-mcp-a2a.md",
+      "contentHash": "eb91cb57d1796074d9440dee0744c83668624ab95b5dc20fca5626f4ef2f2503"
+    },
+    {
+      "id": "asd-10",
+      "title": "Security, Identity, Isolation, and Governance",
+      "href": "/learn/courses/agentic-system-design/modules/security-identity-isolation-governance/",
+      "excerpt": "You will threat-model Atlas, draw trust boundaries, apply least privilege, isolate untrusted execution, protect memory and tools, and map controls to an operational governance process. An agentic system combines untrusted natural language with tools. Its security design must protect: - confidential data; - personal information; - credentials; - system prompts and policy; - external side effects; - long-term memory; - tenant boundaries; - audit integrity; - infrastructure; - business decisions; - availability and cost. The core question is: > Wh",
+      "source": "learn/src/content/asd-modules/10-security-identity-isolation-governance.md",
+      "contentHash": "f72e98202812ddc9cbd653d01ed8ea3881d437dde4a4ac35790f2c1dc8e4edb2"
+    },
+    {
+      "id": "asd-11",
+      "title": "Agent Evaluation and Testing",
+      "href": "/learn/courses/agentic-system-design/modules/agent-evaluation-and-testing/",
+      "excerpt": "You will create a layered evaluation system for Atlas that scores deterministic components, model decisions, tool trajectories, final packets, policy behavior, and operational cost. A single model response can be graded as text. An agent acts over many steps: - chooses tools; - constructs arguments; - observes results; - updates state; - revises a plan; - stops or escalates; - produces an artifact. Two runs may reach the same final answer through very different trajectories. One may be safe and efficient; the other may leak data, call unnecessa",
+      "source": "learn/src/content/asd-modules/11-agent-evaluation-and-testing.md",
+      "contentHash": "d5d05def7d3b95f31b857100eafa36d72ccf7cdb9bc316d9cff6248a68cfc53b"
+    },
+    {
+      "id": "asd-12",
+      "title": "Observability, SLOs, and Incident Response",
+      "href": "/learn/courses/agentic-system-design/modules/observability-slos-and-incidents/",
+      "excerpt": "You will make Atlas explain what happened during a run, detect when the service is unhealthy, protect sensitive trace data, and turn incidents into permanent regression tests. A traditional API often has a predictable path: validate a request, call a service, write a record, return a response. An agent may choose different tools, branch, retry, wait for a person, revise its plan, or stop early. A useful production question is not only: > Did the request return 200? It is also: - Which model and prompt version made each decision? - Which context",
+      "source": "learn/src/content/asd-modules/12-observability-slos-and-incidents.md",
+      "contentHash": "2b215d25fc1a66f0b0ba848bd4a80c60f4550c855e5cf04e845c5afaf57d9cb4"
+    },
+    {
+      "id": "asd-13",
+      "title": "Latency, Cost, Throughput, and Scale",
+      "href": "/learn/courses/agentic-system-design/modules/latency-cost-scale/",
+      "excerpt": "You will convert Atlas from a correct single-user prototype into a service that meets latency, throughput, quota, and unit-economics constraints under bursty enterprise demand. “Scale the agent” is not a requirement. Establish: - requests or cases per day; - peak arrival rate; - concurrent active and waiting workflows; - interactive versus background paths; - input and output size distribution; - tool fan-out; - model calls per case; - case-duration distribution; - tenant concentration; - regional and data-residency constraints; - latency and c",
+      "source": "learn/src/content/asd-modules/13-latency-cost-scale.md",
+      "contentHash": "c7804d2f19c403a9f197d2bebb3b2cd4bdfd4eb8825d786c48fcd8b1b68335ff"
+    },
+    {
+      "id": "asd-14",
+      "title": "Deployment, Change Management, and Enterprise Readiness",
+      "href": "/learn/courses/agentic-system-design/modules/deployment-enterprise-readiness/",
+      "excerpt": "You will turn Atlas into an operable enterprise service with versioned releases, controlled rollouts, rollback, data governance, tenant isolation, regional deployment, disaster recovery, and clear ownership. A strong demo can answer the happy-path question. An enterprise system must also answer: - Who owns it at 2 AM? - Which versions produced this decision? - Can one tenant’s data reach another tenant? - Where is data stored and for how long? - What happens when a model or tool provider changes? - Can a risky capability be disabled without red",
+      "source": "learn/src/content/asd-modules/14-deployment-enterprise-readiness.md",
+      "contentHash": "df1290f5ab730614e76ae744095f2f38badea36468f7f96a6269b17033e688e1"
+    },
+    {
+      "id": "asd-15",
+      "title": "The 45-Minute Agentic System-Design Interview",
+      "href": "/learn/courses/agentic-system-design/modules/system-design-interview/",
+      "excerpt": "You will turn an ambiguous agent prompt into a defensible production design under interview time pressure. The goal is not to mention every concept in this course. It is to identify the constraints that matter, make coherent choices, and go deep where failure is expensive. A strong answer demonstrates that you can: - clarify the product and user outcome; - decide whether autonomy is justified; - define authority and human control; - translate requirements into architecture; - separate probabilistic decisions from deterministic enforcement; - de",
+      "source": "learn/src/content/asd-modules/15-system-design-interview.md",
+      "contentHash": "03007f72a32e267e16201b7871f7089ca4fa900d1b2db77d3b8b1765401b9c29"
+    },
+    {
+      "id": "asd-16",
+      "title": "Capstone: Atlas in Production",
+      "href": "/learn/courses/agentic-system-design/modules/capstone-atlas/",
+      "excerpt": "You will build, operate, and defend the complete Atlas system. The capstone integrates every production property from the course and requires evidence from both the happy path and controlled failure. Build and defend Atlas, a production-oriented counterparty due-diligence agent for a fictional bank. Atlas receives a company or person, the case policy, jurisdiction, and supporting documents. It gathers evidence, resolves identity, checks required sources, detects conflicting facts, requests missing information, and produces a cited packet for a ",
+      "source": "learn/src/content/asd-modules/16-capstone-atlas.md",
+      "contentHash": "88931ada32d1ef4fd09c5f2943e3c97f0357f5d84ab1d96991bb4d8cb7c2301b"
+    },
+    {
+      "id": "incident-response-agent",
+      "title": "Incident Response Agent",
+      "href": "/learn/case-studies/incident-response-agent/",
+      "excerpt": "A platform team runs hundreds of services. When an incident fires, the first forty minutes are spent gathering: recent deploys, error budgets, adjacent alerts, similar past incidents, suspicious config changes. The on-call engineer does this half-asleep, and the quality of the eventual fix depends on the quality of this sweep. The ask is speed. The real requirement is trustworthy parallelism: six investigation tasks running at once against systems that each fail in their own way, folding into one narrative with every claim traceable to its sour",
+      "source": "learn/src/content/case-studies/incident-response-agent.md",
+      "contentHash": "0a4efb045cfd4e15db418cf71cc2a19a642b819f4809a54af2be31d5261dd7d3"
+    },
+    {
+      "id": "customer-account-agent",
+      "title": "Customer Account Agent",
+      "href": "/learn/case-studies/customer-account-agent/",
+      "excerpt": "A SaaS support team resolves account issues: refunds, plan changes, seat adjustments, credential resets. The agent that only drafts replies saves nothing; the value is in the action. But every action touches billing or access, and a duplicated refund is a real loss with a real customer attached. The agent gets a narrow tool grant per ticket category. Reversible actions execute with idempotency keys derived from the ticket id; irreversible ones (refund above threshold, plan downgrade) pause the run for approval with an evidence-rich payload. Eve",
+      "source": "learn/src/content/case-studies/customer-account-agent.md",
+      "contentHash": "6c1520419dff6a4459c456796afd7ca68241c64d87d73e62c9ad8b49e20e7e6a"
+    },
+    {
+      "id": "gym",
+      "title": "FDE Gym practice interviews",
+      "href": "/fde-gym/",
+      "excerpt": "Practice a Forward Deployed Engineer Agentic System Design interview: a Staff FDE asks the questions, you build the architecture on a structured canvas, and a separate evaluator returns an evidence-backed result. The interview and the canvas run interactively, so FDE Gym needs JavaScript. Turn it on and reload to start. The rest of the library reads without it.",
+      "source": "learn/src/pages/fde-gym/index.astro",
+      "contentHash": "e3b8a5daa1d61755d22e7efa6c4559f54b5b16d4cba1e424c3936ade84f3ec04"
+    },
+    {
+      "id": "interviews",
+      "title": "FDE interview preparation",
+      "href": "/career/interviews/",
+      "excerpt": "INTERVIEW READINESS FDE interviews reward pragmatic engineering under ambiguity. Practice the decision, not a memorized framework. l.prompt YOUR EVIDENCE STORY",
+      "source": "learn/src/pages/career/interviews.astro",
+      "contentHash": "e654f97c7b5fce56b986c0f6fe0c7bee80e54bb24eb505d8b85a34dda5e4ffa7"
+    },
+    {
+      "id": "paths",
+      "title": "FDE learning paths",
+      "href": "/paths/",
+      "excerpt": "PATHS Start from your current role and the technical boundary you want to own. Every path reuses the same rigorous learning assets and ends in evidence. New to the role? Start with the guided path. It explains what an FDE does before it asks you anything. ENTRY JOURNEYS p.description SPECIALIZATIONS s.summary",
+      "source": "learn/src/pages/paths/index.astro",
+      "contentHash": "66dd74e2da5eb95cd9a25495b1aaba1e2f241882c88ae873688a0e7cafc540d9"
+    }
+  ]
+}

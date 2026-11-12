@@ -1,0 +1,26 @@
+# TEMPLATE ONLY. Do not deploy without owner approval and isolated access.
+# Replace the zero KV ID with a separately created nonproduction namespace.
+name = "theairuntime-coach-review"
+main = "./coach-entry.ts"
+compatibility_date = "2025-05-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+routes = []
+[assets]
+directory = "../learn/dist"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = true
+[ai]
+binding = "AI"
+[[kv_namespaces]]
+binding = "FDE_GYM_SESSIONS"
+id = "00000000000000000000000000000000"
+[[durable_objects.bindings]]
+name = "AI_SECURITY"
+class_name = "AiSecurityCoordinator"
+[[migrations]]
+tag = "v1-ai-security"
+new_sqlite_classes = ["AiSecurityCoordinator"]
+[vars]
+FDE_COACH_CHAT_ENABLED = "false"

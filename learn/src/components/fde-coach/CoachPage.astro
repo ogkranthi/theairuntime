@@ -1,7 +1,7 @@
 ---
 import FdeCoach from "./FdeCoach";
 ---
-<FdeCoach client:load />
+<FdeCoach client:load aiBeta={import.meta.env.PUBLIC_FDE_COACH_CHAT_ENABLED === "true"} />
 <noscript>
   <section class="coach-noscript" aria-label="Start learning without JavaScript">
     <h2>Learning is still open.</h2>
