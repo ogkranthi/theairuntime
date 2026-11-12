@@ -1,17 +1,26 @@
 ---
 interface Props {
   href?: string;
+  coach?: boolean;
 }
-const { href = "/" } = Astro.props;
+const { href = "/", coach = false } = Astro.props;
 ---
 
-<a class="wordmark" href={href}>
-  <span class="wordmark__brand">FDE COMMONS</span><span class="wordmark__slash">/</span><span
-    class="wordmark__sub">by AIR</span
-  >
+<a class:list={["wordmark", { "wordmark--coach": coach }]} href={href} aria-label={coach ? "The AI Runtime, FDE Coach home" : undefined}>
+  {coach ? <>
+    <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="#C2410C"/><path d="M8 9h5v4H8zm7 6h5v4h-5M13 11h4v4M10.5 13v4H15" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    <span class="wordmark__name">the <strong>AI</strong> runtime</span><span class="wordmark__divider" aria-hidden="true">/</span><span class="wordmark__coach">FDE Coach</span>
+  </> : <><span class="wordmark__brand">FDE COMMONS</span><span class="wordmark__slash">/</span><span class="wordmark__sub">by AIR</span></>}
 </a>
 
 <style>
+  .wordmark.wordmark--coach { display:flex;align-items:center;gap:10px;letter-spacing:-.03em;font-family:var(--font-body);font-size:17px;color:#1b2c42; }
+  .wordmark--coach strong { color:inherit;font-weight:700; }
+  .wordmark__name { white-space:nowrap; }
+  .wordmark__divider { color:#b8bec5;font-weight:400;margin:0 3px; }
+  .wordmark__coach { font-size:14px;font-weight:600;letter-spacing:-.02em; }
+  @media(max-width:420px) { .wordmark.wordmark--coach {font-size:15px;gap:7px;} .wordmark__coach{font-size:12px;} .wordmark__divider{margin:0;} .wordmark--coach svg{width:25px;height:25px;} }
+
   .wordmark {
     font-family: var(--font-mono);
     font-size: var(--t-meta);

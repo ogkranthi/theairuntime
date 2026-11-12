@@ -36,28 +36,30 @@ export interface StageTurn {
   text: string;
 }
 
-async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(path, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
+async function fetchWithTimeout(path: string, options: RequestInit, signal?: AbortSignal): Promise<Response> {
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  signal?.addEventListener("abort", abort, { once: true });
+  if (signal?.aborted) controller.abort();
+  let timedOut = false;
+  const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 20_000);
+  try { return await fetch(path, { ...options, signal: controller.signal }); }
+  catch (cause) { if (timedOut) throw new Error("The connection timed out. Your conversation is still here; retry your last request."); throw cause; }
+  finally { clearTimeout(timeout); signal?.removeEventListener("abort", abort); }
+}
+async function postJson<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
+  const response = await fetchWithTimeout(path, {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body),
+  }, signal);
   const data = (await response.json().catch(() => ({}))) as { error?: string } & T;
-  if (!response.ok) {
-    throw new Error(
-      data.error || "I could not continue the lesson just now.",
-    );
-  }
+  if (!response.ok) throw new Error(data.error || "I could not continue the lesson just now.");
   return data;
 }
-
-export function startLesson() {
-  return postJson<CoachReply>("/api/coach/start", {});
+export function startLesson(signal?: AbortSignal) {
+  return postJson<CoachReply>("/api/coach/start", {}, signal);
 }
-
-export function sendMessage(token: string, message: string, stageTurns: StageTurn[]) {
-  return postJson<CoachReply>("/api/coach/message", { token, message, stageTurns });
+export function sendMessage(token: string, message: string, stageTurns: StageTurn[], signal?: AbortSignal) {
+  return postJson<CoachReply>("/api/coach/message", { token, message, stageTurns }, signal);
 }
 
 export interface CoachHealth {
@@ -66,9 +68,9 @@ export interface CoachHealth {
   tokenConfigured: boolean;
 }
 
-export async function readHealth(): Promise<CoachHealth | null> {
+export async function readHealth(signal?: AbortSignal): Promise<CoachHealth | null> {
   try {
-    const response = await fetch("/api/coach/health");
+    const response = await fetchWithTimeout("/api/coach/health", {}, signal);
     if (!response.ok) return null;
     return (await response.json()) as CoachHealth;
   } catch {
