@@ -1,0 +1,905 @@
+{
+  "suiteVersion": "fde-cases-v1",
+  "caseCount": 40,
+  "datasetDigest": "0a955cdfc33c1771a52f5e14932d56f78c84f008ce553b82b2afb04055d054bb",
+  "categories": 7,
+  "provenance": "synthetic-authored-only",
+  "rubricVersion": "fde-rubric-v1",
+  "promptVersion": "fde-mentor-v1",
+  "retrievalVersion": "6d8512a4df48acb2",
+  "mode": "deterministic-reference-smoke",
+  "providerCalls": 0,
+  "providerCostUsd": 0,
+  "modelQualityMeasured": false,
+  "humanSignoffs": 0,
+  "structuralCasesPassed": 40,
+  "releaseQualified": false,
+  "results": [
+    {
+      "id": "fde-01",
+      "category": "git-ci",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-14"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-02",
+      "category": "git-ci",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-03",
+      "category": "git-ci",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-04",
+      "category": "git-ci",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-14"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-05",
+      "category": "git-ci",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-11"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-06",
+      "category": "git-ci",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-14"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-07",
+      "category": "apis-data",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-03"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-08",
+      "category": "apis-data",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-09",
+      "category": "apis-data",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-10",
+      "category": "apis-data",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-11",
+      "category": "apis-data",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-12",
+      "category": "apis-data",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-13",
+      "category": "agents-evals",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-01"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-14",
+      "category": "agents-evals",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-11"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-15",
+      "category": "agents-evals",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-03"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-16",
+      "category": "agents-evals",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-17",
+      "category": "agents-evals",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-18",
+      "category": "agents-evals",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-19",
+      "category": "security-reliability",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-10"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-20",
+      "category": "security-reliability",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-21",
+      "category": "security-reliability",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-22",
+      "category": "security-reliability",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-10",
+        "asd-12"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-23",
+      "category": "security-reliability",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-24",
+      "category": "security-reliability",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-12",
+        "incident-response-agent"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-25",
+      "category": "design-tradeoffs",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-26",
+      "category": "design-tradeoffs",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-02"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-27",
+      "category": "design-tradeoffs",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-28",
+      "category": "design-tradeoffs",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-29",
+      "category": "design-tradeoffs",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-30",
+      "category": "design-tradeoffs",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-13"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-31",
+      "category": "customer-discovery",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-01",
+        "customer-account-agent"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-32",
+      "category": "customer-discovery",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "customer-account-agent"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-33",
+      "category": "customer-discovery",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-34",
+      "category": "customer-discovery",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-35",
+      "category": "customer-discovery",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "paths"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-36",
+      "category": "interviews",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "interviews",
+        "asd-15"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-37",
+      "category": "interviews",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "asd-15",
+        "interviews"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-38",
+      "category": "interviews",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "interviews"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-39",
+      "category": "interviews",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [
+        "gym",
+        "interviews"
+      ],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    },
+    {
+      "id": "fde-40",
+      "category": "interviews",
+      "referenceStatus": "pending-human-signoff",
+      "sourceIds": [],
+      "criticalFailures": [],
+      "heuristics": {
+        "conceptCoverage": 1,
+        "explanationPresent": true,
+        "focusedQuestion": true,
+        "practicalNextStep": true
+      },
+      "humanJudgment": {
+        "fdeCorrectness": "pending",
+        "pedagogy": "pending",
+        "safeUncertainty": "pending",
+        "userValue": "pending",
+        "nextStepQuality": "pending"
+      },
+      "releaseQualified": false
+    }
+  ]
+}
