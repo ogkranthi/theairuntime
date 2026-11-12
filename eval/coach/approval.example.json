@@ -1,0 +1,14 @@
+{
+  "origin": "https://theairuntime-coach-review.REPLACE.workers.dev",
+  "datasetDigest": "0a955cdfc33c1771a52f5e14932d56f78c84f008ce553b82b2afb04055d054bb",
+  "promptVersion": "fde-mentor-v1",
+  "retrievalVersion": "6d8512a4df48acb2",
+  "approvedForSyntheticInference": false,
+  "isolatedKvAndDoReviewed": false,
+  "privateAccessReviewed": false,
+  "noProductionData": false,
+  "expiresAt": "OWNER_MUST_SET_AFTER_APPROVAL",
+  "expectedPrimaryModel": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+  "maxCases": 3,
+  "maxAttempts": 12
+}

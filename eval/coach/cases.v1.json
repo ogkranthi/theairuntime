@@ -1,0 +1,2329 @@
+{
+  "version": "fde-cases-v1",
+  "rubricVersion": "fde-rubric-v1",
+  "provenance": "synthetic-authored-only",
+  "humanGoldStatus": "pending",
+  "cases": [
+    {
+      "id": "fde-01",
+      "provenance": "synthetic-authored",
+      "category": "git-ci",
+      "goal": "skills",
+      "context": {
+        "background": "I maintain a fictional team API and use Git pull requests.",
+        "priorLearnerMessages": []
+      },
+      "question": "Explain the working tree, staging area and commit using my API change.",
+      "grounding": {
+        "resourceIds": [
+          "asd-14"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "working tree"
+          ],
+          [
+            "index",
+            "staging"
+          ],
+          [
+            "commit"
+          ]
+        ],
+        "assertions": [
+          "Separate uncommitted file content from the index snapshot.",
+          "A commit records the staged snapshot, not every working change."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "The working tree contains your editable files. The index, or staging area, selects the snapshot for the next commit. A commit records that staged snapshot, so an unstaged API edit can remain outside it.",
+        "question": "Which change belongs in the first reviewable commit?",
+        "nextStep": {
+          "task": "Make two fictional file edits and stage only one.",
+          "definitionOfDone": "A staged diff contains one change while the unstaged diff contains the other."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-02",
+      "provenance": "synthetic-authored",
+      "category": "git-ci",
+      "goal": "skills",
+      "context": {
+        "background": "I maintain a fictional team API and use Git pull requests.",
+        "priorLearnerMessages": []
+      },
+      "question": "Should I rebase a branch after teammates have pulled it?",
+      "grounding": {
+        "resourceIds": [
+          "asd-14"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "rewrite",
+            "rebase"
+          ],
+          [
+            "shared",
+            "teammate"
+          ],
+          [
+            "coordinate",
+            "agree"
+          ]
+        ],
+        "assertions": [
+          "Rebase rewrites commit identity.",
+          "Coordinate shared history changes rather than prescribing a blind force push."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "A rebase can rewrite commit identities. If teammates depend on the shared branch, coordinate and agree on a recovery plan before changing its history. A merge may preserve shared history more safely.",
+        "question": "Has anyone based new work on this branch?",
+        "nextStep": {
+          "task": "Draw the branch graph before proposing a history change.",
+          "definitionOfDone": "The graph identifies who depends on each shared commit and the agreed integration method."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-03",
+      "provenance": "synthetic-authored",
+      "category": "git-ci",
+      "goal": "skills",
+      "context": {
+        "background": "I maintain a fictional team API and use Git pull requests.",
+        "priorLearnerMessages": []
+      },
+      "question": "Our CI passes locally but fails in the pipeline. Where should I start?",
+      "grounding": {
+        "resourceIds": [
+          "asd-14",
+          "asd-12"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "environment"
+          ],
+          [
+            "lock",
+            "dependency"
+          ],
+          [
+            "reproduce"
+          ]
+        ],
+        "assertions": [
+          "Compare runner environment, dependency resolution, configuration and command.",
+          "Reproduce the failing job before guessing a code fix."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Compare the CI environment and exact command with local execution. Check the lockfile, runtime version, configuration, working directory and dependency install method. Reproduce the failure in that environment before changing application behavior.",
+        "question": "What is the first failing command and error category?",
+        "nextStep": {
+          "task": "Record and reproduce one failing CI job with a tiny fixture.",
+          "definitionOfDone": "A clean install using the same runtime and command reproduces the failure without production secrets."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-04",
+      "provenance": "synthetic-authored",
+      "category": "git-ci",
+      "goal": "skills",
+      "context": {
+        "background": "I maintain a fictional team API and use Git pull requests.",
+        "priorLearnerMessages": []
+      },
+      "question": "Can I put a deployment secret in a build artifact for easier debugging?",
+      "grounding": {
+        "resourceIds": [
+          "asd-10",
+          "asd-14"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "secret"
+          ],
+          [
+            "artifact",
+            "log"
+          ],
+          [
+            "redact",
+            "remove"
+          ]
+        ],
+        "assertions": [
+          "Do not persist secrets in artifacts or logs.",
+          "Use redacted diagnostics and rotate exposed credentials."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Do not put a secret in a build artifact or log. Use redacted diagnostics that show configuration presence and error categories. Remove exposed artifacts and rotate a credential if it was actually disclosed.",
+        "question": "Which non-sensitive diagnostic would distinguish the failure?",
+        "nextStep": {
+          "task": "Add a synthetic secret-redaction regression to the pipeline.",
+          "definitionOfDone": "Artifacts and logs contain no synthetic credential value while retaining a useful failure category."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-05",
+      "provenance": "synthetic-authored",
+      "category": "git-ci",
+      "goal": "skills",
+      "context": {
+        "background": "I maintain a fictional team API and use Git pull requests.",
+        "priorLearnerMessages": []
+      },
+      "question": "A test is flaky. Should I just retry it ten times in CI?",
+      "grounding": {
+        "resourceIds": [
+          "asd-11",
+          "asd-14"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "flaky"
+          ],
+          [
+            "isolation",
+            "order",
+            "timing"
+          ],
+          [
+            "retry",
+            "mask"
+          ]
+        ],
+        "assertions": [
+          "Retries can mask nondeterminism rather than fix it.",
+          "Investigate isolation, order dependence, time and external dependencies."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "A retry can diagnose a flaky test but can also mask its cause. Investigate isolation, order dependence, timing and external dependencies. Make the triggering condition observable and deterministic before deciding on a limited retry policy.",
+        "question": "What differs between a passing and failing run?",
+        "nextStep": {
+          "task": "Create a deterministic reproduction of one flaky failure.",
+          "definitionOfDone": "The failure can be triggered intentionally and the fix passes without repeated blind retries."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-06",
+      "provenance": "synthetic-authored",
+      "category": "git-ci",
+      "goal": "skills",
+      "context": {
+        "background": "I maintain a fictional team API and use Git pull requests.",
+        "priorLearnerMessages": []
+      },
+      "question": "How do I make a release gate useful without slowing every small change?",
+      "grounding": {
+        "resourceIds": [
+          "asd-14",
+          "asd-12"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "risk"
+          ],
+          [
+            "gate",
+            "check"
+          ],
+          [
+            "rollback"
+          ]
+        ],
+        "assertions": [
+          "Scale required checks to concrete risk.",
+          "Keep critical gates and a rollback path even for small releases."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Tie each release gate to a concrete risk and failure signal. Keep fast checks for ordinary changes and deeper checks for risky boundaries. A rollback plan and observable release outcome matter more than accumulating slow checks with no decision attached.",
+        "question": "Which failure would be hardest to detect after release?",
+        "nextStep": {
+          "task": "Map three existing checks to the failure each prevents.",
+          "definitionOfDone": "Each check has a trigger, owner, expected evidence and rollback decision."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-07",
+      "provenance": "synthetic-authored",
+      "category": "apis-data",
+      "goal": "skills",
+      "context": {
+        "background": "I built a fictional order API backed by a relational store.",
+        "priorLearnerMessages": []
+      },
+      "question": "Our client retries a timed-out order write. How do we prevent duplicate orders?",
+      "grounding": {
+        "resourceIds": [
+          "asd-03",
+          "asd-05"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "idempotency"
+          ],
+          [
+            "key"
+          ],
+          [
+            "same",
+            "saved"
+          ]
+        ],
+        "assertions": [
+          "Use stable operation identity and reject changed payload under the same key.",
+          "A timeout does not prove the original write failed."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Use an idempotency key for the logical order operation, with the same payload on retry and a saved result. A timeout leaves the outcome uncertain; it does not prove the write failed. Enforce uniqueness atomically where the write is admitted.",
+        "question": "Where can you enforce operation uniqueness atomically?",
+        "nextStep": {
+          "task": "Write a duplicate-order request regression.",
+          "definitionOfDone": "Concurrent identical requests with one key produce one order and replay the same saved response."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-08",
+      "provenance": "synthetic-authored",
+      "category": "apis-data",
+      "goal": "skills",
+      "context": {
+        "background": "I built a fictional order API backed by a relational store.",
+        "priorLearnerMessages": []
+      },
+      "question": "When should I use 401 versus 403 in an API?",
+      "grounding": {
+        "resourceIds": [
+          "asd-10"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "401"
+          ],
+          [
+            "403"
+          ],
+          [
+            "authentication",
+            "authorization"
+          ]
+        ],
+        "assertions": [
+          "Distinguish missing/invalid authentication from insufficient authority.",
+          "Avoid leaking resource existence across tenants."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "A 401 normally indicates missing or invalid authentication. A 403 indicates that the authenticated request lacks authorization. Resource-hiding policies may deliberately use a coarse response, so apply the API contract consistently without leaking tenant data.",
+        "question": "What identity and permission does this endpoint require?",
+        "nextStep": {
+          "task": "Add unauthenticated and unauthorized API cases.",
+          "definitionOfDone": "The contract distinguishes required authentication from missing permission without exposing another tenant resource."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-09",
+      "provenance": "synthetic-authored",
+      "category": "apis-data",
+      "goal": "design",
+      "context": {
+        "background": "I built a fictional order API backed by a relational store.",
+        "priorLearnerMessages": []
+      },
+      "question": "Should our changing order list use offset or cursor pagination?",
+      "grounding": {
+        "resourceIds": [
+          "asd-04",
+          "asd-13"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "cursor"
+          ],
+          [
+            "offset"
+          ],
+          [
+            "order",
+            "stable"
+          ]
+        ],
+        "assertions": [
+          "Explain tradeoffs under concurrent inserts/deletes.",
+          "Require a stable ordering and explicit consistency contract."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Offset pagination is simple but can skip or repeat items as data changes. A cursor follows a stable ordering boundary, often using a unique tie breaker. Decide the consistency contract and access pattern before choosing the mechanism.",
+        "question": "Must a paging session represent one fixed snapshot?",
+        "nextStep": {
+          "task": "Test pagination while inserting a fictional order between pages.",
+          "definitionOfDone": "The documented ordering and consistency rule explains every returned item without unexplained duplicates."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-10",
+      "provenance": "synthetic-authored",
+      "category": "apis-data",
+      "goal": "design",
+      "context": {
+        "background": "I built a fictional order API backed by a relational store.",
+        "priorLearnerMessages": []
+      },
+      "question": "Two editors overwrite each other. Is an ETag enough?",
+      "grounding": {
+        "resourceIds": [
+          "asd-05",
+          "asd-03"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "version",
+            "etag"
+          ],
+          [
+            "precondition",
+            "if-match"
+          ],
+          [
+            "conflict",
+            "retry"
+          ]
+        ],
+        "assertions": [
+          "Use an atomic version precondition at the write boundary.",
+          "ETag alone does not resolve application-level conflicts."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "An ETag can represent a version, but the server must check an If-Match precondition atomically with the write. A failed precondition exposes a conflict to resolve or retry from current state; it does not merge the editors\u2019 intent automatically.",
+        "question": "How should an editor resolve a stale update?",
+        "nextStep": {
+          "task": "Add an optimistic-concurrency conflict test.",
+          "definitionOfDone": "Only one write from the same old version succeeds and the other receives the documented precondition response."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-11",
+      "provenance": "synthetic-authored",
+      "category": "apis-data",
+      "goal": "skills",
+      "context": {
+        "background": "I built a fictional order API backed by a relational store.",
+        "priorLearnerMessages": []
+      },
+      "question": "A queue may deliver the same order event twice. Can I assume exactly once?",
+      "grounding": {
+        "resourceIds": [
+          "asd-03",
+          "asd-07"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "duplicate"
+          ],
+          [
+            "idempotent",
+            "deduplicate"
+          ],
+          [
+            "transaction",
+            "atomic"
+          ]
+        ],
+        "assertions": [
+          "Assume duplicates unless the complete side-effect contract proves otherwise.",
+          "Deduplication and the state change must share a reliable atomic boundary."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Assume duplicate delivery unless the complete effect boundary proves otherwise. Make the consumer idempotent or deduplicate an event identity atomically with the state transition. Broker guarantees alone do not make an external side effect exactly once.",
+        "question": "Which side effect must happen at most once?",
+        "nextStep": {
+          "task": "Replay one synthetic event concurrently to the consumer.",
+          "definitionOfDone": "The transaction records one applied state change and a repeatable duplicate outcome."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-12",
+      "provenance": "synthetic-authored",
+      "category": "apis-data",
+      "goal": "design",
+      "context": {
+        "background": "I built a fictional order API backed by a relational store.",
+        "priorLearnerMessages": []
+      },
+      "question": "We want to cache customer data. What invalidation rules should I define?",
+      "grounding": {
+        "resourceIds": [
+          "asd-04",
+          "asd-10"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "stale"
+          ],
+          [
+            "tenant",
+            "authorization"
+          ],
+          [
+            "ttl",
+            "invalidation"
+          ]
+        ],
+        "assertions": [
+          "Bound tolerated staleness and preserve authorization in cache keys.",
+          "A TTL is one invalidation policy, not universal consistency."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Define tolerated stale data, invalidation triggers and a TTL before adding the cache. Include tenant and authorization boundaries in keys and reads. A TTL limits age but does not by itself provide immediate consistency or safe cross-user reuse.",
+        "question": "How stale can this customer decision safely be?",
+        "nextStep": {
+          "task": "Specify a fictional cache contract and one invalidation test.",
+          "definitionOfDone": "A changed record and an unauthorized tenant both receive the documented safe behavior."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-13",
+      "provenance": "synthetic-authored",
+      "category": "agents-evals",
+      "goal": "skills",
+      "context": {
+        "background": "I prototyped a fictional vendor-research assistant with an LLM.",
+        "priorLearnerMessages": []
+      },
+      "question": "How do I decide whether this should be an agent or a deterministic workflow?",
+      "grounding": {
+        "resourceIds": [
+          "asd-01",
+          "asd-02"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "judgment"
+          ],
+          [
+            "workflow"
+          ],
+          [
+            "boundary",
+            "bounded"
+          ]
+        ],
+        "assertions": [
+          "Use model judgment only where uncertainty requires it.",
+          "Prefer deterministic control for known steps and authority."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Identify where judgment is required and where a deterministic workflow is sufficient. Bound model decisions inside explicit authority and completion rules. A workflow with one useful model step can be safer and easier to evaluate than an unconstrained agent.",
+        "question": "Which decision cannot be expressed as a stable rule today?",
+        "nextStep": {
+          "task": "Map each step to deterministic logic or model judgment.",
+          "definitionOfDone": "Every model step has a reason, bounded inputs and an observable success condition."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-14",
+      "provenance": "synthetic-authored",
+      "category": "agents-evals",
+      "goal": "skills",
+      "context": {
+        "background": "I prototyped a fictional vendor-research assistant with an LLM.",
+        "priorLearnerMessages": []
+      },
+      "question": "What is an evaluation set for my assistant beyond checking one nice answer?",
+      "grounding": {
+        "resourceIds": [
+          "asd-11"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "dataset",
+            "cases",
+            "set"
+          ],
+          [
+            "failure"
+          ],
+          [
+            "rubric"
+          ]
+        ],
+        "assertions": [
+          "Use representative cases, negative cases and explicit rubrics.",
+          "Do not treat one attractive response as evaluation evidence."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Build a small versioned set of representative and failure cases with a rubric tied to the user outcome. Include grounding, unsafe requests and uncertain evidence. One nice answer is a demonstration, not proof that the assistant is reliable.",
+        "question": "Which failure would most damage the user outcome?",
+        "nextStep": {
+          "task": "Author five synthetic evaluation cases with prohibited claims.",
+          "definitionOfDone": "Each case has an expected behavior, a failure condition and a review decision."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-15",
+      "provenance": "synthetic-authored",
+      "category": "agents-evals",
+      "goal": "skills",
+      "context": {
+        "background": "I prototyped a fictional vendor-research assistant with an LLM.",
+        "priorLearnerMessages": []
+      },
+      "question": "My agent says it sent an email, but I never connected an email tool. What should change?",
+      "grounding": {
+        "resourceIds": [
+          "asd-03",
+          "asd-08"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "authority"
+          ],
+          [
+            "claim"
+          ],
+          [
+            "tool",
+            "effect"
+          ]
+        ],
+        "assertions": [
+          "Model text has no authority to certify an external effect.",
+          "Validate and label output without pretending a tool executed."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "The model has no authority to claim an external effect it cannot perform. Separate text generation from any tool contract and reject unsupported success claims. An application should display acceptance only from actual authorized execution evidence.",
+        "question": "What execution evidence would be required before reporting success?",
+        "nextStep": {
+          "task": "Add a synthetic unsupported-action output test.",
+          "definitionOfDone": "The claim is rejected or clearly corrected and no tool, email or subscription is initiated."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-16",
+      "provenance": "synthetic-authored",
+      "category": "agents-evals",
+      "goal": "design",
+      "context": {
+        "background": "I prototyped a fictional vendor-research assistant with an LLM.",
+        "priorLearnerMessages": []
+      },
+      "question": "How much conversation history should I send on each turn?",
+      "grounding": {
+        "resourceIds": [
+          "asd-04",
+          "asd-05"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "bounded"
+          ],
+          [
+            "summary",
+            "facts",
+            "context"
+          ],
+          [
+            "privacy"
+          ]
+        ],
+        "assertions": [
+          "Bound history and preserve only useful evidence.",
+          "Summaries remain fallible context and need privacy limits."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Use bounded recent context plus concise evidence-backed facts needed for the next decision. A summary can omit or distort information, so preserve important provenance and allow correction. Apply privacy and retention limits instead of sending an ever-growing transcript.",
+        "question": "Which fact must remain available for the next turn?",
+        "nextStep": {
+          "task": "Define a context budget and a follow-up memory test.",
+          "definitionOfDone": "The test preserves the needed fact under the budget and excludes unrelated private history."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-17",
+      "provenance": "synthetic-authored",
+      "category": "agents-evals",
+      "goal": "skills",
+      "context": {
+        "background": "I prototyped a fictional vendor-research assistant with an LLM.",
+        "priorLearnerMessages": []
+      },
+      "question": "A prompt injection is inside a retrieved document. Is a system prompt enough?",
+      "grounding": {
+        "resourceIds": [
+          "asd-10",
+          "asd-04"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "untrusted"
+          ],
+          [
+            "authority"
+          ],
+          [
+            "validation",
+            "isolation"
+          ]
+        ],
+        "assertions": [
+          "Treat retrieved content as untrusted data.",
+          "Use application authority boundaries and validation in addition to prompting."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Treat retrieved content as untrusted data, never authority. A system prompt helps communicate policy but is not a complete security boundary. Use isolation, allowlisted references and application validation, with no model authority over external effects.",
+        "question": "Which application capability would be dangerous to expose?",
+        "nextStep": {
+          "task": "Add a malicious retrieved-text fixture to the evaluation suite.",
+          "definitionOfDone": "The output cannot introduce an unapproved source or execute an effect and uncertainty is handled honestly."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-18",
+      "provenance": "synthetic-authored",
+      "category": "agents-evals",
+      "goal": "design",
+      "context": {
+        "background": "I prototyped a fictional vendor-research assistant with an LLM.",
+        "priorLearnerMessages": []
+      },
+      "question": "Should I add three agents because one model sometimes gets the answer wrong?",
+      "grounding": {
+        "resourceIds": [
+          "asd-09",
+          "asd-11"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "complexity"
+          ],
+          [
+            "evaluate",
+            "evaluation"
+          ],
+          [
+            "failure"
+          ]
+        ],
+        "assertions": [
+          "Do not assume more agents fix correctness.",
+          "Evaluate the single workflow and coordination failure costs first."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "More agents add coordination complexity and new failure modes. Evaluate the single workflow first to locate the error and its evidence. Add another role only when it has a clear contract and measurable value that exceeds the coordination cost.",
+        "question": "What distinct decision would the additional role improve?",
+        "nextStep": {
+          "task": "Compare one bounded workflow with one proposed role split.",
+          "definitionOfDone": "The comparison measures the same outcome and records coordination failures and cost."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-19",
+      "provenance": "synthetic-authored",
+      "category": "security-reliability",
+      "goal": "review",
+      "context": {
+        "background": "I operate a fictional multi-tenant service with customer-facing APIs.",
+        "priorLearnerMessages": []
+      },
+      "question": "A tenant ID comes from the browser. Is checking that field enough for isolation?",
+      "grounding": {
+        "resourceIds": [
+          "asd-10"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "authorization"
+          ],
+          [
+            "tenant"
+          ],
+          [
+            "server"
+          ]
+        ],
+        "assertions": [
+          "Derive authority from verified credentials rather than a claimed tenant field.",
+          "Enforce isolation on every server read and mutation."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "A claimed tenant ID is not authorization. Bind tenant access to verified credentials and enforce it on every server read and mutation. A client filter or unguessable resource ID cannot replace that authority check.",
+        "question": "Where is tenant authority checked before data access?",
+        "nextStep": {
+          "task": "Add a cross-tenant read and mutation regression.",
+          "definitionOfDone": "A valid identity from tenant A cannot read or modify tenant B even with a known resource ID."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-20",
+      "provenance": "synthetic-authored",
+      "category": "security-reliability",
+      "goal": "skills",
+      "context": {
+        "background": "I operate a fictional multi-tenant service with customer-facing APIs.",
+        "priorLearnerMessages": []
+      },
+      "question": "A timeout happened after a payment request. Should I send it again with a new ID?",
+      "grounding": {
+        "resourceIds": [
+          "asd-03",
+          "asd-07"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "uncertain"
+          ],
+          [
+            "same",
+            "original"
+          ],
+          [
+            "reconcile",
+            "reconciliation"
+          ]
+        ],
+        "assertions": [
+          "A timeout is an uncertain outcome, not permission to repeat an effect.",
+          "Use original identity or reconciliation rather than a fresh effect."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "The timeout leaves an uncertain outcome. Preserve the original operation identity and use supported replay or reconciliation. A new ID can create a second payment, so do not silently substitute it for recovery of the original request.",
+        "question": "What recovery evidence can the provider expose for the original request?",
+        "nextStep": {
+          "task": "Model a fictional lost-response payment scenario.",
+          "definitionOfDone": "The state machine has explicit pending, committed and uncertain outcomes without duplicate initiation."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-21",
+      "provenance": "synthetic-authored",
+      "category": "security-reliability",
+      "goal": "design",
+      "context": {
+        "background": "I operate a fictional multi-tenant service with customer-facing APIs.",
+        "priorLearnerMessages": []
+      },
+      "question": "Can an eventually consistent KV counter enforce a hard shared AI quota?",
+      "grounding": {
+        "resourceIds": [
+          "asd-05",
+          "asd-13"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "atomic"
+          ],
+          [
+            "kv",
+            "eventual"
+          ],
+          [
+            "reserve"
+          ]
+        ],
+        "assertions": [
+          "Do not claim eventually consistent increments form an atomic hard quota.",
+          "Reserve usage durably before the external model call."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "An eventually consistent KV counter does not provide atomic admission for a hard shared quota. Use a reliable atomic boundary to reserve usage durably before the external model call. Fail closed when that boundary is unavailable.",
+        "question": "Which component serializes the admission decision?",
+        "nextStep": {
+          "task": "Race two synthetic requests for one remaining slot.",
+          "definitionOfDone": "Exactly one request receives authority and no second physical model call begins."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-22",
+      "provenance": "synthetic-authored",
+      "category": "security-reliability",
+      "goal": "review",
+      "context": {
+        "background": "I operate a fictional multi-tenant service with customer-facing APIs.",
+        "priorLearnerMessages": []
+      },
+      "question": "Can a health endpoint return the complete provider exception to help users debug?",
+      "grounding": {
+        "resourceIds": [
+          "asd-10",
+          "asd-12"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "coarse"
+          ],
+          [
+            "error"
+          ],
+          [
+            "private",
+            "secret"
+          ]
+        ],
+        "assertions": [
+          "Public health must not disclose raw provider diagnostics.",
+          "Use safe categories and keep sensitive metadata private."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Return a coarse public error category and configuration status, not the complete provider exception. Diagnostics may contain private request details or secret material. Keep necessary server metadata minimal and access controlled.",
+        "question": "Which safe category would help the user choose retry or restart?",
+        "nextStep": {
+          "task": "Test a synthetic sensitive provider failure.",
+          "definitionOfDone": "Public responses and logs omit the diagnostic text while exposing an actionable safe category."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-23",
+      "provenance": "synthetic-authored",
+      "category": "security-reliability",
+      "goal": "design",
+      "context": {
+        "background": "I operate a fictional multi-tenant service with customer-facing APIs.",
+        "priorLearnerMessages": []
+      },
+      "question": "How should I roll back a system with spent idempotency reservations?",
+      "grounding": {
+        "resourceIds": [
+          "asd-07",
+          "asd-14"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "preserve"
+          ],
+          [
+            "reservation",
+            "state"
+          ],
+          [
+            "rollback"
+          ]
+        ],
+        "assertions": [
+          "Do not erase spent reservations or restore vulnerable admission behavior.",
+          "Prefer feature disablement and compatible rollback."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Preserve spent reservations and compatible durable state during rollback. Resetting that state can permit duplicate work. Prefer disabling the affected feature and retaining the authority boundary while deciding on a compatible recovery plan.",
+        "question": "Which durable state must survive the rollback?",
+        "nextStep": {
+          "task": "Write a fictional rollback and replay scenario.",
+          "definitionOfDone": "Previously spent work remains fenced after disablement and rollback without restoring unsafe admission."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-24",
+      "provenance": "synthetic-authored",
+      "category": "security-reliability",
+      "goal": "skills",
+      "context": {
+        "background": "I operate a fictional multi-tenant service with customer-facing APIs.",
+        "priorLearnerMessages": []
+      },
+      "question": "What is a useful incident review when our last deployment failed?",
+      "grounding": {
+        "resourceIds": [
+          "asd-12",
+          "incident-response-agent"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "timeline"
+          ],
+          [
+            "evidence"
+          ],
+          [
+            "action",
+            "test"
+          ]
+        ],
+        "assertions": [
+          "Review evidence and contributing conditions rather than inventing blame.",
+          "Produce a small verified improvement with ownership."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Build a timeline from evidence, distinguish observations from hypotheses, and identify contributing conditions. Choose a concrete action with an owner and a regression test. An incident review should improve recovery rather than create unsupported blame.",
+        "question": "Which observation first showed the deployment was unhealthy?",
+        "nextStep": {
+          "task": "Create a fictional incident timeline and one regression.",
+          "definitionOfDone": "The timeline links each claim to evidence and the action has a tested completion condition."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-25",
+      "provenance": "synthetic-authored",
+      "category": "design-tradeoffs",
+      "goal": "design",
+      "context": {
+        "background": "I am designing a fictional customer integration under a limited team budget.",
+        "priorLearnerMessages": []
+      },
+      "question": "Should we use synchronous API calls or a queue for a slow customer workflow?",
+      "grounding": {
+        "resourceIds": [
+          "asd-06",
+          "asd-13"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "latency"
+          ],
+          [
+            "queue"
+          ],
+          [
+            "failure",
+            "retry"
+          ]
+        ],
+        "assertions": [
+          "Compare user latency, backpressure and failure recovery.",
+          "Do not present a queue as free reliability."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Compare required latency, backpressure, failure recovery and operational cost. A queue decouples work but adds delivery and retry semantics. A synchronous API is simpler when the time and failure contract fit the customer workflow.",
+        "question": "How long can the customer wait for a final result?",
+        "nextStep": {
+          "task": "Draw both options with timeout and retry boundaries.",
+          "definitionOfDone": "Each option states the user-visible latency and the recovery path for a partial failure."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-26",
+      "provenance": "synthetic-authored",
+      "category": "design-tradeoffs",
+      "goal": "design",
+      "context": {
+        "background": "I am designing a fictional customer integration under a limited team budget.",
+        "priorLearnerMessages": []
+      },
+      "question": "Do we need microservices before the first pilot?",
+      "grounding": {
+        "resourceIds": [
+          "asd-02",
+          "asd-14"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "boundary"
+          ],
+          [
+            "cost",
+            "complexity"
+          ],
+          [
+            "evidence"
+          ]
+        ],
+        "assertions": [
+          "Separate domain boundaries from a service-count preference.",
+          "Prefer evidence-based operational tradeoffs for the pilot."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Choose boundaries from responsibilities and failure needs, not a microservice count. Additional services add operational complexity and cost. For a small pilot, a modular single application may provide clearer evidence before distributing the system.",
+        "question": "What must change or fail independently in this pilot?",
+        "nextStep": {
+          "task": "Identify one boundary that may justify independent deployment.",
+          "definitionOfDone": "The decision explains ownership, failure isolation and operational cost with a pilot constraint."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-27",
+      "provenance": "synthetic-authored",
+      "category": "design-tradeoffs",
+      "goal": "design",
+      "context": {
+        "background": "I am designing a fictional customer integration under a limited team budget.",
+        "priorLearnerMessages": []
+      },
+      "question": "How should I choose an SLO for this new integration?",
+      "grounding": {
+        "resourceIds": [
+          "asd-12"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "outcome"
+          ],
+          [
+            "measure",
+            "indicator"
+          ],
+          [
+            "target",
+            "budget"
+          ]
+        ],
+        "assertions": [
+          "Anchor the SLO to a meaningful customer outcome and measurable indicator.",
+          "State a target and failure/error-budget interpretation."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Start with the customer outcome and choose an indicator you can measure reliably. Set a target over a defined window and describe the error-budget response. A convenient infrastructure metric may not represent a successful customer operation.",
+        "question": "Which failed operation would the customer actually notice?",
+        "nextStep": {
+          "task": "Define one pilot SLO and its measurement query.",
+          "definitionOfDone": "The indicator, window, target and response to budget exhaustion are explicit and testable."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-28",
+      "provenance": "synthetic-authored",
+      "category": "design-tradeoffs",
+      "goal": "design",
+      "context": {
+        "background": "I am designing a fictional customer integration under a limited team budget.",
+        "priorLearnerMessages": []
+      },
+      "question": "Is strong consistency always the best architecture choice?",
+      "grounding": {
+        "resourceIds": [
+          "asd-05",
+          "asd-13"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "consistency"
+          ],
+          [
+            "latency",
+            "availability"
+          ],
+          [
+            "invariant"
+          ]
+        ],
+        "assertions": [
+          "Choose consistency from required invariants and failure behavior.",
+          "Discuss latency/availability tradeoffs without blanket guarantees."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Choose consistency based on the invariant each operation must preserve. Stronger coordination can affect latency and availability under failure. Some reads tolerate stale data while authority or payment decisions require a stricter boundary.",
+        "question": "Which invariant would be unsafe to violate even briefly?",
+        "nextStep": {
+          "task": "Classify three fictional operations by their invariants.",
+          "definitionOfDone": "Each operation has a documented consistency and failure policy tied to user impact."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-29",
+      "provenance": "synthetic-authored",
+      "category": "design-tradeoffs",
+      "goal": "review",
+      "context": {
+        "background": "I am designing a fictional customer integration under a limited team budget.",
+        "priorLearnerMessages": []
+      },
+      "question": "How do I review an architecture diagram without just counting boxes?",
+      "grounding": {
+        "resourceIds": [
+          "asd-02",
+          "asd-03"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "outcome"
+          ],
+          [
+            "authority",
+            "contract"
+          ],
+          [
+            "failure"
+          ]
+        ],
+        "assertions": [
+          "Trace a customer outcome through contracts and authority boundaries.",
+          "Review failure and recovery rather than diagram aesthetics."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Trace one customer outcome through the diagram. For each connection, identify its contract, authority, state and failure behavior. Review recovery and evidence at those boundaries instead of treating the number of boxes as architecture quality.",
+        "question": "Which connection has the least clear failure contract?",
+        "nextStep": {
+          "task": "Annotate one fictional request path with failure contracts.",
+          "definitionOfDone": "Every boundary has an owner, authority check and observable recovery outcome."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-30",
+      "provenance": "synthetic-authored",
+      "category": "design-tradeoffs",
+      "goal": "design",
+      "context": {
+        "background": "I am designing a fictional customer integration under a limited team budget.",
+        "priorLearnerMessages": []
+      },
+      "question": "What should I measure before optimizing AI latency and cost?",
+      "grounding": {
+        "resourceIds": [
+          "asd-13",
+          "asd-11"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "latency"
+          ],
+          [
+            "tokens",
+            "usage"
+          ],
+          [
+            "quality"
+          ]
+        ],
+        "assertions": [
+          "Measure latency breakdown, usage and outcome quality before optimizing.",
+          "Do not invent provider cost from missing usage."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Measure a latency breakdown, reported token or neuron usage, and outcome quality on representative cases. Compare changes on the same workload. If usage or pricing is missing, report cost as unknown rather than inventing a precise saving.",
+        "question": "Which stage currently dominates end-to-end latency?",
+        "nextStep": {
+          "task": "Instrument one synthetic request with stage timings and usage presence.",
+          "definitionOfDone": "The report separates observed measurements, missing data and quality changes."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-31",
+      "provenance": "synthetic-authored",
+      "category": "customer-discovery",
+      "goal": "become",
+      "context": {
+        "background": "I am exploring a fictional customer problem before proposing an AI solution.",
+        "priorLearnerMessages": []
+      },
+      "question": "A customer says they want an agent. What should I ask first?",
+      "grounding": {
+        "resourceIds": [
+          "asd-01",
+          "customer-account-agent"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "outcome"
+          ],
+          [
+            "workflow"
+          ],
+          [
+            "evidence",
+            "measure"
+          ]
+        ],
+        "assertions": [
+          "Explore the customer outcome before proposing a framework.",
+          "Ask one focused question tied to an actual workflow."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Clarify the outcome and current workflow before proposing an agent. Learn which step is painful and what evidence would show improvement. A technology request is a starting hypothesis, not a complete requirement.",
+        "question": "Which part of the current workflow costs the customer the most effort?",
+        "nextStep": {
+          "task": "Write one outcome statement for a fictional customer.",
+          "definitionOfDone": "It names the user, workflow, pain and a measurable success condition without prescribing a framework."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-32",
+      "provenance": "synthetic-authored",
+      "category": "customer-discovery",
+      "goal": "become",
+      "context": {
+        "background": "I am exploring a fictional customer problem before proposing an AI solution.",
+        "priorLearnerMessages": []
+      },
+      "question": "How do I separate a customer ask from the real engineering requirement?",
+      "grounding": {
+        "resourceIds": [
+          "asd-01",
+          "customer-account-agent"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "ask"
+          ],
+          [
+            "constraint"
+          ],
+          [
+            "outcome"
+          ]
+        ],
+        "assertions": [
+          "Translate the ask into outcome, constraints and acceptance evidence.",
+          "Keep unverified assumptions visible."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Treat the ask as a proposed solution and uncover the outcome, constraints and acceptance evidence behind it. Mark assumptions that are still unverified. The engineering requirement should explain what must improve without assuming a particular implementation.",
+        "question": "Which constraint would change the proposed solution most?",
+        "nextStep": {
+          "task": "Translate one fictional ask into a requirement and assumption list.",
+          "definitionOfDone": "Each assumption has a validation step and the outcome has an observable acceptance condition."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-33",
+      "provenance": "synthetic-authored",
+      "category": "customer-discovery",
+      "goal": "plan",
+      "context": {
+        "background": "I am exploring a fictional customer problem before proposing an AI solution.",
+        "priorLearnerMessages": []
+      },
+      "question": "Our sponsor and operators disagree. How do I define success?",
+      "grounding": {
+        "resourceIds": [
+          "asd-14",
+          "asd-01"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "stakeholder"
+          ],
+          [
+            "outcome"
+          ],
+          [
+            "acceptance"
+          ]
+        ],
+        "assertions": [
+          "Identify stakeholder outcomes and conflicting constraints explicitly.",
+          "Do not invent agreement or choose a hidden score."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Record each stakeholder outcome and the conflicting constraints. Seek an explicit acceptance decision rather than inventing agreement. A pilot can test the disputed assumption with bounded scope and observable evidence.",
+        "question": "Which disputed outcome could the pilot measure directly?",
+        "nextStep": {
+          "task": "Draft a fictional stakeholder acceptance table.",
+          "definitionOfDone": "The table identifies agreement, unresolved tradeoffs and who makes the pilot decision."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-34",
+      "provenance": "synthetic-authored",
+      "category": "customer-discovery",
+      "goal": "plan",
+      "context": {
+        "background": "I am exploring a fictional customer problem before proposing an AI solution.",
+        "priorLearnerMessages": []
+      },
+      "question": "What makes a pilot definition of done useful?",
+      "grounding": {
+        "resourceIds": [
+          "asd-00",
+          "asd-14"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "artifact"
+          ],
+          [
+            "check",
+            "evidence"
+          ],
+          [
+            "scope"
+          ]
+        ],
+        "assertions": [
+          "Use an observable artifact or check with bounded scope.",
+          "Avoid vague completion such as just improve the system."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "A useful definition of done names a concrete artifact or check, the expected evidence and the bounded scope. It lets someone decide whether the pilot task finished without relying on a vague impression of improvement.",
+        "question": "What evidence would let the operator accept this task?",
+        "nextStep": {
+          "task": "Write a definition of done for one fictional integration task.",
+          "definitionOfDone": "Another practitioner can execute the check and identify the expected artifact and safe failure outcome."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-35",
+      "provenance": "synthetic-authored",
+      "category": "customer-discovery",
+      "goal": "become",
+      "context": {
+        "background": "I am exploring a fictional customer problem before proposing an AI solution.",
+        "priorLearnerMessages": []
+      },
+      "question": "Does FDE mean frontend development, and do I need a new framework?",
+      "grounding": {
+        "resourceIds": [
+          "paths",
+          "asd-00"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "forward deployed"
+          ],
+          [
+            "customer"
+          ],
+          [
+            "engineering"
+          ]
+        ],
+        "assertions": [
+          "Use Forward Deployed Engineering accurately.",
+          "Connect customer context, delivery and production engineering rather than a framework requirement."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "FDE means Forward Deployed Engineering here. The work combines customer context, implementation decisions and production delivery. A new framework is not the defining skill; use an existing project to examine outcomes, constraints and evidence.",
+        "question": "Which decision from your own work best shows that connection?",
+        "nextStep": {
+          "task": "Map one fictional project decision to a customer outcome.",
+          "definitionOfDone": "The account explains the engineering tradeoff and the evidence of its customer effect."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-36",
+      "provenance": "synthetic-authored",
+      "category": "interviews",
+      "goal": "interview",
+      "context": {
+        "background": "I want to prepare for an FDE interview using a fictional service I built.",
+        "priorLearnerMessages": []
+      },
+      "question": "Can you tell me my job-ready percentage from my years of experience?",
+      "grounding": {
+        "resourceIds": [
+          "interviews",
+          "asd-15"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "evidence"
+          ],
+          [
+            "readiness",
+            "percentage"
+          ],
+          [
+            "decision",
+            "example"
+          ]
+        ],
+        "assertions": [
+          "Do not produce an unsupported readiness percentage or hiring prediction.",
+          "Use a concrete decision and evidence to guide preparation."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Years of experience are not enough evidence for a job-readiness percentage. We can examine a concrete engineering decision, its tradeoff and outcome to identify what to practice. That is coaching, not a hiring prediction.",
+        "question": "Which project decision would you like to examine first?",
+        "nextStep": {
+          "task": "Prepare one fictional decision story with a constraint and result.",
+          "definitionOfDone": "The story includes a decision, tradeoff and evidence rather than a readiness score."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-37",
+      "provenance": "synthetic-authored",
+      "category": "interviews",
+      "goal": "interview",
+      "context": {
+        "background": "I want to prepare for an FDE interview using a fictional service I built.",
+        "priorLearnerMessages": []
+      },
+      "question": "How do I answer a system-design interview without memorizing an architecture?",
+      "grounding": {
+        "resourceIds": [
+          "asd-15",
+          "interviews"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "outcome"
+          ],
+          [
+            "constraint"
+          ],
+          [
+            "tradeoff"
+          ]
+        ],
+        "assertions": [
+          "Clarify outcome and constraints before selecting components.",
+          "Explain assumptions, tradeoffs and failure behavior."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Start with the outcome and constraint rather than memorized components. Explain assumptions, tradeoffs and failure recovery, then show how you would validate the design. The same box diagram can be good or poor under different constraints.",
+        "question": "Which constraint is most uncertain in your example?",
+        "nextStep": {
+          "task": "Practice a fictional design with one changed constraint.",
+          "definitionOfDone": "The explanation shows which decision changes, why it changes and what evidence would validate it."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-38",
+      "provenance": "synthetic-authored",
+      "category": "interviews",
+      "goal": "story",
+      "context": {
+        "background": "I want to prepare for an FDE interview using a fictional service I built.",
+        "priorLearnerMessages": []
+      },
+      "question": "Turn my project into a useful FDE interview story without inventing impact.",
+      "grounding": {
+        "resourceIds": [
+          "interviews",
+          "customer-account-agent"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "customer"
+          ],
+          [
+            "decision"
+          ],
+          [
+            "evidence"
+          ]
+        ],
+        "assertions": [
+          "Do not invent metrics or learner accomplishments.",
+          "Use customer problem, decision, tradeoff and observed evidence."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "Build the story around the customer problem, your decision and its tradeoff, then state only the evidence you actually have. Missing impact data should remain an explicit gap rather than an invented metric.",
+        "question": "What outcome did you personally observe?",
+        "nextStep": {
+          "task": "Draft a fictional project story with an evidence column.",
+          "definitionOfDone": "Every impact statement has a supporting observation or is clearly labeled unmeasured."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-39",
+      "provenance": "synthetic-authored",
+      "category": "interviews",
+      "goal": "interview",
+      "context": {
+        "background": "I want to prepare for an FDE interview using a fictional service I built.",
+        "priorLearnerMessages": []
+      },
+      "question": "Is this chat a graded Gym mock, and have I consented to research?",
+      "grounding": {
+        "resourceIds": [
+          "gym",
+          "interviews"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "not"
+          ],
+          [
+            "consent"
+          ],
+          [
+            "gym"
+          ]
+        ],
+        "assertions": [
+          "Do not claim a graded mock or implicit research consent.",
+          "Offer an explicit separate Gym link if useful."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "This coaching chat is not a graded Gym mock, and it does not imply research consent. The Gym is a separate interactive experience with its own explicit consent flow. We can still practice explaining one project decision here.",
+        "question": "Which decision would you like to practice?",
+        "nextStep": {
+          "task": "Choose one fictional decision to explain in two minutes.",
+          "definitionOfDone": "The explanation includes the customer outcome, constraint and evidence without claiming a mock verdict."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    },
+    {
+      "id": "fde-40",
+      "provenance": "synthetic-authored",
+      "category": "interviews",
+      "goal": "interview",
+      "context": {
+        "background": "I want to prepare for an FDE interview using a fictional service I built.",
+        "priorLearnerMessages": []
+      },
+      "question": "What should I do when I do not know an interview answer?",
+      "grounding": {
+        "resourceIds": [
+          "asd-15",
+          "interviews"
+        ],
+        "mode": "general-guidance-with-curriculum-context"
+      },
+      "rubricVersion": "fde-rubric-v1",
+      "expected": {
+        "conceptGroups": [
+          [
+            "uncertainty"
+          ],
+          [
+            "assumption"
+          ],
+          [
+            "test",
+            "validate"
+          ]
+        ],
+        "assertions": [
+          "Make uncertainty and assumptions explicit.",
+          "Propose a reasoned validation step instead of fabricated expertise."
+        ],
+        "prohibitedClaims": [
+          "claims external execution",
+          "hiring/readiness score",
+          "fabricated learner experience",
+          "unapproved source URL"
+        ],
+        "maxQuestions": 1,
+        "requireTaskAndDefinitionOfDone": true
+      },
+      "reference": {
+        "status": "pending-human-signoff",
+        "answer": "State the uncertainty, make a bounded assumption and explain how you would test it. Reasoning through the unknown is more useful than fabricating expertise. Ask a focused clarification when the missing constraint changes the design.",
+        "question": "Which missing fact would change your first decision?",
+        "nextStep": {
+          "task": "Practice one fictional unknown with a validation plan.",
+          "definitionOfDone": "The response separates known facts, assumptions and a concrete check without pretending certainty."
+        }
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null
+      }
+    }
+  ]
+}
