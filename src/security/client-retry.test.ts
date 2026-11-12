@@ -5,7 +5,7 @@ afterEach(() => { vi.unstubAllGlobals(); });
 
 it("reuses the Coach key and original payload after a lost response", async () => {
   const fetch = vi.fn().mockRejectedValueOnce(new Error("response lost"))
-    .mockResolvedValueOnce(Response.json({ token: "next-token" }));
+    .mockResolvedValueOnce(Response.json({ token: "next-token", stage: {number: 1, total: 6, title: "Outcome"}, parts: [{kind: "ask", text: "Question"}], done: false, degraded: true, aiAvailable: false }));
   vi.stubGlobal("fetch", fetch);
   const api = await import("../../learn/src/components/coach/api");
   await expect(api.sendMessage("token", "reasoning", [])).rejects.toThrow("response lost");
@@ -36,7 +36,7 @@ it("keeps Gym retries stable while the browser interview timer advances", async 
 
 it.each(["coach", "gym"] as const)("keeps a private %s start scope stable for retries and separate for another client", async kind => {
   const fetch = vi.fn().mockRejectedValueOnce(new Error("response lost"))
-    .mockImplementation(async () => Response.json({ session: {}, token: "test" }));
+    .mockImplementation(async () => Response.json({ session: {}, token: "test", stage: {number: 1, total: 6, title: "Outcome"}, parts: [{kind: "ask", text: "Question"}], done: false, degraded: true, aiAvailable: false }));
   vi.stubGlobal("fetch", fetch);
   async function caller() {
     if (kind === "coach") {
