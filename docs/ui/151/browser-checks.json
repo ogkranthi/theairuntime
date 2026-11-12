@@ -1,0 +1,31 @@
+{
+  "checks": [
+    "welcome 360: no horizontal overflow",
+    "conversation 360: no horizontal overflow",
+    "welcome 390: no horizontal overflow",
+    "conversation 390: no horizontal overflow",
+    "welcome 768: no horizontal overflow",
+    "conversation 768: no horizontal overflow",
+    "welcome 1440: no horizontal overflow",
+    "conversation 1440: no horizontal overflow",
+    "Four responsive widths, exactly three starters, visible composer, honest resource chat, no new AI requests",
+    "Resource menu supports Escape and returns focus",
+    "All three starters and four quick prompts respond without API calls; every suggested resource resolves",
+    "IME-safe Enter, Shift+Enter newline, and real Enter submission",
+    "virtual-keyboard-height simulation: no horizontal overflow",
+    "Textarea grows within its cap; anchored composer survives a 440px visual viewport",
+    "Actual existing lesson protocol, written fallback, loading, failed network response, exact retry, no duplicate turns",
+    "Full authored lesson completes with all six recap and six design entries and the existing continuation URL",
+    "Reduced motion disables entry animations",
+    "No-JavaScript page contains meaningful learning links and an explicit explanation"
+  ],
+  "screenshots": [
+    "mobile-welcome.png",
+    "mobile-conversation.png",
+    "desktop-welcome.png",
+    "desktop-conversation.png"
+  ],
+  "api": "Existing local Coach handler, AI absent; no production calls",
+  "physicalKeyboard": "Not tested on physical Android/iOS devices; CDP viewport resize only",
+  "mockup": "Attachment unavailable; issue #151 visual specification used"
+}
