@@ -1,5 +1,15 @@
 # Cohort 0 privacy and consent
 
+The security boundary additionally retains hashed capabilities, request
+fingerprints, revisions, quota counts, and reservation/result-pointer metadata
+in one SQLite Durable Object. It receives no raw conversations or email
+addresses. Consented Gym state and immutable replay responses remain in the
+existing KV namespace until the original absolute retention expiry; mutations
+do not extend retention. Bearer capabilities are private session authority.
+See [the security runbook](../security/COACH_GYM_HARDENING.md) for cache contents,
+cleanup, platform-backup limits, and at-most-once report delivery.
+
+
 ## Research framing
 
 Cohort 0 is a small product-validation group, not a public assessment service.

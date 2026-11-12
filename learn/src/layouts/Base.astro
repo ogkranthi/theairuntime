@@ -19,9 +19,10 @@ interface Props {
   jsonLd?: Record<string, unknown>[];
   /** Wider page chrome (lesson three-column layout). */
   wide?: boolean;
+  coachShell?: boolean;
 }
 
-const { title, description, pageSlug, ogType = "website", jsonLd = [], wide = false } = Astro.props;
+const { title, description, pageSlug, ogType = "website", jsonLd = [], wide = false, coachShell = false } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const ogImage = new URL(`/og/${pageSlug}.png`, Astro.site).href;
@@ -37,7 +38,7 @@ const isActive = (href: string) =>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content={coachShell ? "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" : "width=device-width, initial-scale=1"} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
     <title>{title}</title>
@@ -62,13 +63,21 @@ const isActive = (href: string) =>
     {jsonLd.map((block) => <script type="application/ld+json" set:html={JSON.stringify(block)} />)}
   </head>
 
-  <body>
+  <body class:list={{ "is-coach-page": coachShell }}>
     <a class="skip" href="#main">Skip to content</a>
 
     <header class="site-header">
       <div class:list={["shell site-header__inner", { "shell--wide": wide }]}>
-        <Wordmark />
+        <Wordmark coach={coachShell} />
 
+        {coachShell ? <details class="coach-resources mnav">
+          <summary aria-label="Learning resources"><span>Resources</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary>
+          <nav class="mnav__panel" aria-label="Learning resources">
+            <a href="/commons/">Explore FDE Commons</a>
+            <a href="/coach/?lesson=agent-system-design">Guided system-design lesson</a>
+            {nav.map(n => <a href={n.href}>{n.label}</a>)}
+          </nav>
+        </details> : <>
         <nav class="site-nav" aria-label="Primary">
           {
             nav.map((n) =>
@@ -99,14 +108,15 @@ const isActive = (href: string) =>
             }
           </nav>
         </details>
+        </>}
       </div>
     </header>
 
-    <main id="main">
+    <main id="main" tabindex="-1">
       <slot />
     </main>
 
-    <footer class="site-footer">
+    <footer class:list={["site-footer", { "site-footer--coach": coachShell }]}>
       <div class:list={["shell", { "shell--wide": wide }]}>
         <slot name="footer-cta" />
         <div class="site-footer__legal">
@@ -176,6 +186,15 @@ const isActive = (href: string) =>
         d.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => (d.open = false)));
       });
 
+      document.querySelectorAll<HTMLDetailsElement>(".coach-resources").forEach((menu) => {
+        menu.addEventListener("keydown", event => {
+          if (event.key === "Escape") { menu.open = false; menu.querySelector("summary")?.focus(); }
+        });
+        document.addEventListener("pointerdown", event => {
+          if (event.target instanceof Node && !menu.contains(event.target)) menu.open = false;
+        });
+      });
+
       // 4. Keyboard shortcut to search: "/" or Cmd/Ctrl+K, unless the reader is
       // already typing somewhere. On /search it focuses the field instead of
       // reloading the page.
@@ -200,6 +219,18 @@ const isActive = (href: string) =>
     </script>
 
     <style>
+      :global(.is-coach-page) { background:#fbfcfc; }
+      :global(.is-coach-page) .site-header { background:#fff;backdrop-filter:none; }
+      :global(.is-coach-page) .site-header__inner { max-width:1240px;min-height:72px;padding-top:0;padding-bottom:0; }
+      .coach-resources.mnav { display:block; }
+      .coach-resources.mnav summary { display:flex;flex-direction:row;align-items:center;gap:8px;min-width:44px;min-height:44px;padding:8px 12px;border:1px solid #e4e8eb;border-radius:9px;font-size:13px;color:#46556a;list-style:none;cursor:pointer; }
+      .coach-resources.mnav summary::-webkit-details-marker {display:none;}
+      .coach-resources.mnav summary:focus-visible {outline:3px solid var(--accent);outline-offset:3px;}
+      .coach-resources .mnav__panel {min-width:240px;}
+      .site-footer--coach { margin-top:0!important;padding:16px 0 24px!important;background:#fbfcfc; }
+      .site-footer--coach .site-footer__legal { margin-top:0;font-size:11px; }
+      :global(body:has(.fde-coach--active)) .site-footer--coach {display:none;}
+      @media(max-width:600px) { :global(.is-coach-page) .site-header__inner {padding-left:16px;padding-right:16px;min-height:64px;} .coach-resources summary{padding:8px;} .coach-resources summary span{display:none;} .site-footer--coach .site-footer__links{gap:14px;} }
       .site-header {
         position: sticky;
         top: 0;

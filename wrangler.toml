@@ -108,11 +108,13 @@ id = "8cb02842b8d44f07886395524b17128a"
 # Agent System Design Coach (/coach/, /api/coach/*).
 #
 # ONE REQUIRED SECRET. The lesson keeps the learner's place in a signed token
-# rather than a database, and that signature is what enforces the per lesson
-# ceiling on model calls. The endpoint is unauthenticated by design, and the
+# rather than a database. Signatures prevent edits but do not prevent replay,
+# so they do not enforce cumulative model-call quotas. The endpoint is
+# unauthenticated by design, and the
 # Workers AI daily allowance is shared with FDE Gym through the single [ai]
 # binding above, so without the ceiling one visitor could spend the day's
-# allowance and take FDE Gym down with it.
+# allowance and take FDE Gym down with it. Atomic enforcement uses AI_SECURITY
+# below. KV counters are only best effort and never authorize AI calls.
 #
 #   npx wrangler secret put COACH_TOKEN_SECRET
 #
@@ -122,9 +124,11 @@ id = "8cb02842b8d44f07886395524b17128a"
 # open yet rather than offering a button that fails. `GET /api/coach/health`
 # reports tokenConfigured.
 #
-# The coach reuses FDE_GYM_SESSIONS for two ephemeral, non-personal things: a
-# per IP start counter with a one hour TTL, and aggregate funnel counters under
-# `coach:stat:`. No lesson content and nothing per person is ever written.
+# The coach reuses FDE_GYM_SESSIONS for replay response caches (three-hour
+# absolute lifetime) and aggregate counters under `coach:stat:`. Raw learner
+# turns are not retained; cached generated replies may reflect learner input.
+# Atomic revisions, reservations, hashed capabilities, and quotas live only in
+# AI_SECURITY. See docs/security/COACH_GYM_HARDENING.md before deployment.
 
 # The personalized report email is the only part that needs an outside service.
 # Without it the interview and the on-screen result work in full; only the
@@ -132,3 +136,12 @@ id = "8cb02842b8d44f07886395524b17128a"
 # sent one. To enable: npx wrangler secret put RESEND_API_KEY, then set
 # FDE_GYM_FROM_EMAIL (a verified sender) as a dashboard variable, alongside the
 # other environment variables this Worker already keeps there.
+
+# Atomic Coach/Gym security metadata only. Added by migration on a reviewed deploy.
+[[durable_objects.bindings]]
+name = "AI_SECURITY"
+class_name = "AiSecurityCoordinator"
+
+[[migrations]]
+tag = "v1-ai-security"
+new_sqlite_classes = ["AiSecurityCoordinator"]

@@ -43,6 +43,12 @@ describe("lesson token", () => {
     expect(await verifyState(token, SECRET, NOW + fourHours)).toBeNull();
   });
 
+  it("rejects future-issued tokens and the exact expiry boundary", async () => {
+    const token = await signState(state, SECRET);
+    expect(await verifyState(token, SECRET, NOW - 1)).toBeNull();
+    expect(await verifyState(token, SECRET, NOW + 3 * 60 * 60 * 1000)).toBeNull();
+  });
+
   it("rejects malformed input without throwing", async () => {
     for (const bad of [
       "",

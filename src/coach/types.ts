@@ -1,3 +1,4 @@
+import type { SecurityEnv } from "../security/types";
 import type { KvBinding, WorkersAiBinding } from "../fde-gym/types";
 
 /**
@@ -56,28 +57,24 @@ export interface CoachResponse {
   detectedConcepts?: string[];
 }
 
-/**
- * Lesson position, carried by the client and signed by the server.
- *
- * Client held so there is no database and no account, signed so it cannot be
- * edited. `calls` is the reason the signature matters: it is the per-session
- * ceiling on model calls, and an unsigned copy would let anyone lift it.
- */
+/** Client-held signed position. Signing prevents edits, not replay. */
 export interface CoachState {
+  sessionId?: string;
+  revision?: number;
   lessonId: string;
   stageIndex: number;
   /** Whether the current stage has already used its one probe. */
   probed: boolean;
-  /** Model calls spent so far in this lesson. */
+  /** Logical model turns. Physical attempts are enforced by AI_SECURITY. */
   calls: number;
   issuedAt: number;
 }
 
-export interface CoachEnv {
+export interface CoachEnv extends SecurityEnv {
   AI?: WorkersAiBinding;
   /**
-   * Reused from FDE Gym for two short lived, non-personal things: a start rate
-   * counter and aggregate stage counters. No lesson content is ever written.
+   * Shared KV retention for short-lived replay responses and aggregate stage
+   * counters. No raw Coach learner turns are written.
    */
   FDE_GYM_SESSIONS?: KvBinding;
   FDE_GYM_INTERVIEW_MODEL?: string;
