@@ -1,4 +1,5 @@
 import type { DurableObjectNamespace } from "@cloudflare/workers-types";
+import type { ChatMetadata } from "../coach-chat/types";
 import type { InterviewSession } from "../fde-gym/types";
 
 export type SecurityNamespace = Pick<DurableObjectNamespace, "idFromName" | "get">;
@@ -8,6 +9,10 @@ export interface SecurityExecution {
   expiresAt: number;
   revision: number;
   canonicalSession?: InterviewSession;
+  attemptCount?: number;
+  /** Trusted per-call deadline, captured before grant RPC; never request JSON. */
+  modelDeadlineMs?: number;
+  metadata?: ChatMetadata;
   saveSession(session: InterviewSession): void;
 }
 export interface SecurityEnv {
@@ -18,6 +23,8 @@ export interface SecurityEnv {
 export const LIMITS = {
   dailyAttempts: 500,
   coachAttempts: 14,
+  chatAttempts: 20,
+  chatTurns: 10,
   gymAttempts: 82,
   coachTurns: 12,
   gymTurns: 40,

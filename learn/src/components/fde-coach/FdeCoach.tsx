@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { readHealth, createCoachClient, CoachRequestError, type CoachReply, type CoachSummary, type StageMeta, type StageTurn } from "../coach/api";
 import { goalLabel, guidanceFor, prompts, routeQuestion, starters, type Goal, type Guidance } from "./guidance";
+import { createChatClient, readChatHealth, type ChatReply, type ChatGoal, type HistoryTurn } from "./chat-api";
 import SystemIllustration from "./SystemIllustration";
 import "./fde-coach.css";
 
-type Turn = { id: number; role: "learner" | "coach"; text?: string; guidance?: Guidance; reply?: CoachReply };
-type Pending = { kind: "start" } | { kind: "answer"; token: string; text: string; turns: StageTurn[] };
+type Turn = { id: number; role: "learner" | "coach"; text?: string; guidance?: Guidance; reply?: CoachReply; chat?: ChatReply };
+type ChatPending = { kind: "chat-start"; goal: ChatGoal; firstMessage?: string } | { kind: "chat-answer"; token: string; text: string; history: HistoryTurn[] };
+type Pending = ChatPending | { kind: "start" } | { kind: "answer"; token: string; text: string; turns: StageTurn[] };
 const errorText = (cause: unknown) => cause instanceof Error ? cause.message : "The connection was interrupted. Your conversation is still here.";
 function Arrow({ small = false }: { small?: boolean }) {
   return <svg width={small ? 16 : 20} height={small ? 16 : 20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg>;
@@ -19,10 +21,10 @@ function Summary({ summary }: { summary: CoachSummary }) {
     <h3>Your first agent design</h3><dl>{summary.design.map(line => <div key={line.label}><dt>{line.label}</dt><dd>{line.body}</dd></div>)}</dl>
     <p className="fde-takeaway">{summary.takeaway}</p><p>Your agent works when everything goes right. What happens when it runs for hours and fails halfway through?</p><a href="/coach/next/">Continue learning <span aria-hidden="true">→</span></a></section>;
 }
-export default function FdeCoach() {
+export default function FdeCoach({ aiBeta = false }: { aiBeta?: boolean }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
-  const [mode, setMode] = useState<"guide" | "lesson">("guide");
+  const [mode, setMode] = useState<"guide" | "lesson" | "chat">("guide");
   const [stage, setStage] = useState<StageMeta | null>(null);
   const [done, setDone] = useState(false);
   const [summary, setSummary] = useState<CoachSummary | null>(null);
@@ -30,6 +32,12 @@ export default function FdeCoach() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [pending, setPending] = useState<Pending | null>(null);
+  const [chatUnavailable, setChatUnavailable] = useState(false);
+  const chatClient = useRef<ReturnType<typeof createChatClient>>();
+  chatClient.current ??= createChatClient();
+  const chatToken = useRef("");
+  const chatHistory = useRef<HistoryTurn[]>([]);
+  const [chatTurn, setChatTurn] = useState(0);
   const [retryable, setRetryable] = useState(true);
   const client = useRef<ReturnType<typeof createCoachClient>>();
   client.current ??= createCoachClient();
@@ -57,7 +65,7 @@ export default function FdeCoach() {
   useEffect(() => {
     requestAnimationFrame(() => {
       const node = log.current;
-      if (node && turns.at(-1)?.guidance) {
+      if (node && (turns.at(-1)?.guidance || turns.at(-1)?.chat)) {
         const entries = node.querySelectorAll<HTMLElement>(".fde-turn");
         const question = entries[entries.length - 2];
         if (question) node.scrollTop += question.getBoundingClientRect().top - node.getBoundingClientRect().top - 12;
@@ -71,13 +79,14 @@ export default function FdeCoach() {
     return () => { window.removeEventListener("resize", resize); window.visualViewport?.removeEventListener("resize", resize); };
   }, []);
   useEffect(() => { const node = input.current; if (node) { node.style.height = "auto"; node.style.height = `${Math.min(node.scrollHeight, 160)}px`; } }, [draft, active]);
-  useEffect(() => () => { controller.current?.abort(); client.current?.abandon(); }, []);
+  useEffect(() => () => { controller.current?.abort(); client.current?.abandon(); chatClient.current?.abandon(); }, []);
   useEffect(() => {
     if (initialized.current) return; initialized.current = true;
     if (new URLSearchParams(window.location.search).get("lesson") === "agent-system-design") void beginLesson();
   }, []);
   function choose(goal: Goal, text = goalLabel(goal)) {
     if (inFlight.current || mode === "lesson") return;
+    if (aiBeta && !chatUnavailable) { void beginChat(goal, text === goalLabel(goal) ? undefined : text); return; }
     nearBottom.current = true;
     append({ role: "learner", text }); append({ role: "coach", guidance: guidanceFor(goal) });
     setDraft(""); requestAnimationFrame(() => input.current?.focus({ preventScroll: true }));
@@ -92,6 +101,18 @@ export default function FdeCoach() {
     if (reply.summary) setSummary(reply.summary);
     append({ role: "coach", reply });
   }
+  function applyChat(reply: ChatReply) {
+    chatToken.current = reply.token; setChatTurn(reply.turn); setDone(reply.done);
+    append({ role: "coach", chat: reply });
+    if (reply.mode !== "intake") chatHistory.current.push({ role: "coach", text: `${reply.answer} ${reply.question}`.slice(0,700) });
+    chatHistory.current = chatHistory.current.slice(-4);
+  }
+  async function beginChat(goal: ChatGoal, message?: string) {
+    if (inFlight.current || mode === "lesson") return;
+    setMode("chat"); setDraft(""); nearBottom.current = true;
+    append({ role: "learner", text: message || goalLabel(goal) });
+    await run({ kind: "chat-start", goal, ...(message ? { firstMessage: message } : {}) });
+  }
   async function run(request: Pending) {
     if (inFlight.current) return;
     inFlight.current = true; setBusy(true); setError(""); setRetryable(true); setPending(request);
@@ -99,8 +120,33 @@ export default function FdeCoach() {
     const abort = new AbortController();
     controller.current = abort;
     const lessonClient = client.current!;
+    const mentorClient = chatClient.current!;
     try {
-      if (request.kind === "start") {
+      if (request.kind === "chat-start") {
+        const health = await readChatHealth(abort.signal);
+        if (attempt !== generation.current) return;
+        if (!health.enabled || !health.securityConfigured) {
+          setChatUnavailable(true); setMode("guide");
+          append({role:"coach",text:"The AI coaching beta is unavailable. This is curated guidance, not a personalized model answer.",guidance:guidanceFor(request.goal)});
+          setPending(null); return;
+        }
+        const reply = await mentorClient.start(request.goal, abort.signal);
+        if (attempt !== generation.current) return;
+        // A free-form welcome question goes straight to inference after the
+        // non-model start handshake, without appending a fake intake answer.
+        if (!request.firstMessage) applyChat(reply);
+        else chatToken.current = reply.token;
+        mentorClient.acknowledge(reply); setPending(null);
+        if (request.firstMessage) {
+          inFlight.current = false;
+          chatHistory.current.push({role:"learner",text:request.firstMessage.slice(0,700)});
+          await run({kind:"chat-answer",token:reply.token,text:request.firstMessage,history:[]}); return;
+        }
+      } else if (request.kind === "chat-answer") {
+        const reply = await mentorClient.message(request.token, request.text, request.history, abort.signal);
+        if (attempt !== generation.current) return;
+        applyChat(reply); mentorClient.acknowledge(reply);
+      } else if (request.kind === "start") {
         const health = await readHealth(abort.signal);
         if (!health) throw new Error("The guided lesson could not connect. Try again, or read the course while you’re offline.");
         if (attempt !== generation.current) return;
@@ -125,8 +171,14 @@ export default function FdeCoach() {
   }
   function submit() {
     const text = draft.trim();
-    if (!text || inFlight.current || (mode === "lesson" && (done || pending))) return;
+    if (!text || inFlight.current || ((mode === "lesson" || mode === "chat") && (done || pending))) return;
     if (mode === "guide") { choose(routeQuestion(text), text); return; }
+    if (mode === "chat") {
+      const history = chatHistory.current.slice(-4);
+      nearBottom.current = true; append({role:"learner",text});
+      chatHistory.current.push({role:"learner",text:text.slice(0,700)}); setDraft("");
+      void run({kind:"chat-answer",token:chatToken.current,text,history}); return;
+    }
     const history = stageTurns.current.slice(-6);
     nearBottom.current = true; append({ role: "learner", text });
     stageTurns.current.push({ role: "learner", text }); setDraft("");
@@ -134,7 +186,7 @@ export default function FdeCoach() {
   }
   function reset() {
     if (!window.confirm(pending ? "Start a new conversation and abandon the pending lesson request? Server work may still finish and reserved usage remains spent. Usage limits still apply." : "Start a new conversation? This chat is kept only in this tab.")) return;
-    generation.current++; controller.current?.abort(); client.current?.abandon(); client.current = createCoachClient(); inFlight.current = false;
+    generation.current++; controller.current?.abort(); client.current?.abandon(); client.current = createCoachClient(); chatClient.current?.abandon(); chatClient.current = createChatClient(); chatToken.current = ""; chatHistory.current = []; setChatTurn(0); setChatUnavailable(false); inFlight.current = false;
     token.current = ""; stageTurns.current = []; stageNumber.current = 0; nearBottom.current = true;
     setTurns([]); setMode("guide"); setStage(null); setDone(false); setSummary(null); setScripted(false);
     setBusy(false); setPending(null); setError(""); setDraft("");
@@ -146,21 +198,28 @@ export default function FdeCoach() {
     {!active ? <>
       <div className="fde-welcome"><div className="fde-welcome__copy"><p className="fde-kicker"><span className="fde-spark" aria-hidden="true">✳</span> YOUR NEXT CHAPTER STARTS HERE</p>
         <h1>Your AI Coach for <span>Forward Deployed</span> Engineering</h1>
-        <p className="fde-intro">Learn system design, build real skills, and prepare for FDE roles. One conversation at a time.</p><p className="fde-mode-notice" id="fde-guidance-notice">Curated guidance, not personalized AI.</p></div><SystemIllustration/></div>
+        <p className="fde-intro">Learn system design, build real skills, and prepare for FDE roles. One conversation at a time.</p><p className="fde-mode-notice" id="fde-guidance-notice">{aiBeta ? "AI coaching beta. Use fictional or non-sensitive examples." : "Curated guidance, not personalized AI."}</p></div><SystemIllustration/></div>
       <div className="fde-starters" aria-label="Choose your starting point">{starters.map(item => <button type="button" className={`fde-starter fde-starter--${item.tone}`} key={item.id} onClick={() => choose(item.id)}>
         <span className="fde-starter__icon"><GoalIcon kind={item.id}/></span><span><strong>{item.title}</strong><span className="fde-starter__description">{item.description}</span></span><span className="fde-starter__arrow"><Arrow small/></span></button>)}</div>
     </> : <>
-      <header className="fde-context"><div><p className="fde-kicker">{mode === "lesson" ? "GUIDED SYSTEM-DESIGN LESSON" : "YOUR CONVERSATION"}</p><h1>{mode === "lesson" ? stage ? `Step ${stage.number} of ${stage.total}: ${stage.title}` : "Design your first AI agent" : "A useful next step starts here."}</h1></div>
+      <header className="fde-context"><div><p className="fde-kicker">{mode === "lesson" ? "GUIDED SYSTEM-DESIGN LESSON" : mode === "chat" ? "FDE COACH · AI BETA" : "YOUR CONVERSATION"}</p><h1>{mode === "lesson" ? stage ? `Step ${stage.number} of ${stage.total}: ${stage.title}` : "Design your first AI agent" : mode === "chat" ? `Your coaching conversation · ${chatTurn}/10` : "A useful next step starts here."}</h1></div>
         <button className="fde-reset" type="button" onClick={reset} aria-label="Start a new conversation"><span aria-hidden="true">＋</span><span>New chat</span></button></header>
       <div className="fde-transcript" ref={log} tabIndex={0} role="log" aria-live="polite" aria-relevant="additions" aria-label="FDE Coach conversation" aria-busy={busy}
         onScroll={() => { const node = log.current; if (node) { nearBottom.current = node.scrollHeight - node.scrollTop - node.clientHeight < 80; if (nearBottom.current) setLatest(false); } }}>
         <div className="fde-transcript__inner">{turns.map(turn => <article className={`fde-turn fde-turn--${turn.role}`} key={turn.id}>
           <div className="fde-turn__avatar" aria-hidden="true">{turn.role === "coach" ? <GoalIcon kind="skills"/> : "Y"}</div><div className="fde-turn__body">
-            <p className="fde-turn__who">{turn.role === "coach" ? "FDE Coach" : "You"}{turn.guidance ? <span>Curated guidance</span> : turn.reply ? <span>{turn.reply.degraded ? "Written lesson" : "Guided lesson"}</span> : null}</p>
+            <p className="fde-turn__who">{turn.role === "coach" ? "FDE Coach" : "You"}{turn.chat ? <span>{turn.chat.mode === "ai" ? "AI guidance" : turn.chat.mode === "intake" ? "Coach intake" : "Authored fallback"}</span> : turn.guidance ? <span>Curated guidance</span> : turn.reply ? <span>{turn.reply.degraded ? "Written lesson" : "Guided lesson"}</span> : null}</p>
             {turn.text ? <p className="fde-message-text">{turn.text}</p> : null}
             {turn.guidance ? <><h2>{turn.guidance.title}</h2>{turn.guidance.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
               <ul className="fde-resource-list">{turn.guidance.resources.map(resource => <li key={resource.href}><a href={resource.href}>{resource.title}<Arrow small/></a><span>{resource.detail}</span></li>)}</ul>
               {turn.guidance.lesson ? <button className="fde-lesson-link" type="button" onClick={() => void beginLesson()} disabled={busy || mode === "lesson"}>Start the 10-minute guided lesson <Arrow small/></button> : null}</> : null}
+            {turn.chat ? <>
+              <p className="fde-message-text">{turn.chat.answer}</p>
+              {turn.chat.gaps.map(gap => <p key={gap.gap}><strong>Growth area: {gap.gap}</strong><br/>Evidence you shared: “{gap.evidence}”</p>)}
+              {turn.chat.nextStep ? <p><strong>Next task:</strong> {turn.chat.nextStep.task}<br/><strong>Definition of done:</strong> {turn.chat.nextStep.definitionOfDone}</p> : null}
+              {turn.chat.question ? <p>{turn.chat.question}</p> : null}
+              {turn.chat.sources.length ? <ul className="fde-resource-list">{turn.chat.sources.map(source => <li key={source.id}><a href={source.href}>{source.title}<Arrow small/></a><details><summary>Curriculum reference: read excerpt</summary><span>{source.excerpt}</span></details></li>)}</ul> : null}
+            </> : null}
             {turn.reply?.parts.map((part, index) => <div key={index} className={`fde-lesson-part fde-lesson-part--${part.kind}`}>{part.kind === "principle" ? <p className="fde-kicker">THE PRINCIPLE</p> : null}{part.text.split("\n\n").map((paragraph, i) => <p key={i}>{paragraph}</p>)}</div>)}
           </div></article>)}
           {summary ? <Summary summary={summary}/> : null}
@@ -169,7 +228,7 @@ export default function FdeCoach() {
     </>}
     <div className="fde-compose-area">
       {latest ? <button className="fde-latest" type="button" onClick={() => scrollLatest(true)}>Latest message <span aria-hidden="true">↓</span></button> : null}
-      {busy ? <p className="fde-status" role="status">Connecting to the guided lesson<span aria-hidden="true">...</span></p> : null}
+      {busy ? <p className="fde-status" role="status">{mode === "chat" ? "Working on your coaching reply" : "Connecting to the guided lesson"}<span aria-hidden="true">...</span></p> : null}
       {error ? <div className="fde-error" id="fde-request-error" role="alert"><p>{error}</p><div>{pending && retryable ? <button type="button" disabled={busy} onClick={() => pending && void run(pending)}>Retry last request</button> : null}<a href="/learn/courses/agentic-system-design/">Read the course</a></div></div> : null}
       {scripted && mode === "lesson" && !done ? <p className="fde-disclosure">The written lesson is active. Replies follow the authored material rather than your exact wording.</p> : null}
       {!done ? <form className="fde-composer" onSubmit={event => { event.preventDefault(); submit(); }}>
@@ -178,12 +237,13 @@ export default function FdeCoach() {
           placeholder={mode === "lesson" ? "Answer the current lesson question..." : "Ask your FDE Coach anything..."}
           onChange={event => setDraft(event.currentTarget.value)} onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}
           onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !composing.current && !event.nativeEvent.isComposing && event.nativeEvent.keyCode !== 229) { event.preventDefault(); submit(); } }}/>
-        <div className="fde-composer__bottom"><span className="fde-composer__label"><span aria-hidden="true">✳</span> FDE COACH <span className="fde-composer__mode">/ {mode === "lesson" ? "Guided lesson" : "Curated guidance"}</span></span>
+        <div className="fde-composer__bottom"><span className="fde-composer__label"><span aria-hidden="true">✳</span> FDE COACH <span className="fde-composer__mode">/ {mode === "lesson" ? "Guided lesson" : mode === "chat" || (aiBeta && !chatUnavailable) ? "AI beta" : "Curated guidance"}</span></span>
           <button className="fde-send" type="submit" aria-label={mode === "lesson" ? "Send your answer" : "Send message"} disabled={busy || Boolean(pending) || !draft.trim()}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></button></div>
-      </form> : <div className="fde-completed"><span>Guided lesson complete. Your recap is above.</span><button type="button" onClick={reset}>Explore another direction <Arrow small/></button></div>}
+      </form> : <div className="fde-completed"><span>{mode === "chat" ? "This bounded chat is complete. You can review your next task above." : "Guided lesson complete. Your recap is above."}</span><button type="button" onClick={reset}>Explore another direction <Arrow small/></button></div>}
       {!active ? <div className="fde-prompts" aria-label="Try a question">{prompts.map(prompt => <button key={prompt.id} type="button" onClick={() => choose(prompt.id)}>{prompt.title}<Arrow small/></button>)}</div>
         : mode === "guide" && last ? <div className="fde-followups" aria-label="Suggested next steps">{last.followups.map(goal => <button key={goal} type="button" onClick={() => choose(goal)}>{goalLabel(goal)} <Arrow small/></button>)}</div> : null}
-      <p className="fde-help" id="fde-input-help">{mode === "lesson" ? "Use fictional or non-sensitive examples. Enter sends; Shift+Enter adds a line." : "General questions receive curated guidance, not personalized AI."}{draft.length > 1800 ? ` ${draft.length}/2000 characters.` : ""}</p>
+      <p className="fde-help" id="fde-input-help">{mode === "lesson" ? "Use fictional or non-sensitive examples. Enter sends; Shift+Enter adds a line." : mode === "chat" || (aiBeta && !chatUnavailable) ? "AI can be wrong. No long-term chat history. Privacy below." : "General questions receive curated guidance, not personalized AI."}{draft.length > 1800 ? ` ${draft.length}/2000 characters.` : ""}</p>
+    {aiBeta ? <details className="fde-help"><summary>Coaching privacy</summary><p>Messages and a bounded recent context are sent to Workers AI. {mode === "lesson" ? "Guided lesson replies have the existing three-hour recovery cache." : "Generated chat replies and concise derived profile state are cached for up to one hour to recover retries; they may reflect your input."} Raw transcripts are not logged or saved as a dataset. No feedback collection, training, newsletter consent, or Gym session is started here. No cross-device history. Keep client and personal information out of examples.</p></details> : null}
     </div>
     {!active ? <p className="fde-welcome__foot">A place to learn, practice, and build proof. <a href="/commons/">Explore the Commons <Arrow small/></a></p> : null}
   </section>;

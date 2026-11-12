@@ -115,3 +115,7 @@
 .fde-starter--orange{border-color:#e9b493;background:#fffaf6}
 .fde-transcript:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
 @media(max-width:620px){.fde-mode-notice{font-size:12.5px;margin-top:12px;padding:6px 9px}.fde-coach--active .fde-help{font-size:13px}.fde-error,.fde-disclosure{font-size:13px}.fde-error button,.fde-error a{min-height:44px;display:inline-flex;align-items:center}.fde-welcome{margin-bottom:18px}.fde-coach--welcome{padding-top:20px}}
+
+.fde-compose-area details.fde-help p{max-height:120px;overflow-y:auto;text-align:left;padding:4px}
+
+.fde-resource-list details{font-size:13px;color:#586a7b}.fde-resource-list summary{cursor:pointer;min-height:44px;line-height:1.6;padding:10px 0}.fde-resource-list details span{display:block;padding-bottom:10px}

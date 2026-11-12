@@ -12,7 +12,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
-    "test:report-status": "node scripts/test-report-status.mjs"
+    "test:report-status": "node scripts/test-report-status.mjs",
+    "prebuild": "node scripts/build-coach-catalog.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

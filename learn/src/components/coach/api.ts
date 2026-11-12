@@ -68,7 +68,7 @@ export function validateCoachReply(value: unknown): CoachReply {
 }
 
 /** Bound headers, body consumption, and validation, even if fetch ignores abort. */
-async function request<T>(path: string, options: RequestInit, validate: (value: unknown) => T, signal?: AbortSignal): Promise<T> {
+export async function requestJson<T>(path: string, options: RequestInit, validate: (value: unknown) => T, signal?: AbortSignal): Promise<T> {
   const controller = new AbortController();
   let interrupt!: (reason: unknown) => void;
   const interrupted = new Promise<never>((_resolve, reject) => { interrupt = reject; });
@@ -91,13 +91,14 @@ async function request<T>(path: string, options: RequestInit, validate: (value: 
 }
 
 /** One in-memory conversation. No eviction, shared credentials, or automatic retries. */
-export function createCoachClient() {
+export function createRequestClient<T>(validateResponse: (value: unknown) => T) {
   let clientScope: string | undefined;
   let pending: Readonly<{ path: string; payload: string; key: string; scope?: string }> | undefined;
-  let accepted: CoachReply | undefined;
+  let accepted: T | undefined;
   let busy = false;
   let abandoned = false;
   async function post(path: string, body: unknown, signal?: AbortSignal) {
+    if (!/^\/api\/(?:coach|coach-chat)\/(?:start|message)$/.test(path)) throw new Error("Invalid session endpoint.");
     if (abandoned) throw new DOMException("Conversation abandoned", "AbortError");
     if (busy) throw new CoachRequestError("A request is already in progress. Retry the original request shortly.", 409);
     const payload = JSON.stringify(body);
@@ -109,23 +110,31 @@ export function createCoachClient() {
     const operation = pending;
     busy = true;
     try {
-      const reply = await request(operation.path, {
+      const reply = await requestJson(operation.path, {
         method: "POST", body: operation.payload,
         headers: { "content-type": "application/json", "idempotency-key": operation.key, ...(operation.scope ? { "x-session-client": operation.scope } : {}) },
-      }, validateCoachReply, signal);
+      }, validateResponse, signal);
       if (abandoned || signal?.aborted) throw new DOMException("Conversation abandoned", "AbortError");
       accepted = reply;
       return reply;
     } finally { busy = false; }
   }
   return {
-    startLesson: (signal?: AbortSignal) => post("/api/coach/start", {}, signal),
-    sendMessage: (token: string, message: string, stageTurns: StageTurn[], signal?: AbortSignal) => post("/api/coach/message", { token, message, stageTurns }, signal),
-    acknowledge(reply: CoachReply) {
+    post,
+    acknowledge(reply: T) {
       if (abandoned || accepted !== reply) throw new Error("This reply does not belong to the current operation.");
       pending = undefined; accepted = undefined;
     },
     abandon() { abandoned = true; pending = undefined; accepted = undefined; clientScope = undefined; },
+  };
+}
+
+export function createCoachClient() {
+  const transport = createRequestClient(validateCoachReply);
+  return {
+    ...transport,
+    startLesson: (signal?: AbortSignal) => transport.post("/api/coach/start", {}, signal),
+    sendMessage: (token: string, message: string, stageTurns: StageTurn[], signal?: AbortSignal) => transport.post("/api/coach/message", { token, message, stageTurns }, signal),
   };
 }
 
@@ -140,7 +149,7 @@ export async function sendMessage(token: string, message: string, stageTurns: St
 }
 export async function readHealth(signal?: AbortSignal): Promise<CoachHealth | null> {
   try {
-    return await request("/api/coach/health", {}, value => {
+    return await requestJson("/api/coach/health", {}, value => {
       if (!record(value) || !["ok", "aiConfigured", "tokenConfigured", "countersConfigured", "securityConfigured"].every(key => typeof value[key] === "boolean")) throw unreadable();
       return value as CoachHealth;
     }, signal);

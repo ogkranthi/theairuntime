@@ -4,7 +4,7 @@ import { LIMITS } from "./types";
 type Row = Record<string, string | number | null>;
 type Command = {
   operationId: string; sessionId: string; capability: string; fingerprint: string;
-  actor: string; kind: "coach" | "gym"; ttlMs: number; duration: number;
+  actor: string; kind: "coach" | "gym" | "chat"; ttlMs: number; duration: number;
   action: "message" | "finish" | "report" | "feedback"; revision: number;
   expectedHead?: string | null; nonce: string; slot: number; result: string;
   success: boolean; completed: boolean;
@@ -82,19 +82,22 @@ export class AiSecurityCoordinator {
   }
   private dispatch(action: string, b: Command, now: number): Row {
     if (action === "start") {
+      if (!["coach", "gym", "chat"].includes(b.kind)) this.deny(400, "Invalid session kind.");
       const prior = this.row("SELECT * FROM operations WHERE id = ?", b.operationId);
       if (prior && Number(prior.expires) > now) return this.retry(prior, b.fingerprint, now);
       if (prior) this.deny(409, "This start key expired. Use a new key.");
       this.counter(`starts:hour:${Math.floor(now / HOUR)}:${b.actor}`, LIMITS.startsPerHour, now + HOUR);
       this.counter(`starts:day:${Math.floor(now / DAY)}`, LIMITS.startsPerDay, (Math.floor(now / DAY) + 1) * DAY);
       const coach = b.kind === "coach";
-      const expires = now + (coach ? 3 * HOUR : Math.min(90 * DAY, Math.max(60_000, Number(b.ttlMs))));
-      const deadline = coach ? expires : now + (b.duration === 15 ? 15 : 30) * 60_000;
+      const chat = b.kind === "chat";
+      const expires = now + (coach ? 3 * HOUR : chat ? HOUR : Math.min(90 * DAY, Math.max(60_000, Number(b.ttlMs))));
+      const deadline = coach || chat ? expires : now + (b.duration === 15 ? 15 : 30) * 60_000;
       this.sql.exec("INSERT INTO sessions(id, kind, capability, expires, deadline, pending, operations) VALUES (?, ?, ?, ?, ?, ?, 1)",
         b.sessionId, b.kind, b.capability, expires, deadline, b.operationId);
       return this.reserve(b, b.sessionId, expires, 0, null, now, "start");
     }
     const s = this.session(b.sessionId, b.capability, now);
+    if (b.kind && b.kind !== s.kind) this.deny(403, "This session is unavailable. Start again.");
     this.uncertain(s, now);
     if (action === "head") return { revision: s.revision, head: s.head, expiresAt: s.expires, completed: s.completed, attempts: s.attempts };
     if (action === "admit") {
@@ -106,7 +109,7 @@ export class AiSecurityCoordinator {
       if (b.revision !== s.revision) this.deny(409, "This session has advanced. Retry the original request or restart.");
       if (Number(s.operations) >= LIMITS.operationsPerSession) this.deny(429, "This session has reached its request limit.");
       if (b.action === "message") {
-        if (s.completed || Number(s.deadline) <= now || Number(s.turns) >= (s.kind === "coach" ? LIMITS.coachTurns : LIMITS.gymTurns)) {
+        if (s.completed || Number(s.deadline) <= now || Number(s.turns) >= (s.kind === "coach" ? LIMITS.coachTurns : s.kind === "chat" ? LIMITS.chatTurns : LIMITS.gymTurns)) {
           this.deny(409, "This session has reached its turn or time limit. Finish or restart.");
         }
       }
@@ -130,7 +133,7 @@ export class AiSecurityCoordinator {
         this.deny(409, "This model attempt was already reserved.");
       }
       if (op.action !== "message" && op.action !== "finish") this.deny(409, "No AI is permitted for this operation.");
-      if (Number(s.attempts) >= (s.kind === "coach" ? LIMITS.coachAttempts : LIMITS.gymAttempts)) this.deny(429, "Session AI limit reached.");
+      if (Number(s.attempts) >= (s.kind === "coach" ? LIMITS.coachAttempts : s.kind === "chat" ? LIMITS.chatAttempts : LIMITS.gymAttempts)) this.deny(429, "Session AI limit reached.");
       this.counter(`ai:day:${Math.floor(now / DAY)}`, LIMITS.dailyAttempts, (Math.floor(now / DAY) + 1) * DAY);
       this.sql.exec("UPDATE sessions SET attempts = attempts + 1 WHERE id = ?", s.id);
       this.sql.exec("UPDATE operations SET slots = slots | ? WHERE id = ?", 1 << b.slot, op.id);

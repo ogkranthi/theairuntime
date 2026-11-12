@@ -17,6 +17,8 @@ export { AiSecurityCoordinator } from "./security/coordinator";
 
 import { handleFdeGymRequest, type FdeGymEnv } from './fde-gym/routes';
 import { handleCoachRequest } from './coach/routes';
+import { handleChatRequest } from './coach-chat/routes';
+import type { ChatEnv } from './coach-chat/types';
 import { handleFdePathRequest } from './fde-path/routes';
 import type { FdePathEnv } from './fde-path/types';
 import type { CoachEnv } from './coach/types';
@@ -742,6 +744,10 @@ export default {
 
     if (url.pathname.startsWith('/api/fde-gym/')) {
       return handleFdeGymRequest(request, env as Env & FdeGymEnv);
+    }
+
+    if (url.pathname.startsWith('/api/coach-chat/')) {
+      return handleChatRequest(request, env as Env & ChatEnv);
     }
 
     if (url.pathname.startsWith('/api/coach/')) {

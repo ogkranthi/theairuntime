@@ -1,0 +1,30 @@
+{
+  "checks": [
+    "All 22 versioned canonical curriculum URLs resolve against the built site",
+    "beta welcome 360: no horizontal overflow",
+    "beta chat 360: no horizontal overflow",
+    "beta welcome 390: no horizontal overflow",
+    "beta chat 390: no horizontal overflow",
+    "beta welcome 768: no horizontal overflow",
+    "beta chat 768: no horizontal overflow",
+    "beta welcome 1440: no horizontal overflow",
+    "beta chat 1440: no horizontal overflow",
+    "Beta privacy expands accessibly; collapsed composer remains reachable under a resized mobile keyboard viewport",
+    "Four responsive beta viewports; real scoped intake, two personalized fixture turns, evidence-backed gap, next task, canonical references, visible privacy, no share capture",
+    "All three starters open contextual coaching; interview does not start Gym or ask research consent",
+    "Free-form first question uses a separate chat start and inference; retry preserves the failed message identity without repeating start or learner bubble",
+    "Reset fences an interrupted beta reply and discards its private profile",
+    "Both separately metered provider failures produce an explicitly authored fallback with useful resources",
+    "Disabled beta retains honest curated learning without calling the model",
+    "Beta preserves IME safety and reduced motion"
+  ],
+  "screenshots": [
+    "mobile-welcome.png",
+    "mobile-chat.png",
+    "desktop-welcome.png",
+    "desktop-chat.png"
+  ],
+  "api": "Actual coaching engine, local SQLite admission, synthetic contextual provider fixture; no real model inference or production calls",
+  "physicalKeyboard": "Not tested on physical Android/iOS devices; CDP viewport resize only",
+  "mockup": "Attachment unavailable; issue #151 visual specification used"
+}

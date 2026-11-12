@@ -12,7 +12,10 @@ import { Miniflare } from "miniflare";
 // lesson handler, with no AI binding, production secrets, or external traffic.
 const temporary = await mkdtemp(join(tmpdir(), "air-coach-ui-"));
 const artifactDir = resolve(process.env.AIR_COACH_ARTIFACT_DIR || "docs/ui/151");
-const site = resolve("learn/dist");
+const site = resolve(process.env.AIR_COACH_SITE || "learn/dist");
+const isBeta = process.env.AIR_COACH_BETA === "1";
+let modelCalls = 0;
+let providerFails = false;
 const checks = [];
 const apiCalls = [];
 let apiMode = "normal";
@@ -27,9 +30,23 @@ const runtime = new Miniflare({modules:true,script:coordinator.outputFiles[0].te
 const namespace = await runtime.getDurableObjectNamespace("AI_SECURITY");
 const kv = new Map();
 const lessonEnv = {COACH_TOKEN_SECRET:"local-browser-test-only-not-a-production-secret",AI_SECURITY:namespace,FDE_GYM_SESSIONS:{get:async key=>kv.get(key)??null,put:async(key,value)=>{kv.set(key,value);}}};
+const chatCompiled = await build({entryPoints:["src/coach-chat/routes.ts"],bundle:true,format:"esm",platform:"node",write:false});
+await writeFile(join(temporary,"chat.mjs"),chatCompiled.outputFiles[0].text);
+const {handleChatRequest}=await import(pathToFileURL(join(temporary,"chat.mjs")).href);
+if(isBeta) {
+  lessonEnv.FDE_COACH_CHAT_ENABLED="true";
+  lessonEnv.AI={run:async(_model,input)=>{
+    modelCalls++;
+    if(providerFails)throw new Error('synthetic provider outage');
+    const data=JSON.parse(input.messages[1].content),message=data.learnerMessage;
+    const background=message.includes('I build .NET APIs')?'I build .NET APIs':'';
+    const gap=message.includes('do not keep a stable key');
+    return {response:JSON.stringify({answer:gap?'Retrying every 500 can repeat an order write after the first attempt committed. Preserve one stable operation key and reconcile an uncertain result before creating another operation.':`Your ${data.profileEvidence.background||background||'engineering example'} gives us a concrete starting point. Idempotency separates a logical order operation from its delivery attempts. A stable key can recover the original outcome after response loss.`,question:'How would you prove two delivery attempts created only one order?',sourceIds:[data.untrustedCurriculum[0].id],gaps:gap?[{gap:'Recovery after an uncertain write',evidence:'do not keep a stable key'}]:[],nextStep:{task:'Add a duplicate-request test to a fictional order API.',definitionOfDone:'Two identical requests with one key produce one order and the same saved response.'},profileEvidence:{background,example:'',focus:''}}),usage:{total_tokens:240}};
+  }};
+}
 const server = createServer(async (request, response) => {
   const url = new URL(request.url, "http://localhost");
-  if (url.pathname.startsWith("/api/coach/")) {
+  if ((url.pathname.startsWith("/api/coach/") || url.pathname.startsWith("/api/coach-chat/"))) {
     const chunks = []; for await (const chunk of request) chunks.push(chunk);
     const body = Buffer.concat(chunks).toString();
     apiCalls.push({ path: url.pathname, body, key:request.headers["idempotency-key"], scope:request.headers["x-session-client"] });
@@ -39,7 +56,7 @@ const server = createServer(async (request, response) => {
     if (apiMode === "failure" && url.pathname.endsWith("message")) {
       response.writeHead(503, {"content-type":"application/json"}); response.end(JSON.stringify({error:"Local connection interruption. Retry your last request."})); return;
     }
-    const result = await handleCoachRequest(new Request(url.href, {method: request.method, headers:{"content-type":"application/json","idempotency-key":request.headers["idempotency-key"]??"","x-session-client":request.headers["x-session-client"]??""}, ...(body ? {body} : {})}), apiMode==="unavailable" ? {...lessonEnv,AI_SECURITY:undefined} : lessonEnv);
+    const result = await (url.pathname.startsWith("/api/coach-chat/") ? handleChatRequest : handleCoachRequest)(new Request(url.href, {method: request.method, headers:{"content-type":"application/json","idempotency-key":request.headers["idempotency-key"]??"","x-session-client":request.headers["x-session-client"]??""}, ...(body ? {body} : {})}), apiMode==="unavailable" ? {...lessonEnv,AI_SECURITY:undefined} : apiMode==="beta-disabled" ? {...lessonEnv,FDE_COACH_CHAT_ENABLED:"false"} : lessonEnv);
     if (apiMode === "slow-body" && url.pathname.endsWith("message")) {
       response.writeHead(result.status,{"content-type":"application/json"});response.write('{"partial":');
       await new Promise(resolve=>{held=resolve;});response.end('true}');return;
@@ -105,6 +122,52 @@ try {
     }
   }
   async function capture(name) {if(process.env.AIR_COACH_SKIP_SCREENSHOTS)return;const image=await cmd("Page.captureScreenshot",{format:"png",captureBeyondViewport:false});await writeFile(join(artifactDir,name),Buffer.from(image.data,"base64"));}
+  if(isBeta) {
+    const catalog=JSON.parse(await readFile(resolve('src/coach-chat/catalog.generated.json'),'utf8'));
+    for(const source of catalog.resources) assert.equal((await fetch(origin+source.href)).status,200,`Canonical source must resolve: ${source.href}`);
+    checks.push('All 22 versioned canonical curriculum URLs resolve against the built site');
+    for(const [width,height] of [[360,800],[390,844],[768,1024],[1440,1000]]) {
+      await viewport(width,height);await visit();await overflow(`beta welcome ${width}`);
+      assert.equal(await evaluate("document.querySelectorAll('.fde-starter').length"),3);
+      assert.ok(await evaluate("document.querySelector('.fde-mode-notice').textContent.includes('AI coaching beta')"));
+      if(width===390||width===1440)await capture(`${width===390?'mobile':'desktop'}-welcome.png`);
+      const before=modelCalls;await click('.fde-starter--orange');await until("Boolean(document.querySelector('.fde-turn__who span')) && document.querySelector('.fde-turn__who span').textContent==='Coach intake'","real intake");
+      assert.equal(modelCalls,before,"Intake does not fake a model call");
+      await type('I build .NET APIs and deployed an order service. I want to learn safe retries.');await click('.fde-send');await until("document.querySelector('.fde-status') === null && document.querySelector('.fde-transcript').textContent.includes('AI guidance')","AI turn");
+      await type('We retry on every 500 and do not keep a stable key.');await click('.fde-send');await until("document.querySelector('.fde-status') === null && document.querySelector('.fde-transcript').textContent.includes('Definition of done')","evidence next task");
+      assert.ok(await evaluate("document.querySelector('.fde-transcript').textContent.includes('do not keep a stable key') && !document.querySelector('.fde-error')"));
+      assert.equal(modelCalls,before+2);await overflow(`beta chat ${width}`);await resourceLinks();
+      assert.ok(await evaluate("Boolean(document.querySelector('.fde-compose-area details summary')) && !document.querySelector('[data-share-exchange]')"));
+      if(width===390||width===1440) {
+        await evaluate("(()=>{const stamp=document.createElement('div');stamp.textContent='LOCAL TEST · SYNTHETIC PROVIDER';stamp.style.cssText='position:fixed;bottom:0;right:0;z-index:9999;background:#fff0df;color:#7d300a;font:10px sans-serif;padding:3px 6px';document.body.append(stamp)})()");
+        await capture(`${width===390?'mobile':'desktop'}-chat.png`);
+      }
+    }
+    await viewport(390,844);await click('.fde-compose-area details summary');assert.ok(await evaluate("document.querySelector('.fde-compose-area details').open && document.querySelector('.fde-send').getBoundingClientRect().bottom <= innerHeight"));await click('.fde-compose-area details summary');await viewport(390,440);await wait(150);assert.ok(await evaluate("document.querySelector('.fde-send').getBoundingClientRect().bottom <= visualViewport.height + 1"));await viewport(390,844);
+    checks.push('Beta privacy expands accessibly; collapsed composer remains reachable under a resized mobile keyboard viewport');
+    checks.push('Four responsive beta viewports; real scoped intake, two personalized fixture turns, evidence-backed gap, next task, canonical references, visible privacy, no share capture');
+    for(const selector of ['.fde-starter--blue','.fde-starter--green']) {
+      await visit();await click(selector);await until("Boolean(document.querySelector('.fde-turn--coach'))","goal intake");
+      assert.ok(await evaluate("!document.querySelector('.fde-resource-list') && document.querySelector('.fde-turn__who span').textContent==='Coach intake'"));
+    }
+    assert.equal(apiCalls.filter(call=>call.path.startsWith('/api/fde-gym/')).length,0);
+    checks.push('All three starters open contextual coaching; interview does not start Gym or ask research consent');
+    await visit();apiMode='failure';await type('I build .NET APIs. Explain safe retries for my order API.');await click('.fde-send');await until("Boolean(document.querySelector('.fde-error'))","free question failure");
+    const startCount=apiCalls.filter(call=>call.path==='/api/coach-chat/start').length,failed=apiCalls.at(-1),turns=await evaluate("document.querySelectorAll('.fde-turn--learner').length"),beforeRecovery=modelCalls;
+    apiMode='normal';await click('.fde-error button');await until("document.querySelector('.fde-status')===null && document.querySelector('.fde-error')===null","free question recovery");
+    assert.equal(apiCalls.at(-1).key,failed.key);assert.equal(apiCalls.at(-1).body,failed.body);assert.equal(modelCalls,beforeRecovery+1);assert.equal(apiCalls.filter(call=>call.path==='/api/coach-chat/start').length,startCount);assert.equal(await evaluate("document.querySelectorAll('.fde-turn--learner').length"),turns);
+    checks.push('Free-form first question uses a separate chat start and inference; retry preserves the failed message identity without repeating start or learner bubble');
+    held=undefined;apiMode='hold';await type('Explain idempotency using my API.');await click('.fde-send');await heldRequest();apiMode='normal';await click('.fde-reset');held();await wait(100);assert.equal(await evaluate("document.querySelectorAll('.fde-turn').length"),0);
+    checks.push('Reset fences an interrupted beta reply and discards its private profile');
+    providerFails=true;await click('.fde-starter--orange');await until("Boolean(document.querySelector('.fde-turn--coach'))","fallback intake");const failedCalls=modelCalls;
+    await type('I build .NET APIs. Help with reliability.');await click('.fde-send');await until("document.querySelector('.fde-status')===null","provider fallback");assert.equal(modelCalls,failedCalls+2);assert.ok(await evaluate("document.querySelector('.fde-transcript').textContent.includes('Authored fallback')"));providerFails=false;
+    checks.push('Both separately metered provider failures produce an explicitly authored fallback with useful resources');
+    await click('.fde-reset');apiMode='beta-disabled';await click('.fde-starter--orange');await until("document.querySelector('.fde-status')===null","disabled beta fallback");assert.ok(await evaluate("document.querySelector('.fde-transcript').textContent.includes('not a personalized model answer')"));apiMode='normal';
+    checks.push('Disabled beta retains honest curated learning without calling the model');
+    await visit();await type('A synthetic first message');await evaluate("document.querySelector('#fde-message').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',isComposing:true,bubbles:true}))");assert.equal(await evaluate("document.querySelectorAll('.fde-turn').length"),0);
+    await cmd('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});await click('.fde-starter--orange');await until("Boolean(document.querySelector('.fde-turn--coach'))","reduced motion intake");assert.equal(await evaluate("getComputedStyle(document.querySelector('.fde-turn')).animationName"),'none');
+    checks.push('Beta preserves IME safety and reduced motion');
+  } else {
   for (const [width,height] of [[360,800],[390,844],[768,1024],[1440,1000]]) {
     await viewport(width,height);await visit();await overflow(`welcome ${width}`);
     assert.equal(await evaluate("document.querySelectorAll('.fde-starter').length"),3);
@@ -265,9 +328,10 @@ try {
   assert.ok(html.outerHTML.includes("Learning is still open."));
   assert.ok(html.outerHTML.includes('/career/interviews/'));
   checks.push("No-JavaScript page contains meaningful learning links and an explicit explanation");
+  }
   assert.deepEqual(browserErrors,[]);
   assert.deepEqual(externalRequests,[]);
-  await writeFile(join(artifactDir,"browser-checks.json"),JSON.stringify({checks,screenshots:process.env.AIR_COACH_SKIP_SCREENSHOTS?[]:["mobile-welcome.png","mobile-conversation.png","desktop-welcome.png","desktop-conversation.png"],api:"Actual hardened Coach handler with local SQLite Durable Object and in-memory KV; AI absent; no production calls",physicalKeyboard:"Not tested on physical Android/iOS devices; CDP viewport resize only",mockup:"Attachment unavailable; issue #151 visual specification used"},null,2)+'\n');
+  await writeFile(join(artifactDir,"browser-checks.json"),JSON.stringify({checks,screenshots:process.env.AIR_COACH_SKIP_SCREENSHOTS?[]:isBeta?["mobile-welcome.png","mobile-chat.png","desktop-welcome.png","desktop-chat.png"]:["mobile-welcome.png","mobile-conversation.png","desktop-welcome.png","desktop-conversation.png"],api:isBeta?"Actual coaching engine, local SQLite admission, synthetic contextual provider fixture; no real model inference or production calls":"Actual hardened Coach handler with local SQLite Durable Object and in-memory KV; AI absent; no production calls",physicalKeyboard:"Not tested on physical Android/iOS devices; CDP viewport resize only",mockup:"Attachment unavailable; issue #151 visual specification used"},null,2)+'\n');
   console.log(`Passed ${checks.length} browser checks. Browser evidence saved under ${artifactDir}. No external requests.`);
 } finally {
   held?.();socket?.close();
