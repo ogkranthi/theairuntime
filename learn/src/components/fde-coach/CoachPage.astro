@@ -1,0 +1,22 @@
+---
+import FdeCoach from "./FdeCoach";
+---
+<FdeCoach client:load aiBeta={import.meta.env.PUBLIC_FDE_COACH_CHAT_ENABLED === "true"} />
+<noscript>
+  <section class="coach-noscript" aria-label="Start learning without JavaScript">
+    <h2>Learning is still open.</h2>
+    <p>The interactive Coach needs JavaScript. Every written course and guide is still readable without it.</p>
+    <ul>
+      <li><a href="/paths/">Become an FDE: explore the existing paths</a></li>
+      <li><a href="/career/interviews/">Prepare for an FDE Interview</a></li>
+      <li><a href="/learn/">Improve My FDE Skills: open the learning library</a></li>
+      <li><a href="/learn/courses/agentic-system-design/">Read the system-design course</a></li>
+    </ul>
+    <style>.fde-starters,.fde-compose-area{display:none!important}</style>
+  </section>
+</noscript>
+<style>
+  .coach-noscript {max-width:1040px;margin:0 auto 28px;padding:24px;background:white;border:1px solid #dfe6eb;border-radius:12px;color:#253c53;}
+  .coach-noscript h2{font-size:22px}.coach-noscript p,.coach-noscript li{font-size:14px;line-height:1.8}
+  @media(max-width:620px){.coach-noscript{margin:0 16px 24px;padding:20px}}
+</style>

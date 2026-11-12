@@ -54,6 +54,10 @@ export interface TranscriptTurn {
 }
 
 export interface InterviewSession {
+  revision?: number;
+  /** Bearer capability. Keep private, like the session transcript. */
+  accessToken?: string;
+  expiresAt?: number;
   id: string;
   scenarioId: string;
   scenarioVersion: number;

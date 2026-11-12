@@ -1,13 +1,9 @@
 import type { CoachState } from "./types";
 
 /**
- * Signed lesson position.
- *
- * The brief asks for no database and no account, so the learner's place in the
- * lesson travels with them. That is fine for the stage index, which is theirs to
- * skip if they want, and not fine for the model call counter, which is the only
- * thing standing between an open endpoint and a drained daily AI allowance. So
- * the state is client held and server signed: readable, unforgeable.
+ * Signed lesson position. The signature prevents edits, but does not prevent
+ * replay. Atomic server-side consumption is required before this state can
+ * serve as an enforceable cumulative AI budget.
  */
 
 const MAX_AGE_MS = 3 * 60 * 60 * 1000;
@@ -100,7 +96,7 @@ export async function verifyState(
 
   const value = parsed as Record<string, unknown>;
   const issuedAt = Number(value.issuedAt);
-  if (!Number.isFinite(issuedAt) || now - issuedAt > MAX_AGE_MS) return null;
+  if (typeof value.issuedAt !== "number" || !Number.isFinite(issuedAt) || issuedAt > now || now - issuedAt >= MAX_AGE_MS) return null;
 
   const stageIndex = Number(value.stageIndex);
   const calls = Number(value.calls);
@@ -116,7 +112,10 @@ export async function verifyState(
     return null;
   }
 
+  if (value.sessionId !== undefined && (typeof value.sessionId !== "string" || value.sessionId.length > 100 ||
+      !Number.isInteger(value.revision) || Number(value.revision) < 0)) return null;
   return {
+    ...(value.sessionId !== undefined ? { sessionId: value.sessionId as string, revision: value.revision as number } : {}),
     lessonId: value.lessonId,
     stageIndex,
     probed: value.probed,
