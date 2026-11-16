@@ -255,7 +255,7 @@ export default function FdeCoach({ aiBeta = false, accountsEnabled = false, cler
               {turn.chat.nextStep ? <p><strong>Next task:</strong> {turn.chat.nextStep.task}<br/><strong>Definition of done:</strong> {turn.chat.nextStep.definitionOfDone}</p> : null}
               {turn.chat.question ? <p>{turn.chat.question}</p> : null}
               {turn.chat.sources.length ? <ul className="fde-resource-list">{turn.chat.sources.map(source => <li key={source.id}><a href={source.href}>{source.title}<Arrow small/></a><details><summary>Curriculum reference: read excerpt</summary><span>{source.excerpt}</span></details></li>)}</ul> : null}
-              {accountsEnabled && turn.chat.responseId && turn.chat.mode !== 'intake' ? <ResponseFeedback account={account} operation={turn.chat.responseId} hasStep={Boolean(turn.chat.nextStep)}/> : null}
+              {accountsEnabled && turn.chat.responseId && turn.chat.mode !== 'intake' ? <ResponseFeedback account={account} operation={turn.chat.responseId} hasStep={Boolean(turn.chat.nextStep)} initial={turn.chat.feedback}/> : null}
             </> : null}
             {turn.reply?.parts.map((part, index) => <div key={index} className={`fde-lesson-part fde-lesson-part--${part.kind}`}>{part.kind === "principle" ? <p className="fde-kicker">THE PRINCIPLE</p> : null}{part.text.split("\n\n").map((paragraph, i) => <p key={i}>{paragraph}</p>)}</div>)}
           </div></article>)}

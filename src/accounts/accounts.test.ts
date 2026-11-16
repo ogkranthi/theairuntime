@@ -99,6 +99,7 @@ describe('successful-response quotas and durable recovery', () => {
     expect((await parsed('feedback',{operation:reply.responseId,rating:'incorrect'},'bob')).status).toBe(404);
     expect((await parsed('feedback',{operation:reply.responseId,rating:'helpful'})).status).toBe(200);
     expect((await parsed('feedback',{operation:reply.responseId,completed:true})).status).toBe(200);
+    expect((await parsed(`conversation?id=${a}`)).body.messages.at(-1).reply.feedback).toEqual({rating:'helpful',completed:true});
     const feedback=(await parsed('export')).body.feedback;expect(feedback).toHaveLength(1);expect(feedback[0]).toMatchObject({rating:'helpful',completed:1});
     expect((await parsed('feedback',{operation:reply.responseId,rating:'raw private text'})).status).toBe(400);
     expect((await parsed('export',undefined,'bob')).body.feedback).toHaveLength(0);

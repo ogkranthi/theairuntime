@@ -33,8 +33,8 @@ export async function handleAccountRequest(request: Request, env: AccountEnv): P
       if (action === 'export') return json(await exportAccount(env, owner));
       if (action === 'conversation') {
         const c = await conversation(env, owner, new URL(request.url).searchParams.get('id'));
-        const messages = await env.COACH_DB.prepare('SELECT question,response,revision FROM coach_messages WHERE owner=? AND conversation=? ORDER BY revision').bind(owner, c.id).all();
-        return json({ id: c.id, revision: c.revision, messages: messages.results.map((m: any) => ({ question: m.question, reply: JSON.parse(m.response) })), usage: await admissionRpc(env, 'user-status', limits) });
+        const messages = await env.COACH_DB.prepare('SELECT m.question,m.response,m.revision,f.rating,f.completed FROM coach_messages m LEFT JOIN coach_feedback f ON f.operation=m.operation AND f.owner=m.owner WHERE m.owner=? AND m.conversation=? ORDER BY m.revision').bind(owner, c.id).all();
+        return json({ id: c.id, revision: c.revision, messages: messages.results.map((m: any) => ({ question: m.question, reply: { ...JSON.parse(m.response), feedback: { rating:m.rating??null, completed:Boolean(m.completed) } } })), usage: await admissionRpc(env, 'user-status', limits) });
       }
       return json({ error: 'Not found' }, 404);
     }

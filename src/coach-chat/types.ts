@@ -15,6 +15,7 @@ export interface ChatEnv extends CoachEnv {
 export type ChatSource = { id: string; title: string; href: string; excerpt: string; contentHash: string };
 export interface ChatReply {
   responseId?: string;
+  feedback?: { rating: 'helpful'|'unhelpful'|'incorrect'|null; completed: boolean };
   token: string; goal: ChatGoal; turn: number; remainingTurns: number;
   mode: 'intake' | 'ai' | 'fallback'; answer: string; question: string;
   gaps: { gap: string; evidence: string }[];

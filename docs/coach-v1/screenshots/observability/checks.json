@@ -8,6 +8,7 @@
     "completion is explicitly reported",
     "interrupted reply retries without duplicate charge",
     "saved conversation resumes after reload",
+    "saved feedback and completion resume visibly",
     "mobile has no horizontal overflow",
     "transcript exposes live log semantics",
     "export downloads private account JSON",

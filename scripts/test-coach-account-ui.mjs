@@ -75,7 +75,7 @@ try {
   await page.getByText('8 of 10 free AI replies available today').waitFor();check('interrupted reply retries without duplicate charge',calls===2);
   await page.reload();await page.getByText('8 of 10 free AI replies available today').waitFor();
   await page.getByText('Your learning and data',{exact:true}).click();await page.getByRole('button',{name:/Resume become conversation/}).first().click();
-  await page.getByText('What should a duplicate request test assert?',{exact:true}).waitFor();check('saved conversation resumes after reload');
+  await page.getByText('What should a duplicate request test assert?',{exact:true}).waitFor();check('saved conversation resumes after reload');check('saved feedback and completion resume visibly',await page.getByRole('button',{name:'You reported this step complete',exact:true}).count()===1);
   await page.setViewportSize({width:390,height:844});
   await page.getByText('Your learning and data',{exact:true}).click();
   await page.screenshot({path:join(artifacts,'mobile-conversation.png'),fullPage:true,animations:"disabled"});
