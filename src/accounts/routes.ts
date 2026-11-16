@@ -1,5 +1,6 @@
 import { identity, privateId } from './auth';
-import { account, conversation, exportAccount, purgeExpired } from './store';
+import { account, conversation, purgeExpired } from './store';
+import { streamAccountExport } from './export';
 import { configuredLimit, RETENTION, type AccountEnv } from './types';
 import { admissionRpc, digest } from '../security/boundary';
 import { AdmissionError, type SecurityExecution } from '../security/types';
@@ -10,31 +11,34 @@ import { mentorTurn, openingQuestion } from '../coach-chat/engine';
 import { PROMPT_VERSION } from '../coach-chat/prompt';
 import { RETRIEVAL_VERSION } from '../coach-chat/retrieval';
 import { emitMetric, recordActivity } from './metrics';
+import { handleResearchRequest } from './research';
 const json = (v: unknown, status = 200) => Response.json(v, { status, headers: { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' } });
 function fields(b: Record<string, unknown>, names: string[]) { if (Object.keys(b).some(k => !names.includes(k))) throw new AdmissionError(400, 'Invalid account request.'); }
 function text(v: unknown, max: number) { if (typeof v !== 'string' || v.length > max || sensitive(v)) throw new AdmissionError(400, 'Use a fictional example without contact details or credentials.'); return v.trim(); }
 export async function handleAccountRequest(request: Request, env: AccountEnv): Promise<Response> {
   if (env.FDE_COACH_ACCOUNTS_ENABLED !== 'true') return json({ error: 'Accounts are not enabled.' }, 404);
   try {
-    if (!env.COACH_DB || !env.AI_SECURITY) throw new AdmissionError(503, 'Accounts are unavailable.');
+    if (!env.COACH_DB) throw new AdmissionError(503, 'Accounts are unavailable.');
     const owner = await identity(request, env);
     const action = new URL(request.url).pathname.split('/').pop();
     if (!['GET','POST'].includes(request.method)) return json({ error: 'Method not allowed' }, 405);
-    const profile = await account(env, owner, action === 'me');
+    const profile = await account(env, owner, true);
     await recordActivity(env, profile);
-    const limits = { user: owner, limit: configuredLimit(env.COACH_DAILY_RESPONSES, 10, 100), requestLimit: configuredLimit(env.COACH_DAILY_REQUESTS, 30, 200) };
+    if (action?.startsWith('research')) return await handleResearchRequest(request,env,profile);
+    const policy = () => ({ user: owner, limit: configuredLimit(env.COACH_DAILY_RESPONSES, 10, 100), requestLimit: configuredLimit(env.COACH_DAILY_REQUESTS, 30, 200) });
+    const usageStatus = async () => { try { return await admissionRpc(env, 'user-status', policy()); } catch { emitMetric(env,'error',undefined,{category:'admission_unavailable'});return {available:false,used:0,reserved:0,remaining:0,limit:0,resetsAt:(Math.floor(Date.now()/86_400_000)+1)*86_400_000}; } };
     if (request.method === 'GET') {
       if (action === 'me') {
         await purgeExpired(env);
-        const usage = await admissionRpc(env, 'user-status', limits);
+        const usage = await usageStatus();
         const conversations = await env.COACH_DB.prepare('SELECT id,goal,revision,updated FROM coach_conversations WHERE owner=? AND expires>? ORDER BY updated DESC LIMIT 20').bind(owner, Date.now()).all();
         return json({ profile: { background: profile.background, goal: profile.goal }, usage, conversations: conversations.results });
       }
-      if (action === 'export') return json(await exportAccount(env, owner));
+      if (action === 'export') return await streamAccountExport(env, owner);
       if (action === 'conversation') {
         const c = await conversation(env, owner, new URL(request.url).searchParams.get('id'));
-        const messages = await env.COACH_DB.prepare('SELECT m.question,m.response,m.revision,f.rating,f.completed FROM coach_messages m LEFT JOIN coach_feedback f ON f.operation=m.operation AND f.owner=m.owner WHERE m.owner=? AND m.conversation=? ORDER BY m.revision').bind(owner, c.id).all();
-        return json({ id: c.id, revision: c.revision, messages: messages.results.map((m: any) => ({ question: m.question, reply: { ...JSON.parse(m.response), feedback: { rating:m.rating??null, completed:Boolean(m.completed) } } })), usage: await admissionRpc(env, 'user-status', limits) });
+        const messages = await env.COACH_DB.prepare('SELECT m.question,m.response,m.revision,f.rating,f.completed FROM coach_messages m LEFT JOIN coach_feedback f ON f.operation=m.operation AND f.owner=m.owner WHERE m.owner=? AND m.conversation=? ORDER BY m.revision DESC LIMIT 40').bind(owner, c.id).all();
+        return json({ id: c.id, revision: c.revision, messages: messages.results.reverse().map((m: any) => ({ question: m.question, reply: { ...JSON.parse(m.response), feedback: { rating:m.rating??null, completed:Boolean(m.completed) } } })), usage: await usageStatus() });
       }
       return json({ error: 'Not found' }, 404);
     }
@@ -54,7 +58,8 @@ export async function handleAccountRequest(request: Request, env: AccountEnv): P
         env.COACH_DB.prepare('DELETE FROM coach_activity WHERE owner=?').bind(owner),
         env.COACH_DB.prepare('DELETE FROM coach_monthly_activity WHERE owner=?').bind(owner),
       ]);
-      await admissionRpc(env, 'user-delete', { ...limits, generation: profile.generation });
+      // Data deletion remains available during a quota outage; never refund spent quota.
+      try { await admissionRpc(env, 'user-delete', { ...policy(), generation: profile.generation }); } catch { /* D1 generation/deleted guards prevent resurrection; metadata expires independently. */ }
       return json({ ok: true, identityProviderAccountRetained: true });
     }
     if (action === 'feedback') {
@@ -82,6 +87,7 @@ export async function handleAccountRequest(request: Request, env: AccountEnv): P
     const now = Date.now();
     const fingerprint = await privateId(env, 'request', JSON.stringify(b));
     const actor = await digest(`${Math.floor(now / 3_600_000)}:${request.headers.get('cf-connecting-ip') ?? 'unknown'}`);
+    const limits=policy();
     const auth = { ...limits, generation: profile.generation, conversation: id, operation, fingerprint, start, revision: start ? 0 : b.revision, actor };
     const lease = await admissionRpc<{ nonce: string; state: string; deadline: number }>(env, 'user-reserve', auth);
     if (lease.state !== 'new') emitMetric(env, 'retry');

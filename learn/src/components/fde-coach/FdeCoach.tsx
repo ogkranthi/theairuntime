@@ -7,6 +7,7 @@ import { useAccount } from './use-account';
 import AccountControls from './AccountControls';
 import { createAccountClient } from './account-api';
 import ResponseFeedback from './ResponseFeedback';
+import { useResearch, ResearchControls, ResearchContribution } from './research';
 import "./fde-coach.css";
 
 type Turn = { id: number; role: "learner" | "coach"; text?: string; guidance?: Guidance; reply?: CoachReply; chat?: ChatReply };
@@ -25,8 +26,9 @@ function Summary({ summary }: { summary: CoachSummary }) {
     <h3>Your first agent design</h3><dl>{summary.design.map(line => <div key={line.label}><dt>{line.label}</dt><dd>{line.body}</dd></div>)}</dl>
     <p className="fde-takeaway">{summary.takeaway}</p><p>Your agent works when everything goes right. What happens when it runs for hours and fails halfway through?</p><a href="/coach/next/">Continue learning <span aria-hidden="true">→</span></a></section>;
 }
-export default function FdeCoach({ aiBeta = false, accountsEnabled = false, clerkKey = '' }: { aiBeta?: boolean; accountsEnabled?: boolean; clerkKey?: string }) {
+export default function FdeCoach({ aiBeta = false, accountsEnabled = false, researchEnabled = false, clerkKey = '' }: { aiBeta?: boolean; accountsEnabled?: boolean; researchEnabled?: boolean; clerkKey?: string }) {
   const account = useAccount(accountsEnabled, clerkKey);
+  const research = useResearch(account, accountsEnabled && researchEnabled);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"guide" | "lesson" | "chat">("guide");
@@ -74,10 +76,11 @@ export default function FdeCoach({ aiBeta = false, accountsEnabled = false, cler
     if (inFlight.current || (pending && !confirm('Leave this pending request and load the saved conversation? Server work may still finish.'))) return;
     generation.current++; controller.current?.abort(); chatClient.current?.abandon(); chatClient.current = createAccountClient(account.token);
     const epoch = generation.current;
+    inFlight.current = true;
     setBusy(true); setError('');
     try {
       const saved = await account.request<{ messages: { question: string; reply: ChatReply }[] }>(`conversation?id=${encodeURIComponent(id)}`);
-      if (epoch !== generation.current) return;
+      if (epoch !== generation.current || !account.isCurrent()) return;
       const loaded: Turn[] = [];
       for (const message of saved.messages) {
         if (message.question) loaded.push({ id: ++nextId.current, role: 'learner', text: message.question });
@@ -87,7 +90,7 @@ export default function FdeCoach({ aiBeta = false, accountsEnabled = false, cler
       if (!last) throw new Error('This conversation is unavailable.');
       chatToken.current = last.token; chatHistory.current = []; setTurns(loaded); setChatTurn(last.turn); setMode('chat'); setDone(false); setPending(null);
     } catch (cause) { if (epoch === generation.current) setError(errorText(cause)); }
-    finally { if (epoch === generation.current) setBusy(false); }
+    finally { if (epoch === generation.current) { inFlight.current = false; setBusy(false); } }
   }
   function append(turn: Omit<Turn, "id">) { setTurns(current => [...current, { ...turn, id: ++nextId.current }]); }
   function scrollLatest(force = false) {
@@ -230,7 +233,7 @@ export default function FdeCoach({ aiBeta = false, accountsEnabled = false, cler
   const last = [...turns].reverse().find(turn => turn.guidance)?.guidance;
   const style = height && active ? { "--coach-height": `${height}px` } as CSSProperties : undefined;
   return <section className={`fde-coach${accountsEnabled ? ' fde-coach--accounts' : ''}${active ? " fde-coach--active" : " fde-coach--welcome"}`} style={style} aria-label="FDE Coach">
-    {accountsEnabled ? <AccountControls account={account} busy={busy} resume={id => void resumeAccount(id)}/> : null}
+    {accountsEnabled ? <div className="fde-account-group"><AccountControls key={account.sessionId} account={account} busy={busy} resume={id => void resumeAccount(id)}/>{researchEnabled && account.sessionId ? <ResearchControls key={account.sessionId} research={research}/>:null}</div> : null}
     {!active ? <>
       <div className="fde-welcome"><div className="fde-welcome__copy"><p className="fde-kicker"><span className="fde-spark" aria-hidden="true">✳</span> YOUR NEXT CHAPTER STARTS HERE</p>
         <h1>Your AI Coach for <span>Forward Deployed</span> Engineering</h1>
@@ -256,6 +259,7 @@ export default function FdeCoach({ aiBeta = false, accountsEnabled = false, cler
               {turn.chat.question ? <p>{turn.chat.question}</p> : null}
               {turn.chat.sources.length ? <ul className="fde-resource-list">{turn.chat.sources.map(source => <li key={source.id}><a href={source.href}>{source.title}<Arrow small/></a><details><summary>Curriculum reference: read excerpt</summary><span>{source.excerpt}</span></details></li>)}</ul> : null}
               {accountsEnabled && turn.chat.responseId && turn.chat.mode !== 'intake' ? <ResponseFeedback account={account} operation={turn.chat.responseId} hasStep={Boolean(turn.chat.nextStep)} initial={turn.chat.feedback}/> : null}
+              {researchEnabled && research.state?.consent.enabled && turn.chat.responseId && turn.chat.mode !== 'intake' ? <ResearchContribution account={account} research={research} operation={turn.chat.responseId}/>:null}
             </> : null}
             {turn.reply?.parts.map((part, index) => <div key={index} className={`fde-lesson-part fde-lesson-part--${part.kind}`}>{part.kind === "principle" ? <p className="fde-kicker">THE PRINCIPLE</p> : null}{part.text.split("\n\n").map((paragraph, i) => <p key={i}>{paragraph}</p>)}</div>)}
           </div></article>)}

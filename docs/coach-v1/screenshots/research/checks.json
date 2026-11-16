@@ -1,0 +1,26 @@
+{
+  "fixture": "synthetic identity and model; actual account routes, D1 and DO",
+  "checks": [
+    "signed-in allowance is visible",
+    "research is unchecked by default",
+    "consent cannot be submitted unchecked",
+    "research opt-in is explicit",
+    "experience and goal save",
+    "AI response decrements allowance",
+    "selected contribution has a review preview",
+    "only the selected exchange is contributed",
+    "helpful feedback saves",
+    "completion is explicitly reported",
+    "interrupted reply retries without duplicate charge",
+    "saved conversation resumes after reload",
+    "saved feedback and completion resume visibly",
+    "mobile has no horizontal overflow",
+    "transcript exposes live log semantics",
+    "withdrawal removes contribution controls",
+    "research participation does not change free allowance",
+    "export downloads private account JSON",
+    "sign-out clears private conversation",
+    "interrupted export cannot download after sign-out",
+    "no browser exceptions"
+  ]
+}

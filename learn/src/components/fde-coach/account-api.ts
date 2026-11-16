@@ -1,6 +1,6 @@
 import { createRequestClient, requestJson } from '../coach/api';
 import { validateChatReply, type ChatGoal, type HistoryTurn } from './chat-api';
-export type Usage = { used: number; reserved: number; remaining: number; limit: number; resetsAt: number };
+export type Usage = { available?: boolean; used: number; reserved: number; remaining: number; limit: number; resetsAt: number };
 export type AccountInfo = { profile: { background: string; goal: string }; usage: Usage; conversations: { id: string; goal: string; revision: number; updated: number }[] };
 export type TokenProvider = () => Promise<string>;
 export function createAccountClient(token: TokenProvider) {
