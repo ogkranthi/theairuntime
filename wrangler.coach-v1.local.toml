@@ -1,0 +1,33 @@
+# LOCAL TESTS AND DRY RUN ONLY. Do not deploy this placeholder configuration.
+name = "theairuntime-coach-local"
+main = "src/worker.ts"
+compatibility_date = "2025-05-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+preview_urls = false
+routes = []
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+run_worker_first = true
+[ai]
+binding = "AI"
+[[kv_namespaces]]
+binding = "FDE_GYM_SESSIONS"
+id = "00000000000000000000000000000000"
+[[durable_objects.bindings]]
+name = "AI_SECURITY"
+class_name = "AiSecurityCoordinator"
+[[migrations]]
+tag = "v1-ai-security"
+new_sqlite_classes = ["AiSecurityCoordinator"]
+[[d1_databases]]
+binding = "COACH_DB"
+database_name = "fde-coach-local"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations/coach"
+[vars]
+FDE_COACH_CHAT_ENABLED = "false"
+FDE_COACH_ACCOUNTS_ENABLED = "false"
+COACH_DAILY_RESPONSES = "10"
+COACH_DAILY_REQUESTS = "30"

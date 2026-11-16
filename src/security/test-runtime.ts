@@ -12,7 +12,7 @@ export async function securityRuntime(persist: string | boolean = false) {
       async fetch(request) {
         const path = new URL(request.url).pathname;
         if (path === '/__reset') {
-          for (const table of ['sessions', 'operations', 'counters', 'test_clock']) this.ctx.storage.sql.exec('DELETE FROM ' + table);
+          for (const table of ['sessions', 'operations', 'counters', 'test_clock', 'account_heads', 'account_operations']) this.ctx.storage.sql.exec('DELETE FROM ' + table);
           return Response.json({ok: true});
         }
         if (path === '/__counter') {

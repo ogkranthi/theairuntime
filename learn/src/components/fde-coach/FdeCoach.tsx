@@ -3,6 +3,9 @@ import { readHealth, createCoachClient, CoachRequestError, type CoachReply, type
 import { goalLabel, guidanceFor, prompts, routeQuestion, starters, type Goal, type Guidance } from "./guidance";
 import { createChatClient, readChatHealth, type ChatReply, type ChatGoal, type HistoryTurn } from "./chat-api";
 import SystemIllustration from "./SystemIllustration";
+import { useAccount } from './use-account';
+import AccountControls from './AccountControls';
+import { createAccountClient } from './account-api';
 import "./fde-coach.css";
 
 type Turn = { id: number; role: "learner" | "coach"; text?: string; guidance?: Guidance; reply?: CoachReply; chat?: ChatReply };
@@ -21,7 +24,8 @@ function Summary({ summary }: { summary: CoachSummary }) {
     <h3>Your first agent design</h3><dl>{summary.design.map(line => <div key={line.label}><dt>{line.label}</dt><dd>{line.body}</dd></div>)}</dl>
     <p className="fde-takeaway">{summary.takeaway}</p><p>Your agent works when everything goes right. What happens when it runs for hours and fails halfway through?</p><a href="/coach/next/">Continue learning <span aria-hidden="true">→</span></a></section>;
 }
-export default function FdeCoach({ aiBeta = false }: { aiBeta?: boolean }) {
+export default function FdeCoach({ aiBeta = false, accountsEnabled = false, clerkKey = '' }: { aiBeta?: boolean; accountsEnabled?: boolean; clerkKey?: string }) {
+  const account = useAccount(accountsEnabled, clerkKey);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
   const [mode, setMode] = useState<"guide" | "lesson" | "chat">("guide");
@@ -34,7 +38,7 @@ export default function FdeCoach({ aiBeta = false }: { aiBeta?: boolean }) {
   const [pending, setPending] = useState<Pending | null>(null);
   const [chatUnavailable, setChatUnavailable] = useState(false);
   const chatClient = useRef<ReturnType<typeof createChatClient>>();
-  chatClient.current ??= createChatClient();
+  chatClient.current ??= accountsEnabled ? createAccountClient(account.token) : createChatClient();
   const chatToken = useRef("");
   const chatHistory = useRef<HistoryTurn[]>([]);
   const [chatTurn, setChatTurn] = useState(0);
@@ -55,7 +59,35 @@ export default function FdeCoach({ aiBeta = false }: { aiBeta?: boolean }) {
   const composing = useRef(false);
   const nearBottom = useRef(true);
   const initialized = useRef(false);
-  const active = turns.length > 0 || mode === "lesson";
+  const renderedSession = useRef(account.sessionId);
+  const active = (!accountsEnabled || renderedSession.current === account.sessionId) && (turns.length > 0 || mode === "lesson");
+  useEffect(() => {
+    if (!accountsEnabled) return;
+    renderedSession.current = account.sessionId;
+    generation.current++; controller.current?.abort(); chatClient.current?.abandon();
+    chatClient.current = createAccountClient(account.token);
+    chatToken.current = ''; chatHistory.current = []; inFlight.current = false;
+    setTurns([]); setMode('guide'); setChatTurn(0); setDone(false); setBusy(false); setPending(null); setError(''); setDraft('');
+  }, [accountsEnabled, account.sessionId]);
+  async function resumeAccount(id: string) {
+    if (inFlight.current || (pending && !confirm('Leave this pending request and load the saved conversation? Server work may still finish.'))) return;
+    generation.current++; controller.current?.abort(); chatClient.current?.abandon(); chatClient.current = createAccountClient(account.token);
+    const epoch = generation.current;
+    setBusy(true); setError('');
+    try {
+      const saved = await account.request<{ messages: { question: string; reply: ChatReply }[] }>(`conversation?id=${encodeURIComponent(id)}`);
+      if (epoch !== generation.current) return;
+      const loaded: Turn[] = [];
+      for (const message of saved.messages) {
+        if (message.question) loaded.push({ id: ++nextId.current, role: 'learner', text: message.question });
+        loaded.push({ id: ++nextId.current, role: 'coach', chat: message.reply });
+      }
+      const last = saved.messages.at(-1)?.reply;
+      if (!last) throw new Error('This conversation is unavailable.');
+      chatToken.current = last.token; chatHistory.current = []; setTurns(loaded); setChatTurn(last.turn); setMode('chat'); setDone(false); setPending(null);
+    } catch (cause) { if (epoch === generation.current) setError(errorText(cause)); }
+    finally { if (epoch === generation.current) setBusy(false); }
+  }
   function append(turn: Omit<Turn, "id">) { setTurns(current => [...current, { ...turn, id: ++nextId.current }]); }
   function scrollLatest(force = false) {
     const target = log.current;
@@ -86,6 +118,7 @@ export default function FdeCoach({ aiBeta = false }: { aiBeta?: boolean }) {
   }, []);
   function choose(goal: Goal, text = goalLabel(goal)) {
     if (inFlight.current || mode === "lesson") return;
+    if (accountsEnabled && !account.sessionId) { account.signIn(); return; }
     if (aiBeta && !chatUnavailable) { void beginChat(goal, text === goalLabel(goal) ? undefined : text); return; }
     nearBottom.current = true;
     append({ role: "learner", text }); append({ role: "coach", guidance: guidanceFor(goal) });
@@ -123,7 +156,7 @@ export default function FdeCoach({ aiBeta = false }: { aiBeta?: boolean }) {
     const mentorClient = chatClient.current!;
     try {
       if (request.kind === "chat-start") {
-        const health = await readChatHealth(abort.signal);
+        const health = accountsEnabled ? { enabled: true, securityConfigured: true } : await readChatHealth(abort.signal);
         if (attempt !== generation.current) return;
         if (!health.enabled || !health.securityConfigured) {
           setChatUnavailable(true); setMode("guide");
@@ -160,6 +193,7 @@ export default function FdeCoach({ aiBeta = false }: { aiBeta?: boolean }) {
         apply(reply); lessonClient.acknowledge(reply);
       }
       setPending(null);
+      if (accountsEnabled && request.kind.startsWith('chat-')) void account.refresh();
     } catch (cause) { if (attempt === generation.current) { setError(errorText(cause)); setRetryable(!(cause instanceof CoachRequestError) || cause.retryable); } }
     finally { if (attempt === generation.current) { inFlight.current = false; setBusy(false); } }
   }
@@ -185,8 +219,8 @@ export default function FdeCoach({ aiBeta = false }: { aiBeta?: boolean }) {
     void run({ kind: "answer", token: token.current, text, turns: history });
   }
   function reset() {
-    if (!window.confirm(pending ? "Start a new conversation and abandon the pending lesson request? Server work may still finish and reserved usage remains spent. Usage limits still apply." : "Start a new conversation? This chat is kept only in this tab.")) return;
-    generation.current++; controller.current?.abort(); client.current?.abandon(); client.current = createCoachClient(); chatClient.current?.abandon(); chatClient.current = createChatClient(); chatToken.current = ""; chatHistory.current = []; setChatTurn(0); setChatUnavailable(false); inFlight.current = false;
+    if (!window.confirm(pending ? "Start a new conversation and abandon the pending lesson request? Server work may still finish and reserved usage remains spent. Usage limits still apply." : accountsEnabled ? "Start a new conversation? Your saved conversations remain available in Your learning and data." : "Start a new conversation? This chat is kept only in this tab.")) return;
+    generation.current++; controller.current?.abort(); client.current?.abandon(); client.current = createCoachClient(); chatClient.current?.abandon(); chatClient.current = accountsEnabled ? createAccountClient(account.token) : createChatClient(); chatToken.current = ""; chatHistory.current = []; setChatTurn(0); setChatUnavailable(false); inFlight.current = false;
     token.current = ""; stageTurns.current = []; stageNumber.current = 0; nearBottom.current = true;
     setTurns([]); setMode("guide"); setStage(null); setDone(false); setSummary(null); setScripted(false);
     setBusy(false); setPending(null); setError(""); setDraft("");
@@ -194,7 +228,8 @@ export default function FdeCoach({ aiBeta = false }: { aiBeta?: boolean }) {
   }
   const last = [...turns].reverse().find(turn => turn.guidance)?.guidance;
   const style = height && active ? { "--coach-height": `${height}px` } as CSSProperties : undefined;
-  return <section className={`fde-coach${active ? " fde-coach--active" : " fde-coach--welcome"}`} style={style} aria-label="FDE Coach">
+  return <section className={`fde-coach${accountsEnabled ? ' fde-coach--accounts' : ''}${active ? " fde-coach--active" : " fde-coach--welcome"}`} style={style} aria-label="FDE Coach">
+    {accountsEnabled ? <AccountControls account={account} busy={busy} resume={id => void resumeAccount(id)}/> : null}
     {!active ? <>
       <div className="fde-welcome"><div className="fde-welcome__copy"><p className="fde-kicker"><span className="fde-spark" aria-hidden="true">✳</span> YOUR NEXT CHAPTER STARTS HERE</p>
         <h1>Your AI Coach for <span>Forward Deployed</span> Engineering</h1>
@@ -242,8 +277,8 @@ export default function FdeCoach({ aiBeta = false }: { aiBeta?: boolean }) {
       </form> : <div className="fde-completed"><span>{mode === "chat" ? "This bounded chat is complete. You can review your next task above." : "Guided lesson complete. Your recap is above."}</span><button type="button" onClick={reset}>Explore another direction <Arrow small/></button></div>}
       {!active ? <div className="fde-prompts" aria-label="Try a question">{prompts.map(prompt => <button key={prompt.id} type="button" onClick={() => choose(prompt.id)}>{prompt.title}<Arrow small/></button>)}</div>
         : mode === "guide" && last ? <div className="fde-followups" aria-label="Suggested next steps">{last.followups.map(goal => <button key={goal} type="button" onClick={() => choose(goal)}>{goalLabel(goal)} <Arrow small/></button>)}</div> : null}
-      <p className="fde-help" id="fde-input-help">{mode === "lesson" ? "Use fictional or non-sensitive examples. Enter sends; Shift+Enter adds a line." : mode === "chat" || (aiBeta && !chatUnavailable) ? "AI can be wrong. No long-term chat history. Privacy below." : "General questions receive curated guidance, not personalized AI."}{draft.length > 1800 ? ` ${draft.length}/2000 characters.` : ""}</p>
-    {aiBeta ? <details className="fde-help"><summary>Coaching privacy</summary><p>Messages and a bounded recent context are sent to Workers AI. {mode === "lesson" ? "Guided lesson replies have the existing three-hour recovery cache." : "Generated chat replies and concise derived profile state are cached for up to one hour to recover retries; they may reflect your input."} Raw transcripts are not logged or saved as a dataset. No feedback collection, training, newsletter consent, or Gym session is started here. No cross-device history. Keep client and personal information out of examples.</p></details> : null}
+      <p className="fde-help" id="fde-input-help">{mode === "lesson" ? "Use fictional or non-sensitive examples. Enter sends; Shift+Enter adds a line." : accountsEnabled ? "AI can be wrong. Signed-in conversations are saved. Privacy below." : mode === "chat" || (aiBeta && !chatUnavailable) ? "AI can be wrong. No long-term chat history. Privacy below." : "General questions receive curated guidance, not personalized AI."}{draft.length > 1800 ? ` ${draft.length}/2000 characters.` : ""}</p>
+    {aiBeta ? <details className="fde-help"><summary>Coaching privacy</summary><p>Messages and a bounded recent context are sent to Workers AI. {accountsEnabled ? "Your profile, goals, conversations and next steps are stored privately for account functionality. Inactive conversations expire after 90 days. View, export or delete your Coach data in Your learning and data. No research collection, publication or training is enabled by signing in. Operational data excludes conversation content. Google/GitHub and Clerk keep their own identity data under their policies." : <>{mode === "lesson" ? "Guided lesson replies have the existing three-hour recovery cache." : "Generated chat replies and concise derived profile state are cached for up to one hour to recover retries; they may reflect your input."} Raw transcripts are not logged or saved as a dataset. No feedback collection, training, newsletter consent, or Gym session is started here. No cross-device history.</>} Keep client and personal information out of examples.</p></details> : null}
     </div>
     {!active ? <p className="fde-welcome__foot">A place to learn, practice, and build proof. <a href="/commons/">Explore the Commons <Arrow small/></a></p> : null}
   </section>;

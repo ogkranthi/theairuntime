@@ -3,9 +3,9 @@ import { GOALS, type ChatGoal, type ChatReply, type HistoryTurn } from '../../..
 import catalog from '../../../../src/coach-chat/catalog.generated.json';
 export type { ChatReply, ChatGoal, HistoryTurn };
 const record=(v:unknown):v is Record<string,any>=>Boolean(v)&&typeof v==='object'&&!Array.isArray(v);
-export function validateChatReply(v:unknown):ChatReply {
-  if(!record(v)||typeof v.token!=='string'||!v.token.startsWith('chat1.')||!GOALS.includes(v.goal)||!Number.isInteger(v.turn)||v.turn<0||v.turn>10
-    ||v.remainingTurns!==10-v.turn||v.done!==(v.turn===10)||!['intake','ai','fallback'].includes(v.mode)
+export function validateChatReply(v:unknown,account=false):ChatReply {
+  if(!record(v)||typeof v.token!=='string'||!(account ? /^account1\.[a-f0-9]{64}\.\d+$/.test(v.token) : v.token.startsWith('chat1.'))||!GOALS.includes(v.goal)||!Number.isInteger(v.turn)||v.turn<0||v.turn>10
+    ||v.remainingTurns!==10-v.turn||v.done!==(account ? false : v.turn===10)||!['intake','ai','fallback'].includes(v.mode)
     ||typeof v.answer!=='string'||v.answer.length>2400||typeof v.question!=='string'||v.question.length>240
     ||!Array.isArray(v.gaps)||v.gaps.length>2||v.gaps.some((gap:unknown)=>!record(gap)||typeof gap.gap!=='string'||typeof gap.evidence!=='string')
     ||(v.nextStep!==null&&(!record(v.nextStep)||typeof v.nextStep.task!=='string'||typeof v.nextStep.definitionOfDone!=='string'))

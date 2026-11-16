@@ -1,5 +1,6 @@
 import type { DurableObjectState, SqlStorage } from "@cloudflare/workers-types";
 import { LIMITS } from "./types";
+import { AccountQuota } from './account-quota';
 
 type Row = Record<string, string | number | null>;
 type Command = {
@@ -15,8 +16,10 @@ const DAY = 24 * HOUR;
 /** Only metadata crosses this boundary. No model bindings or external fetches. */
 export class AiSecurityCoordinator {
   private sql: SqlStorage;
+  private accounts: AccountQuota;
   constructor(private state: DurableObjectState) {
     this.sql = state.storage.sql;
+    this.accounts = new AccountQuota(this.sql, (status, error) => this.deny(status, error), (id, limit, expires) => this.counter(id, limit, expires));
     this.sql.exec(`CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY, kind TEXT NOT NULL, capability TEXT NOT NULL,
       revision INTEGER NOT NULL DEFAULT 0, turns INTEGER NOT NULL DEFAULT 0,
@@ -81,6 +84,7 @@ export class AiSecurityCoordinator {
     }
   }
   private dispatch(action: string, b: Command, now: number): Row {
+    if (action.startsWith('user-')) return this.accounts.dispatch(action, b as any, now) as Row;
     if (action === "start") {
       if (!["coach", "gym", "chat"].includes(b.kind)) this.deny(400, "Invalid session kind.");
       const prior = this.row("SELECT * FROM operations WHERE id = ?", b.operationId);
@@ -169,13 +173,14 @@ export class AiSecurityCoordinator {
   async alarm(): Promise<void> {
     const now = this.now();
     this.state.storage.transactionSync(() => {
+      this.accounts.cleanup(now);
       this.sql.exec("UPDATE sessions SET blocked = 1 WHERE pending IN (SELECT id FROM operations WHERE status = 'pending' AND deadline <= ?)", now);
       this.sql.exec("UPDATE operations SET status = 'uncertain' WHERE status = 'pending' AND deadline <= ?", now);
       this.sql.exec("DELETE FROM operations WHERE expires <= ?", now);
       this.sql.exec("DELETE FROM sessions WHERE expires <= ?", now);
       this.sql.exec("DELETE FROM counters WHERE expires <= ?", now);
     });
-    if (this.row("SELECT id FROM sessions LIMIT 1") || this.row("SELECT id FROM counters LIMIT 1")) {
+    if (this.row("SELECT id FROM sessions LIMIT 1") || this.row("SELECT id FROM counters LIMIT 1") || this.row('SELECT id FROM account_operations LIMIT 1') || this.row('SELECT id FROM account_heads LIMIT 1')) {
       await this.state.storage.setAlarm(now + HOUR);
     }
   }

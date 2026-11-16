@@ -19,6 +19,9 @@ import { handleFdeGymRequest, type FdeGymEnv } from './fde-gym/routes';
 import { handleCoachRequest } from './coach/routes';
 import { handleChatRequest } from './coach-chat/routes';
 import type { ChatEnv } from './coach-chat/types';
+import { handleAccountRequest } from './accounts/routes';
+import type { AccountEnv } from './accounts/types';
+import { purgeExpired } from './accounts/store';
 import { handleFdePathRequest } from './fde-path/routes';
 import type { FdePathEnv } from './fde-path/types';
 import type { CoachEnv } from './coach/types';
@@ -739,6 +742,9 @@ async function handleIntake(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
+  async scheduled(_controller: ScheduledController, env: Env & AccountEnv): Promise<void> {
+    if (env.FDE_COACH_ACCOUNTS_ENABLED === 'true' && env.COACH_DB) await purgeExpired(env);
+  },
   async fetch(request: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
@@ -746,6 +752,9 @@ export default {
       return handleFdeGymRequest(request, env as Env & FdeGymEnv);
     }
 
+    if (url.pathname.startsWith('/api/coach-account/')) {
+      return handleAccountRequest(request, env as Env & AccountEnv);
+    }
     if (url.pathname.startsWith('/api/coach-chat/')) {
       return handleChatRequest(request, env as Env & ChatEnv);
     }
@@ -877,4 +886,4 @@ export default {
 
     return env.ASSETS.fetch(request);
   },
-} satisfies ExportedHandler<Env>;
+} satisfies ExportedHandler<Env & AccountEnv>;
