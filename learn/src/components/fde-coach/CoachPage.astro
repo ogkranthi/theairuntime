@@ -1,7 +1,7 @@
 ---
 import FdeCoach from "./FdeCoach";
 ---
-<FdeCoach client:load aiBeta={import.meta.env.PUBLIC_FDE_COACH_CHAT_ENABLED === "true"} />
+<FdeCoach client:load aiBeta={import.meta.env.PUBLIC_FDE_COACH_CHAT_ENABLED === "true"} accountsEnabled={import.meta.env.PUBLIC_FDE_COACH_ACCOUNTS_ENABLED === "true"} clerkKey={import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY ?? ""} />
 <noscript>
   <section class="coach-noscript" aria-label="Start learning without JavaScript">
     <h2>Learning is still open.</h2>

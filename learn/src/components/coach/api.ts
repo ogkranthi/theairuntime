@@ -91,14 +91,14 @@ export async function requestJson<T>(path: string, options: RequestInit, validat
 }
 
 /** One in-memory conversation. No eviction, shared credentials, or automatic retries. */
-export function createRequestClient<T>(validateResponse: (value: unknown) => T) {
+export function createRequestClient<T>(validateResponse: (value: unknown) => T, authorization?: () => Promise<Record<string, string>>) {
   let clientScope: string | undefined;
   let pending: Readonly<{ path: string; payload: string; key: string; scope?: string }> | undefined;
   let accepted: T | undefined;
   let busy = false;
   let abandoned = false;
   async function post(path: string, body: unknown, signal?: AbortSignal) {
-    if (!/^\/api\/(?:coach|coach-chat)\/(?:start|message)$/.test(path)) throw new Error("Invalid session endpoint.");
+    if (!/^\/api\/(?:coach|coach-chat|coach-account)\/(?:start|message)$/.test(path)) throw new Error("Invalid session endpoint.");
     if (abandoned) throw new DOMException("Conversation abandoned", "AbortError");
     if (busy) throw new CoachRequestError("A request is already in progress. Retry the original request shortly.", 409);
     const payload = JSON.stringify(body);
@@ -112,7 +112,7 @@ export function createRequestClient<T>(validateResponse: (value: unknown) => T) 
     try {
       const reply = await requestJson(operation.path, {
         method: "POST", body: operation.payload,
-        headers: { "content-type": "application/json", "idempotency-key": operation.key, ...(operation.scope ? { "x-session-client": operation.scope } : {}) },
+        headers: { "content-type": "application/json", "idempotency-key": operation.key, ...(operation.scope ? { "x-session-client": operation.scope } : {}), ...(authorization ? await authorization() : {}) },
       }, validateResponse, signal);
       if (abandoned || signal?.aborted) throw new DOMException("Conversation abandoned", "AbortError");
       accepted = reply;

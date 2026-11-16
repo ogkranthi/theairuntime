@@ -15,6 +15,7 @@
   },
   "include": [
     "src/worker.ts",
+    "src/accounts/**/*.ts",
     "src/fde-gym/**/*.ts",
     "src/fde-gym/**/*.json",
     "src/coach/**/*.ts",

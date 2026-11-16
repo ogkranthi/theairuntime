@@ -10,6 +10,7 @@ const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'cache
 export async function handleChatRequest(request:Request,env:ChatEnv):Promise<Response> {
   const action=new URL(request.url).pathname.split('/').pop();
   if(action==='health'&&request.method==='GET')return json({enabled:env.FDE_COACH_CHAT_ENABLED==='true',aiConfigured:Boolean(env.AI),securityConfigured:Boolean(env.AI_SECURITY&&env.FDE_GYM_SESSIONS&&env.COACH_TOKEN_SECRET),promptVersion:PROMPT_VERSION,retrievalVersion:RETRIEVAL_VERSION,turnLimit:LIMITS.chatTurns,captureEnabled:false});
+  if(env.FDE_COACH_ACCOUNTS_ENABLED==='true')return json({error:'Sign in to use saved AI coaching. Use the account coaching endpoint.'},401);
   if(request.method!=='POST')return json({error:'Method not allowed'},405);
   if(!['start','message'].includes(action??''))return json({error:'Not found'},404);
   if(env.FDE_COACH_CHAT_ENABLED!=='true')return json({error:'The AI coaching beta is not enabled. Existing learning resources remain available.'},503);

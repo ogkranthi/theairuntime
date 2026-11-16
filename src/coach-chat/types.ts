@@ -8,6 +8,7 @@ export interface ChatState {
   goal: ChatGoal; turn: number; profile: Profile; lastTask: string;
 }
 export interface ChatEnv extends CoachEnv {
+  FDE_COACH_ACCOUNTS_ENABLED?: string;
   FDE_COACH_CHAT_ENABLED?: string;
   FDE_COACH_CHAT_MODEL?: string;
 }
