@@ -135,3 +135,9 @@
 @media(max-width:620px) { .fde-account { font-size:15px; } .fde-account button { min-height:44px; } .fde-account p > span { margin-left:0; display:block; } }
 .fde-coach--accounts.fde-coach--active { grid-template-rows:auto auto minmax(0,1fr) auto; }
 .fde-coach--active .fde-account { max-height:35dvh; overflow:auto; margin-bottom:6px; }
+.fde-response-feedback { margin-top:18px; border-top:1px solid var(--rule); padding-top:10px; }
+.fde-response-feedback p { font-size:12px; margin:3px 0; }
+.fde-response-feedback > div { display:flex; flex-wrap:wrap; gap:6px; }
+.fde-response-feedback button { font:inherit; font-size:12px; background:white; color:#a83a09; border:1px solid #dfe6eb; border-radius:7px; padding:7px 10px; cursor:pointer; }
+.fde-response-feedback button:focus-visible { outline:3px solid #c9480c; outline-offset:3px; }
+@media(max-width:620px) { .fde-response-feedback button { min-height:44px; } }

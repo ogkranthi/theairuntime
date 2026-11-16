@@ -10,6 +10,9 @@ export interface AccountEnv extends ChatEnv {
   COACH_IDENTITY_KEY?: string;
   COACH_DAILY_RESPONSES?: string;
   COACH_DAILY_REQUESTS?: string;
+  FDE_COACH_METRICS_ENABLED?: string;
+  COACH_METRICS?: { writeDataPoint(event: { indexes: string[]; blobs: string[]; doubles: number[] }): void };
+  COACH_MODEL_PRICES_JSON?: string;
 }
 export type Account = { id: string; generation: string; background: string; goal: string; created: number; updated: number; deleted: number };
 export const DAY = 86_400_000;

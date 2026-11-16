@@ -3,7 +3,7 @@ import { AdmissionError } from '../security/types';
 import { sensitive } from './validation';
 import { approvedSources, retrieve, RETRIEVAL_VERSION } from './retrieval';
 import { buildChatPrompt, PROMPT_VERSION } from './prompt';
-import type { ChatEnv, ChatState, ChatReply, ChatGoal, HistoryTurn, Profile } from './types';
+import type { ChatEnv, ChatState, ChatReply, ChatGoal, HistoryTurn, Profile, ChatMetadata } from './types';
 export const CHAT_MODEL='@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 export const MODEL_TIMEOUT_MS=4500;
 export const MAX_OUTPUT_TOKENS=900;
@@ -53,6 +53,7 @@ export async function mentorTurn(env:ChatEnv,state:ChatState,message:string,hist
   if (!env.securityExecution) throw new AdmissionError(503, 'Atomic coaching admission is required.');
   const began=Date.now(),sources=retrieve(message,state.goal,state.profile);
   let errorCategory:string|null=null,model:string|null=null,tokens:number|null=null,reportedAttempts=0;
+  const attemptDetails: NonNullable<ChatMetadata['attemptDetails']> = [];
   let parsed:ReturnType<typeof parseMentorResponse>=null;
   // A deliberately narrow guard is not a general jailbreak classifier. It keeps
   // obvious instruction exfiltration/tool requests on a labeled authored path.
@@ -64,19 +65,28 @@ export async function mentorTurn(env:ChatEnv,state:ChatState,message:string,hist
     try { messages=buildChatPrompt(state,message,history,sources); } catch { errorCategory='input_budget'; }
     const metered=env.AI;
     const ai={run:async(name:string,input:unknown)=>{
+      const began=Date.now(), slot=attemptDetails.length, before=env.securityExecution?.attemptCount??0;
+      const attempt={slot,model:name,executed:false,latencyMs:0,tokens:null as number|null,inputTokens:null as number|null,outputTokens:null as number|null,error:null as string|null};
+      attemptDetails.push(attempt);
       env.securityExecution!.modelDeadlineMs=Date.now()+MODEL_TIMEOUT_MS;
       let timer:ReturnType<typeof setTimeout>|undefined;
       try {
         const output=await Promise.race([metered.run(name,input),new Promise<never>((_resolve,reject)=>{timer=setTimeout(()=>reject(new Error('timeout')),MODEL_TIMEOUT_MS);})]);
         model=name;
-        const usage=(output as {usage?:{total_tokens?:unknown}})?.usage?.total_tokens;
+        const raw=(output as {usage?:{total_tokens?:unknown;prompt_tokens?:unknown;completion_tokens?:unknown}})?.usage;
+        const usage=raw?.total_tokens;
         if(typeof usage==='number'&&Number.isSafeInteger(usage)&&usage>=0&&usage<=1_000_000){tokens=(tokens??0)+usage;reportedAttempts++;}
+        const valid=(v:unknown):v is number=>typeof v==='number'&&Number.isSafeInteger(v)&&v>=0&&v<=1_000_000;
+        attempt.tokens=valid(usage)?usage:null;
+        attempt.inputTokens=valid(raw?.prompt_tokens)?raw.prompt_tokens:null;
+        attempt.outputTokens=valid(raw?.completion_tokens)?raw.completion_tokens:null;
         return output;
       } catch(error) {
         errorCategory=error instanceof AdmissionError?error.status===429?'usage_limit':'admission_unavailable':error instanceof Error&&error.message==='timeout'?'timeout':'provider_failure';
+        attempt.error=errorCategory;
         // Do not retain provider exception text in the shared model client's diagnostics.
         throw new Error(errorCategory);
-      } finally {if(timer!==undefined)clearTimeout(timer);}
+      } finally {attempt.executed=(env.securityExecution?.attemptCount??0)>before;attempt.latencyMs=Date.now()-began;if(timer!==undefined)clearTimeout(timer);}
     }};
     const output=messages ? await callModel({...env,AI:ai,FDE_GYM_INTERVIEW_MODEL:env.FDE_COACH_CHAT_MODEL||CHAT_MODEL},'coach',messages,MAX_OUTPUT_TOKENS) : null;
     if(output && output.length <= 6000)parsed=parseMentorResponse(parseJsonObject(output),state,message,history,sources);
@@ -87,7 +97,7 @@ export async function mentorTurn(env:ChatEnv,state:ChatState,message:string,hist
     const gym=sources.find(s=>s.id==='gym');
     if(gym)result.sources=result.sources.length===3?[...result.sources.slice(0,2),gym]:[...result.sources,gym];
   }
-  const metadata={templateId:`mentor-${state.goal}`,promptVersion:PROMPT_VERSION,retrievalVersion:RETRIEVAL_VERSION,resourceIds:result.sources.map(s=>s.id),model,attempts:env.securityExecution?.attemptCount??0,latencyMs:Date.now()-began,tokens,usageComplete:reportedAttempts>0&&reportedAttempts===(env.securityExecution?.attemptCount??0),outcome:parsed?'ai' as const:'fallback' as const,errorCategory:parsed && (env.securityExecution?.attemptCount??0)===1?null:errorCategory};
+  const metadata={templateId:`mentor-${state.goal}`,promptVersion:PROMPT_VERSION,retrievalVersion:RETRIEVAL_VERSION,resourceIds:result.sources.map(s=>s.id),model,attempts:env.securityExecution?.attemptCount??0,latencyMs:Date.now()-began,tokens,usageComplete:reportedAttempts>0&&reportedAttempts===(env.securityExecution?.attemptCount??0),outcome:parsed?'ai' as const:'fallback' as const,errorCategory:parsed && (env.securityExecution?.attemptCount??0)===1?null:errorCategory,attemptDetails};
   if(env.securityExecution)env.securityExecution.metadata=metadata;
   return {...result,mode:parsed?'ai' as const:'fallback' as const};
 }

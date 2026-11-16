@@ -19,7 +19,7 @@ try {
   const coordinator = await build({ stdin: { contents: `export {AiSecurityCoordinator} from './src/security/coordinator'; export default {fetch(){return new Response('local')}}`, resolveDir: process.cwd() }, bundle: true, write: false, format: 'esm', platform: 'neutral' });
   mf = new Miniflare({ modules: true, script: coordinator.outputFiles[0].text, compatibilityDate: '2025-05-01', durableObjects: { AI_SECURITY: { className: 'AiSecurityCoordinator', useSQLite: true } }, d1Databases: ['DB'] });
   const db = await mf.getD1Database('DB'), namespace = await mf.getDurableObjectNamespace('AI_SECURITY');
-  for (const migration of ['0001_accounts.sql']) await db.exec((await readFile(`migrations/coach/${migration}`, 'utf8')).replace(/\n/g,' '));
+  for (const migration of ['0001_accounts.sql','0002_observability.sql']) await db.exec((await readFile(`migrations/coach/${migration}`, 'utf8')).replace(/\n/g,' '));
   const compiled = await build({ entryPoints: ['src/accounts/routes.ts'], bundle: true, write: false, format: 'esm', platform: 'node' });
   await writeFile(join(temporary, 'server.mjs'), compiled.outputFiles[0].text);
   const { handleAccountRequest } = await import(pathToFileURL(join(temporary, 'server.mjs')));
@@ -64,6 +64,8 @@ try {
   await page.getByLabel('Ask your FDE Coach',{exact:true}).fill('I build APIs. Explain safe retries.');
   await page.getByRole('button',{name:'Send message',exact:true}).click();
   await page.getByText('9 of 10 free AI replies available today').waitFor();check('AI response decrements allowance');
+  await page.getByRole('button',{name:'Helpful',exact:true}).last().click();await page.getByText('Feedback saved. Thank you.').last().waitFor();check('helpful feedback saves');
+  await page.getByRole('button',{name:'I completed this next step',exact:true}).last().click();await page.getByText('Next step marked complete.').last().waitFor();check('completion is explicitly reported');
   await page.screenshot({path:join(artifacts,'desktop-conversation.png'),fullPage:true,animations:"disabled"});
   let lost=false;
   await page.route('**/api/coach-account/message',async route=>{if(!lost){lost=true;await route.fetch();await route.abort('failed');}else await route.continue();});
