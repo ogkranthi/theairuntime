@@ -1,0 +1,229 @@
+{
+  "schemaVersion": "apprenticeship-mission-pack-v0.1",
+  "status": "draft_not_runtime_enabled",
+  "privacy": "All customer, teammate and company information is fictional. Synthetic learning fixtures only.",
+  "targetProduct": "The AI Runtime Open Engineering Apprenticeship",
+  "sourcePrd": "docs/product/open-engineering-apprenticeship/PRD.md",
+  "safetyNotes": [
+    "This file is an authoring fixture, not a secure exam question bank.",
+    "Keep rubric and transfer detail server-side in a future implementation; they are not a claim of secrecy in a public repository.",
+    "No production learner data, credentials, customer IP or real model output is present."
+  ],
+  "missions": [
+    {
+      "id": "mission-001-cross-tenant-ai-support",
+      "version": "0.1.0",
+      "reviewStatus": "draft_pending_independent_review",
+      "fictional": true,
+      "title": "The Customer Ticket That Crossed Tenants",
+      "durationMinutes": 15,
+      "difficulty": "early-career-to-intermediate",
+      "roleLenses": [
+        "ai-native-software-engineer",
+        "ai-engineer",
+        "forward-deployed-engineer",
+        "platform-reliability-engineer"
+      ],
+      "capabilities": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8"
+      ],
+      "objective": "Identify the true authorization boundary and propose testable containment, correction and release criteria for cross-tenant data exposure.",
+      "brief": {
+        "customer": "A fictional multi-tenant AI support product serves multiple business customers. A user at tenant A saw a support ticket belonging to tenant B. A launch is scheduled for tomorrow.",
+        "system": "Browser -> API -> retrieval service -> shared ticket index -> LLM response. The browser supplies a tenantId parameter; an API route accepts it without an authorization check in one read path.",
+        "stakes": "Customers' confidential tickets may be exposed; business pressure favors shipping quickly.",
+        "constraints": [
+          "No access to the actual production environment",
+          "Use fictional systems and evidence only",
+          "A rollout decision must account for uncertain blast radius"
+        ]
+      },
+      "phases": [
+        {
+          "id": "decide",
+          "requiresUserSubmission": true,
+          "coachQuestion": "What would you do first, would you proceed with tomorrow's launch, and which assumption matters most?",
+          "reveal": "brief",
+          "evidenceNeeded": [
+            "initial decision",
+            "rationale",
+            "assumptions"
+          ]
+        },
+        {
+          "id": "defend",
+          "requiresUserSubmission": true,
+          "coachQuestion": "Where is authorization actually enforced, and what evidence would distinguish a UI filtering issue from a server-side access control defect?",
+          "reveal": "defend",
+          "evidenceNeeded": [
+            "security boundary",
+            "alternative explanation",
+            "evidence"
+          ]
+        },
+        {
+          "id": "break",
+          "requiresUserSubmission": true,
+          "coachQuestion": "Your AI teammate says the fix is ready. What would you challenge before approving it?",
+          "reveal": "simulated-teammate",
+          "simulatedTeammate": {
+            "label": "FICTIONAL AI CODING AGENT — NOT ACTUAL TOOL OUTPUT",
+            "proposal": "I added a tenantId filter to the frontend ticket list and all 24 existing unit tests pass. We can deploy and launch tomorrow.",
+            "knownLimitations": [
+              "The API still trusts caller-supplied tenant IDs",
+              "Existing tests do not cover cross-tenant resource IDs"
+            ]
+          },
+          "inject": {
+            "label": "FICTIONAL NEW CONSTRAINT",
+            "text": "Security reports a second read path used by exports. Marketing wants to launch anyway. The on-call engineer has 30 minutes before handoff."
+          },
+          "evidenceNeeded": [
+            "agent-review critique",
+            "updated decision",
+            "escalation"
+          ]
+        },
+        {
+          "id": "prove",
+          "requiresUserSubmission": true,
+          "coachQuestion": "Specify the minimum server-side checks, cross-tenant regression tests, and monitoring needed before declaring the incident contained.",
+          "reveal": "verification",
+          "evidenceNeeded": [
+            "test plan",
+            "authority check",
+            "release gate",
+            "monitoring"
+          ]
+        },
+        {
+          "id": "transfer",
+          "requiresUserSubmission": true,
+          "coachQuestion": "Work independently on the new scenario. State your decision, why, and the verification evidence. No hints are available for this attempt.",
+          "reveal": "transfer-only",
+          "feedbackVisibleAfterSubmission": true,
+          "assessmentMode": "unassisted",
+          "transferCaseId": "transfer-001-cross-org-document-export"
+        }
+      ],
+      "rubric": {
+        "dimensions": [
+          {
+            "code": "problem-framing",
+            "anchors": [
+              "Does not identify user impact or the cross-tenant risk",
+              "Mentions risk but lacks evidence/containment plan",
+              "Prioritizes containment, blast radius and independently verifiable impact"
+            ]
+          },
+          {
+            "code": "authority-boundary",
+            "anchors": [
+              "Relies on client filtering or untrusted tenant field",
+              "Recognizes need for server checks, but leaves a read path uncovered",
+              "Binds verified identity to tenant authorization at every read/export/mutation boundary"
+            ]
+          },
+          {
+            "code": "ai-oversight",
+            "anchors": [
+              "Accepts passing tests and agent claim uncritically",
+              "Questions the agent but lacks adversarial evidence",
+              "Defines why 24 tests are insufficient and requests cross-tenant negative tests"
+            ]
+          },
+          {
+            "code": "verification",
+            "anchors": [
+              "Offers no reproducible failure or regression test",
+              "Lists tests without pass/fail criteria",
+              "Defines deterministic tenant A/B denial tests, logs and a release gate"
+            ]
+          },
+          {
+            "code": "adaptation",
+            "anchors": [
+              "Ignores new export path/launch constraint",
+              "Updates proposal partially",
+              "Adjusts containment/release decision, prioritizes export path and communicates risk"
+            ]
+          },
+          {
+            "code": "communication",
+            "anchors": [
+              "Provides unsupported launch assurance",
+              "Explains some risk",
+              "Communicates evidence, uncertainty, stop/rollback criteria and ownership"
+            ]
+          }
+        ],
+        "criticalErrors": [
+          "Treats client-side tenant filters as authorization",
+          "Claims an unverified patch ensures no cross-tenant leakage",
+          "Recommends launching without addressing known cross-tenant exposure"
+        ],
+        "scoringNote": "Rubric is for provisional feedback and later blinded human review. No job-readiness percentage or certified score."
+      },
+      "sourcePolicy": "Only citations from an explicitly approved curriculum catalog; authored scenario facts must not be generated or altered by the model.",
+      "transferVariantIds": [
+        "transfer-001-cross-org-document-export"
+      ],
+      "suggestedNextTask": {
+        "task": "Write a negative authorization test for the fictional ticket API and export endpoint.",
+        "definitionOfDone": "A valid tenant-A identity cannot read/export tenant-B resources even when the resource ID and tenantId are known."
+      }
+    }
+  ],
+  "transferVariants": [
+    {
+      "id": "transfer-001-cross-org-document-export",
+      "parentMission": "mission-001-cross-tenant-ai-support",
+      "version": "0.1.0",
+      "reviewStatus": "draft_pending_independent_review",
+      "fictional": true,
+      "brief": "A fictional document-sharing SaaS exposes a download API. An AI agent proposes hiding cross-organization documents from search results after a user downloads another organization's file by guessing its ID. The export endpoint remains unchanged. Decide whether the fix is sufficient and how to prove isolation.",
+      "prompt": "Without hints, identify the authorization boundary, your immediate containment/release decision, and two negative tests that would prove tenant isolation.",
+      "excludedHints": [
+        "Do not reveal the parent mission's authorization rule, rubric anchors or passing answer before submission.",
+        "Do not include model-generated suggestions during the unassisted attempt."
+      ],
+      "expectedCompetencies": [
+        "C5",
+        "C4",
+        "C6",
+        "C8"
+      ],
+      "afterSubmissionReview": {
+        "requiredAssertions": [
+          "Server authorizes verified identity and resource organization relationship",
+          "Search filtering cannot replace download/export authorization",
+          "Cross-organization known-ID negative test",
+          "Containment and launch/rollback decision"
+        ],
+        "criticalErrors": [
+          "Accepts UI-only document hiding as sufficient",
+          "Claims guessed IDs are safe because unlikely"
+        ],
+        "label": "REFERENCE EXPECTATIONS FOR HUMAN REVIEW — NOT A VERIFIED GRADE"
+      }
+    }
+  ],
+  "plannedMissionTopics": [
+    "idempotent payment retry after unknown commit",
+    "production RAG hallucination and evidence regression",
+    "AI coding agent accidentally removes authorization test",
+    "background job fails halfway through after retry",
+    "database schema migration with dual writes",
+    "model latency spikes while launch SLA approaches",
+    "customer discovery with conflicting stakeholders",
+    "agent tool injection and permission boundary",
+    "incident response with missing telemetry"
+  ]
+}
