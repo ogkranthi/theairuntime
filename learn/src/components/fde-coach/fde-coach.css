@@ -141,3 +141,18 @@
 .fde-response-feedback button { font:inherit; font-size:12px; background:white; color:#a83a09; border:1px solid #dfe6eb; border-radius:7px; padding:7px 10px; cursor:pointer; }
 .fde-response-feedback button:focus-visible { outline:3px solid #c9480c; outline-offset:3px; }
 @media(max-width:620px) { .fde-response-feedback button { min-height:44px; } }
+.fde-coach--active .fde-account-group { max-height:35dvh; overflow:auto; margin-bottom:6px; }
+.fde-coach--active .fde-account-group .fde-account { max-height:none; overflow:visible; }
+.fde-research { font-size:13px; line-height:1.7; margin:8px 0; }
+.fde-research summary { cursor:pointer; font-weight:600; }
+.fde-research label { display:flex; gap:8px; align-items:flex-start; }
+.fde-research input { margin-top:6px; flex:none; }
+.fde-research button,.fde-research-contribution button { background:white; color:#a83a09; border:1px solid #dfe6eb; border-radius:7px; font:inherit; font-size:13px; padding:8px 10px; cursor:pointer; }
+.fde-research button:disabled { opacity:.5; cursor:default; }
+.fde-research-contribution { font-size:13px; margin-top:12px; }
+.fde-research-contribution section { padding:14px; margin-top:10px; border:1px solid #e5c4b3; border-radius:9px; background:#fffbf7; }
+.fde-research-contribution dd { white-space:pre-wrap; margin:5px 0 12px; }
+.fde-research-contribution dt { font-weight:600; }
+.fde-research :focus-visible,.fde-research-contribution :focus-visible { outline:3px solid #c9480c; outline-offset:3px; }
+@media(max-width:620px) { .fde-research button,.fde-research-contribution button { min-height:44px; } }
+@media(max-width:620px) { .fde-research summary,.fde-research label,.fde-account summary { min-height:44px; } .fde-research summary { padding:10px 0; } .fde-research label { align-items:center; } .fde-research input { margin-top:0; } }

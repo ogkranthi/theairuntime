@@ -7,18 +7,21 @@ export function useAccount(enabled: boolean, publishableKey: string) {
   const [info, setInfo] = useState<AccountInfo>();
   const [error, setError] = useState('');
   const [ready, setReady] = useState(false);
-  const token = async () => {
+  const tokenFor = async (expected: string | undefined) => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      const value = await Promise.race([clerk.current?.session?.getToken(), new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('Sign-in timed out. Try again.')), 5000); })]);
-      if (!value) throw new Error('Sign in to continue.');
+      const session=clerk.current?.session;
+      if(!session||session.id!==expected)throw new Error('Your account changed. Retry from the current account.');
+      const value = await Promise.race([session.getToken(), new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('Sign-in timed out. Try again.')), 5000); })]);
+      if (!value||clerk.current?.session?.id!==expected) throw new Error('Sign in to continue.');
       return value;
     } finally { clearTimeout(timer); }
   };
+  const token = () => tokenFor(sessionId);
   const refresh = async () => {
     const current = clerk.current?.session?.id;
     if (!current) return;
-    try { const result = await accountRequest<AccountInfo>(token, 'me'); if (clerk.current?.session?.id === current) { setInfo(result); setError(''); } }
+    try { const result = await accountRequest<AccountInfo>(()=>tokenFor(current), 'me'); if (clerk.current?.session?.id === current) { setInfo(result); setError(''); } }
     catch (cause) { if (clerk.current?.session?.id === current) setError(cause instanceof Error ? cause.message : 'Account unavailable.'); }
   };
   useEffect(() => {
@@ -39,5 +42,5 @@ export function useAccount(enabled: boolean, publishableKey: string) {
     window.addEventListener('focus', focus);
     return () => { disposed = true; remove?.(); window.removeEventListener('focus', focus); };
   }, [enabled, publishableKey]);
-  return { sessionId, info, error, ready, token, refresh, signIn: () => clerk.current?.openSignIn(), signOut: () => clerk.current?.signOut(), request: <T,>(action: string, body?: unknown) => accountRequest<T>(token, action, body) };
+  return { sessionId, info, error, ready, token, refresh, isCurrent:()=>clerk.current?.session?.id===sessionId, signIn: () => clerk.current?.openSignIn(), signOut: () => clerk.current?.session?.id===sessionId?clerk.current?.signOut():undefined, request: <T,>(action: string, body?: unknown) => accountRequest<T>(token, action, body) };
 }
