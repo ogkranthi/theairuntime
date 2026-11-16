@@ -1,7 +1,7 @@
 import { identity, privateId } from './auth';
 import { account, conversation, exportAccount, purgeExpired } from './store';
 import { configuredLimit, RETENTION, type AccountEnv } from './types';
-import { admissionRpc } from '../security/boundary';
+import { admissionRpc, digest } from '../security/boundary';
 import { AdmissionError, type SecurityExecution } from '../security/types';
 import { readLimitedText, BodyTooLargeError } from '../security/body';
 import { GOALS, type ChatGoal, type ChatState, type ChatReply } from '../coach-chat/types';
@@ -66,7 +66,7 @@ export async function handleAccountRequest(request: Request, env: AccountEnv): P
     const c = start ? null : await conversation(env, owner, id);
     const now = Date.now();
     const fingerprint = await privateId(env, 'request', JSON.stringify(b));
-    const actor = await privateId(env, 'start-actor', `${Math.floor(now / 3_600_000)}:${request.headers.get('cf-connecting-ip') ?? 'unknown'}`);
+    const actor = await digest(`${Math.floor(now / 3_600_000)}:${request.headers.get('cf-connecting-ip') ?? 'unknown'}`);
     const auth = { ...limits, generation: profile.generation, conversation: id, operation, fingerprint, start, revision: start ? 0 : b.revision, actor };
     const lease = await admissionRpc<{ nonce: string; state: string; deadline: number }>(env, 'user-reserve', auth);
     const saved = await env.COACH_DB.prepare('SELECT response,metadata FROM coach_messages WHERE operation=? AND owner=? AND conversation=?').bind(operation, owner, id).first<{ response: string; metadata: string }>();

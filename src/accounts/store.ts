@@ -17,6 +17,7 @@ export async function conversation(env: AccountEnv, owner: string, id: unknown) 
 export async function purgeExpired(env: AccountEnv) {
   // Bounded cleanup in addition to query-time expiry. Operator sweep handles dormant data.
   await env.COACH_DB!.prepare('DELETE FROM coach_conversations WHERE id IN (SELECT id FROM coach_conversations WHERE expires<=? LIMIT 50)').bind(Date.now()).run();
+  await env.COACH_DB!.prepare('DELETE FROM coach_accounts WHERE id IN (SELECT id FROM coach_accounts WHERE deleted>0 AND deleted<=? LIMIT 50)').bind(Date.now()-RETENTION).run();
 }
 export async function exportAccount(env: AccountEnv, owner: string) {
   const profile = await account(env, owner);

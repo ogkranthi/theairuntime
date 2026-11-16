@@ -2,7 +2,7 @@
 
 The exact source base is PR #157 at f2f2730. No #159/#160 code is included. No production resource or real learner data was used.
 
-- Complete Vitest suite: 314 tests across 21 files, including existing 296 regressions and new account/DO tests.
+- Complete Vitest suite: 316 tests across 22 files, including the legacy personalized-chat quota bypass gate and existing 296 regressions and new account/DO tests.
 - TypeScript Worker check: passed.
 - Learn Astro check: zero errors, zero warnings, four pre-existing hints.
 - Full root and Learn builds with accounts/chat enabled and a synthetic public Clerk key: passed, 148 Learn pages.
