@@ -14,6 +14,8 @@ export interface ChatEnv extends CoachEnv {
 }
 export type ChatSource = { id: string; title: string; href: string; excerpt: string; contentHash: string };
 export interface ChatReply {
+  responseId?: string;
+  feedback?: { rating: 'helpful'|'unhelpful'|'incorrect'|null; completed: boolean };
   token: string; goal: ChatGoal; turn: number; remainingTurns: number;
   mode: 'intake' | 'ai' | 'fallback'; answer: string; question: string;
   gaps: { gap: string; evidence: string }[];
@@ -21,6 +23,7 @@ export interface ChatReply {
   sources: ChatSource[]; done: boolean;
 }
 export interface ChatMetadata {
+  attemptDetails?: { slot: number; model: string; executed: boolean; latencyMs: number; tokens: number | null; inputTokens: number | null; outputTokens: number | null; error: string | null }[];
   templateId: string; promptVersion: string; retrievalVersion: string; resourceIds: string[];
   model: string | null; attempts: number; latencyMs: number; tokens: number | null; usageComplete: boolean;
   outcome: 'intake' | 'ai' | 'fallback'; errorCategory: string | null;

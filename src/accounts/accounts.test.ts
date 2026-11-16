@@ -27,19 +27,20 @@ beforeAll(async () => {
   key = pair.privateKey;
   publicKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(await crypto.subtle.exportKey('spki', pair.publicKey)).toString('base64').match(/.{1,64}/g)!.join('\n')}\n-----END PUBLIC KEY-----`;
   const db = await dbRuntime.getD1Database('DB');
-  await db.exec((await readFile('migrations/coach/0001_accounts.sql', 'utf8')).replace(/\n/g, ' '));
+  for (const name of ['0001_accounts.sql','0002_observability.sql']) await db.exec((await readFile(`migrations/coach/${name}`, 'utf8')).replace(/\n/g, ' '));
   env = { FDE_COACH_ACCOUNTS_ENABLED: 'true', FDE_COACH_CHAT_ENABLED: 'true', AI_SECURITY: runtime.namespace, COACH_DB: db as any, COACH_IDENTITY_KEY: 'local-only-identity-key-at-least-32-characters', CLERK_JWT_KEY: publicKey, CLERK_ISSUER: ISSUER, CLERK_PUBLISHABLE_KEY: `pk_test_${Buffer.from('test.clerk.accounts.dev$').toString('base64')}`, COACH_ALLOWED_ORIGIN: ORIGIN };
 }, 30_000);
 afterAll(async () => { await runtime?.mf.dispose(); await dbRuntime?.dispose(); });
 beforeEach(async () => {
   await runtime.rpc('__reset');
-  await env.COACH_DB!.exec('DELETE FROM coach_messages; DELETE FROM coach_conversations; DELETE FROM coach_accounts;');
+  await env.COACH_DB!.exec('DELETE FROM coach_messages; DELETE FROM coach_conversations; DELETE FROM coach_accounts; DELETE FROM coach_activity; DELETE FROM coach_monthly_activity;');
   env.COACH_DAILY_RESPONSES = '10'; env.COACH_DAILY_REQUESTS = '30';
   ai = vi.fn(async (_model: string, input: any) => {
     const data = JSON.parse(input.messages[1].content);
     return { response: JSON.stringify({ answer: 'Use a stable operation key to separate an order from delivery attempts.', question: 'How would you test a lost response?', sourceIds: [data.untrustedCurriculum[0].id], gaps: [], nextStep: { task: 'Add a duplicate write test.', definitionOfDone: 'One write after two identical requests.' }, profileEvidence: { background: '', example: '', focus: '' } }), usage: { total_tokens: 40 } };
   });
   env.AI = { run: ai };
+  env.FDE_COACH_METRICS_ENABLED='false';env.COACH_METRICS=undefined;
 });
 async function start(user = 'alice', key?: string) { expect((await parsed('me', undefined, user)).status).toBe(200); const r = await parsed('start', { goal: 'skills' }, user, key); expect(r.status).toBe(200); return r.body.token.split('.')[1]; }
 const message = (id: string, revision = 0) => ({ conversationId: id, revision, message: 'I build APIs. Explain idempotency for a fictional order service.' });
@@ -85,6 +86,26 @@ describe('Clerk identity and account isolation', () => {
   });
 });
 describe('successful-response quotas and durable recovery', () => {
+  it('records daily/monthly activity once under concurrency without content or account identifiers in telemetry',async()=>{
+    env.FDE_COACH_METRICS_ENABLED='true';const events:any[]=[];env.COACH_METRICS={writeDataPoint:p=>events.push(p)};
+    await Promise.all(Array.from({length:6},()=>parsed('me')));
+    expect(events.filter(e=>e.blobs[0]==='active_day')).toHaveLength(1);expect(events.filter(e=>e.blobs[0]==='active_month')).toHaveLength(1);
+    const id=await start();await parsed('message',message(id));
+    expect(events.some(e=>e.blobs[0]==='model_attempt')).toBe(true);expect(events.some(e=>e.blobs[0]==='interaction')).toBe(true);
+    const serialized=JSON.stringify(events);expect(serialized).not.toContain('user_alice');expect(serialized).not.toContain('fictional order');expect(serialized).not.toContain(id);
+  });
+  it('authorizes feedback/explicit completion per owner and includes it in export/deletion',async()=>{
+    const a=await start(),b=await start('bob'),reply=(await parsed('message',message(a))).body;
+    expect((await parsed('feedback',{operation:reply.responseId,rating:'incorrect'},'bob')).status).toBe(404);
+    expect((await parsed('feedback',{operation:reply.responseId,rating:'helpful'})).status).toBe(200);
+    expect((await parsed('feedback',{operation:reply.responseId,completed:true})).status).toBe(200);
+    expect((await parsed(`conversation?id=${a}`)).body.messages.at(-1).reply.feedback).toEqual({rating:'helpful',completed:true});
+    const feedback=(await parsed('export')).body.feedback;expect(feedback).toHaveLength(1);expect(feedback[0]).toMatchObject({rating:'helpful',completed:1});
+    expect((await parsed('feedback',{operation:reply.responseId,rating:'raw private text'})).status).toBe(400);
+    expect((await parsed('export',undefined,'bob')).body.feedback).toHaveLength(0);
+    await parsed('delete',{confirm:'DELETE'});expect((await env.COACH_DB!.prepare('SELECT count(*) AS n FROM coach_feedback').first<any>()).n).toBe(0);
+    expect((await parsed(`conversation?id=${b}`,undefined,'bob')).status).toBe(200);
+  });
   it('exact retries are charged once and simultaneous requests run AI once', async () => {
     const id = await start(), key = crypto.randomUUID();
     const responses = await Promise.all(Array.from({length: 8}, () => parsed('message', message(id), 'alice', key)));

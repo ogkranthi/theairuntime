@@ -26,8 +26,12 @@ binding = "COACH_DB"
 database_name = "fde-coach-local"
 database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "migrations/coach"
+[[analytics_engine_datasets]]
+binding = "COACH_METRICS"
+dataset = "fde_coach_local_metrics"
 [vars]
 FDE_COACH_CHAT_ENABLED = "false"
 FDE_COACH_ACCOUNTS_ENABLED = "false"
+FDE_COACH_METRICS_ENABLED = "false"
 COACH_DAILY_RESPONSES = "10"
 COACH_DAILY_REQUESTS = "30"

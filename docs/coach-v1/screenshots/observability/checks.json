@@ -1,0 +1,18 @@
+{
+  "fixture": "synthetic identity and model; actual account routes, D1 and DO",
+  "checks": [
+    "signed-in allowance is visible",
+    "experience and goal save",
+    "AI response decrements allowance",
+    "helpful feedback saves",
+    "completion is explicitly reported",
+    "interrupted reply retries without duplicate charge",
+    "saved conversation resumes after reload",
+    "saved feedback and completion resume visibly",
+    "mobile has no horizontal overflow",
+    "transcript exposes live log semantics",
+    "export downloads private account JSON",
+    "sign-out clears private conversation",
+    "no browser exceptions"
+  ]
+}
